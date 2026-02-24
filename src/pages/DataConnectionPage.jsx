@@ -113,9 +113,10 @@ export default function DataConnectionPage({ config, onNext }) {
     return requiredCategories.includes(cat);
   }).length;
 
+  // Bottom bar text logic
   let bottomText = 'Connect required data sources to continue.';
   if (group1Connected && !group2Connected) {
-    bottomText = 'Connect a data warehouse to complete required fields.';
+    bottomText = `1 source connected. Connect a data warehouse to complete required fields.`;
   }
 
   return (
@@ -209,11 +210,12 @@ export default function DataConnectionPage({ config, onNext }) {
           position: 'sticky',
           bottom: 0,
           borderTop: '1px solid var(--color-gray-200)',
-          backgroundColor: 'var(--color-white)',
+          backgroundColor: bothRequired ? 'var(--color-white)' : 'var(--color-gray-50)',
           padding: '1.25rem 3rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          transition: 'background-color var(--transition-base)',
         }}
       >
         <div>
@@ -221,13 +223,13 @@ export default function DataConnectionPage({ config, onNext }) {
             <p
               style={{
                 fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-gray-700)',
-                fontWeight: 500,
+                color: 'var(--color-gray-900)',
+                fontWeight: 400,
               }}
             >
-              {connectedCount} sources connected &middot;{' '}
-              {config.totalCustomers.toLocaleString()} customer records &middot;{' '}
-              {checkedRequiredCount} of {connection.requiredFieldCount} required fields
+              <strong>{connectedCount}</strong> sources connected &middot;{' '}
+              <strong>{config.totalCustomers.toLocaleString()}</strong> customer records &middot;{' '}
+              <strong>{checkedRequiredCount} of {connection.requiredFieldCount}</strong> required fields
               detected
             </p>
           ) : (

@@ -15,8 +15,8 @@ export default function Badge({ children, variant = 'default' }) {
       color: 'var(--color-gray-600)',
     },
     success: {
-      backgroundColor: 'var(--color-green-100)',
-      color: 'var(--color-green-600)',
+      backgroundColor: 'var(--color-gray-900)',
+      color: 'var(--color-white)',
     },
     quickwin: {
       backgroundColor: '#f0f0f0',
