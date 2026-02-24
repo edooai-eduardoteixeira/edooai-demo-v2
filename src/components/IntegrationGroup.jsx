@@ -9,7 +9,6 @@ export default function IntegrationGroup({
   onConnect,
   step,
   isOptional,
-  totalCustomers,
 }) {
   return (
     <div
@@ -106,22 +105,6 @@ export default function IntegrationGroup({
         ))}
       </div>
 
-      {/* Connected summary */}
-      {connected && (
-        <p
-          style={{
-            fontSize: '0.75rem',
-            fontWeight: 500,
-            color: 'var(--color-green-600)',
-            marginTop: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.25rem',
-          }}
-        >
-          ✓ Connected · {totalCustomers.toLocaleString()} records
-        </p>
-      )}
     </div>
   );
 }
