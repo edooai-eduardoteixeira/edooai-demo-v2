@@ -15,7 +15,7 @@ export default function IntegrationGroup({
       style={{
         border: isOptional ? '1px dashed var(--border)' : '1px solid var(--border)',
         borderRadius: 'var(--radius-lg)',
-        padding: '28px 32px',
+        padding: '32px',
         backgroundColor: 'var(--color-white)',
         boxShadow: isOptional ? 'none' : 'var(--shadow-sm)',
         opacity: isOptional && !connected ? 0.75 : 1,
@@ -27,17 +27,17 @@ export default function IntegrationGroup({
       <div
         style={{
           display: 'flex',
-          alignItems: 'baseline',
+          alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: '6px',
+          marginBottom: '10px',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0' }}>
           <span
             style={{
               fontSize: '1.0625rem',
-              fontWeight: 400,
-              color: 'var(--text-tertiary)',
+              fontWeight: 700,
+              color: 'var(--text-primary)',
             }}
           >
             {step} &middot;&nbsp;
@@ -66,10 +66,15 @@ export default function IntegrationGroup({
         </div>
         <span
           style={{
-            fontSize: '0.75rem',
-            fontWeight: 400,
-            color: 'var(--text-tertiary)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            fontSize: '0.6875rem',
+            fontWeight: 600,
+            padding: '3px 10px',
+            borderRadius: '9999px',
             whiteSpace: 'nowrap',
+            backgroundColor: group.dataDirection === 'Read only' ? '#dbeafe' : '#f1f5f9',
+            color: group.dataDirection === 'Read only' ? '#1e40af' : '#334155',
           }}
         >
           {group.dataDirection}
@@ -79,18 +84,18 @@ export default function IntegrationGroup({
       {/* WHY line */}
       <p
         style={{
-          fontSize: '0.875rem',
+          fontSize: '0.9375rem',
           color: 'var(--text-secondary)',
           fontWeight: 400,
           lineHeight: 1.5,
-          marginBottom: '20px',
+          marginBottom: '24px',
         }}
       >
         {group.whyLine}
       </p>
 
       {/* Logos */}
-      <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
         {group.platforms.map((platform) => (
           <PlatformLogo
             key={platform}
