@@ -27,9 +27,13 @@ function CheckItem({ field, checked, source }) {
         alignItems: 'baseline',
         minHeight: '28px',
         gap: '0.4rem',
-        padding: '2px 0.25rem',
+        padding: '6px 8px',
+        borderRadius: '4px',
+        backgroundColor: checked ? '#fff' : '#F0F1F3',
         cursor: 'default',
         userSelect: 'none',
+        marginTop: '2px',
+        transition: 'background-color 200ms ease',
       }}
     >
       {/* Green checkmark — only visible when checked */}
