@@ -53,12 +53,13 @@ function StageCard({ stage, index, visible, annotation, editable, onRename }) {
       <div
         style={{
           backgroundColor: 'var(--color-white)',
-          border: '2px solid var(--color-gray-200)',
+          border: '1px solid var(--color-gray-200)',
           borderRadius: 'var(--radius-lg)',
           padding: '1.25rem 1rem',
           textAlign: 'center',
           width: '100%',
           cursor: editable ? 'text' : 'default',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
         }}
         onClick={handleClick}
       >

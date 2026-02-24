@@ -17,12 +17,12 @@ export default function AnalysisPage({ config, onNext }) {
   const [annotations, setAnnotations] = useState({});
   const [conversionLabels, setConversionLabels] = useState({});
   const cancelRef = useRef(false);
-  const containerRef = useRef(null);
+  const bottomRef = useRef(null);
   const hasStartedRef = useRef(false);
 
   const scrollToBottom = useCallback(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
   }, []);
 
@@ -127,7 +127,6 @@ export default function AnalysisPage({ config, onNext }) {
 
       {/* Main Content */}
       <main
-        ref={containerRef}
         style={{
           flex: 1,
           padding: '3rem 3rem',
@@ -156,7 +155,6 @@ export default function AnalysisPage({ config, onNext }) {
                 color: 'var(--color-gray-700)',
                 marginBottom: '0.75rem',
                 lineHeight: 1.6,
-                fontFamily: 'monospace',
               }}
             >
               {line}
@@ -169,7 +167,6 @@ export default function AnalysisPage({ config, onNext }) {
                 color: 'var(--color-gray-700)',
                 marginBottom: '0.75rem',
                 lineHeight: 1.6,
-                fontFamily: 'monospace',
               }}
             >
               {currentText}
@@ -232,6 +229,7 @@ export default function AnalysisPage({ config, onNext }) {
             <CTAButton onClick={onNext}>View Strategy Proposal</CTAButton>
           </div>
         )}
+        <div ref={bottomRef} />
       </main>
 
       <style>{`

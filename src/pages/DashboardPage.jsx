@@ -51,18 +51,29 @@ function SimpleLineChart({ data, phases }) {
     .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
     .join(' ');
 
-  // Area fill
+  // Area fill path
   const areaD = `${pathD} L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`;
 
-  // Derive phase boundary positions from config
-  const phaseLines = (phases || []).map((phase, i, arr) => {
+  // Parse phases into zones with start/end days
+  const parsedPhases = (phases || []).map((phase) => {
     const parts = phase.days.split(/[–\u2013-]/);
     const startDay = parseInt(parts[0]);
     const endDay = parseInt(parts[1] || parts[0]);
-    // Position at end of phase for non-terminal phases,
-    // midpoint for the terminal phase to avoid chart edge
-    const day = i < arr.length - 1 ? endDay : Math.round((startDay + endDay) / 2);
-    return { day, label: phase.label };
+    return { startDay, endDay, label: phase.label };
+  });
+
+  // Compute boundary X positions (between phases)
+  const boundaries = [];
+  for (let i = 0; i < parsedPhases.length - 1; i++) {
+    const boundaryDay = parsedPhases[i].endDay;
+    boundaries.push(padding.left + ((boundaryDay - 1) / (data.length - 1)) * chartW);
+  }
+
+  // Compute label center X for each phase
+  const phaseLabels = parsedPhases.map((phase) => {
+    const midDay = (phase.startDay + phase.endDay) / 2;
+    const x = padding.left + ((midDay - 1) / (data.length - 1)) * chartW;
+    return { x, label: phase.label };
   });
 
   return (
@@ -70,6 +81,13 @@ function SimpleLineChart({ data, phases }) {
       viewBox={`0 0 ${width} ${height}`}
       style={{ width: '100%', maxWidth: '700px' }}
     >
+      <defs>
+        <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="black" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="black" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+
       {/* Grid lines */}
       {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => {
         const y = padding.top + chartH * (1 - frac);
@@ -116,38 +134,41 @@ function SimpleLineChart({ data, phases }) {
         );
       })}
 
-      {/* Phase dividers */}
-      {phaseLines.map(({ day, label }, i) => {
-        const x = padding.left + ((day - 1) / (data.length - 1)) * chartW;
-        return (
-          <g key={i}>
-            <line
-              x1={x}
-              y1={padding.top}
-              x2={x}
-              y2={padding.top + chartH}
-              stroke="#d4d4d4"
-              strokeWidth="1"
-              strokeDasharray="4,4"
-            />
-            <text
-              x={x}
-              y={padding.top - 8}
-              textAnchor="middle"
-              fill="#a3a3a3"
-              fontSize="10"
-              fontFamily="Inter, sans-serif"
-            >
-              {label}
-            </text>
-          </g>
-        );
-      })}
-      {/* Area */}
-      <path d={areaD} fill="rgba(0,0,0,0.04)" />
+      {/* Phase boundary dividers */}
+      {boundaries.map((x, i) => (
+        <line
+          key={`boundary-${i}`}
+          x1={x}
+          y1={padding.top}
+          x2={x}
+          y2={padding.top + chartH}
+          stroke="#d4d4d4"
+          strokeWidth="1"
+          strokeDasharray="4,4"
+        />
+      ))}
+
+      {/* Phase labels centered in zone */}
+      {phaseLabels.map(({ x, label }, i) => (
+        <text
+          key={`label-${i}`}
+          x={x}
+          y={padding.top - 8}
+          textAnchor="middle"
+          fill="#a3a3a3"
+          fontSize="10"
+          fontFamily="Inter, sans-serif"
+          fontWeight="500"
+        >
+          {label}
+        </text>
+      ))}
+
+      {/* Area with gradient */}
+      <path d={areaD} fill="url(#areaGradient)" />
 
       {/* Line */}
-      <path d={pathD} fill="none" stroke="black" strokeWidth="2" />
+      <path d={pathD} fill="none" stroke="black" strokeWidth="2.5" strokeLinejoin="round" />
 
       {/* End dot */}
       <circle

@@ -25,7 +25,7 @@ export default function LandingPage({ config, onNext }) {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          padding: '4rem 3rem',
+          padding: '6rem 3rem',
           maxWidth: '800px',
           margin: '0 auto',
           textAlign: 'center',
@@ -71,17 +71,19 @@ export default function LandingPage({ config, onNext }) {
             margin: '0 auto',
             display: 'flex',
             flexDirection: 'column',
-            gap: '1rem',
+            gap: '1.25rem',
           }}
         >
           {landing.valueProps.map((prop, i) => (
             <p
               key={i}
               style={{
-                fontSize: 'var(--font-size-base)',
-                color: 'var(--color-gray-600)',
-                paddingLeft: '1rem',
-                borderLeft: '2px solid var(--color-gray-300)',
+                fontSize: 'var(--font-size-lg)',
+                color: 'var(--color-gray-700)',
+                fontWeight: 500,
+                paddingLeft: '1.25rem',
+                borderLeft: '3px solid var(--color-gray-900)',
+                lineHeight: 1.5,
               }}
             >
               {prop}
@@ -90,8 +92,9 @@ export default function LandingPage({ config, onNext }) {
           <p
             style={{
               fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-gray-400)',
-              marginTop: '1rem',
+              color: 'var(--color-gray-500)',
+              marginTop: '1.5rem',
+              fontWeight: 500,
             }}
           >
             {landing.credibilityLine}

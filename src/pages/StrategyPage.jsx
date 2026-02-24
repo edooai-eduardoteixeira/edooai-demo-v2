@@ -14,23 +14,24 @@ function StrategyCard({ strategy, variant }) {
         flex: 1,
         border: '1px solid var(--color-gray-200)',
         borderRadius: 'var(--radius-lg)',
-        padding: '1.5rem',
+        padding: '1.25rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
         <Badge variant={variant}>{strategy.name}</Badge>
       </div>
       <h3
         style={{
           fontSize: 'var(--font-size-lg)',
           fontWeight: 700,
-          marginBottom: '1rem',
+          marginBottom: '0.75rem',
           color: 'var(--color-gray-900)',
         }}
       >
         {strategy.headline}
       </h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
         <InfoRow label="Target" value={strategy.target} />
         <InfoRow label="Success metric" value={strategy.successMetric} />
         <InfoRow
@@ -84,6 +85,7 @@ function MetricCard({ label, children }) {
         backgroundColor: 'var(--color-gray-50)',
         borderRadius: 'var(--radius-lg)',
         textAlign: 'center',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
       }}
     >
       <div
@@ -100,7 +102,7 @@ function MetricCard({ label, children }) {
       </div>
       <div
         style={{
-          fontSize: 'var(--font-size-3xl)',
+          fontSize: 'var(--font-size-4xl)',
           fontWeight: 700,
           color: 'var(--color-black)',
         }}
@@ -182,14 +184,14 @@ export default function StrategyPage({ config, onNext }) {
             style={{
               fontSize: 'var(--font-size-lg)',
               fontWeight: 700,
-              marginBottom: '1.5rem',
+              marginBottom: '1rem',
             }}
           >
             Set your monthly budget cap
           </h3>
 
           {/* Slider */}
-          <div style={{ marginBottom: '2rem' }}>
+          <div style={{ marginBottom: '1.25rem' }}>
             <div
               style={{
                 display: 'flex',
@@ -237,13 +239,12 @@ export default function StrategyPage({ config, onNext }) {
               onChange={(e) => setBudget(Number(e.target.value))}
               style={{
                 width: '100%',
-                height: '6px',
+                height: '8px',
                 appearance: 'none',
-                backgroundColor: 'var(--color-gray-200)',
-                borderRadius: '3px',
+                background: `linear-gradient(to right, var(--color-black) ${((budget - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100}%, var(--color-gray-200) ${((budget - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100}%)`,
+                borderRadius: '4px',
                 outline: 'none',
                 cursor: 'pointer',
-                accentColor: 'var(--color-black)',
               }}
             />
           </div>
@@ -275,13 +276,13 @@ export default function StrategyPage({ config, onNext }) {
         </section>
 
         {/* Section 3: Expandable Details */}
-        <section style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <Expandable title="View Full Strategy Detail">
             <StrategyDetailContent
               breakdown={strategyBreakdown150K}
               strategies={strategies}
               roiExample={perUserROIExample}
-              budget={budget}
+              budget={150000}
             />
           </Expandable>
           <Expandable title="View Execution Plan">
