@@ -127,20 +127,12 @@ export default function DataConnectionPage({ config, onNext }) {
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: '#F5F7FA',
-      }}
-    >
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <header
         style={{
           padding: '1.5rem 3rem',
-          borderBottom: '1px solid #E8E8E8',
-          backgroundColor: '#fff',
+          borderBottom: '1px solid var(--color-gray-100)',
         }}
       >
         <Logo />
@@ -150,20 +142,19 @@ export default function DataConnectionPage({ config, onNext }) {
       <main
         style={{
           flex: 1,
-          padding: '40px 3rem 32px',
-          maxWidth: '780px',
+          padding: '2rem 3rem',
+          maxWidth: '1280px',
           margin: '0 auto',
           width: '100%',
         }}
       >
-        {/* Page header */}
-        <div style={{ marginBottom: '32px' }}>
+        <div style={{ marginBottom: '2rem' }}>
           <h2
             style={{
-              fontSize: '26px',
+              fontSize: '1.75rem',
               fontWeight: 700,
-              color: '#111',
-              marginBottom: '8px',
+              color: 'var(--color-gray-900)',
+              marginBottom: '0.5rem',
               lineHeight: 1.2,
             }}
           >
@@ -171,8 +162,8 @@ export default function DataConnectionPage({ config, onNext }) {
           </h2>
           <p
             style={{
-              fontSize: '15px',
-              color: '#666',
+              fontSize: 'var(--font-size-base)',
+              color: 'var(--color-gray-500)',
               fontWeight: 400,
               lineHeight: 1.5,
             }}
@@ -181,18 +172,17 @@ export default function DataConnectionPage({ config, onNext }) {
           </p>
         </div>
 
-        {/* Two-column layout */}
         <div
           className="data-grid"
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 0.69fr',
-            gap: '24px',
+            gridTemplateColumns: '1fr 0.65fr',
+            gap: '2rem',
             alignItems: 'start',
           }}
         >
           {/* Left Column — Integration Groups */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <IntegrationGroup
               group={connection.group1}
               connected={group1Connected}
@@ -238,21 +228,22 @@ export default function DataConnectionPage({ config, onNext }) {
         style={{
           position: 'sticky',
           bottom: 0,
-          borderTop: '1px solid #E8E8E8',
-          backgroundColor: '#fff',
-          padding: '18px 3rem',
+          borderTop: '1px solid var(--color-gray-200)',
+          backgroundColor: bothRequired ? 'var(--color-white)' : 'var(--color-gray-50)',
+          padding: '1.25rem 3rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: '2rem',
+          transition: 'background-color 300ms ease',
         }}
       >
         <div style={{ flex: 1 }}>
           {bothRequired ? (
             <p
               style={{
-                fontSize: '14px',
-                color: '#666',
+                fontSize: 'var(--font-size-base)',
+                color: 'var(--color-gray-900)',
                 fontWeight: 400,
                 display: 'flex',
                 alignItems: 'center',
@@ -260,7 +251,7 @@ export default function DataConnectionPage({ config, onNext }) {
               }}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-                <circle cx="8" cy="8" r="7" fill="#34C759" />
+                <circle cx="8" cy="8" r="7" fill="#2D8A4E" />
                 <path
                   d="M4.5 8l2.25 2.25 4.75-4.75"
                   stroke="white"
@@ -270,17 +261,17 @@ export default function DataConnectionPage({ config, onNext }) {
                 />
               </svg>
               <span>
-                <strong style={{ color: '#333' }}>{connectedCount}</strong> sources connected &middot;{' '}
-                <strong style={{ color: '#333' }}>{config.totalCustomers.toLocaleString()}</strong> customer records &middot;{' '}
-                <strong style={{ color: '#333' }}>{checkedRequiredCount} of {connection.requiredFieldCount}</strong> required fields
+                <strong>{connectedCount}</strong> sources connected &middot;{' '}
+                <strong>{config.totalCustomers.toLocaleString()}</strong> customer records &middot;{' '}
+                <strong>{checkedRequiredCount} of {connection.requiredFieldCount}</strong> required fields
                 detected
               </span>
             </p>
           ) : (
             <p
               style={{
-                fontSize: '14px',
-                color: '#666',
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-gray-500)',
               }}
             >
               {bottomText}
@@ -291,15 +282,13 @@ export default function DataConnectionPage({ config, onNext }) {
           onClick={onNext}
           disabled={!bothRequired}
           style={{
-            padding: '14px 28px',
-            fontSize: '15px',
-            fontWeight: 600,
-            borderRadius: '7px',
+            padding: '1rem 2.5rem',
             flexShrink: 0,
-            transition: 'all 200ms ease',
+            transition: 'all 300ms ease',
+            transform: bothRequired ? 'scale(1)' : 'scale(0.98)',
           }}
         >
-          Generate Personalized Referral Strategy &rarr;
+          Generate Personalized Referral Strategy
         </CTAButton>
       </div>
     </div>
