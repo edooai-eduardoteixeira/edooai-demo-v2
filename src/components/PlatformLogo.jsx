@@ -148,7 +148,7 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
       <button
         onClick={onClick}
         onMouseEnter={() => setHovered(true)}
@@ -217,11 +217,11 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
       </button>
       <span
         style={{
-          fontSize: '0.625rem',
-          fontWeight: 500,
-          color: connected ? 'var(--color-green-600)' : 'var(--text-tertiary)',
+          fontSize: '0.6875rem',
+          fontWeight: 600,
+          color: connected ? 'var(--color-green-600)' : 'var(--text-secondary)',
           textAlign: 'center',
-          lineHeight: 1,
+          lineHeight: 1.2,
           whiteSpace: 'nowrap',
         }}
       >

@@ -148,25 +148,25 @@ export default function DataConnectionPage({ config, onNext }) {
           width: '100%',
         }}
       >
-        <div style={{ marginBottom: '2rem' }}>
+        <div style={{ marginBottom: '2.5rem' }}>
           <h2
             style={{
-              fontSize: '1.75rem',
+              fontSize: '2rem',
               fontWeight: 700,
               color: 'var(--color-gray-900)',
-              marginBottom: '0.5rem',
+              marginBottom: '0.75rem',
               lineHeight: 1.2,
-              letterSpacing: '-0.02em',
+              letterSpacing: '-0.025em',
             }}
           >
             Connect Your Data Sources
           </h2>
           <p
             style={{
-              fontSize: 'var(--font-size-base)',
+              fontSize: 'var(--font-size-lg)',
               color: 'var(--color-gray-500)',
               fontWeight: 400,
-              lineHeight: 1.5,
+              lineHeight: 1.6,
             }}
           >
             Your customer data will be used to design a personalized referral strategy.
@@ -178,12 +178,12 @@ export default function DataConnectionPage({ config, onNext }) {
           style={{
             display: 'grid',
             gridTemplateColumns: '1fr 0.65fr',
-            gap: '2.5rem',
+            gap: '3rem',
             alignItems: 'start',
           }}
         >
           {/* Left Column — Integration Groups */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
             <IntegrationGroup
               group={connection.group1}
               connected={group1Connected}
