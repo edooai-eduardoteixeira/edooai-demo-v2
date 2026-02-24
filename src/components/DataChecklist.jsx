@@ -25,14 +25,14 @@ function CheckItem({ field, checked, source }) {
       style={{
         display: 'flex',
         alignItems: 'baseline',
-        minHeight: '28px',
-        gap: '0.4rem',
-        padding: '8px 10px',
-        borderRadius: '4px',
-        backgroundColor: checked ? 'var(--color-white)' : 'var(--color-gray-50)',
+        minHeight: '32px',
+        gap: '0.5rem',
+        padding: '10px 12px',
+        borderRadius: 'var(--radius-sm)',
+        backgroundColor: checked ? 'var(--color-white)' : 'transparent',
         cursor: 'default',
         userSelect: 'none',
-        marginTop: '2px',
+        marginTop: '3px',
         transition: 'background-color 200ms ease',
       }}
     >
@@ -54,12 +54,12 @@ function CheckItem({ field, checked, source }) {
       {/* Field label — single line, single style */}
       <span
         style={{
-          fontSize: '0.8125rem',
+          fontSize: '0.875rem',
           fontWeight: 500,
           color: checked ? 'var(--text-primary)' : 'var(--text-tertiary)',
           flex: 1,
           minWidth: 0,
-          lineHeight: 1.4,
+          lineHeight: 1.5,
           transition: 'color 200ms ease',
         }}
       >
@@ -70,7 +70,7 @@ function CheckItem({ field, checked, source }) {
       {source && (
         <span
           style={{
-            fontSize: '0.6875rem',
+            fontSize: '0.75rem',
             color: 'var(--text-tertiary)',
             fontWeight: 400,
             whiteSpace: 'nowrap',
@@ -116,11 +116,11 @@ export default function DataChecklist({
   return (
     <div
       style={{
-        backgroundColor: 'var(--color-white)',
-        border: '1px solid var(--border)',
+        backgroundColor: 'var(--color-gray-50)',
+        border: '1px solid var(--color-gray-200)',
         borderRadius: 'var(--radius-lg)',
-        padding: '24px 28px',
-        boxShadow: 'var(--shadow-sm)',
+        padding: '28px 32px',
+        boxShadow: 'var(--shadow-inset-sm)',
         height: 'fit-content',
         position: 'sticky',
         top: '2rem',
@@ -133,14 +133,14 @@ export default function DataChecklist({
           <div
             key={ci}
             style={{
-              marginBottom: ci < categories.length - 1 ? '20px' : 0,
+              marginBottom: ci < categories.length - 1 ? '24px' : 0,
             }}
           >
             {/* Category header */}
             <div
               style={{
-                paddingBottom: '6px',
-                marginBottom: '4px',
+                paddingBottom: '10px',
+                marginBottom: '8px',
                 borderBottom: '1px solid var(--border)',
                 backgroundColor: isHighlighted
                   ? 'rgba(0,0,0,0.03)'
@@ -152,10 +152,10 @@ export default function DataChecklist({
             >
               <span
                 style={{
-                  fontSize: '0.875rem',
-                  fontWeight: 700,
-                  color: 'var(--color-gray-900)',
-                  letterSpacing: '0.5px',
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  color: 'var(--text-secondary)',
+                  letterSpacing: '0.06em',
                 }}
               >
                 {cat.label}

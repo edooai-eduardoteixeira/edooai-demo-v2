@@ -16,7 +16,7 @@ export default function IntegrationGroup({
       style={{
         border: isOptional ? '1px dashed var(--border)' : '1px solid var(--border)',
         borderRadius: 'var(--radius-lg)',
-        padding: '24px 28px',
+        padding: '28px 32px',
         backgroundColor: 'var(--color-white)',
         boxShadow: isOptional ? 'none' : 'var(--shadow-sm)',
         opacity: isOptional && !connected ? 0.75 : 1,
@@ -30,13 +30,13 @@ export default function IntegrationGroup({
           display: 'flex',
           alignItems: 'baseline',
           justifyContent: 'space-between',
-          marginBottom: '4px',
+          marginBottom: '6px',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0' }}>
           <span
             style={{
-              fontSize: '1rem',
+              fontSize: '1.0625rem',
               fontWeight: 400,
               color: 'var(--text-tertiary)',
             }}
@@ -45,7 +45,7 @@ export default function IntegrationGroup({
           </span>
           <span
             style={{
-              fontSize: '1rem',
+              fontSize: '1.0625rem',
               fontWeight: 700,
               color: 'var(--text-primary)',
             }}
@@ -55,7 +55,7 @@ export default function IntegrationGroup({
           {isOptional && (
             <span
               style={{
-                fontSize: '1rem',
+                fontSize: '1.0625rem',
                 fontWeight: 400,
                 color: 'var(--text-tertiary)',
                 marginLeft: '4px',
@@ -80,18 +80,18 @@ export default function IntegrationGroup({
       {/* WHY line */}
       <p
         style={{
-          fontSize: '0.8125rem',
+          fontSize: '0.875rem',
           color: 'var(--text-secondary)',
           fontWeight: 400,
-          lineHeight: 1.4,
-          marginBottom: '16px',
+          lineHeight: 1.5,
+          marginBottom: '20px',
         }}
       >
         {group.whyLine}
       </p>
 
       {/* Logos */}
-      <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap' }}>
         {group.platforms.map((platform) => (
           <PlatformLogo
             key={platform}
@@ -113,7 +113,7 @@ export default function IntegrationGroup({
             fontSize: '0.75rem',
             fontWeight: 500,
             color: 'var(--color-green-600)',
-            marginTop: '12px',
+            marginTop: '16px',
             display: 'flex',
             alignItems: 'center',
             gap: '0.25rem',
