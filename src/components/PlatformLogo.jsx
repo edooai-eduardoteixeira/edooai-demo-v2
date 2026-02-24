@@ -217,7 +217,7 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
       </button>
       <span
         style={{
-          fontSize: '0.6875rem',
+          fontSize: '0.75rem',
           fontWeight: 600,
           color: 'var(--text-secondary)',
           textAlign: 'center',
