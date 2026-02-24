@@ -156,6 +156,7 @@ export default function DataConnectionPage({ config, onNext }) {
               color: 'var(--color-gray-900)',
               marginBottom: '0.5rem',
               lineHeight: 1.2,
+              letterSpacing: '-0.02em',
             }}
           >
             Connect Your Data Sources
@@ -177,12 +178,12 @@ export default function DataConnectionPage({ config, onNext }) {
           style={{
             display: 'grid',
             gridTemplateColumns: '1fr 0.65fr',
-            gap: '2rem',
+            gap: '2.5rem',
             alignItems: 'start',
           }}
         >
           {/* Left Column — Integration Groups */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <IntegrationGroup
               group={connection.group1}
               connected={group1Connected}
@@ -228,7 +229,8 @@ export default function DataConnectionPage({ config, onNext }) {
         style={{
           position: 'sticky',
           bottom: 0,
-          borderTop: '1px solid var(--color-gray-200)',
+          borderTop: '1px solid var(--border)',
+          boxShadow: 'var(--shadow-up-md)',
           backgroundColor: bothRequired ? 'var(--color-white)' : 'var(--color-gray-50)',
           padding: '1.25rem 3rem',
           display: 'flex',

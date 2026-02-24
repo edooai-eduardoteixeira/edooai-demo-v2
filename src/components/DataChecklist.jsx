@@ -27,9 +27,9 @@ function CheckItem({ field, checked, source }) {
         alignItems: 'baseline',
         minHeight: '28px',
         gap: '0.4rem',
-        padding: '6px 8px',
+        padding: '8px 10px',
         borderRadius: '4px',
-        backgroundColor: checked ? '#fff' : '#F0F1F3',
+        backgroundColor: checked ? 'var(--color-white)' : 'var(--color-gray-50)',
         cursor: 'default',
         userSelect: 'none',
         marginTop: '2px',
@@ -44,7 +44,7 @@ function CheckItem({ field, checked, source }) {
           fontSize: '0.75rem',
           lineHeight: 1,
           opacity: checked && checkVisible ? 1 : 0,
-          color: '#2D8A4E',
+          color: 'var(--color-green-600)',
           transition: 'opacity 200ms ease',
         }}
       >
@@ -56,7 +56,7 @@ function CheckItem({ field, checked, source }) {
         style={{
           fontSize: '0.8125rem',
           fontWeight: 500,
-          color: checked ? '#333' : '#999',
+          color: checked ? 'var(--text-primary)' : 'var(--text-tertiary)',
           flex: 1,
           minWidth: 0,
           lineHeight: 1.4,
@@ -71,7 +71,7 @@ function CheckItem({ field, checked, source }) {
         <span
           style={{
             fontSize: '0.6875rem',
-            color: '#888',
+            color: 'var(--text-tertiary)',
             fontWeight: 400,
             whiteSpace: 'nowrap',
             flexShrink: 0,
@@ -116,9 +116,11 @@ export default function DataChecklist({
   return (
     <div
       style={{
-        backgroundColor: '#F8F8F8',
-        borderRadius: '8px',
-        padding: '20px 24px',
+        backgroundColor: 'var(--color-white)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '24px 28px',
+        boxShadow: 'var(--shadow-sm)',
         height: 'fit-content',
         position: 'sticky',
         top: '2rem',
@@ -139,7 +141,7 @@ export default function DataChecklist({
               style={{
                 paddingBottom: '6px',
                 marginBottom: '4px',
-                borderBottom: '1px solid #EAEAEA',
+                borderBottom: '1px solid var(--border)',
                 backgroundColor: isHighlighted
                   ? 'rgba(0,0,0,0.03)'
                   : 'transparent',
@@ -153,6 +155,7 @@ export default function DataChecklist({
                   fontSize: '0.875rem',
                   fontWeight: 700,
                   color: 'var(--color-gray-900)',
+                  letterSpacing: '0.5px',
                 }}
               >
                 {cat.label}

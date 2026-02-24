@@ -138,8 +138,8 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
 
   const getBorderColor = () => {
     if (connected) return '#34C759';
-    if (hovered && isInteractive) return '#333';
-    return '#E8E8E8';
+    if (hovered && isInteractive) return 'var(--text-primary)';
+    return 'var(--border)';
   };
 
   const getBgColor = () => {
@@ -160,7 +160,7 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
           width: '56px',
           height: '56px',
           padding: 0,
-          borderRadius: '6px',
+          borderRadius: 'var(--radius-md)',
           border: `1px solid ${getBorderColor()}`,
           backgroundColor: getBgColor(),
           cursor: isInteractive ? 'pointer' : 'default',
@@ -219,7 +219,7 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
         style={{
           fontSize: '0.625rem',
           fontWeight: 500,
-          color: connected ? '#34C759' : '#888',
+          color: connected ? 'var(--color-green-600)' : 'var(--text-tertiary)',
           textAlign: 'center',
           lineHeight: 1,
           whiteSpace: 'nowrap',
