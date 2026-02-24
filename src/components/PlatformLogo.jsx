@@ -131,9 +131,10 @@ function PlatformIcon({ name, color, size }) {
   }
 }
 
-export default function PlatformLogo({ name, connected, connecting, onClick }) {
+export default function PlatformLogo({ name, connected, connecting, disabled, onClick }) {
   const [hovered, setHovered] = useState(false);
   const color = PLATFORM_COLORS[name] || '#666';
+  const isInteractive = !connected && !connecting && !disabled;
 
   return (
     <button
@@ -144,24 +145,27 @@ export default function PlatformLogo({ name, connected, connecting, onClick }) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '0.375rem',
-        padding: '0.625rem',
-        borderRadius: 'var(--radius-md)',
-        border: '1px solid var(--color-gray-200)',
-        backgroundColor: hovered && !connected && !connecting
-          ? 'var(--color-gray-50)'
-          : 'var(--color-white)',
-        cursor: connected || connecting ? 'default' : 'pointer',
+        justifyContent: 'center',
+        gap: '6px',
+        width: '56px',
+        height: '56px',
+        padding: 0,
+        borderRadius: '8px',
+        border: 'none',
+        backgroundColor: hovered && isInteractive
+          ? 'var(--color-gray-100)'
+          : 'transparent',
+        cursor: isInteractive ? 'pointer' : 'default',
         transition: 'all var(--transition-base)',
-        minWidth: '72px',
         position: 'relative',
-        transform: hovered && !connected && !connecting ? 'scale(1.03)' : 'scale(1)',
+        transform: hovered && isInteractive ? 'scale(1.03)' : 'scale(1)',
+        opacity: disabled && !connected ? 0.5 : 1,
       }}
     >
       <div
         style={{
-          width: '36px',
-          height: '36px',
+          width: '28px',
+          height: '28px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -171,8 +175,8 @@ export default function PlatformLogo({ name, connected, connecting, onClick }) {
         {connecting ? (
           <div
             style={{
-              width: '24px',
-              height: '24px',
+              width: '22px',
+              height: '22px',
               border: '2.5px solid var(--color-gray-200)',
               borderTopColor: 'var(--color-gray-700)',
               borderRadius: '50%',
@@ -186,10 +190,10 @@ export default function PlatformLogo({ name, connected, connecting, onClick }) {
           <div
             style={{
               position: 'absolute',
-              bottom: '-2px',
-              right: '-2px',
-              width: '16px',
-              height: '16px',
+              bottom: '-3px',
+              right: '-3px',
+              width: '14px',
+              height: '14px',
               borderRadius: '50%',
               backgroundColor: '#2D8A4E',
               display: 'flex',
@@ -198,7 +202,7 @@ export default function PlatformLogo({ name, connected, connecting, onClick }) {
               border: '2px solid var(--color-white)',
             }}
           >
-            <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+            <svg width="7" height="7" viewBox="0 0 8 8" fill="none">
               <path
                 d="M1.5 4l1.75 1.75 3.25-3.25"
                 stroke="white"
@@ -212,11 +216,15 @@ export default function PlatformLogo({ name, connected, connecting, onClick }) {
       </div>
       <span
         style={{
-          fontSize: '0.6875rem',
+          fontSize: '0.625rem',
           fontWeight: 500,
-          color: 'var(--color-gray-700)',
+          color: 'var(--color-gray-500)',
           textAlign: 'center',
-          lineHeight: 1.2,
+          lineHeight: 1,
+          maxWidth: '56px',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
         }}
       >
         {name}
