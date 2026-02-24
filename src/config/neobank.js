@@ -31,18 +31,18 @@ const neobank = {
       status: 'Required',
       fieldsProvided: [
         {
-          category: 'Customer Data',
+          category: 'WHAT WE NEED',
           fields: [
-            { framework: 'Account ID', business: 'Unique customer identifier' },
-            {
-              framework: 'Opt-in Status',
-              business: 'Contact permissions per channel',
-            },
-            {
-              framework: 'Contact Channel',
-              business: 'Email, phone, push, or WhatsApp',
-            },
-            { framework: 'Customer Name', business: 'First + last name' },
+            { framework: 'Unique customer ID', business: '' },
+            { framework: 'Customer name', business: '' },
+            { framework: 'Contact info', business: 'opt-in, email, phone, or push' },
+          ],
+        },
+        {
+          category: 'WHAT HELPS',
+          fields: [
+            { framework: 'Customer address', business: '' },
+            { framework: 'Customer since', business: '' },
           ],
         },
       ],
@@ -57,35 +57,9 @@ const neobank = {
       status: 'Required',
       fieldsProvided: [
         {
-          category: 'Transaction Data',
+          category: 'WHAT WE NEED',
           fields: [
-            { framework: 'Last Transaction Date', business: 'Most recent activity' },
-            {
-              framework: 'Transaction Count',
-              business: 'Number of transactions, trailing 90 days',
-            },
-            {
-              framework: 'Transaction Volume',
-              business: 'Total amount, trailing 90 days',
-            },
-            {
-              framework: 'Transaction Categories',
-              business: 'P2P, card purchase, deposit, withdrawal',
-            },
-          ],
-        },
-        {
-          category: 'User Activity',
-          fields: [
-            {
-              framework: 'Activity Types',
-              business: 'Sign-up, KYC, first transaction, card usage',
-            },
-            { framework: 'Timestamps', business: 'When each activity occurred' },
-            {
-              framework: 'Activity Sequence',
-              business: 'Order of actions per user',
-            },
+            { framework: 'Transactions', business: 'date, amount, product' },
           ],
         },
       ],
@@ -100,26 +74,17 @@ const neobank = {
       status: 'Optional — Enrichment',
       fieldsProvided: [
         {
-          category: 'Support & Satisfaction',
+          category: 'WHAT HELPS',
           fields: [
-            { framework: 'NPS / CSAT Score', business: '' },
-            {
-              framework: 'Support Tickets',
-              business: 'Total count',
-            },
-            {
-              framework: 'Last Support Contact',
-              business: 'Most recent interaction',
-            },
+            { framework: 'Customer ratings', business: '' },
+            { framework: 'Support tickets', business: '' },
           ],
         },
       ],
     },
-    profileDataNote:
-      'Not detected — strategies will use behavioral data only.',
-    requiredFieldCount: 11,
+    requiredFieldCount: 4,
     bottomBarSummary:
-      '2 sources connected · 847,000 customer records · 11 of 11 required fields detected',
+      '2 sources connected · 847,000 customer records · 4 of 4 required fields detected',
   },
 
   // Screen 3 — Journey & Conversion

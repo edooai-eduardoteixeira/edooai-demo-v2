@@ -17,7 +17,6 @@ export default function DataConnectionPage({ config, onNext }) {
   const [group2Platform, setGroup2Platform] = useState(null);
   const [group3Platform, setGroup3Platform] = useState(null);
   const [checkedFields, setCheckedFields] = useState({});
-  const [showProfileNote, setShowProfileNote] = useState(false);
   const [highlightedCategories, setHighlightedCategories] = useState([]);
 
   const highlightCategories = useCallback((fieldsProvided) => {
@@ -84,9 +83,7 @@ export default function DataConnectionPage({ config, onNext }) {
         checkFieldsSequentially(
           connection.group2.fieldsProvided,
           selectedPlatform,
-          () => {
-            setShowProfileNote(true);
-          }
+          null
         );
       }, 1500);
     },
@@ -117,7 +114,7 @@ export default function DataConnectionPage({ config, onNext }) {
   const connectedCount = [group1Connected, group2Connected, group3Connected].filter(Boolean).length;
 
   // Count checked required fields
-  const requiredCategories = ['Customer Data', 'Transaction Data', 'User Activity'];
+  const requiredCategories = ['WHAT WE NEED'];
   const checkedRequiredCount = Object.keys(checkedFields).filter((key) => {
     const cat = key.split(':')[0];
     return requiredCategories.includes(cat);
@@ -213,7 +210,6 @@ export default function DataConnectionPage({ config, onNext }) {
           <DataChecklist
             config={config}
             checkedFields={checkedFields}
-            profileNote={showProfileNote ? connection.profileDataNote : null}
             highlightedCategories={highlightedCategories}
           />
         </div>
