@@ -19,13 +19,14 @@ export default function Badge({ children, variant = 'default' }) {
       color: 'var(--color-white)',
     },
     quickwin: {
-      backgroundColor: '#f0f0f0',
-      color: 'var(--color-gray-800)',
-      border: '1px solid var(--color-gray-300)',
+      backgroundColor: '#F8F8F8',
+      color: '#333',
+      border: '1px solid #333',
     },
     lookalike: {
-      backgroundColor: 'var(--color-gray-900)',
-      color: 'var(--color-white)',
+      backgroundColor: '#F8F8F8',
+      color: '#333',
+      border: '1px solid #333',
     },
   };
 
@@ -34,10 +35,10 @@ export default function Badge({ children, variant = 'default' }) {
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        padding: '0.25rem 0.75rem',
-        fontSize: 'var(--font-size-xs)',
-        fontWeight: 500,
-        borderRadius: 'var(--radius-full)',
+        padding: '4px 12px',
+        fontSize: '11px',
+        fontWeight: 600,
+        borderRadius: '16px',
         whiteSpace: 'nowrap',
         ...variants[variant],
       }}
