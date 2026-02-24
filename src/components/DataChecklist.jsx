@@ -29,26 +29,25 @@ function CheckItem({ field, checked, source }) {
         gap: '0.5rem',
         padding: '10px 12px',
         borderRadius: 'var(--radius-sm)',
-        backgroundColor: checked ? 'var(--color-white)' : 'transparent',
+        backgroundColor: 'transparent',
         cursor: 'default',
         userSelect: 'none',
         marginTop: '3px',
         transition: 'background-color 200ms ease',
       }}
     >
-      {/* Green checkmark — only visible when checked */}
+      {/* Status indicator: ○ waiting → ✓ connected */}
       <span
         style={{
           width: '14px',
           flexShrink: 0,
           fontSize: '0.75rem',
           lineHeight: 1,
-          opacity: checked && checkVisible ? 1 : 0,
-          color: 'var(--color-green-600)',
-          transition: 'opacity 200ms ease',
+          color: checked && checkVisible ? 'var(--color-green-600)' : 'var(--text-tertiary)',
+          transition: 'color 200ms ease',
         }}
       >
-        ✓
+        {checked && checkVisible ? '✓' : '○'}
       </span>
 
       {/* Field label — single line, single style */}
