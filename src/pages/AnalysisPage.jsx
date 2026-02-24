@@ -1,11 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Logo from '../components/Logo.jsx';
-import CTAButton from '../components/CTAButton.jsx';
 import JourneyPipeline from '../components/JourneyPipeline.jsx';
-import Badge from '../components/Badge.jsx';
 
 export default function AnalysisPage({ config, onNext }) {
-  const { journeyInference, streamingText } = config;
+  const { journeyInference, conversionAnalysis } = config;
 
   const [phase, setPhase] = useState(1);
   const [lines, setLines] = useState([]);
@@ -15,83 +13,147 @@ export default function AnalysisPage({ config, onNext }) {
   const [confirmed, setConfirmed] = useState(false);
   const [showViewStrategy, setShowViewStrategy] = useState(false);
   const [annotations, setAnnotations] = useState({});
-  const [conversionLabels, setConversionLabels] = useState({});
+  const [conversionAnnotation, setConversionAnnotation] = useState(null);
+  const [showInsightCards, setShowInsightCards] = useState(false);
+  const [showCard1, setShowCard1] = useState(false);
+  const [showCard2, setShowCard2] = useState(false);
+  const [phase2Lines, setPhase2Lines] = useState([]);
+  const [phase2CurrentText, setPhase2CurrentText] = useState('');
+  const [transitioning, setTransitioning] = useState(false);
+  const [fadeOutPhase1, setFadeOutPhase1] = useState(false);
+  const [connectorVisible, setConnectorVisible] = useState([false, false, false]);
   const cancelRef = useRef(false);
-  const bottomRef = useRef(null);
   const hasStartedRef = useRef(false);
 
-  const scrollToBottom = useCallback(() => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }
-  }, []);
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   const streamText = useCallback(
-    async (text, duration) => {
+    async (text, duration, setTextFn, setLinesFn) => {
       const charDelay = duration / text.length;
       let built = '';
       for (let i = 0; i < text.length; i++) {
         if (cancelRef.current) return;
         built += text[i];
-        setCurrentText(built);
-        if (i % 3 === 0) scrollToBottom();
+        setTextFn(built);
         await new Promise((r) => setTimeout(r, charDelay));
       }
-      setLines((prev) => [...prev, text]);
-      setCurrentText('');
-      scrollToBottom();
+      setLinesFn((prev) => [...prev, text]);
+      setTextFn('');
     },
-    [scrollToBottom]
+    []
   );
 
   const runPhase1 = useCallback(async () => {
-    for (const item of streamingText.phase1) {
-      if (cancelRef.current) return;
+    // Line 1
+    await streamText(
+      'Scanning 847,000 customer records...',
+      1500,
+      setCurrentText,
+      setLines
+    );
+    await sleep(1500);
+    if (cancelRef.current) return;
 
-      if (item.type === 'pause') {
-        await new Promise((r) => setTimeout(r, item.duration));
-      } else if (item.type === 'action' && item.action === 'animatePipeline') {
-        // Animate pipeline stages in one at a time
-        for (let i = 1; i <= journeyInference.stages.length; i++) {
-          setPipelineVisible(i);
-          await new Promise((r) => setTimeout(r, 500));
-        }
-      } else if (item.type === 'text') {
-        await streamText(item.text, item.duration);
+    // Line 2
+    await streamText(
+      'Mapping how your users move from sign-up to active engagement...',
+      1500,
+      setCurrentText,
+      setLines
+    );
+    await sleep(2000);
+    if (cancelRef.current) return;
+
+    // Line 3
+    await streamText(
+      'Found a clear pattern. 82% of your customers follow this journey:',
+      1500,
+      setCurrentText,
+      setLines
+    );
+    await sleep(1000);
+    if (cancelRef.current) return;
+
+    // Animate pipeline stages one by one with connectors
+    for (let i = 1; i <= journeyInference.stages.length; i++) {
+      if (cancelRef.current) return;
+      setPipelineVisible(i);
+      await sleep(400); // card animation time
+      if (i < journeyInference.stages.length) {
+        // Show connector after card
+        await sleep(100);
+        setConnectorVisible((prev) => {
+          const next = [...prev];
+          next[i - 1] = true;
+          return next;
+        });
+        await sleep(200); // connector fade in
+        await sleep(500); // pause before next card
       }
     }
+
+    await sleep(500);
+    if (cancelRef.current) return;
+
+    // Line 4 (after pipeline fully visible)
+    await streamText(
+      '4 key stages from sign-up to repeat usage. This is how your users activate.',
+      1500,
+      setCurrentText,
+      setLines
+    );
+
+    await sleep(500);
+    if (cancelRef.current) return;
     setShowConfirm(true);
-  }, [streamingText, journeyInference, streamText]);
+  }, [journeyInference, streamText]);
 
   const runPhase2 = useCallback(async () => {
-    setShowConfirm(false);
+    // Phase 2 Line 1
+    await streamText(
+      'Calculating conversion between referral milestones...',
+      1500,
+      setPhase2CurrentText,
+      setPhase2Lines
+    );
+    await sleep(1500);
+    if (cancelRef.current) return;
 
-    for (const item of streamingText.phase2) {
-      if (cancelRef.current) return;
+    // Phase 2 Line 2
+    await streamText(
+      'Based on the last 90 days of your data:',
+      1000,
+      setPhase2CurrentText,
+      setPhase2Lines
+    );
+    await sleep(1000);
+    if (cancelRef.current) return;
 
-      if (item.type === 'pause') {
-        await new Promise((r) => setTimeout(r, item.duration));
-      } else if (
-        item.type === 'action' &&
-        item.action === 'annotateConversion'
-      ) {
-        setAnnotations({
-          0: { text: 'Quick Win — redemption triggers here', variant: 'quickwin' },
-          2: {
-            text: 'Look-a-Like — redemption triggers here',
-            variant: 'lookalike',
-          },
-        });
-        setConversionLabels({
-          1: '34% convert within 90 days',
-        });
-        await new Promise((r) => setTimeout(r, 500));
-      } else if (item.type === 'text') {
-        await streamText(item.text, item.duration);
-      }
-    }
+    // Annotations appear on pipeline
+    setAnnotations({
+      0: { text: 'Quick Win — redemption triggers here', variant: 'quickwin' },
+      2: { text: 'Look-a-Like — redemption triggers here', variant: 'lookalike' },
+    });
+    setConversionAnnotation({
+      rate: '34%',
+      label: 'convert within 90 days',
+    });
+
+    await sleep(500);
+    if (cancelRef.current) return;
+
+    // Insight cards appear staggered
+    setShowInsightCards(true);
+    setShowCard1(true);
+    await sleep(600);
+    if (cancelRef.current) return;
+    setShowCard2(true);
+    await sleep(600);
+    if (cancelRef.current) return;
+
+    // View Strategy CTA
     setShowViewStrategy(true);
-  }, [streamingText, streamText]);
+  }, [streamText]);
 
   useEffect(() => {
     if (hasStartedRef.current) return;
@@ -103,138 +165,459 @@ export default function AnalysisPage({ config, onNext }) {
     };
   }, []);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setConfirmed(true);
+    setShowConfirm(false);
+
+    // Fade out phase 1 content
+    setFadeOutPhase1(true);
+    await sleep(400);
+
+    setTransitioning(true);
     setPhase(2);
+
+    // Small delay for DOM update
+    await sleep(100);
     runPhase2();
   };
 
-  const handleRename = (index, newName) => {
-    // Rename is a real interaction but doesn't affect downstream data
-  };
+  const { rewardPricingExample } = conversionAnalysis;
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: '#FAFAFA',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      }}
+    >
       {/* Header */}
       <header
         style={{
           padding: '1.5rem 3rem',
-          borderBottom: '1px solid var(--color-gray-100)',
+          borderBottom: '1px solid #E5E5E5',
+          backgroundColor: '#FFFFFF',
         }}
       >
         <Logo />
       </header>
 
-      {/* Main Content */}
+      {/* Main Content — flexbox column layout */}
       <main
         style={{
           flex: 1,
-          padding: '3rem 3rem',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '0 3rem',
           maxWidth: '960px',
           margin: '0 auto',
           width: '100%',
         }}
       >
-        <h2
+        {/* Page Heading — fixed height */}
+        <div style={{ height: '60px', display: 'flex', alignItems: 'center' }}>
+          <h2
+            style={{
+              fontSize: '28px',
+              fontWeight: 700,
+              color: '#111',
+              margin: 0,
+            }}
+          >
+            AI Analysis
+          </h2>
+        </div>
+
+        {/* Streaming Text Area — fixed height, does not grow */}
+        <div
           style={{
-            fontSize: 'var(--font-size-2xl)',
-            fontWeight: 700,
-            marginBottom: '2rem',
+            maxHeight: phase === 1 ? '100px' : '60px',
+            minHeight: phase === 1 ? '80px' : '50px',
+            overflow: 'hidden',
+            position: 'relative',
+            transition: 'max-height 0.5s ease, min-height 0.5s ease',
           }}
         >
-          AI Analysis
-        </h2>
+          {phase === 1 && (
+            <div
+              style={{
+                opacity: fadeOutPhase1 ? 0 : 1,
+                transition: 'opacity 0.4s ease',
+              }}
+            >
+              {lines.map((line, i) => (
+                <p
+                  key={i}
+                  style={{
+                    fontSize: '14px',
+                    color: '#666',
+                    marginBottom: '4px',
+                    lineHeight: 1.6,
+                    margin: 0,
+                    padding: 0,
+                  }}
+                >
+                  {line}
+                </p>
+              ))}
+              {currentText && (
+                <p
+                  style={{
+                    fontSize: '14px',
+                    color: '#666',
+                    lineHeight: 1.6,
+                    margin: 0,
+                    padding: 0,
+                  }}
+                >
+                  {currentText}
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: '2px',
+                      height: '1em',
+                      backgroundColor: '#666',
+                      marginLeft: '2px',
+                      animation: 'blink 1s step-end infinite',
+                      verticalAlign: 'text-bottom',
+                    }}
+                  />
+                </p>
+              )}
+            </div>
+          )}
 
-        {/* Streaming Lines */}
-        <div style={{ marginBottom: '2rem' }}>
-          {lines.map((line, i) => (
-            <p
-              key={i}
+          {phase === 2 && (
+            <div
               style={{
-                fontSize: 'var(--font-size-base)',
-                color: 'var(--color-gray-700)',
-                marginBottom: '0.75rem',
-                lineHeight: 1.6,
+                opacity: 1,
+                transition: 'opacity 0.4s ease',
               }}
             >
-              {line}
-            </p>
-          ))}
-          {currentText && (
-            <p
-              style={{
-                fontSize: 'var(--font-size-base)',
-                color: 'var(--color-gray-700)',
-                marginBottom: '0.75rem',
-                lineHeight: 1.6,
-              }}
-            >
-              {currentText}
-              <span
-                style={{
-                  display: 'inline-block',
-                  width: '2px',
-                  height: '1em',
-                  backgroundColor: 'var(--color-gray-700)',
-                  marginLeft: '2px',
-                  animation: 'blink 1s step-end infinite',
-                  verticalAlign: 'text-bottom',
-                }}
-              />
-            </p>
+              {phase2Lines.map((line, i) => (
+                <p
+                  key={i}
+                  style={{
+                    fontSize: '14px',
+                    color: '#666',
+                    lineHeight: 1.6,
+                    margin: 0,
+                    padding: 0,
+                    marginBottom: '4px',
+                  }}
+                >
+                  {line}
+                </p>
+              ))}
+              {phase2CurrentText && (
+                <p
+                  style={{
+                    fontSize: '14px',
+                    color: '#666',
+                    lineHeight: 1.6,
+                    margin: 0,
+                    padding: 0,
+                  }}
+                >
+                  {phase2CurrentText}
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: '2px',
+                      height: '1em',
+                      backgroundColor: '#666',
+                      marginLeft: '2px',
+                      animation: 'blink 1s step-end infinite',
+                      verticalAlign: 'text-bottom',
+                    }}
+                  />
+                </p>
+              )}
+            </div>
           )}
         </div>
 
-        {/* Journey Pipeline */}
-        {pipelineVisible > 0 && (
-          <div style={{ marginBottom: '2rem' }}>
+        {/* Pipeline Area — hero element, flex: 1 to fill available space */}
+        <div
+          style={{
+            flex: 1,
+            minHeight: phase === 1 ? '40vh' : '35vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'min-height 0.5s ease',
+            paddingTop: phase === 2 && Object.keys(annotations).length > 0 ? '50px' : '0',
+          }}
+        >
+          {pipelineVisible > 0 && (
             <JourneyPipeline
               stages={journeyInference.stages}
               visibleCount={pipelineVisible}
               annotations={annotations}
-              conversionLabels={conversionLabels}
-              editable={!confirmed}
-              onRename={handleRename}
+              conversionAnnotation={conversionAnnotation}
+              animateFill={true}
             />
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Confirm Journey Button */}
-        {showConfirm && !confirmed && (
+        {/* Phase 1: Confirm Journey area */}
+        {phase === 1 && showConfirm && !confirmed && (
           <div
             style={{
-              marginTop: '2rem',
-              padding: '1.5rem',
-              backgroundColor: 'var(--color-gray-50)',
-              borderRadius: 'var(--radius-lg)',
-              textAlign: 'center',
+              height: '80px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '12px',
+              opacity: fadeOutPhase1 ? 0 : 1,
+              transition: 'opacity 0.3s ease',
             }}
           >
             <p
               style={{
-                fontSize: 'var(--font-size-base)',
-                color: 'var(--color-gray-700)',
-                marginBottom: '1rem',
+                fontSize: '16px',
+                color: '#666',
+                margin: 0,
               }}
             >
               Does this match your user journey?
             </p>
-            <CTAButton onClick={handleConfirm}>Confirm Journey</CTAButton>
+            <button
+              onClick={handleConfirm}
+              style={{
+                background: '#111',
+                color: '#FFFFFF',
+                borderRadius: '8px',
+                padding: '14px 32px',
+                fontSize: '16px',
+                fontWeight: 600,
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background 0.2s ease',
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.background = '#333')}
+              onMouseOut={(e) => (e.currentTarget.style.background = '#111')}
+            >
+              Confirm Journey
+            </button>
           </div>
         )}
 
-        {/* View Strategy Button */}
-        {showViewStrategy && (
-          <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-            <CTAButton onClick={onNext}>View Strategy Proposal</CTAButton>
+        {/* Phase 2: Insight Cards */}
+        {phase === 2 && showInsightCards && (
+          <div
+            style={{
+              minHeight: '200px',
+              display: 'flex',
+              gap: '24px',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              marginTop: '16px',
+            }}
+          >
+            {/* Card 1 — Conversion Rate */}
+            <div
+              style={{
+                width: 'calc(50% - 12px)',
+                minWidth: '280px',
+                minHeight: '160px',
+                backgroundColor: '#FFFFFF',
+                border: '1px solid #E5E5E5',
+                borderRadius: '8px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
+                padding: '24px',
+                textAlign: 'center',
+                opacity: showCard1 ? 1 : 0,
+                transform: showCard1 ? 'translateY(0)' : 'translateY(20px)',
+                transition: 'opacity 0.4s ease, transform 0.4s ease',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: '#999',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                  marginBottom: '12px',
+                }}
+              >
+                SIGN-UP → FIRST TRANSACTION
+              </div>
+              <div
+                style={{
+                  fontSize: '42px',
+                  fontWeight: 700,
+                  color: '#111',
+                  lineHeight: 1.1,
+                }}
+              >
+                34%
+              </div>
+              <div
+                style={{
+                  fontSize: '15px',
+                  color: '#666',
+                  marginTop: '4px',
+                  marginBottom: '12px',
+                }}
+              >
+                convert within 90 days
+              </div>
+              <div
+                style={{
+                  fontSize: '13px',
+                  color: '#888',
+                  lineHeight: 1.5,
+                }}
+              >
+                For every 100 referred users who sign up,
+                <br />
+                ~34 complete their first transaction.
+              </div>
+            </div>
+
+            {/* Card 2 — Reward Pricing */}
+            <div
+              style={{
+                width: 'calc(50% - 12px)',
+                minWidth: '280px',
+                minHeight: '160px',
+                backgroundColor: '#FFFFFF',
+                border: '1px solid #E5E5E5',
+                borderRadius: '8px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
+                padding: '24px',
+                textAlign: 'center',
+                opacity: showCard2 ? 1 : 0,
+                transform: showCard2 ? 'translateY(0)' : 'translateY(20px)',
+                transition: 'opacity 0.4s ease, transform 0.4s ease',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: '#999',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                  marginBottom: '12px',
+                }}
+              >
+                REWARD PRICING
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  justifyContent: 'center',
+                  gap: '12px',
+                }}
+              >
+                <div style={{ textAlign: 'center' }}>
+                  <div
+                    style={{
+                      fontSize: '32px',
+                      fontWeight: 700,
+                      color: '#111',
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    ${rewardPricingExample.signupReward}
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#666', marginTop: '2px' }}>
+                    sign-up reward
+                  </div>
+                </div>
+                <span style={{ fontSize: '24px', color: '#999', lineHeight: 1 }}>→</span>
+                <div style={{ textAlign: 'center' }}>
+                  <div
+                    style={{
+                      fontSize: '32px',
+                      fontWeight: 700,
+                      color: '#111',
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    ~${rewardPricingExample.effectiveCostPerTransaction}
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#666', marginTop: '2px' }}>
+                    per active user
+                  </div>
+                </div>
+              </div>
+              <div
+                style={{
+                  fontSize: '13px',
+                  color: '#888',
+                  lineHeight: 1.5,
+                  marginTop: '12px',
+                }}
+              >
+                A $40 reward for sign-up implies ~$118
+                <br />
+                effective cost per first transaction
+                <br />
+                ($40 ÷ 0.34). This validates the
+                <br />
+                $100–$200 range for deeper
+                <br />
+                engagement goals.
+              </div>
+            </div>
           </div>
         )}
-        <div ref={bottomRef} />
+
+        {/* Phase 2: View Strategy Proposal CTA */}
+        {phase === 2 && showViewStrategy && (
+          <div
+            style={{
+              height: '80px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: '24px',
+              opacity: showViewStrategy ? 1 : 0,
+              animation: 'fadeIn 0.3s ease forwards',
+            }}
+          >
+            <button
+              onClick={onNext}
+              style={{
+                background: '#111',
+                color: '#FFFFFF',
+                borderRadius: '8px',
+                padding: '14px 32px',
+                fontSize: '16px',
+                fontWeight: 600,
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background 0.2s ease',
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.background = '#333')}
+              onMouseOut={(e) => (e.currentTarget.style.background = '#111')}
+            >
+              View Strategy Proposal
+            </button>
+          </div>
+        )}
+
+        {/* Spacer for phase 1 when confirm is not yet shown */}
+        {phase === 1 && !showConfirm && (
+          <div style={{ height: '80px' }} />
+        )}
       </main>
 
       <style>{`
         @keyframes blink {
           50% { opacity: 0; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
       `}</style>
     </div>
