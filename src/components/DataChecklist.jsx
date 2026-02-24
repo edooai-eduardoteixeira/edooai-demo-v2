@@ -25,38 +25,34 @@ function CheckItem({ field, checked, source }) {
       style={{
         display: 'flex',
         alignItems: 'baseline',
-        minHeight: '28px',
+        height: '36px',
         gap: '0.4rem',
-        padding: '6px 8px',
-        borderRadius: '4px',
-        backgroundColor: checked ? '#fff' : '#F0F1F3',
+        padding: '0 0',
         cursor: 'default',
         userSelect: 'none',
-        marginTop: '2px',
-        transition: 'background-color 200ms ease',
       }}
     >
       {/* Green checkmark — only visible when checked */}
       <span
         style={{
-          width: '14px',
+          width: '16px',
           flexShrink: 0,
-          fontSize: '0.75rem',
+          fontSize: '13px',
           lineHeight: 1,
           opacity: checked && checkVisible ? 1 : 0,
-          color: '#2D8A4E',
+          color: '#34C759',
           transition: 'opacity 200ms ease',
         }}
       >
         ✓
       </span>
 
-      {/* Field label — single line, single style */}
+      {/* Field label */}
       <span
         style={{
-          fontSize: '0.8125rem',
-          fontWeight: 500,
-          color: checked ? '#333' : '#999',
+          fontSize: '14px',
+          fontWeight: 400,
+          color: checked ? '#333' : '#BBB',
           flex: 1,
           minWidth: 0,
           lineHeight: 1.4,
@@ -70,8 +66,8 @@ function CheckItem({ field, checked, source }) {
       {source && (
         <span
           style={{
-            fontSize: '0.6875rem',
-            color: '#888',
+            fontSize: '12px',
+            color: '#999',
             fontWeight: 400,
             whiteSpace: 'nowrap',
             flexShrink: 0,
@@ -116,9 +112,11 @@ export default function DataChecklist({
   return (
     <div
       style={{
-        backgroundColor: '#F8F8F8',
-        borderRadius: '8px',
-        padding: '20px 24px',
+        backgroundColor: '#fff',
+        border: '1px solid #E8E8E8',
+        borderRadius: '10px',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+        padding: '22px 24px',
         height: 'fit-content',
         position: 'sticky',
         top: '2rem',
@@ -131,28 +129,28 @@ export default function DataChecklist({
           <div
             key={ci}
             style={{
-              marginBottom: ci < categories.length - 1 ? '20px' : 0,
+              marginTop: ci > 0 ? '24px' : 0,
             }}
           >
-            {/* Category header */}
+            {/* Category header — v1 section label */}
             <div
               style={{
-                paddingBottom: '6px',
-                marginBottom: '4px',
-                borderBottom: '1px solid #EAEAEA',
+                marginBottom: '12px',
                 backgroundColor: isHighlighted
                   ? 'rgba(0,0,0,0.03)'
                   : 'transparent',
                 borderRadius: '4px',
-                padding: isHighlighted ? '2px 6px 6px 6px' : '0 0 6px 0',
+                padding: isHighlighted ? '2px 6px' : '0',
                 transition: 'background-color 300ms ease',
               }}
             >
               <span
                 style={{
-                  fontSize: '0.875rem',
+                  fontSize: '12px',
                   fontWeight: 700,
-                  color: 'var(--color-gray-900)',
+                  color: '#888',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1.2px',
                 }}
               >
                 {cat.label}
@@ -160,18 +158,20 @@ export default function DataChecklist({
             </div>
 
             {/* Field rows */}
-            {cat.fields.map((field, fi) => {
-              const key = `${cat.label}:${field.framework}`;
-              const checked = checkedFields[key];
-              return (
-                <CheckItem
-                  key={fi}
-                  field={field}
-                  checked={!!checked}
-                  source={checked || null}
-                />
-              );
-            })}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              {cat.fields.map((field, fi) => {
+                const key = `${cat.label}:${field.framework}`;
+                const checked = checkedFields[key];
+                return (
+                  <CheckItem
+                    key={fi}
+                    field={field}
+                    checked={!!checked}
+                    source={checked || null}
+                  />
+                );
+              })}
+            </div>
           </div>
         );
       })}
