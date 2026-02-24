@@ -31,18 +31,18 @@ const neobank = {
       status: 'Required',
       fieldsProvided: [
         {
-          category: 'WHAT WE NEED',
+          category: 'REQUIRED DATA',
           fields: [
-            { framework: 'Unique customer ID', business: '' },
-            { framework: 'Customer name', business: '' },
-            { framework: 'Contact info', business: 'opt-in, email, phone, or push' },
+            { framework: 'Unique customer ID' },
+            { framework: 'Customer name' },
+            { framework: 'Contact information (opt-in for e-mail, phone, or push notification)' },
           ],
         },
         {
-          category: 'WHAT HELPS',
+          category: 'OPTIONAL DATA',
           fields: [
-            { framework: 'Customer address', business: '' },
-            { framework: 'Customer since', business: '' },
+            { framework: 'Customer address' },
+            { framework: 'Customer since' },
           ],
         },
       ],
@@ -57,9 +57,9 @@ const neobank = {
       status: 'Required',
       fieldsProvided: [
         {
-          category: 'WHAT WE NEED',
+          category: 'REQUIRED DATA',
           fields: [
-            { framework: 'Transactions', business: 'date, amount, product' },
+            { framework: 'Transactions (date, SKU, amount)' },
           ],
         },
       ],
@@ -74,10 +74,10 @@ const neobank = {
       status: 'Optional — Enrichment',
       fieldsProvided: [
         {
-          category: 'WHAT HELPS',
+          category: 'OPTIONAL DATA',
           fields: [
-            { framework: 'Customer ratings', business: '' },
-            { framework: 'Support tickets', business: '' },
+            { framework: 'Customer ratings' },
+            { framework: 'Support tickets' },
           ],
         },
       ],

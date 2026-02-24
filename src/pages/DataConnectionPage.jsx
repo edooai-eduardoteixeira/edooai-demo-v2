@@ -114,7 +114,7 @@ export default function DataConnectionPage({ config, onNext }) {
   const connectedCount = [group1Connected, group2Connected, group3Connected].filter(Boolean).length;
 
   // Count checked required fields
-  const requiredCategories = ['WHAT WE NEED'];
+  const requiredCategories = ['REQUIRED DATA'];
   const checkedRequiredCount = Object.keys(checkedFields).filter((key) => {
     const cat = key.split(':')[0];
     return requiredCategories.includes(cat);
