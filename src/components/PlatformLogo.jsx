@@ -136,48 +136,47 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
   const color = PLATFORM_COLORS[name] || '#666';
   const isInteractive = !connected && !connecting && !disabled;
 
-  const getBorderColor = () => {
-    if (connected) return '#34C759';
-    if (hovered && isInteractive) return '#333';
-    return '#E8E8E8';
-  };
-
-  const getBgColor = () => {
-    if (connected) return '#F0FFF4';
-    return '#fff';
-  };
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-      <button
-        onClick={onClick}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '6px',
+        width: '56px',
+        height: '56px',
+        padding: 0,
+        borderRadius: '8px',
+        border: 'none',
+        backgroundColor: hovered && isInteractive
+          ? 'var(--color-gray-100)'
+          : 'transparent',
+        cursor: isInteractive ? 'pointer' : 'default',
+        transition: 'all var(--transition-base)',
+        position: 'relative',
+        transform: hovered && isInteractive ? 'scale(1.03)' : 'scale(1)',
+        opacity: disabled && !connected ? 0.5 : 1,
+      }}
+    >
+      <div
         style={{
+          width: '28px',
+          height: '28px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: '56px',
-          height: '56px',
-          padding: 0,
-          borderRadius: '6px',
-          border: `1px solid ${getBorderColor()}`,
-          backgroundColor: getBgColor(),
-          cursor: isInteractive ? 'pointer' : 'default',
-          transition: 'all 150ms ease',
           position: 'relative',
-          transform: hovered && isInteractive ? 'scale(1.05)' : 'scale(1)',
-          boxShadow: hovered && isInteractive
-            ? '0 2px 8px rgba(0,0,0,0.1)'
-            : 'none',
-          opacity: disabled && !connected ? 0.45 : 1,
         }}
       >
         {connecting ? (
           <div
             style={{
-              width: '24px',
-              height: '24px',
+              width: '22px',
+              height: '22px',
               border: '2.5px solid var(--color-gray-200)',
               borderTopColor: 'var(--color-gray-700)',
               borderRadius: '50%',
@@ -196,11 +195,11 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
               width: '14px',
               height: '14px',
               borderRadius: '50%',
-              backgroundColor: '#34C759',
+              backgroundColor: '#2D8A4E',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '2px solid #fff',
+              border: '2px solid var(--color-white)',
             }}
           >
             <svg width="7" height="7" viewBox="0 0 8 8" fill="none">
@@ -214,24 +213,27 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
             </svg>
           </div>
         )}
-      </button>
+      </div>
       <span
         style={{
           fontSize: '0.625rem',
           fontWeight: 500,
-          color: connected ? '#34C759' : '#888',
+          color: 'var(--color-gray-500)',
           textAlign: 'center',
           lineHeight: 1,
+          maxWidth: '56px',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
         }}
       >
-        {connected ? 'Connected' : name}
+        {name}
       </span>
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
       `}</style>
-    </div>
+    </button>
   );
 }

@@ -22,11 +22,13 @@ const neobank = {
   // Screen 2 — Data Connection
   connection: {
     group1: {
-      label: 'CRM & Marketing',
-      dataDirection: 'Read + Send',
-      whyLine: 'To identify your customers and send them referrals',
+      label: 'Customer Data & Communications',
+      accessType: 'Read + Write',
+      description:
+        "Read to ingest customer data. Write to send referral communications through your existing channels, in your brand's voice.",
       platforms: ['Segment', 'Braze', 'Klaviyo', 'HubSpot', 'Customer.io'],
       defaultPlatform: 'Braze',
+      status: 'Required',
       fieldsProvided: [
         {
           category: 'REQUIRED DATA',
@@ -46,11 +48,13 @@ const neobank = {
       ],
     },
     group2: {
-      label: 'Data Warehouse',
-      dataDirection: 'Read only',
-      whyLine: 'To understand what they buy and how active they are',
+      label: 'Transaction & Behavioral Data',
+      accessType: 'Read Only',
+      description:
+        'Transaction history and behavioral events. If your CRM already covers these fields, this connection is optional.',
       platforms: ['Snowflake', 'BigQuery', 'Redshift', 'Databricks', 'Synapse'],
       defaultPlatform: 'Snowflake',
+      status: 'Required',
       fieldsProvided: [
         {
           category: 'REQUIRED DATA',
@@ -61,11 +65,13 @@ const neobank = {
       ],
     },
     group3: {
-      label: 'Support & Feedback',
-      dataDirection: 'Read only',
-      whyLine: "To know who\u2019s happy \u2014 and who isn\u2019t",
+      label: 'Customer Satisfaction Signals',
+      accessType: 'Read Only',
+      description:
+        'NPS scores, support tickets, reviews. Works without it, works better with it.',
       platforms: ['Zendesk', 'Intercom', 'Delighted'],
       defaultPlatform: 'Zendesk',
+      status: 'Optional — Enrichment',
       fieldsProvided: [
         {
           category: 'OPTIONAL DATA',
