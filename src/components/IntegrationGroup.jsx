@@ -1,5 +1,4 @@
 import React from 'react';
-import Badge from './Badge.jsx';
 import PlatformLogo from './PlatformLogo.jsx';
 
 export default function IntegrationGroup({
@@ -8,56 +7,91 @@ export default function IntegrationGroup({
   connecting,
   connectedPlatform,
   onConnect,
+  step,
+  isOptional,
+  totalCustomers,
 }) {
-  const statusVariant = group.status === 'Required' ? 'required' : 'optional';
-
   return (
     <div
       style={{
-        border: '1px solid var(--color-gray-200)',
+        border: isOptional ? '1px dashed #E0E0E0' : '1px solid var(--color-gray-200)',
         borderRadius: '8px',
-        padding: '24px',
+        padding: '20px 24px',
         backgroundColor: 'var(--color-white)',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
+        boxShadow: isOptional ? 'none' : '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
+        opacity: isOptional && !connected ? 0.75 : 1,
+        transition: 'opacity 300ms ease',
+        marginTop: isOptional ? '12px' : 0,
       }}
     >
+      {/* Title row: step · title + data direction tag */}
       <div
         style={{
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'baseline',
           justifyContent: 'space-between',
-          marginBottom: '0.5rem',
+          marginBottom: '4px',
         }}
       >
-        <h3
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0' }}>
+          <span
+            style={{
+              fontSize: '0.9375rem',
+              fontWeight: 400,
+              color: '#999',
+            }}
+          >
+            {step} &middot;&nbsp;
+          </span>
+          <span
+            style={{
+              fontSize: '0.9375rem',
+              fontWeight: 700,
+              color: '#333',
+            }}
+          >
+            {group.label}
+          </span>
+          {isOptional && (
+            <span
+              style={{
+                fontSize: '0.9375rem',
+                fontWeight: 400,
+                color: '#999',
+                marginLeft: '4px',
+              }}
+            >
+              (optional)
+            </span>
+          )}
+        </div>
+        <span
           style={{
-            fontSize: 'var(--font-size-base)',
-            fontWeight: 700,
-            color: 'var(--color-gray-900)',
+            fontSize: '0.75rem',
+            fontWeight: 400,
+            color: '#999',
+            whiteSpace: 'nowrap',
           }}
         >
-          {group.label}
-        </h3>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <Badge variant="default">{group.accessType}</Badge>
-          <Badge variant={connected ? 'success' : statusVariant}>
-            {connected ? '✓ Connected' : group.status}
-          </Badge>
-        </div>
+          {group.dataDirection}
+        </span>
       </div>
 
+      {/* WHY line */}
       <p
         style={{
-          fontSize: 'var(--font-size-sm)',
-          color: 'var(--color-gray-500)',
-          marginBottom: '1.25rem',
-          lineHeight: 1.5,
+          fontSize: '0.8125rem',
+          color: '#666',
+          fontWeight: 400,
+          lineHeight: 1.4,
+          marginBottom: '16px',
         }}
       >
-        {group.description}
+        {group.whyLine}
       </p>
 
-      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+      {/* Logos */}
+      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
         {group.platforms.map((platform) => (
           <PlatformLogo
             key={platform}
@@ -71,6 +105,23 @@ export default function IntegrationGroup({
           />
         ))}
       </div>
+
+      {/* Connected summary */}
+      {connected && (
+        <p
+          style={{
+            fontSize: '0.75rem',
+            fontWeight: 500,
+            color: '#34C759',
+            marginTop: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.25rem',
+          }}
+        >
+          ✓ Connected · {totalCustomers.toLocaleString()} records
+        </p>
+      )}
     </div>
   );
 }

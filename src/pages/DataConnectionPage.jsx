@@ -168,7 +168,7 @@ export default function DataConnectionPage({ config, onNext }) {
               lineHeight: 1.5,
             }}
           >
-            Edoo AI needs access to your customer data to analyze and run referral campaigns.
+            Your customer data will be used to design a personalized referral strategy.
           </p>
         </div>
 
@@ -189,6 +189,8 @@ export default function DataConnectionPage({ config, onNext }) {
               connecting={group1Connecting}
               connectedPlatform={group1Platform}
               onConnect={handleGroup1Connect}
+              step={1}
+              totalCustomers={config.totalCustomers}
             />
             <IntegrationGroup
               group={connection.group2}
@@ -196,6 +198,8 @@ export default function DataConnectionPage({ config, onNext }) {
               connecting={group2Connecting}
               connectedPlatform={group2Platform}
               onConnect={handleGroup2Connect}
+              step={2}
+              totalCustomers={config.totalCustomers}
             />
             <IntegrationGroup
               group={connection.group3}
@@ -203,6 +207,9 @@ export default function DataConnectionPage({ config, onNext }) {
               connecting={group3Connecting}
               connectedPlatform={group3Platform}
               onConnect={handleGroup3Connect}
+              step={3}
+              isOptional
+              totalCustomers={config.totalCustomers}
             />
           </div>
 
