@@ -170,7 +170,7 @@ export default function StrategyPage({ config, onNext }) {
           </div>
 
           {/* Strategy Cards */}
-          <div style={{ display: 'flex', gap: '1.5rem' }}>
+          <div className="strategy-cards" style={{ display: 'flex', gap: '1.5rem' }}>
             <StrategyCard strategy={strategies.quickWin} variant="quickwin" />
             <StrategyCard strategy={strategies.lookALike} variant="lookalike" />
           </div>
@@ -249,7 +249,7 @@ export default function StrategyPage({ config, onNext }) {
           </div>
 
           {/* Projections */}
-          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+          <div className="metric-cards" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
             <MetricCard label="Total new users acquired">
               <AnimatedNumber value={proj.newUsers} duration={300} />
             </MetricCard>
@@ -303,6 +303,7 @@ export default function StrategyPage({ config, onNext }) {
           alignItems: 'center',
           gap: '0.5rem',
         }}
+        className="bottom-bar"
       >
         <CTAButton onClick={onNext}>Launch Campaigns</CTAButton>
         <p

@@ -58,6 +58,7 @@ function SimpleLineChart({ data, phases }) {
   const phaseLines = [
     { day: 7, label: 'Seed' },
     { day: 21, label: 'Expand' },
+    { day: 25, label: 'Optimize' },
   ];
 
   return (
@@ -138,17 +139,6 @@ function SimpleLineChart({ data, phases }) {
           </g>
         );
       })}
-      <text
-        x={padding.left + ((25 - 1) / (data.length - 1)) * chartW}
-        y={padding.top - 8}
-        textAnchor="middle"
-        fill="#a3a3a3"
-        fontSize="10"
-        fontFamily="Inter, sans-serif"
-      >
-        Optimize
-      </text>
-
       {/* Area */}
       <path d={areaD} fill="rgba(0,0,0,0.04)" />
 

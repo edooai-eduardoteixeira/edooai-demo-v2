@@ -132,3 +132,41 @@ input[type="range"]::-moz-range-thumb {
   border: 2px solid var(--color-white);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
+
+/* Mobile responsive breakpoints */
+@media (max-width: 768px) {
+  header {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+
+  main {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+
+  h1 {
+    font-size: var(--font-size-3xl) !important;
+  }
+
+  h2 {
+    font-size: var(--font-size-xl) !important;
+  }
+
+  .data-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .strategy-cards {
+    flex-direction: column !important;
+  }
+
+  .metric-cards {
+    flex-direction: column !important;
+  }
+
+  .bottom-bar {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+}

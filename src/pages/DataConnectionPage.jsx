@@ -160,6 +160,7 @@ export default function DataConnectionPage({ config, onNext }) {
         </p>
 
         <div
+          className="data-grid"
           style={{
             display: 'grid',
             gridTemplateColumns: '1fr 0.65fr',
@@ -203,6 +204,7 @@ export default function DataConnectionPage({ config, onNext }) {
 
       {/* Bottom Bar */}
       <div
+        className="bottom-bar"
         style={{
           position: 'sticky',
           bottom: 0,
