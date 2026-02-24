@@ -54,12 +54,16 @@ function SimpleLineChart({ data, phases }) {
   // Area fill
   const areaD = `${pathD} L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`;
 
-  // Phase boundaries
-  const phaseLines = [
-    { day: 7, label: 'Seed' },
-    { day: 21, label: 'Expand' },
-    { day: 25, label: 'Optimize' },
-  ];
+  // Derive phase boundary positions from config
+  const phaseLines = (phases || []).map((phase, i, arr) => {
+    const parts = phase.days.split(/[–\u2013-]/);
+    const startDay = parseInt(parts[0]);
+    const endDay = parseInt(parts[1] || parts[0]);
+    // Position at end of phase for non-terminal phases,
+    // midpoint for the terminal phase to avoid chart edge
+    const day = i < arr.length - 1 ? endDay : Math.round((startDay + endDay) / 2);
+    return { day, label: phase.label };
+  });
 
   return (
     <svg
