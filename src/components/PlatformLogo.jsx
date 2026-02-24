@@ -16,7 +16,6 @@ const PLATFORM_COLORS = {
   Delighted: '#6B4FBB',
 };
 
-// Simple Icons paths (24x24 viewBox) for platforms that have them
 const SIMPLE_ICON_PATHS = {
   Snowflake: 'M24 3.459c0 .646-.418 1.18-1.141 1.18-.723 0-1.142-.534-1.142-1.18 0-.647.419-1.18 1.142-1.18.723 0 1.141.533 1.141 1.18zm-.228 0c0-.533-.38-.951-.913-.951s-.913.38-.913.95c0 .533.38.952.913.952.57 0 .913-.419.913-.951zm-1.37-.533h.495c.266 0 .456.152.456.38 0 .153-.076.229-.19.305l.19.266v.038h-.266l-.19-.266h-.229v.266h-.266zm.495.228h-.229v.267h.229c.114 0 .152-.038.152-.114.038-.077-.038-.153-.152-.153zM7.602 12.4c.038-.151.076-.304.076-.456 0-.114-.038-.228-.038-.342-.114-.343-.304-.647-.646-.838l-4.87-2.777c-.685-.38-1.56-.152-1.94.533-.381.685-.153 1.56.532 1.94l2.701 1.56-2.701 1.56c-.685.38-.913 1.256-.533 1.94.38.685 1.256.914 1.94.533l4.832-2.777c.343-.267.571-.533.647-.876zm1.332 2.626c-.266-.038-.57.038-.837.19l-4.832 2.777c-.685.38-.913 1.256-.532 1.94.38.686 1.255.914 1.94.533l2.701-1.56v3.12c0 .8.647 1.408 1.446 1.408.799 0 1.407-.647 1.407-1.408v-5.592c0-.761-.57-1.37-1.293-1.408zm4.946-6.088c.266.038.57-.038.837-.19l4.832-2.777c.685-.38.913-1.256.532-1.94-.38-.686-1.255-.914-1.94-.533l-2.701 1.56V1.975c0-.799-.647-1.408-1.446-1.408-.799 0-1.446.609-1.446 1.408V7.53c0 .76.609 1.37 1.332 1.407zM3.265 5.97l4.832 2.777c.266.152.533.19.837.19.723-.038 1.331-.684 1.331-1.407V1.975c0-.799-.646-1.408-1.407-1.408-.799 0-1.446.647-1.446 1.408v3.12l-2.701-1.56c-.685-.38-1.56-.152-1.94.533-.419.646-.19 1.521.494 1.902zm9.093 6.011a.412.412 0 00-.114-.266l-.57-.571a.346.346 0 00-.267-.114.412.412 0 00-.266.114l-.571.57a.411.411 0 00-.114.267c0 .076.038.19.114.267l.57.57a.345.345 0 00.267.114c.076 0 .19-.038.266-.114l.571-.57a.412.412 0 00.114-.267zm1.598.533L11.94 14.53c-.039.038-.153.114-.229.114h-.608a.411.411 0 01-.267-.114L8.82 12.514a.408.408 0 01-.076-.229v-.608c0-.076.038-.19.114-.267l2.016-2.016a.41.41 0 01.267-.114h.608a.41.41 0 01.267.114l2.016 2.016a.347.347 0 01.114.267v.608c-.076.077-.114.19-.19.229zm5.593 5.44l-4.832-2.777c-.266-.152-.57-.19-.837-.152-.723.038-1.332.684-1.332 1.408v5.554c0 .8.647 1.408 1.408 1.408.799 0 1.446-.647 1.446-1.408v-3.12l2.7 1.56c.686.38 1.561.152 1.941-.533.419-.646.19-1.521-.494-1.94zm2.549-7.533l-2.701 1.56 2.7 1.56c.686.38.914 1.256.533 1.94-.38.685-1.255.913-1.94.533l-4.832-2.778a1.644 1.644 0 01-.647-.798c-.037-.153-.076-.305-.076-.457 0-.114.039-.228.039-.342.114-.343.342-.647.646-.837l4.832-2.778c.685-.38 1.56-.152 1.94.533.457.609.19 1.484-.494 1.864',
   BigQuery: 'M5.676 10.595h2.052v5.244a5.892 5.892 0 0 1-2.052-2.088v-3.156zm18.179 10.836a.504.504 0 0 1 0 .708l-1.716 1.716a.504.504 0 0 1-.708 0l-4.248-4.248a.206.206 0 0 1-.007-.007c-.02-.02-.028-.045-.043-.066a10.736 10.736 0 0 1-6.334 2.065C4.835 21.599 0 16.764 0 10.799S4.835 0 10.8 0s10.799 4.835 10.799 10.8c0 2.369-.772 4.553-2.066 6.333.025.017.052.028.074.05l4.248 4.248zm-5.028-10.632a8.015 8.015 0 1 0-8.028 8.028h.024a8.016 8.016 0 0 0 8.004-8.028zm-4.86 4.98a6.002 6.002 0 0 0 2.04-2.184v-1.764h-2.04v3.948zm-4.5.948c.442.057.887.08 1.332.072.4.025.8.025 1.2 0V7.692H9.468v9.035z',
@@ -26,7 +25,6 @@ const SIMPLE_ICON_PATHS = {
   HubSpot: 'M18.164 7.93V5.084a2.198 2.198 0 001.267-1.978v-.067A2.2 2.2 0 0017.238.845h-.067a2.2 2.2 0 00-2.193 2.193v.067a2.196 2.196 0 001.252 1.973l.013.006v2.852a6.22 6.22 0 00-2.969 1.31l.012-.01-7.828-6.095A2.497 2.497 0 104.3 4.656l-.012.006 7.697 5.991a6.176 6.176 0 00-1.038 3.446c0 1.343.425 2.588 1.147 3.607l-.013-.02-2.342 2.343a1.968 1.968 0 00-.58-.095h-.002a2.033 2.033 0 102.033 2.033 1.978 1.978 0 00-.1-.595l.005.014 2.317-2.317a6.247 6.247 0 104.782-11.134l-.036-.005zm-.964 9.378a3.206 3.206 0 113.215-3.207v.002a3.206 3.206 0 01-3.207 3.207z',
 };
 
-// Custom SVG components for platforms not in Simple Icons
 function SegmentIcon({ color, size }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -147,8 +145,13 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
     return '#fff';
   };
 
+  const getBoxShadow = () => {
+    if (hovered && isInteractive) return '0 2px 8px rgba(0,0,0,0.08)';
+    return 'none';
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
       <button
         onClick={onClick}
         onMouseEnter={() => setHovered(true)}
@@ -160,17 +163,15 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
           width: '56px',
           height: '56px',
           padding: 0,
-          borderRadius: '6px',
+          borderRadius: '8px',
           border: `1px solid ${getBorderColor()}`,
           backgroundColor: getBgColor(),
           cursor: isInteractive ? 'pointer' : 'default',
           transition: 'all 150ms ease',
           position: 'relative',
-          transform: hovered && isInteractive ? 'scale(1.05)' : 'scale(1)',
-          boxShadow: hovered && isInteractive
-            ? '0 2px 8px rgba(0,0,0,0.1)'
-            : 'none',
-          opacity: disabled && !connected ? 0.45 : 1,
+          transform: hovered && isInteractive ? 'scale(1.03)' : 'scale(1)',
+          boxShadow: getBoxShadow(),
+          opacity: disabled && !connected ? 0.4 : 1,
         }}
       >
         {connecting ? (
@@ -178,14 +179,14 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
             style={{
               width: '24px',
               height: '24px',
-              border: '2.5px solid var(--color-gray-200)',
-              borderTopColor: 'var(--color-gray-700)',
+              border: '2.5px solid #E8E8E8',
+              borderTopColor: '#666',
               borderRadius: '50%',
               animation: 'spin 0.8s linear infinite',
             }}
           />
         ) : (
-          <PlatformIcon name={name} color={color} size={28} />
+          <PlatformIcon name={name} color={color} size={32} />
         )}
         {connected && (
           <div
@@ -217,9 +218,9 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
       </button>
       <span
         style={{
-          fontSize: '0.625rem',
+          fontSize: '11px',
           fontWeight: 500,
-          color: connected ? '#34C759' : '#888',
+          color: connected ? '#34C759' : '#555',
           textAlign: 'center',
           lineHeight: 1,
           whiteSpace: 'nowrap',
