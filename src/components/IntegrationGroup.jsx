@@ -14,11 +14,11 @@ export default function IntegrationGroup({
   return (
     <div
       style={{
-        border: isOptional ? '1px dashed #E0E0E0' : '1px solid var(--color-gray-200)',
-        borderRadius: '8px',
-        padding: '20px 24px',
+        border: isOptional ? '1px dashed var(--border)' : '1px solid var(--border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '24px 28px',
         backgroundColor: 'var(--color-white)',
-        boxShadow: isOptional ? 'none' : '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
+        boxShadow: isOptional ? 'none' : 'var(--shadow-sm)',
         opacity: isOptional && !connected ? 0.75 : 1,
         transition: 'opacity 300ms ease',
         marginTop: isOptional ? '12px' : 0,
@@ -36,18 +36,18 @@ export default function IntegrationGroup({
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0' }}>
           <span
             style={{
-              fontSize: '0.9375rem',
+              fontSize: '1rem',
               fontWeight: 400,
-              color: '#999',
+              color: 'var(--text-tertiary)',
             }}
           >
             {step} &middot;&nbsp;
           </span>
           <span
             style={{
-              fontSize: '0.9375rem',
+              fontSize: '1rem',
               fontWeight: 700,
-              color: '#333',
+              color: 'var(--text-primary)',
             }}
           >
             {group.label}
@@ -55,9 +55,9 @@ export default function IntegrationGroup({
           {isOptional && (
             <span
               style={{
-                fontSize: '0.9375rem',
+                fontSize: '1rem',
                 fontWeight: 400,
-                color: '#999',
+                color: 'var(--text-tertiary)',
                 marginLeft: '4px',
               }}
             >
@@ -69,7 +69,7 @@ export default function IntegrationGroup({
           style={{
             fontSize: '0.75rem',
             fontWeight: 400,
-            color: '#999',
+            color: 'var(--text-tertiary)',
             whiteSpace: 'nowrap',
           }}
         >
@@ -81,7 +81,7 @@ export default function IntegrationGroup({
       <p
         style={{
           fontSize: '0.8125rem',
-          color: '#666',
+          color: 'var(--text-secondary)',
           fontWeight: 400,
           lineHeight: 1.4,
           marginBottom: '16px',
@@ -91,7 +91,7 @@ export default function IntegrationGroup({
       </p>
 
       {/* Logos */}
-      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
         {group.platforms.map((platform) => (
           <PlatformLogo
             key={platform}
@@ -112,7 +112,7 @@ export default function IntegrationGroup({
           style={{
             fontSize: '0.75rem',
             fontWeight: 500,
-            color: '#34C759',
+            color: 'var(--color-green-600)',
             marginTop: '12px',
             display: 'flex',
             alignItems: 'center',
