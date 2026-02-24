@@ -1,41 +1,40 @@
 import React from 'react';
 
-function CheckItem({ field, checked, source, animDelay }) {
+function CheckItem({ field, checked, source }) {
   return (
     <div
       style={{
         display: 'flex',
-        alignItems: 'flex-start',
-        gap: '0.75rem',
-        padding: '0.5rem 0',
-        transition: 'opacity var(--transition-base)',
-        animationDelay: animDelay ? `${animDelay}ms` : '0ms',
+        alignItems: 'center',
+        height: '28px',
+        gap: '0.5rem',
+        padding: '0 0.25rem',
       }}
     >
+      {/* Checkbox */}
       <div
         style={{
-          width: '20px',
-          height: '20px',
-          borderRadius: 'var(--radius-sm)',
+          width: '14px',
+          height: '14px',
+          borderRadius: '2px',
           border: checked
-            ? '2px solid var(--color-green-500)'
-            : '2px solid var(--color-gray-300)',
+            ? 'none'
+            : '1.5px solid var(--color-gray-300)',
           backgroundColor: checked
-            ? 'var(--color-green-50)'
+            ? 'var(--color-gray-900)'
             : 'transparent',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
-          transition: 'all var(--transition-base)',
-          marginTop: '1px',
+          transition: 'all var(--transition-fast)',
         }}
       >
         {checked && (
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
             <path
-              d="M2.5 6l2.5 2.5 5-5"
-              stroke="var(--color-green-600)"
+              d="M1.5 4.5l2 2 4-4"
+              stroke="white"
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -43,47 +42,46 @@ function CheckItem({ field, checked, source, animDelay }) {
           </svg>
         )}
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            flexWrap: 'wrap',
-          }}
-        >
-          <span
-            style={{
-              fontSize: 'var(--font-size-sm)',
-              fontWeight: 500,
-              color: checked
-                ? 'var(--color-gray-900)'
-                : 'var(--color-gray-500)',
-            }}
-          >
-            {field.framework}
-          </span>
-          {source && (
-            <span
-              style={{
-                fontSize: 'var(--font-size-xs)',
-                color: 'var(--color-green-600)',
-                fontWeight: 500,
-              }}
-            >
-              via {source}
-            </span>
-          )}
-        </div>
+
+      {/* Field name + business term */}
+      <span
+        style={{
+          fontSize: '0.8125rem',
+          fontWeight: 400,
+          color: 'var(--color-gray-900)',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          flex: 1,
+          minWidth: 0,
+          lineHeight: 1.3,
+        }}
+      >
+        {field.framework}
         <span
           style={{
-            fontSize: 'var(--font-size-xs)',
             color: 'var(--color-gray-400)',
+            fontWeight: 400,
           }}
         >
-          ({field.business})
+          {' '}({field.business})
         </span>
-      </div>
+      </span>
+
+      {/* Source label — only shows when checked */}
+      {source && (
+        <span
+          style={{
+            fontSize: '0.6875rem',
+            color: 'var(--color-gray-400)',
+            fontWeight: 400,
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+          }}
+        >
+          via {source}
+        </span>
+      )}
     </div>
   );
 }
@@ -139,7 +137,7 @@ export default function DataChecklist({
       style={{
         backgroundColor: 'var(--color-gray-50)',
         borderRadius: 'var(--radius-lg)',
-        padding: '1.5rem',
+        padding: '1.25rem',
         height: 'fit-content',
         position: 'sticky',
         top: '2rem',
@@ -147,9 +145,9 @@ export default function DataChecklist({
     >
       <h3
         style={{
-          fontSize: 'var(--font-size-base)',
-          fontWeight: 600,
-          marginBottom: '1.25rem',
+          fontSize: 'var(--font-size-sm)',
+          fontWeight: 700,
+          marginBottom: '1rem',
           color: 'var(--color-gray-900)',
         }}
       >
@@ -159,36 +157,42 @@ export default function DataChecklist({
       {categories.map((cat, ci) => {
         const isProfile = cat.label === 'Customer Profile';
         const showNote = isProfile && profileNote;
+        const checkedCount = cat.fields.filter(
+          (f) => checkedFields[`${cat.label}:${f.framework}`]
+        ).length;
 
         return (
-          <div key={ci} style={{ marginBottom: '1.25rem' }}>
+          <div key={ci} style={{ marginBottom: ci < categories.length - 1 ? '0.875rem' : 0 }}>
+            {/* Category header */}
             <div
               style={{
                 display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '0.5rem',
+                alignItems: 'baseline',
+                gap: '0.375rem',
+                marginBottom: '0.25rem',
               }}
             >
               <span
                 style={{
-                  fontSize: 'var(--font-size-sm)',
-                  fontWeight: 600,
-                  color: 'var(--color-gray-700)',
+                  fontSize: '0.8125rem',
+                  fontWeight: 700,
+                  color: 'var(--color-gray-800)',
                 }}
               >
                 {cat.label}
               </span>
               <span
                 style={{
-                  fontSize: 'var(--font-size-xs)',
+                  fontSize: '0.6875rem',
                   color: 'var(--color-gray-400)',
-                  fontWeight: 500,
+                  fontWeight: 400,
                 }}
               >
-                ({cat.badge})
+                ({cat.badge}) — {cat.fields.length} fields
               </span>
             </div>
+
+            {/* Field rows */}
             {cat.fields.map((field, fi) => {
               const key = `${cat.label}:${field.framework}`;
               const checked = checkedFields[key];
@@ -201,14 +205,17 @@ export default function DataChecklist({
                 />
               );
             })}
+
+            {/* Profile data note */}
             {showNote && (
               <p
                 style={{
-                  fontSize: 'var(--font-size-xs)',
+                  fontSize: '0.6875rem',
                   color: 'var(--color-gray-400)',
                   fontStyle: 'italic',
-                  marginTop: '0.5rem',
-                  paddingLeft: '1.75rem',
+                  marginTop: '0.125rem',
+                  paddingLeft: '1.375rem',
+                  lineHeight: 1.4,
                 }}
               >
                 {profileNote}

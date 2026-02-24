@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const PLATFORM_COLORS = {
   Segment: '#52BD95',
@@ -132,34 +132,36 @@ function PlatformIcon({ name, color, size }) {
 }
 
 export default function PlatformLogo({ name, connected, connecting, onClick }) {
+  const [hovered, setHovered] = useState(false);
   const color = PLATFORM_COLORS[name] || '#666';
 
   return (
     <button
       onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '0.5rem',
-        padding: '0.75rem',
+        gap: '0.375rem',
+        padding: '0.625rem',
         borderRadius: 'var(--radius-md)',
-        border: connected
-          ? '2px solid var(--color-green-500)'
-          : '2px solid var(--color-gray-200)',
-        backgroundColor: connected
-          ? 'var(--color-green-50)'
+        border: '1px solid var(--color-gray-200)',
+        backgroundColor: hovered && !connected && !connecting
+          ? 'var(--color-gray-50)'
           : 'var(--color-white)',
         cursor: connected || connecting ? 'default' : 'pointer',
         transition: 'all var(--transition-base)',
-        minWidth: '80px',
+        minWidth: '72px',
         position: 'relative',
+        transform: hovered && !connected && !connecting ? 'scale(1.03)' : 'scale(1)',
       }}
     >
       <div
         style={{
-          width: '40px',
-          height: '40px',
+          width: '36px',
+          height: '36px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -172,47 +174,53 @@ export default function PlatformLogo({ name, connected, connecting, onClick }) {
               width: '24px',
               height: '24px',
               border: '2.5px solid var(--color-gray-200)',
-              borderTopColor: color,
+              borderTopColor: 'var(--color-gray-700)',
               borderRadius: '50%',
               animation: 'spin 0.8s linear infinite',
             }}
           />
-        ) : connected ? (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" fill="var(--color-green-500)" />
-            <path
-              d="M7 12l3.5 3.5 6.5-6.5"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
         ) : (
           <PlatformIcon name={name} color={color} size={28} />
+        )}
+        {connected && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '-2px',
+              right: '-2px',
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              backgroundColor: '#2D8A4E',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '2px solid var(--color-white)',
+            }}
+          >
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+              <path
+                d="M1.5 4l1.75 1.75 3.25-3.25"
+                stroke="white"
+                strokeWidth="1.25"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
         )}
       </div>
       <span
         style={{
-          fontSize: 'var(--font-size-xs)',
+          fontSize: '0.6875rem',
           fontWeight: 500,
           color: 'var(--color-gray-700)',
           textAlign: 'center',
+          lineHeight: 1.2,
         }}
       >
         {name}
       </span>
-      {connected && (
-        <span
-          style={{
-            fontSize: '0.625rem',
-            color: 'var(--color-green-600)',
-            fontWeight: 500,
-          }}
-        >
-          Connected
-        </span>
-      )}
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
