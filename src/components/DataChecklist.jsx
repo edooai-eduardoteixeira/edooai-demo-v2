@@ -115,47 +115,25 @@ function CheckItem({ field, checked, source }) {
 export default function DataChecklist({
   config,
   checkedFields,
-  profileNote,
   highlightedCategories,
 }) {
+  const { connection } = config;
+
   const categories = [
     {
-      label: 'Customer Data',
-      badge: 'Required',
-      fields: config.connection.group1.fieldsProvided.find(
-        (c) => c.category === 'Customer Data'
-      )?.fields || [],
-    },
-    {
-      label: 'Transaction Data',
-      badge: 'Required',
-      fields: config.connection.group2.fieldsProvided.find(
-        (c) => c.category === 'Transaction Data'
-      )?.fields || [],
-    },
-    {
-      label: 'User Activity',
-      badge: 'Required',
-      fields: config.connection.group2.fieldsProvided.find(
-        (c) => c.category === 'User Activity'
-      )?.fields || [],
-    },
-    {
-      label: 'Customer Profile',
-      badge: 'Recommended',
+      label: 'WHAT WE NEED',
       fields: [
-        { framework: 'Date of Birth', business: '' },
-        { framework: 'Location', business: 'City, state, or region' },
-        { framework: 'Account Open Date', business: 'When they signed up' },
-        { framework: 'Acquisition Source', business: 'How they found you' },
+        ...(connection.group1.fieldsProvided.find((c) => c.category === 'WHAT WE NEED')?.fields || []),
+        ...(connection.group2.fieldsProvided.find((c) => c.category === 'WHAT WE NEED')?.fields || []),
       ],
     },
     {
-      label: 'Support & Satisfaction',
-      badge: 'Optional',
-      fields: config.connection.group3.fieldsProvided.find(
-        (c) => c.category === 'Support & Satisfaction'
-      )?.fields || [],
+      label: 'WHAT HELPS',
+      fields: [
+        ...(connection.group1.fieldsProvided.find((c) => c.category === 'WHAT HELPS')?.fields || []),
+        { framework: 'How they found you', business: '' },
+        ...(connection.group3.fieldsProvided.find((c) => c.category === 'WHAT HELPS')?.fields || []),
+      ],
     },
   ];
 
@@ -172,20 +150,7 @@ export default function DataChecklist({
         top: '2rem',
       }}
     >
-      <h3
-        style={{
-          fontSize: '0.9375rem',
-          fontWeight: 700,
-          marginBottom: '1.25rem',
-          color: 'var(--color-gray-900)',
-        }}
-      >
-        Data Requirements
-      </h3>
-
       {categories.map((cat, ci) => {
-        const isProfile = cat.label === 'Customer Profile';
-        const showNote = isProfile && profileNote;
         const isHighlighted = highlighted.includes(cat.label);
 
         return (
@@ -221,15 +186,6 @@ export default function DataChecklist({
               >
                 {cat.label}
               </span>
-              <span
-                style={{
-                  fontSize: '0.6875rem',
-                  color: 'var(--color-gray-400)',
-                  fontWeight: 400,
-                }}
-              >
-                ({cat.badge}) — {cat.fields.length} fields
-              </span>
             </div>
 
             {/* Field rows */}
@@ -245,22 +201,6 @@ export default function DataChecklist({
                 />
               );
             })}
-
-            {/* Profile data note */}
-            {showNote && (
-              <p
-                style={{
-                  fontSize: '0.6875rem',
-                  color: 'var(--color-gray-400)',
-                  fontStyle: 'italic',
-                  marginTop: '4px',
-                  paddingLeft: '1.5rem',
-                  lineHeight: 1.4,
-                }}
-              >
-                {profileNote}
-              </p>
-            )}
           </div>
         );
       })}
