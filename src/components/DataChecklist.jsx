@@ -1,6 +1,8 @@
 import React from 'react';
 
 function CheckItem({ field, checked, source }) {
+  const hasNote = field.business && field.business.length > 0;
+
   return (
     <div
       style={{
@@ -43,11 +45,10 @@ function CheckItem({ field, checked, source }) {
         )}
       </div>
 
-      {/* Field name + business term */}
+      {/* Field label · clarifying note */}
       <span
         style={{
           fontSize: '0.8125rem',
-          fontWeight: 400,
           color: 'var(--color-gray-900)',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
@@ -57,15 +58,17 @@ function CheckItem({ field, checked, source }) {
           lineHeight: 1.3,
         }}
       >
-        {field.framework}
-        <span
-          style={{
-            color: 'var(--color-gray-400)',
-            fontWeight: 400,
-          }}
-        >
-          {' '}({field.business})
-        </span>
+        <span style={{ fontWeight: 600 }}>{field.framework}</span>
+        {hasNote && (
+          <span
+            style={{
+              color: '#888',
+              fontWeight: 400,
+            }}
+          >
+            {' '}&middot; {field.business}
+          </span>
+        )}
       </span>
 
       {/* Source label — only shows when checked */}
@@ -93,41 +96,41 @@ export default function DataChecklist({
 }) {
   const categories = [
     {
-      label: 'Customer Base',
+      label: 'Customer Data',
       badge: 'Required',
       fields: config.connection.group1.fieldsProvided.find(
-        (c) => c.category === 'Customer Base'
+        (c) => c.category === 'Customer Data'
       )?.fields || [],
     },
     {
-      label: 'Transaction History',
+      label: 'Transaction Data',
       badge: 'Required',
       fields: config.connection.group2.fieldsProvided.find(
-        (c) => c.category === 'Transaction History'
+        (c) => c.category === 'Transaction Data'
       )?.fields || [],
     },
     {
-      label: 'Behavioral Events',
+      label: 'User Activity',
       badge: 'Required',
       fields: config.connection.group2.fieldsProvided.find(
-        (c) => c.category === 'Behavioral Events'
+        (c) => c.category === 'User Activity'
       )?.fields || [],
     },
     {
       label: 'Customer Profile',
       badge: 'Recommended',
       fields: [
-        { framework: 'Age / Date of Birth', business: 'Age / Date of Birth' },
-        { framework: 'Address / Region', business: 'Address / Region' },
-        { framework: 'Signup Date', business: 'Signup Date' },
-        { framework: 'Acquisition Channel', business: 'Acquisition Channel' },
+        { framework: 'Date of Birth', business: '' },
+        { framework: 'Location', business: 'City, state, or region' },
+        { framework: 'Account Open Date', business: 'When they signed up' },
+        { framework: 'Acquisition Source', business: 'How they found you' },
       ],
     },
     {
-      label: 'Satisfaction Signals',
+      label: 'Support & Satisfaction',
       badge: 'Optional',
       fields: config.connection.group3.fieldsProvided.find(
-        (c) => c.category === 'Satisfaction Signals'
+        (c) => c.category === 'Support & Satisfaction'
       )?.fields || [],
     },
   ];
@@ -157,9 +160,6 @@ export default function DataChecklist({
       {categories.map((cat, ci) => {
         const isProfile = cat.label === 'Customer Profile';
         const showNote = isProfile && profileNote;
-        const checkedCount = cat.fields.filter(
-          (f) => checkedFields[`${cat.label}:${f.framework}`]
-        ).length;
 
         return (
           <div key={ci} style={{ marginBottom: ci < categories.length - 1 ? '0.875rem' : 0 }}>

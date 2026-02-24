@@ -31,18 +31,18 @@ const neobank = {
       status: 'Required',
       fieldsProvided: [
         {
-          category: 'Customer Base',
+          category: 'Customer Data',
           fields: [
-            { framework: 'Unique Customer ID', business: 'Account Number' },
+            { framework: 'Account ID', business: 'Unique customer identifier' },
             {
-              framework: 'Contact Permissions',
-              business: 'Opt-in + per-channel consent',
+              framework: 'Opt-in Status',
+              business: 'Contact permissions per channel',
             },
             {
               framework: 'Contact Channel',
-              business: 'Email, phone, push token, or WhatsApp ID',
+              business: 'Email, phone, push, or WhatsApp',
             },
-            { framework: 'Customer Name', business: 'First + Last' },
+            { framework: 'Customer Name', business: 'First + last name' },
           ],
         },
       ],
@@ -57,36 +57,34 @@ const neobank = {
       status: 'Required',
       fieldsProvided: [
         {
-          category: 'Transaction History',
+          category: 'Transaction Data',
           fields: [
-            { framework: 'Recency', business: 'Last transaction date' },
+            { framework: 'Last Transaction Date', business: 'Most recent activity' },
             {
-              framework: 'Frequency',
-              business: 'Transaction count, trailing 90 days',
+              framework: 'Transaction Count',
+              business: 'Number of transactions, trailing 90 days',
             },
             {
-              framework: 'Monetary Value',
-              business: 'Total transaction volume, trailing 90 days',
+              framework: 'Transaction Volume',
+              business: 'Total amount, trailing 90 days',
             },
             {
-              framework: 'Product / SKU',
-              business:
-                'Transaction category: P2P, card purchase, deposit, withdrawal',
+              framework: 'Transaction Categories',
+              business: 'P2P, card purchase, deposit, withdrawal',
             },
           ],
         },
         {
-          category: 'Behavioral Events',
+          category: 'User Activity',
           fields: [
             {
-              framework: 'Event Type',
-              business:
-                'sign_up, kyc_completed, first_transaction, card_transaction',
+              framework: 'Activity Types',
+              business: 'Sign-up, KYC, first transaction, card usage',
             },
-            { framework: 'Event Timestamp', business: 'Event Timestamp' },
+            { framework: 'Timestamps', business: 'When each activity occurred' },
             {
-              framework: 'Event Sequence per User',
-              business: 'Event Sequence per User',
+              framework: 'Activity Sequence',
+              business: 'Order of actions per user',
             },
           ],
         },
@@ -102,16 +100,16 @@ const neobank = {
       status: 'Optional — Enrichment',
       fieldsProvided: [
         {
-          category: 'Satisfaction Signals',
+          category: 'Support & Satisfaction',
           fields: [
-            { framework: 'NPS / CSAT Score', business: 'NPS / CSAT Score' },
+            { framework: 'NPS / CSAT Score', business: '' },
             {
-              framework: 'Support Ticket Count',
-              business: 'Support Ticket Count',
+              framework: 'Support Tickets',
+              business: 'Total count',
             },
             {
-              framework: 'Last Support Interaction Date',
-              business: 'Last Support Interaction Date',
+              framework: 'Last Support Contact',
+              business: 'Most recent interaction',
             },
           ],
         },
