@@ -15,9 +15,10 @@ export default function IntegrationGroup({
     <div
       style={{
         border: '1px solid var(--color-gray-200)',
-        borderRadius: 'var(--radius-lg)',
-        padding: '1.5rem',
+        borderRadius: '8px',
+        padding: '24px',
         backgroundColor: 'var(--color-white)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
       }}
     >
       <div
@@ -28,28 +29,15 @@ export default function IntegrationGroup({
           marginBottom: '0.5rem',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <h3
-            style={{
-              fontSize: 'var(--font-size-base)',
-              fontWeight: 700,
-              color: 'var(--color-gray-900)',
-            }}
-          >
-            {group.label}
-          </h3>
-          {connected && (
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-              <path
-                d="M3 8l3.5 3.5 6.5-6.5"
-                stroke="var(--color-gray-900)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          )}
-        </div>
+        <h3
+          style={{
+            fontSize: 'var(--font-size-base)',
+            fontWeight: 700,
+            color: 'var(--color-gray-900)',
+          }}
+        >
+          {group.label}
+        </h3>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <Badge variant="default">{group.accessType}</Badge>
           <Badge variant={connected ? 'success' : statusVariant}>
@@ -69,13 +57,14 @@ export default function IntegrationGroup({
         {group.description}
       </p>
 
-      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
         {group.platforms.map((platform) => (
           <PlatformLogo
             key={platform}
             name={platform}
             connected={connected && connectedPlatform === platform}
             connecting={connecting && connectedPlatform === platform}
+            disabled={connected || connecting}
             onClick={() => {
               if (!connected && !connecting) onConnect(platform);
             }}

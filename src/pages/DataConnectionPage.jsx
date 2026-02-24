@@ -18,6 +18,13 @@ export default function DataConnectionPage({ config, onNext }) {
   const [group3Platform, setGroup3Platform] = useState(null);
   const [checkedFields, setCheckedFields] = useState({});
   const [showProfileNote, setShowProfileNote] = useState(false);
+  const [highlightedCategories, setHighlightedCategories] = useState([]);
+
+  const highlightCategories = useCallback((fieldsProvided) => {
+    const cats = fieldsProvided.map((c) => c.category);
+    setHighlightedCategories(cats);
+    setTimeout(() => setHighlightedCategories([]), 800);
+  }, []);
 
   const checkFieldsSequentially = useCallback(
     (fieldsProvided, sourceName, onDone) => {
@@ -53,6 +60,7 @@ export default function DataConnectionPage({ config, onNext }) {
       setTimeout(() => {
         setGroup1Connecting(false);
         setGroup1Connected(true);
+        highlightCategories(connection.group1.fieldsProvided);
         checkFieldsSequentially(
           connection.group1.fieldsProvided,
           selectedPlatform,
@@ -60,7 +68,7 @@ export default function DataConnectionPage({ config, onNext }) {
         );
       }, 1500);
     },
-    [connection, checkFieldsSequentially]
+    [connection, checkFieldsSequentially, highlightCategories]
   );
 
   const handleGroup2Connect = useCallback(
@@ -72,6 +80,7 @@ export default function DataConnectionPage({ config, onNext }) {
       setTimeout(() => {
         setGroup2Connecting(false);
         setGroup2Connected(true);
+        highlightCategories(connection.group2.fieldsProvided);
         checkFieldsSequentially(
           connection.group2.fieldsProvided,
           selectedPlatform,
@@ -81,7 +90,7 @@ export default function DataConnectionPage({ config, onNext }) {
         );
       }, 1500);
     },
-    [connection, checkFieldsSequentially]
+    [connection, checkFieldsSequentially, highlightCategories]
   );
 
   const handleGroup3Connect = useCallback(
@@ -93,6 +102,7 @@ export default function DataConnectionPage({ config, onNext }) {
       setTimeout(() => {
         setGroup3Connecting(false);
         setGroup3Connected(true);
+        highlightCategories(connection.group3.fieldsProvided);
         checkFieldsSequentially(
           connection.group3.fieldsProvided,
           selectedPlatform,
@@ -100,14 +110,14 @@ export default function DataConnectionPage({ config, onNext }) {
         );
       }, 1500);
     },
-    [connection, checkFieldsSequentially]
+    [connection, checkFieldsSequentially, highlightCategories]
   );
 
   const bothRequired = group1Connected && group2Connected;
   const connectedCount = [group1Connected, group2Connected, group3Connected].filter(Boolean).length;
 
   // Count checked required fields
-  const requiredCategories = ['Customer Base', 'Transaction History', 'Behavioral Events'];
+  const requiredCategories = ['Customer Data', 'Transaction Data', 'User Activity'];
   const checkedRequiredCount = Object.keys(checkedFields).filter((key) => {
     const cat = key.split(':')[0];
     return requiredCategories.includes(cat);
@@ -141,24 +151,29 @@ export default function DataConnectionPage({ config, onNext }) {
           width: '100%',
         }}
       >
-        <h2
-          style={{
-            fontSize: 'var(--font-size-2xl)',
-            fontWeight: 700,
-            marginBottom: '0.5rem',
-          }}
-        >
-          Connect Your Data Sources
-        </h2>
-        <p
-          style={{
-            fontSize: 'var(--font-size-base)',
-            color: 'var(--color-gray-500)',
-            marginBottom: '2rem',
-          }}
-        >
-          Edoo AI needs access to your customer data to analyze and run referral campaigns.
-        </p>
+        <div style={{ marginBottom: '2rem' }}>
+          <h2
+            style={{
+              fontSize: '1.75rem',
+              fontWeight: 700,
+              color: 'var(--color-gray-900)',
+              marginBottom: '0.5rem',
+              lineHeight: 1.2,
+            }}
+          >
+            Connect Your Data Sources
+          </h2>
+          <p
+            style={{
+              fontSize: 'var(--font-size-base)',
+              color: 'var(--color-gray-500)',
+              fontWeight: 400,
+              lineHeight: 1.5,
+            }}
+          >
+            Edoo AI needs access to your customer data to analyze and run referral campaigns.
+          </p>
+        </div>
 
         <div
           className="data-grid"
@@ -199,6 +214,7 @@ export default function DataConnectionPage({ config, onNext }) {
             config={config}
             checkedFields={checkedFields}
             profileNote={showProfileNote ? connection.profileDataNote : null}
+            highlightedCategories={highlightedCategories}
           />
         </div>
       </main>
@@ -215,22 +231,38 @@ export default function DataConnectionPage({ config, onNext }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          transition: 'background-color var(--transition-base)',
+          gap: '2rem',
+          transition: 'background-color 300ms ease',
         }}
       >
-        <div>
+        <div style={{ flex: 1 }}>
           {bothRequired ? (
             <p
               style={{
-                fontSize: 'var(--font-size-sm)',
+                fontSize: 'var(--font-size-base)',
                 color: 'var(--color-gray-900)',
                 fontWeight: 400,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
               }}
             >
-              <strong>{connectedCount}</strong> sources connected &middot;{' '}
-              <strong>{config.totalCustomers.toLocaleString()}</strong> customer records &middot;{' '}
-              <strong>{checkedRequiredCount} of {connection.requiredFieldCount}</strong> required fields
-              detected
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+                <circle cx="8" cy="8" r="7" fill="#2D8A4E" />
+                <path
+                  d="M4.5 8l2.25 2.25 4.75-4.75"
+                  stroke="white"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span>
+                <strong>{connectedCount}</strong> sources connected &middot;{' '}
+                <strong>{config.totalCustomers.toLocaleString()}</strong> customer records &middot;{' '}
+                <strong>{checkedRequiredCount} of {connection.requiredFieldCount}</strong> required fields
+                detected
+              </span>
             </p>
           ) : (
             <p
@@ -243,7 +275,16 @@ export default function DataConnectionPage({ config, onNext }) {
             </p>
           )}
         </div>
-        <CTAButton onClick={onNext} disabled={!bothRequired}>
+        <CTAButton
+          onClick={onNext}
+          disabled={!bothRequired}
+          style={{
+            padding: '1rem 2.5rem',
+            flexShrink: 0,
+            transition: 'all 300ms ease',
+            transform: bothRequired ? 'scale(1)' : 'scale(0.98)',
+          }}
+        >
           Generate Personalized Referral Strategy
         </CTAButton>
       </div>
