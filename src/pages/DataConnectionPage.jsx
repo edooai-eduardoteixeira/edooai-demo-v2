@@ -113,17 +113,12 @@ export default function DataConnectionPage({ config, onNext }) {
   const bothRequired = group1Connected && group2Connected;
   const connectedCount = [group1Connected, group2Connected, group3Connected].filter(Boolean).length;
 
-  // Count checked required fields
-  const requiredCategories = ['REQUIRED DATA'];
-  const checkedRequiredCount = Object.keys(checkedFields).filter((key) => {
-    const cat = key.split(':')[0];
-    return requiredCategories.includes(cat);
-  }).length;
-
   // Bottom bar text logic
-  let bottomText = 'Connect required data sources to continue.';
+  let bottomText = 'Connect your CRM and data warehouse to continue.';
   if (group1Connected && !group2Connected) {
-    bottomText = `1 source connected. Connect a data warehouse to complete required fields.`;
+    bottomText = '1 source connected · Connect a data warehouse to continue.';
+  } else if (!group1Connected && group2Connected) {
+    bottomText = '1 source connected · Connect your CRM to continue.';
   }
 
   return (
@@ -191,7 +186,7 @@ export default function DataConnectionPage({ config, onNext }) {
               connectedPlatform={group1Platform}
               onConnect={handleGroup1Connect}
               step={1}
-              totalCustomers={config.totalCustomers}
+
             />
             <IntegrationGroup
               group={connection.group2}
@@ -200,7 +195,7 @@ export default function DataConnectionPage({ config, onNext }) {
               connectedPlatform={group2Platform}
               onConnect={handleGroup2Connect}
               step={2}
-              totalCustomers={config.totalCustomers}
+
             />
             <IntegrationGroup
               group={connection.group3}
@@ -210,7 +205,7 @@ export default function DataConnectionPage({ config, onNext }) {
               onConnect={handleGroup3Connect}
               step={3}
               isOptional
-              totalCustomers={config.totalCustomers}
+
             />
           </div>
 
@@ -265,8 +260,7 @@ export default function DataConnectionPage({ config, onNext }) {
               <span>
                 <strong>{connectedCount}</strong> sources connected &middot;{' '}
                 <strong>{config.totalCustomers.toLocaleString()}</strong> customer records &middot;{' '}
-                <strong>{checkedRequiredCount} of {connection.requiredFieldCount}</strong> required fields
-                detected
+                All required fields detected
               </span>
             </p>
           ) : (

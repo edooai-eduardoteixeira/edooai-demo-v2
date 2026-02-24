@@ -219,14 +219,29 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
         style={{
           fontSize: '0.6875rem',
           fontWeight: 600,
-          color: connected ? 'var(--color-green-600)' : 'var(--text-secondary)',
+          color: 'var(--text-secondary)',
           textAlign: 'center',
           lineHeight: 1.2,
           whiteSpace: 'nowrap',
         }}
       >
-        {connected ? 'Connected' : name}
+        {name}
       </span>
+      {connected && (
+        <span
+          style={{
+            fontSize: '0.625rem',
+            fontWeight: 600,
+            color: 'var(--color-green-600)',
+            textAlign: 'center',
+            lineHeight: 1,
+            whiteSpace: 'nowrap',
+            marginTop: '-2px',
+          }}
+        >
+          ✓ Connected
+        </span>
+      )}
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
