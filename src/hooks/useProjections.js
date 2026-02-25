@@ -14,6 +14,10 @@ export function useProjections(projections, budget) {
     const max = sorted[sorted.length - 1].budget;
     const clampedBudget = Math.max(min, Math.min(max, budget));
 
+    // Exact match
+    const exact = sorted.find((p) => p.budget === clampedBudget);
+    if (exact) return exact;
+
     // Find surrounding data points
     let lower = sorted[0];
     let upper = sorted[sorted.length - 1];
@@ -26,17 +30,17 @@ export function useProjections(projections, budget) {
       }
     }
 
-    // Exact match
-    const exact = sorted.find((p) => p.budget === clampedBudget);
-    if (exact) return exact;
-
-    // Interpolate
+    // Interpolate all numeric fields
     const t = (clampedBudget - lower.budget) / (upper.budget - lower.budget);
-    return {
-      budget: clampedBudget,
-      newUsers: Math.round(lerp(lower.newUsers, upper.newUsers, t)),
-      spend: Math.round(lerp(lower.spend, upper.spend, t)),
-      cac: Math.round(lerp(lower.cac, upper.cac, t)),
-    };
+    const result = { budget: clampedBudget };
+
+    for (const key of Object.keys(lower)) {
+      if (key === 'budget') continue;
+      if (typeof lower[key] === 'number' && typeof upper[key] === 'number') {
+        result[key] = Math.round(lerp(lower[key], upper[key], t));
+      }
+    }
+
+    return result;
   }, [projections, budget]);
 }
