@@ -119,6 +119,113 @@ function MetricCard({ label, children }) {
   );
 }
 
+/* ───────── Preview Card (referrer / referee mockup) ───────── */
+function PreviewCard({ label, data }) {
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div
+        style={{
+          fontSize: '11px',
+          fontWeight: 700,
+          color: 'var(--color-gray-400)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          marginBottom: '0.5rem',
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          flex: 1,
+          border: '1px solid var(--color-gray-200)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '1.5rem',
+          backgroundColor: '#fff',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <div
+          style={{
+            fontSize: '11px',
+            color: 'var(--color-gray-400)',
+            marginBottom: '1rem',
+            fontStyle: 'italic',
+          }}
+        >
+          {data.channel}
+        </div>
+        <h4
+          style={{
+            fontSize: 'var(--font-size-base)',
+            fontWeight: 700,
+            color: 'var(--color-gray-900)',
+            marginBottom: '0.5rem',
+          }}
+        >
+          {data.headline}
+        </h4>
+        <p
+          style={{
+            fontSize: 'var(--font-size-sm)',
+            color: 'var(--color-gray-600)',
+            lineHeight: 1.5,
+            marginBottom: '1rem',
+          }}
+        >
+          {data.body}
+        </p>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            marginBottom: '1.25rem',
+            padding: '0.75rem',
+            backgroundColor: 'var(--color-gray-50)',
+            borderRadius: 'var(--radius-md)',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 'var(--font-size-2xl)',
+              fontWeight: 700,
+              color: 'var(--color-black)',
+            }}
+          >
+            {data.rewardDisplay}
+          </span>
+          <span
+            style={{
+              fontSize: 'var(--font-size-sm)',
+              color: 'var(--color-gray-500)',
+            }}
+          >
+            {data.rewardLabel}
+          </span>
+        </div>
+        <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'center' }}>
+          <div
+            style={{
+              padding: '0.625rem 1.5rem',
+              backgroundColor: 'var(--color-black)',
+              color: 'var(--color-white)',
+              borderRadius: 'var(--radius-md)',
+              fontSize: 'var(--font-size-sm)',
+              fontWeight: 600,
+              textAlign: 'center',
+            }}
+          >
+            {data.ctaText}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ───────── Strategy Detail (expandable content) ───────── */
 function StrategyDetailContent({ breakdown, strategies, roiExample, budget }) {
   const formatBudget = (v) => '$' + (v / 1000).toFixed(0) + 'K';
@@ -375,6 +482,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
     perUserROIExample,
     executionPlan,
     refereeTouchpoints,
+    refereePreview,
   } = config;
 
   /* ── Streaming text state ── */
@@ -383,11 +491,12 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
   /* ── Progressive reveal flags (time-based, no user interaction) ── */
   const [showPipeline, setShowPipeline] = useState(false);
-  const [showStrategies, setShowStrategies] = useState(false);
   const [showBudget, setShowBudget] = useState(false);
   const [showFunnel, setShowFunnel] = useState(false);
   const [showKPIs, setShowKPIs] = useState(false);
+  const [showStrategies, setShowStrategies] = useState(false);
   const [showRefereeJourney, setShowRefereeJourney] = useState(false);
+  const [showExecution, setShowExecution] = useState(false);
   const [showExpandables, setShowExpandables] = useState(false);
   const [showLaunchCTA, setShowLaunchCTA] = useState(false);
 
@@ -433,42 +542,47 @@ export default function StrategyBuilderPage({ config, onNext }) {
     await sleep(500);
     if (cancelRef.current) return;
 
-    // Pipeline appears as context
+    // 1. Pipeline as context
     setShowPipeline(true);
     await sleep(600);
     if (cancelRef.current) return;
 
-    // Strategy cards
-    setShowStrategies(true);
-    await sleep(400);
-    if (cancelRef.current) return;
-
-    // Budget slider
+    // 2. Budget slider — the dial
     setShowBudget(true);
     await sleep(400);
     if (cancelRef.current) return;
 
-    // Projected funnel
+    // 3. Projected funnel — the hook
     setShowFunnel(true);
     await sleep(400);
     if (cancelRef.current) return;
 
-    // KPIs
+    // 4. Supporting KPIs
     setShowKPIs(true);
     await sleep(400);
     if (cancelRef.current) return;
 
-    // Referee journey + execution
+    // 5. Strategy cards — how Edoo gets there
+    setShowStrategies(true);
+    await sleep(400);
+    if (cancelRef.current) return;
+
+    // 6. Referee experience preview
     setShowRefereeJourney(true);
+    await sleep(400);
+    if (cancelRef.current) return;
+
+    // 7. Execution timeline
+    setShowExecution(true);
     await sleep(300);
     if (cancelRef.current) return;
 
-    // Expandable deep detail
+    // 8. Expandable deep detail
     setShowExpandables(true);
     await sleep(200);
     if (cancelRef.current) return;
 
-    // Launch CTA
+    // 9. Launch CTA
     setShowLaunchCTA(true);
   }, [streamText]);
 
@@ -607,22 +721,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
           </section>
         )}
 
-        {/* ── 2. Strategy cards (enriched) ── */}
-        {showStrategies && (
-          <section
-            style={{
-              marginBottom: '2rem',
-              animation: 'fadeIn 0.4s ease forwards',
-            }}
-          >
-            <div style={{ display: 'flex', gap: '1.5rem' }}>
-              <StrategyCard strategy={strategies.quickWin} variant="quickwin" />
-              <StrategyCard strategy={strategies.lookALike} variant="lookalike" />
-            </div>
-          </section>
-        )}
-
-        {/* ── 3. Budget slider ── */}
+        {/* ── 2. Budget slider ── */}
         {showBudget && (
           <section
             style={{
@@ -695,7 +794,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
           </section>
         )}
 
-        {/* ── 4. Projected funnel impact ── */}
+        {/* ── 3. Projected funnel impact ── */}
         {showFunnel && (
           <section
             style={{
@@ -719,7 +818,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
           </section>
         )}
 
-        {/* ── 5. Supporting KPIs ── */}
+        {/* ── 4. Supporting KPIs ── */}
         {showKPIs && (
           <section
             style={{
@@ -752,7 +851,22 @@ export default function StrategyBuilderPage({ config, onNext }) {
           </section>
         )}
 
-        {/* ── 6. Referee journey & execution (VISIBLE, not expandable) ── */}
+        {/* ── 5. Strategy cards ── */}
+        {showStrategies && (
+          <section
+            style={{
+              marginBottom: '2rem',
+              animation: 'fadeIn 0.4s ease forwards',
+            }}
+          >
+            <div style={{ display: 'flex', gap: '1.5rem' }}>
+              <StrategyCard strategy={strategies.quickWin} variant="quickwin" />
+              <StrategyCard strategy={strategies.lookALike} variant="lookalike" />
+            </div>
+          </section>
+        )}
+
+        {/* ── 6. Referee experience preview (side-by-side) ── */}
         {showRefereeJourney && (
           <section
             style={{
@@ -760,113 +874,84 @@ export default function StrategyBuilderPage({ config, onNext }) {
               animation: 'fadeIn 0.4s ease forwards',
             }}
           >
-            {/* Touchpoints — what the referee experiences */}
             <h3
               style={{
                 fontSize: 'var(--font-size-lg)',
                 fontWeight: 700,
+                marginBottom: '0.25rem',
+              }}
+            >
+              The Referral Experience
+            </h3>
+            <p
+              style={{
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-gray-500)',
                 marginBottom: '1rem',
               }}
             >
-              How Edoo Manages the Referee Experience
-            </h3>
+              What your users see at each side of the referral flow
+            </p>
+            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1rem' }}>
+              <PreviewCard label="REFERRER SEES" data={refereePreview.referrer} />
+              <PreviewCard label="REFEREE SEES" data={refereePreview.referee} />
+            </div>
+            {/* Compact journey steps showing full automation scope */}
             <div
               style={{
-                border: '1px solid var(--color-gray-200)',
-                borderRadius: 'var(--radius-lg)',
-                overflow: 'hidden',
-                marginBottom: '1.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                flexWrap: 'wrap',
+                padding: '0.75rem 1rem',
+                backgroundColor: 'var(--color-gray-50)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px dashed var(--color-gray-300)',
               }}
             >
+              <span
+                style={{
+                  fontSize: '12px',
+                  color: 'var(--color-gray-500)',
+                  fontWeight: 600,
+                }}
+              >
+                Edoo automates:
+              </span>
               {refereeTouchpoints.map((tp, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: 'flex',
-                    gap: '1rem',
-                    padding: '0.875rem 1.25rem',
-                    borderBottom:
-                      i < refereeTouchpoints.length - 1
-                        ? '1px solid var(--color-gray-100)'
-                        : 'none',
-                    alignItems: 'flex-start',
-                  }}
-                >
-                  {/* Timeline dot */}
-                  <div
+                <React.Fragment key={i}>
+                  <span
                     style={{
-                      width: '20px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      paddingTop: '6px',
-                      flexShrink: 0,
+                      fontSize: '12px',
+                      color: 'var(--color-gray-600)',
                     }}
                   >
-                    <div
+                    {tp.step}
+                  </span>
+                  {i < refereeTouchpoints.length - 1 && (
+                    <span
                       style={{
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: '50%',
-                        backgroundColor: '#111',
-                      }}
-                    />
-                  </div>
-                  {/* Content */}
-                  <div style={{ flex: 1 }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        marginBottom: '0.25rem',
-                        flexWrap: 'wrap',
+                        fontSize: '10px',
+                        color: 'var(--color-gray-300)',
                       }}
                     >
-                      <span
-                        style={{
-                          fontWeight: 600,
-                          fontSize: 'var(--font-size-sm)',
-                          color: 'var(--color-gray-900)',
-                        }}
-                      >
-                        {tp.step}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: '11px',
-                          color: 'var(--color-gray-400)',
-                        }}
-                      >
-                        {'\u2192'} {tp.recipient}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: '11px',
-                          color: 'var(--color-gray-400)',
-                          fontStyle: 'italic',
-                        }}
-                      >
-                        via {tp.channel}
-                      </span>
-                    </div>
-                    <p
-                      style={{
-                        fontSize: 'var(--font-size-sm)',
-                        color: 'var(--color-gray-600)',
-                        fontStyle: 'italic',
-                        margin: 0,
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      &ldquo;{tp.message}&rdquo;
-                    </p>
-                  </div>
-                </div>
+                      {'\u2192'}
+                    </span>
+                  )}
+                </React.Fragment>
               ))}
             </div>
+          </section>
+        )}
 
-            {/* Execution timeline — seed / expand / optimize */}
+        {/* ── 7. Execution timeline ── */}
+        {showExecution && (
+          <section
+            style={{
+              marginBottom: '2rem',
+              animation: 'fadeIn 0.4s ease forwards',
+            }}
+          >
             <h3
               style={{
                 fontSize: 'var(--font-size-lg)',
@@ -931,7 +1016,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
           </section>
         )}
 
-        {/* ── 7. Expandable deep detail ── */}
+        {/* ── 8. Expandable deep detail ── */}
         {showExpandables && (
           <section
             style={{
@@ -953,7 +1038,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
         )}
       </main>
 
-      {/* ── 8. Bottom bar: Launch Campaigns ── */}
+      {/* ── 9. Bottom bar: Launch Campaigns ── */}
       {showLaunchCTA && (
         <div
           style={{

@@ -281,6 +281,25 @@ const neobank = {
     },
   ],
 
+  refereePreview: {
+    referrer: {
+      headline: 'You just made a deposit!',
+      body: 'Share your personal link and you both get $40 when your friend signs up.',
+      rewardDisplay: '$40',
+      rewardLabel: 'for you & your friend',
+      ctaText: 'Share My Link',
+      channel: 'Push notification',
+    },
+    referee: {
+      headline: 'Sarah sent you a gift!',
+      body: 'Sign up for an account and get $40 credit instantly \u2014 plus Sarah gets $40 too.',
+      rewardDisplay: '$40',
+      rewardLabel: 'sign-up credit',
+      ctaText: 'Claim My $40',
+      channel: 'Personalized landing page',
+    },
+  },
+
   executionPlan: {
     seed: {
       days: '1–7',
