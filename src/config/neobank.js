@@ -197,12 +197,12 @@ const neobank = {
   },
 
   projections: [
-    { budget: 50000, newUsers: 198, spend: 49200, cac: 249, signups: 198, firstTransactions: 67, convRate: 34, revPerReferral: 82, roi: 17, fraudSaved: 8200, fraudBlocked: 12 },
-    { budget: 100000, newUsers: 438, spend: 98400, cac: 225, signups: 438, firstTransactions: 149, convRate: 34, revPerReferral: 86, roi: 21, fraudSaved: 18600, fraudBlocked: 26 },
-    { budget: 150000, newUsers: 684, spend: 147600, cac: 216, signups: 684, firstTransactions: 233, convRate: 34, revPerReferral: 89, roi: 24, fraudSaved: 31200, fraudBlocked: 41 },
-    { budget: 250000, newUsers: 1120, spend: 246000, cac: 220, signups: 1120, firstTransactions: 381, convRate: 34, revPerReferral: 88, roi: 22, fraudSaved: 54800, fraudBlocked: 68 },
-    { budget: 500000, newUsers: 2180, spend: 492000, cac: 226, signups: 2180, firstTransactions: 741, convRate: 34, revPerReferral: 85, roi: 19, fraudSaved: 112000, fraudBlocked: 132 },
-    { budget: 1000000, newUsers: 4050, spend: 972000, cac: 240, signups: 4050, firstTransactions: 1377, convRate: 34, revPerReferral: 80, roi: 15, fraudSaved: 218000, fraudBlocked: 248 },
+    { budget: 50000, newUsers: 198, spend: 49200, cac: 249, signups: 312, firstTransactions: 67, convRate: 3.2, revPerReferral: 145, roi: 1.1, fraudSaved: 18200, fraudBlocked: 156 },
+    { budget: 100000, newUsers: 438, spend: 98400, cac: 225, signups: 680, firstTransactions: 149, convRate: 4.1, revPerReferral: 155, roi: 1.3, fraudSaved: 38400, fraudBlocked: 324 },
+    { budget: 150000, newUsers: 684, spend: 147600, cac: 216, signups: 1050, firstTransactions: 233, convRate: 5.0, revPerReferral: 165, roi: 1.5, fraudSaved: 63454, fraudBlocked: 583 },
+    { budget: 250000, newUsers: 1120, spend: 246000, cac: 220, signups: 1720, firstTransactions: 381, convRate: 4.6, revPerReferral: 160, roi: 1.4, fraudSaved: 98700, fraudBlocked: 892 },
+    { budget: 500000, newUsers: 2180, spend: 492000, cac: 226, signups: 3350, firstTransactions: 741, convRate: 4.2, revPerReferral: 155, roi: 1.3, fraudSaved: 178500, fraudBlocked: 1640 },
+    { budget: 1000000, newUsers: 4050, spend: 972000, cac: 240, signups: 6200, firstTransactions: 1377, convRate: 3.8, revPerReferral: 148, roi: 1.2, fraudSaved: 312000, fraudBlocked: 2890 },
   ],
 
   strategyBreakdown150K: {
@@ -289,6 +289,8 @@ const neobank = {
       rewardLabel: 'for you & your friend',
       ctaText: 'Share My Link',
       channel: 'Push notification',
+      rewardOptions: ['$40 Account Credit', '$40 Cashback', '1 month Netflix free'],
+      giftOptions: ['$40 Account Credit', '$40 Cashback', '$25 Amazon Gift Card'],
     },
     referee: {
       headline: 'Sarah sent you a gift!',

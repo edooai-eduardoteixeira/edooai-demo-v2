@@ -119,8 +119,48 @@ function MetricCard({ label, children }) {
   );
 }
 
+/* ───────── Reward Selector (mini pill UI) ───────── */
+function RewardSelector({ label, options, selectedIndex = 0 }) {
+  return (
+    <div style={{ marginBottom: '0.75rem' }}>
+      <div
+        style={{
+          fontSize: '11px',
+          fontWeight: 600,
+          color: 'var(--color-gray-500)',
+          marginBottom: '0.375rem',
+        }}
+      >
+        {label}
+      </div>
+      <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
+        {options.map((opt, i) => (
+          <span
+            key={i}
+            style={{
+              padding: '4px 10px',
+              fontSize: '11px',
+              fontWeight: 500,
+              borderRadius: '12px',
+              border: '1px solid',
+              borderColor: i === selectedIndex ? 'var(--color-black)' : 'var(--color-gray-200)',
+              backgroundColor: i === selectedIndex ? 'var(--color-black)' : '#fff',
+              color: i === selectedIndex ? 'var(--color-white)' : 'var(--color-gray-600)',
+              cursor: 'pointer',
+            }}
+          >
+            {opt}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ───────── Preview Card (referrer / referee mockup) ───────── */
 function PreviewCard({ label, data }) {
+  const hasRewardChoice = data.rewardOptions && data.giftOptions;
+
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       <div
@@ -177,35 +217,42 @@ function PreviewCard({ label, data }) {
         >
           {data.body}
         </p>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            marginBottom: '1.25rem',
-            padding: '0.75rem',
-            backgroundColor: 'var(--color-gray-50)',
-            borderRadius: 'var(--radius-md)',
-          }}
-        >
-          <span
+        {hasRewardChoice ? (
+          <div style={{ marginBottom: '1.25rem' }}>
+            <RewardSelector label="Choose your reward:" options={data.rewardOptions} selectedIndex={0} />
+            <RewardSelector label="Gift your friend:" options={data.giftOptions} selectedIndex={0} />
+          </div>
+        ) : (
+          <div
             style={{
-              fontSize: 'var(--font-size-2xl)',
-              fontWeight: 700,
-              color: 'var(--color-black)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              marginBottom: '1.25rem',
+              padding: '0.75rem',
+              backgroundColor: 'var(--color-gray-50)',
+              borderRadius: 'var(--radius-md)',
             }}
           >
-            {data.rewardDisplay}
-          </span>
-          <span
-            style={{
-              fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-gray-500)',
-            }}
-          >
-            {data.rewardLabel}
-          </span>
-        </div>
+            <span
+              style={{
+                fontSize: 'var(--font-size-2xl)',
+                fontWeight: 700,
+                color: 'var(--color-black)',
+              }}
+            >
+              {data.rewardDisplay}
+            </span>
+            <span
+              style={{
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-gray-500)',
+              }}
+            >
+              {data.rewardLabel}
+            </span>
+          </div>
+        )}
         <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'center' }}>
           <div
             style={{
@@ -529,14 +576,14 @@ export default function StrategyBuilderPage({ config, onNext }) {
   const runReveal = useCallback(async () => {
     // Brief streaming analysis (~3 seconds total)
     await streamText(
-      'Analyzing 847,000 customer records across 18 event types...',
+      'Mapping your users\u2019 activation path...',
       1200
     );
     await sleep(500);
     if (cancelRef.current) return;
 
     await streamText(
-      '82% follow a clear activation path. Designing strategy...',
+      'Designing your referral strategy...',
       1200
     );
     await sleep(500);
@@ -596,27 +643,12 @@ export default function StrategyBuilderPage({ config, onNext }) {
     };
   }, []);
 
-  /* ── Projected funnel stages (dynamic with slider) ── */
-  const projectedStages = [
-    { name: 'Sign-Up', users: proj.signups, percentage: 100 },
-    {
-      name: 'KYC Completed',
-      users: Math.round(proj.signups * 0.72),
-      percentage: 72,
-    },
-    {
-      name: 'First Transaction',
-      users: proj.firstTransactions,
-      percentage:
-        proj.signups > 0
-          ? Math.round((proj.firstTransactions / proj.signups) * 100)
-          : 34,
-    },
-    {
-      name: 'Recurring',
-      users: Math.round(proj.signups * 0.17),
-      percentage: 17,
-    },
+  /* ── Projected funnel cards (dynamic with slider) ── */
+  const funnelCards = [
+    { label: 'Sign-Ups', value: proj.signups, dark: true },
+    { label: 'KYC', value: Math.round(proj.signups * 0.72), dark: false },
+    { label: 'First Transaction', value: proj.firstTransactions, dark: false },
+    { label: 'Recurring', value: Math.round(proj.signups * 0.17), dark: false },
   ];
 
   /* ── Pipeline annotations (where each strategy triggers) ── */
@@ -733,11 +765,20 @@ export default function StrategyBuilderPage({ config, onNext }) {
               style={{
                 fontSize: 'var(--font-size-lg)',
                 fontWeight: 700,
+                marginBottom: '0.25rem',
+              }}
+            >
+              Monthly Budget
+            </h3>
+            <p
+              style={{
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-gray-500)',
                 marginBottom: '1rem',
               }}
             >
-              Set your monthly budget cap
-            </h3>
+              Edoo recommends starting at $150K/month based on your user base.
+            </p>
             <div style={{ marginBottom: '1.25rem' }}>
               <div
                 style={{
@@ -794,7 +835,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
           </section>
         )}
 
-        {/* ── 3. Projected funnel impact ── */}
+        {/* ── 3. Projected funnel impact (4-card layout) ── */}
         {showFunnel && (
           <section
             style={{
@@ -802,19 +843,52 @@ export default function StrategyBuilderPage({ config, onNext }) {
               animation: 'fadeIn 0.4s ease forwards',
             }}
           >
-            <h3
+            <p
               style={{
-                fontSize: 'var(--font-size-lg)',
-                fontWeight: 700,
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-gray-500)',
                 marginBottom: '1rem',
               }}
             >
-              Projected Funnel Impact
-            </h3>
-            <JourneyPipeline
-              stages={projectedStages}
-              visibleCount={projectedStages.length}
-            />
+              Here&apos;s what Edoo projects for your first 30 days:
+            </p>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              {funnelCards.map((card) => (
+                <div
+                  key={card.label}
+                  style={{
+                    flex: 1,
+                    padding: '1.5rem',
+                    borderRadius: 'var(--radius-lg)',
+                    textAlign: 'center',
+                    backgroundColor: card.dark ? 'var(--color-gray-900)' : 'var(--color-gray-50)',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 'var(--font-size-xs)',
+                      fontWeight: 500,
+                      color: card.dark ? 'rgba(255,255,255,0.6)' : 'var(--color-gray-500)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    {card.label}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '2rem',
+                      fontWeight: 700,
+                      color: card.dark ? 'var(--color-white)' : 'var(--color-black)',
+                    }}
+                  >
+                    <AnimatedNumber value={card.value} duration={300} />
+                  </div>
+                </div>
+              ))}
+            </div>
           </section>
         )}
 
@@ -828,7 +902,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
           >
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
               <MetricCard label="Conv Rate">
-                <AnimatedNumber value={proj.convRate} suffix="%" duration={300} />
+                <span>{typeof proj.convRate === 'number' ? proj.convRate.toFixed(1) : proj.convRate}%</span>
               </MetricCard>
               <MetricCard label="CAC">
                 <AnimatedNumber value={proj.cac} prefix="$" duration={300} />
@@ -837,12 +911,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 <AnimatedNumber value={proj.revPerReferral} prefix="$" duration={300} />
               </MetricCard>
               <MetricCard label="ROI">
-                <AnimatedNumber
-                  value={proj.roi}
-                  suffix="x"
-                  duration={300}
-                  formatter={(v) => (v / 10).toFixed(1)}
-                />
+                <span>{typeof proj.roi === 'number' ? proj.roi.toFixed(1) : proj.roi}x</span>
               </MetricCard>
               <MetricCard label="Fraud Saved">
                 <AnimatedNumber value={proj.fraudSaved} prefix="$" duration={300} />
@@ -859,6 +928,24 @@ export default function StrategyBuilderPage({ config, onNext }) {
               animation: 'fadeIn 0.4s ease forwards',
             }}
           >
+            <h3
+              style={{
+                fontSize: 'var(--font-size-lg)',
+                fontWeight: 700,
+                marginBottom: '0.25rem',
+              }}
+            >
+              How Edoo Gets There
+            </h3>
+            <p
+              style={{
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-gray-500)',
+                marginBottom: '1rem',
+              }}
+            >
+              Two complementary strategies, each targeting a different milestone on your users&apos; journey.
+            </p>
             <div style={{ display: 'flex', gap: '1.5rem' }}>
               <StrategyCard strategy={strategies.quickWin} variant="quickwin" />
               <StrategyCard strategy={strategies.lookALike} variant="lookalike" />
@@ -907,6 +994,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 backgroundColor: 'var(--color-gray-50)',
                 borderRadius: 'var(--radius-md)',
                 border: '1px dashed var(--color-gray-300)',
+                marginBottom: '0.75rem',
               }}
             >
               <span
@@ -941,6 +1029,15 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 </React.Fragment>
               ))}
             </div>
+            <p
+              style={{
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-gray-500)',
+                fontStyle: 'italic',
+              }}
+            >
+              Edoo personalizes the trigger, message, channel, and reward for each user automatically.
+            </p>
           </section>
         )}
 
