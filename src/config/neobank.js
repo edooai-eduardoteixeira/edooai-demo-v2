@@ -248,6 +248,39 @@ const neobank = {
     note: "Success probability is per-user (based on individual behavioral signals), not the aggregate conversion rate. High-probability individuals are selected first, which is why per-user probabilities (60%, 35%) are higher than the population average.",
   },
 
+  refereeTouchpoints: [
+    {
+      step: 'Referral Ask',
+      channel: 'Push / Email',
+      recipient: 'Referrer',
+      message: 'Hey [name], share your personal link and you both get $40 when your friend signs up.',
+    },
+    {
+      step: 'Invite Landing',
+      channel: 'Link',
+      recipient: 'Referee',
+      message: '[Referrer name] invited you to join. Sign up and you both get $40.',
+    },
+    {
+      step: 'Welcome & KYC',
+      channel: 'Push + Email',
+      recipient: 'Referee',
+      message: 'Welcome! Complete your ID verification to unlock your reward.',
+    },
+    {
+      step: 'Activation Nudge',
+      channel: 'Push',
+      recipient: 'Referee',
+      message: 'Make your first deposit to start earning — your $40 reward is waiting.',
+    },
+    {
+      step: 'Reward Credited',
+      channel: 'Push + In-App',
+      recipient: 'Both',
+      message: 'Your $40 reward has been credited to your account.',
+    },
+  ],
+
   executionPlan: {
     seed: {
       days: '1–7',
