@@ -3,8 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useVerticalConfig } from './hooks/useVerticalConfig.js';
 import LandingPage from './pages/LandingPage.jsx';
 import DataConnectionPage from './pages/DataConnectionPage.jsx';
-import AnalysisPage from './pages/AnalysisPage.jsx';
-import StrategyPage from './pages/StrategyPage.jsx';
+import StrategyBuilderPage from './pages/StrategyBuilderPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 
 export default function App() {
@@ -22,10 +21,8 @@ export default function App() {
     case 2:
       return <DataConnectionPage config={config} onNext={() => goToScreen(3)} />;
     case 3:
-      return <AnalysisPage config={config} onNext={() => goToScreen(4)} />;
+      return <StrategyBuilderPage config={config} onNext={() => goToScreen(4)} />;
     case 4:
-      return <StrategyPage config={config} onNext={() => goToScreen(5)} />;
-    case 5:
       return <DashboardPage config={config} />;
     default:
       return <LandingPage config={config} onNext={() => goToScreen(2)} />;

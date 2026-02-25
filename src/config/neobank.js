@@ -197,12 +197,12 @@ const neobank = {
   },
 
   projections: [
-    { budget: 50000, newUsers: 198, spend: 49200, cac: 249 },
-    { budget: 100000, newUsers: 438, spend: 98400, cac: 225 },
-    { budget: 150000, newUsers: 684, spend: 147600, cac: 216 },
-    { budget: 250000, newUsers: 1120, spend: 246000, cac: 220 },
-    { budget: 500000, newUsers: 2180, spend: 492000, cac: 226 },
-    { budget: 1000000, newUsers: 4050, spend: 972000, cac: 240 },
+    { budget: 50000, newUsers: 198, spend: 49200, cac: 249, signups: 198, firstTransactions: 67, convRate: 34, revPerReferral: 82, roi: 17, fraudSaved: 8200, fraudBlocked: 12 },
+    { budget: 100000, newUsers: 438, spend: 98400, cac: 225, signups: 438, firstTransactions: 149, convRate: 34, revPerReferral: 86, roi: 21, fraudSaved: 18600, fraudBlocked: 26 },
+    { budget: 150000, newUsers: 684, spend: 147600, cac: 216, signups: 684, firstTransactions: 233, convRate: 34, revPerReferral: 89, roi: 24, fraudSaved: 31200, fraudBlocked: 41 },
+    { budget: 250000, newUsers: 1120, spend: 246000, cac: 220, signups: 1120, firstTransactions: 381, convRate: 34, revPerReferral: 88, roi: 22, fraudSaved: 54800, fraudBlocked: 68 },
+    { budget: 500000, newUsers: 2180, spend: 492000, cac: 226, signups: 2180, firstTransactions: 741, convRate: 34, revPerReferral: 85, roi: 19, fraudSaved: 112000, fraudBlocked: 132 },
+    { budget: 1000000, newUsers: 4050, spend: 972000, cac: 240, signups: 4050, firstTransactions: 1377, convRate: 34, revPerReferral: 80, roi: 15, fraudSaved: 218000, fraudBlocked: 248 },
   ],
 
   strategyBreakdown150K: {
@@ -247,6 +247,39 @@ const neobank = {
     reason: '$133 vs. $857 per conversion',
     note: "Success probability is per-user (based on individual behavioral signals), not the aggregate conversion rate. High-probability individuals are selected first, which is why per-user probabilities (60%, 35%) are higher than the population average.",
   },
+
+  refereeTouchpoints: [
+    {
+      step: 'Referral Ask',
+      channel: 'Push / Email',
+      recipient: 'Referrer',
+      message: 'Hey [name], share your personal link and you both get $40 when your friend signs up.',
+    },
+    {
+      step: 'Invite Landing',
+      channel: 'Link',
+      recipient: 'Referee',
+      message: '[Referrer name] invited you to join. Sign up and you both get $40.',
+    },
+    {
+      step: 'Welcome & KYC',
+      channel: 'Push + Email',
+      recipient: 'Referee',
+      message: 'Welcome! Complete your ID verification to unlock your reward.',
+    },
+    {
+      step: 'Activation Nudge',
+      channel: 'Push',
+      recipient: 'Referee',
+      message: 'Make your first deposit to start earning — your $40 reward is waiting.',
+    },
+    {
+      step: 'Reward Credited',
+      channel: 'Push + In-App',
+      recipient: 'Both',
+      message: 'Your $40 reward has been credited to your account.',
+    },
+  ],
 
   executionPlan: {
     seed: {
