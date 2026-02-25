@@ -749,6 +749,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
               visibleCount={journeyInference.stages.length}
               annotations={pipelineAnnotations}
               showManagementBracket={true}
+              hideNumbers={true}
             />
           </section>
         )}

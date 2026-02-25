@@ -7,7 +7,7 @@ function formatNumber(n) {
 
 const fillColors = ['#111', '#333', '#555', '#777'];
 
-function StageCard({ stage, index, visible, annotation, animateFill }) {
+function StageCard({ stage, index, visible, annotation, animateFill, hideNumbers }) {
   const [fillWidth, setFillWidth] = useState(0);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ function StageCard({ stage, index, visible, annotation, animateFill }) {
           padding: '16px',
           textAlign: 'center',
           width: '100%',
-          height: '140px',
+          height: hideNumbers ? '90px' : '140px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
@@ -66,24 +66,27 @@ function StageCard({ stage, index, visible, annotation, animateFill }) {
           {stage.name}
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          {!hideNumbers && (
+            <div
+              style={{
+                fontSize: '26px',
+                fontWeight: 700,
+                color: '#111',
+                lineHeight: 1.2,
+              }}
+            >
+              {formatNumber(stage.users)}
+            </div>
+          )}
           <div
             style={{
-              fontSize: '26px',
-              fontWeight: 700,
-              color: '#111',
-              lineHeight: 1.2,
-            }}
-          >
-            {formatNumber(stage.users)}
-          </div>
-          <div
-            style={{
-              fontSize: '12px',
-              color: '#999',
+              fontSize: hideNumbers ? '20px' : '12px',
+              fontWeight: hideNumbers ? 700 : 400,
+              color: hideNumbers ? '#111' : '#999',
               marginTop: '2px',
             }}
           >
-            {stage.percentage}% of base
+            {stage.percentage}%{!hideNumbers && ' of base'}
           </div>
         </div>
         <div
@@ -177,6 +180,7 @@ export default function JourneyPipeline({
   editable = false,
   onRename,
   showManagementBracket = false,
+  hideNumbers = false,
 }) {
   return (
     <div>
@@ -199,6 +203,7 @@ export default function JourneyPipeline({
               visible={i < visibleCount}
               annotation={annotations[i]}
               animateFill={animateFill}
+              hideNumbers={hideNumbers}
             />
             {i < stages.length - 1 && (
               <Connector
