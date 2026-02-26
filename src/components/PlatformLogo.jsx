@@ -137,14 +137,14 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
   const isInteractive = !connected && !connecting && !disabled;
 
   const getBorderColor = () => {
-    if (connected) return '#34C759';
+    if (connected) return 'var(--success)';
     if (hovered && isInteractive) return 'var(--text-primary)';
     return 'var(--border)';
   };
 
   const getBgColor = () => {
-    if (connected) return '#F0FFF4';
-    return '#fff';
+    if (connected) return 'var(--color-green-50)';
+    return 'var(--surface)';
   };
 
   return (
@@ -164,11 +164,11 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
           border: `1px solid ${getBorderColor()}`,
           backgroundColor: getBgColor(),
           cursor: isInteractive ? 'pointer' : 'default',
-          transition: 'all 150ms ease',
+          transition: 'all var(--transition-fast)',
           position: 'relative',
           transform: hovered && isInteractive ? 'scale(1.05)' : 'scale(1)',
           boxShadow: hovered && isInteractive
-            ? '0 2px 8px rgba(0,0,0,0.1)'
+            ? 'var(--shadow-md)'
             : 'none',
           opacity: disabled && !connected ? 0.45 : 1,
         }}
@@ -181,7 +181,7 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
               border: '2.5px solid var(--color-gray-200)',
               borderTopColor: 'var(--color-gray-700)',
               borderRadius: '50%',
-              animation: 'spin 0.8s linear infinite',
+              animation: 'spin 0.7s linear infinite',
             }}
           />
         ) : (
@@ -196,11 +196,11 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
               width: '14px',
               height: '14px',
               borderRadius: '50%',
-              backgroundColor: '#34C759',
+              backgroundColor: 'var(--success)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '2px solid #fff',
+              border: '2px solid var(--surface)',
             }}
           >
             <svg width="7" height="7" viewBox="0 0 8 8" fill="none">
@@ -242,11 +242,6 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
           ✓ Connected
         </span>
       )}
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }
