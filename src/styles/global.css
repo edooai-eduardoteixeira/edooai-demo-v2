@@ -174,7 +174,7 @@ input[type="range"]::-moz-range-progress {
 }
 
 .monitoring-pulse {
-  animation: monitoringPulse 2s ease-in-out infinite;
+  animation: monitoringPulse 3s ease-in-out infinite;
 }
 
 /* Mobile responsive breakpoints */

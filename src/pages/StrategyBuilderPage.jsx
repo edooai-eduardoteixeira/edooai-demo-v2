@@ -981,7 +981,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
               {/* Right column — Fraud Estimation */}
               <div
                 style={{
-                  border: '1.5px dashed var(--color-gray-300)',
+                  border: '1px dashed var(--color-gray-200)',
                   borderRadius: 'var(--radius-lg)',
                   padding: '1.25rem',
                   backgroundColor: '#fff',
@@ -994,23 +994,23 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   <span
                     className="monitoring-pulse"
                     style={{
-                      width: '8px',
-                      height: '8px',
+                      width: '6px',
+                      height: '6px',
                       borderRadius: '50%',
-                      backgroundColor: '#f59e0b',
+                      backgroundColor: 'var(--color-gray-400)',
                       flexShrink: 0,
                     }}
                   />
                   <span
                     style={{
-                      fontSize: '11px',
+                      fontSize: 'var(--font-size-xs)',
                       fontWeight: 600,
-                      color: '#b45309',
+                      color: 'var(--color-gray-400)',
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
                     }}
                   >
-                    Pre-launch estimate
+                    Estimated
                   </span>
                 </div>
 
@@ -1021,12 +1021,12 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       style={{
                         fontSize: 'var(--font-size-4xl)',
                         fontWeight: 700,
-                        color: 'var(--color-black)',
+                        color: 'var(--color-gray-700)',
                         lineHeight: 1,
                         cursor: 'help',
                       }}
                     >
-                      {riskManagement.fraud.reduce((sum, f) => sum + f.rate, 0).toFixed(1)}%
+                      ~{riskManagement.fraud.reduce((sum, f) => sum + f.rate, 0).toFixed(1)}%
                     </div>
                     <div
                       style={{
@@ -1035,7 +1035,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         marginTop: '0.25rem',
                       }}
                     >
-                      Est. fraud exposure
+                      Total fraud exposure
                     </div>
                   </div>
                 </Tooltip>
@@ -1066,7 +1066,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           style={{
                             fontSize: 'var(--font-size-sm)',
                             fontWeight: 600,
-                            color: 'var(--color-gray-800)',
+                            color: 'var(--color-gray-700)',
                             fontFamily: 'monospace',
                           }}
                         >
