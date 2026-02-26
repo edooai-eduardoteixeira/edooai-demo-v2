@@ -151,41 +151,20 @@ const neobank = {
   },
 
   // Screen 4 — Strategy & Projections
-  strategies: {
-    quickWin: {
-      name: 'Quick Win',
-      headline: 'Maximize New Sign-Ups',
-      target:
-        'High-propensity referrers (users with strong social signals and recent engagement)',
-      successMetric: 'Referee completes sign-up',
-      qualificationBehavioral:
-        'Behavioral only (profile data not connected)',
-      qualificationWithProfile:
-        'Sign-up + age 25–45 in target metros',
-      rewardPerSide: 40,
-      rewardTotal: 80,
-      rewardTypes: ['Coupon', 'Account Credit'],
-      abTestNote: 'A/B tested',
-      basis: 'Quick-acquisition approach. Low barrier, high volume.',
-      timing: 'Sends within 24h of eligibility detection',
-    },
-    lookALike: {
-      name: 'Look-a-Like',
-      headline: 'Maximize Active Users',
-      target:
-        'Most engaged existing users; acquire referees who resemble them',
-      successMetric: 'Referee completes first transaction',
-      qualificationBehavioral:
-        'Behavioral only (profile data not connected)',
-      qualificationWithProfile:
-        '1st transaction + income bracket match',
-      rewardPerSide: 150,
-      rewardTotal: 300,
-      rewardTypes: ['Cashback', 'Account Credit'],
-      abTestNote: 'A/B tested',
-      basis:
-        'Clone-the-best approach. Higher barrier, higher lifetime value. Based on your 34% sign-up to first transaction conversion rate.',
-      timing: 'Sends at peak engagement time per user',
+  strategy: {
+    name: 'Look-a-Like',
+    headline: 'Clone Your Best Users',
+    goal: 'Grow active customers through targeted referrals to high-probability matches',
+    target: 'Most engaged existing users; acquire referees who resemble them',
+    successMetric: 'Referee completes first transaction',
+    successDetail: 'Hard metric — no reward on sign-up alone',
+    rewardPerSide: 150,
+    rewardTypes: ['Cashback', 'Account Credit'],
+    timing: 'Triggered at peak engagement moments per user',
+    allocation: {
+      activePercent: 60,
+      reservePercent: 40,
+      description: 'Ranked by expected cost per active customer',
     },
   },
 
@@ -205,47 +184,31 @@ const neobank = {
     { budget: 1000000, newUsers: 4050, spend: 972000, cac: 240, signups: 6200, firstTransactions: 1377, convRate: 3.8, revPerReferral: 148, roi: 1.2, fraudSaved: 312000, fraudBlocked: 2890 },
   ],
 
-  strategyBreakdown150K: {
-    quickWin: {
-      eligibleReferrers: 2400,
-      projectedReferralsSent: 3600,
-      projectedConversions: 540,
-      conversionUnit: 'sign-ups',
-      rewardPerConversion: 80,
-      projectedSpend: 43200,
-      allocationPercent: 78,
+  allocationDetail: {
+    totalEligibleReferrers: 3080,
+    activeTier: {
+      referrers: 1848,
+      projectedReferralsSent: 2960,
+      projectedActiveCustomers: 233,
+      projectedSpend: 69900,
+      avgSuccessProbability: 0.42,
     },
-    lookALike: {
-      eligibleReferrers: 680,
-      projectedReferralsSent: 1360,
-      projectedConversions: 144,
-      conversionUnit: 'first transactions',
-      rewardPerConversion: 300,
-      projectedSpend: 43200,
-      allocationPercent: 22,
+    reserveTier: {
+      referrers: 1232,
+      note: 'Held in reserve — activated as budget allows or if active tier underperforms',
     },
     reservedBudget: 61200,
-    reservedNote:
-      'Allocated for expand and optimize phases (weeks 2–4)',
-  },
-
-  perUserROIExample: {
-    userId: '4,821',
-    quickWin: {
-      costPerSide: 40,
-      totalCost: 80,
-      successProbability: 0.6,
-      expectedCostPerConversion: 133,
-    },
-    lookALike: {
+    reservedNote: 'Allocated for expand and optimize phases (weeks 2–4)',
+    perUserExample: {
+      userId: '4,821',
       costPerSide: 150,
       totalCost: 300,
       successProbability: 0.35,
       expectedCostPerConversion: 857,
+      tier: 'Reserve',
+      reason: 'Expected cost per active customer ($857) exceeds budget-efficient threshold',
+      note: 'Success probability is per-user (based on individual behavioral signals). High-probability individuals are activated first, which is why top-tier probabilities are higher than the population average.',
     },
-    assignedTo: 'Quick Win',
-    reason: '$133 vs. $857 per conversion',
-    note: "Success probability is per-user (based on individual behavioral signals), not the aggregate conversion rate. High-probability individuals are selected first, which is why per-user probabilities (60%, 35%) are higher than the population average.",
   },
 
   refereeTouchpoints: [
@@ -281,25 +244,72 @@ const neobank = {
     },
   ],
 
-  refereePreview: {
-    referrer: {
-      headline: 'You just made a deposit!',
-      body: 'Share your personal link and you both get $40 when your friend signs up.',
-      rewardDisplay: '$40',
-      rewardLabel: 'for you & your friend',
-      ctaText: 'Share My Link',
-      channel: 'Push notification',
-      rewardOptions: ['$40 Account Credit', '$40 Cashback', '1 month Netflix free'],
-      giftOptions: ['$40 Account Credit', '$40 Cashback', '$25 Amazon Gift Card'],
-    },
-    referee: {
-      headline: 'Sarah sent you a gift!',
-      body: 'Sign up for an account and get $40 credit instantly \u2014 plus Sarah gets $40 too.',
-      rewardDisplay: '$40',
-      rewardLabel: 'sign-up credit',
-      ctaText: 'Claim My $40',
-      channel: 'Personalized landing page',
-    },
+  previewExperience: {
+    triggers: [
+      {
+        label: 'Bill Payment',
+        referrer: {
+          headline: 'You just paid your Netflix bill!',
+          body: 'Help a friend save on streaming too.',
+          rewardOptions: ['1 month Netflix free', '$10 Account Credit', '$10 Cashback'],
+          giftOptions: ['1 month Netflix free', '$12 Account Credit', '$12 Cashback'],
+          ctaText: 'Share Now',
+          channel: 'Push notification',
+        },
+        referee: {
+          avatar: 'S',
+          avatarColor: '#E91E63',
+          headline: 'Sarah sent you a gift!',
+          body: 'She wants you to watch Netflix free for a month.',
+          giftLabel: 'FREE Netflix for 1 month',
+          giftIcon: 'netflix',
+          ctaText: 'Claim My Gift',
+          socialProof: 'Join 10,000+ happy users',
+        },
+      },
+      {
+        label: 'Direct Deposit',
+        referrer: {
+          headline: 'Your paycheck just landed!',
+          body: 'Know someone who deserves better banking? You both get $150.',
+          rewardOptions: ['$150 Cashback', '$150 Account Credit', '$75 + Gift Card'],
+          giftOptions: ['$150 Cashback', '$150 Account Credit', '$75 + Gift Card'],
+          ctaText: 'Share Now',
+          channel: 'Push notification',
+        },
+        referee: {
+          avatar: 'M',
+          avatarColor: '#2196F3',
+          headline: 'Mike thinks you should switch!',
+          body: 'Join and get $150 when you set up direct deposit.',
+          giftLabel: '$150 welcome bonus',
+          giftIcon: 'cash',
+          ctaText: 'Claim My $150',
+          socialProof: 'Join 10,000+ happy users',
+        },
+      },
+      {
+        label: 'P2P Transfer',
+        referrer: {
+          headline: 'You just sent money to Alex!',
+          body: 'Invite more friends and you both earn $150.',
+          rewardOptions: ['$150 Cashback', '$150 Account Credit', '$75 + Gift Card'],
+          giftOptions: ['$150 Cashback', '$150 Account Credit', '$75 + Gift Card'],
+          ctaText: 'Share Now',
+          channel: 'In-app prompt',
+        },
+        referee: {
+          avatar: 'J',
+          avatarColor: '#4CAF50',
+          headline: 'Jordan invited you!',
+          body: 'Open an account and get $150 when you make your first transaction.',
+          giftLabel: '$150 activation bonus',
+          giftIcon: 'cash',
+          ctaText: 'Claim My $150',
+          socialProof: 'Join 10,000+ happy users',
+        },
+      },
+    ],
   },
 
   executionPlan: {
