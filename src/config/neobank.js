@@ -256,25 +256,57 @@ const neobank = {
     },
     fraud: [
       {
-        type: 'Self-referral',
-        description: 'A customer refers themselves using a second account \u2014 same person, two accounts, free rewards.',
-        whyItMatters: 'Highest-volume referral fraud type. Directly wastes budget.',
-        detection: 'Device fingerprinting, IP correlation, behavioral signals.',
+        type: 'Fake Identity',
+        scale: 'Individual \u00b7 manual \u00b7 small scale',
+        description:
+          'One person creates fake accounts to self-refer. Includes account cycling \u2014 open, earn reward, go dormant, repeat as a \u201cnew\u201d referee elsewhere.',
+        whyItMatters:
+          'Highest-volume type. Each instance is small, but it is constant and compounds over time.',
+        signals: [
+          'Device fingerprint persistence across accounts',
+          'IP / network correlation',
+          'Behavioral biometrics (navigation patterns, timing)',
+          'KYC data overlap detection',
+          'Account-then-dormancy cycling patterns',
+        ],
+        response:
+          'Reward held pre-payout. Both accounts flagged. Fingerprint cluster blacklisted for future matches.',
       },
       {
-        type: 'Fake activation',
-        description: 'Referee makes a minimal qualifying transaction just to capture the reward, with no intent to become a real customer.',
-        whyItMatters: 'Success metric is technically met but the customer gained no real value.',
-        detection: 'Transaction pattern analysis (amount, timing, merchant) against genuine user baselines.',
+        type: 'Organized Fraud Rings',
+        scale: 'High volume \u00b7 coordinated',
+        description:
+          'Groups \u2014 human, bot, or both \u2014 that systematically extract referral rewards. Closed referral loops, bot-farmed signups, or paid workers completing minimum qualifying actions.',
+        whyItMatters:
+          'Can drain significant budget in days. Damage concentrates before detection if not caught early.',
+        signals: [
+          'Network graph analysis (closed loops, star patterns, isolated clusters)',
+          'Velocity anomalies (batch-like signup / activation timing)',
+          'Shared infrastructure markers (IP ranges, device similarity, email patterns)',
+          'Bot signals (session duration, navigation speed, headless browser detection)',
+        ],
+        response:
+          'Entire cluster frozen simultaneously \u2014 not one-by-one. Pattern fed back into model. Escalation triggered.',
       },
       {
-        type: 'Referral collusion',
-        description: 'Organized groups referring each other in a ring to collect multiple rewards.',
-        whyItMatters: 'Can drain budget rapidly through coordinated abuse.',
-        detection: 'Network graph analysis \u2014 detecting closed loops in referral chains.',
+        type: 'Attribution Abuse',
+        scale: 'Medium volume \u00b7 invisible until measured',
+        description:
+          'Referrer posts their code or link publicly \u2014 Reddit, coupon sites, social media. Real people sign up using the code, but the referrer had zero influence on their decision. You pay referral rewards for what would have been free organic acquisition.',
+        whyItMatters:
+          'Not fraud in the traditional sense \u2014 the referee is real, the transaction is genuine. But the economic damage is identical: budget spent with no incremental value.',
+        signals: [
+          'Referral channel classification (personal share via SMS / email vs. public broadcast)',
+          'Referrer volume anomalies (normal: 2\u20135 conversions, broadcaster: 50+)',
+          'Link appearance on known coupon / deal sites',
+          'Click-to-signup timing (personal referrals are fast, broadcast pickups are delayed and scattered)',
+        ],
+        response:
+          'Attribution downweighted or rejected for broadcast-originated signups. Per-referrer reward cap enforced. Referral codes monitored on public surfaces.',
       },
     ],
-    fraudAction: 'When detected: reward held pending review, account flagged, pattern added to detection model.',
+    fraudSummary:
+      'Three different adversary profiles, three different detection strategies. Edoo runs all three continuously \u2014 rewards are never released until signals clear.',
   },
 
   // Approval scope
