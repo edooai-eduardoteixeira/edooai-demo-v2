@@ -424,11 +424,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
   }, []);
 
   const runReveal = useCallback(async () => {
-    await streamText('Analyzing your customer base and transaction data...', 1200);
-    await sleep(400);
-    if (cancelRef.current) return;
-
-    await streamText('Building your referral execution plan...', 1000);
+    await streamText('Analyzing your data to propose Referral Strategy and Execution Plan...', 1600);
     await sleep(400);
     if (cancelRef.current) return;
 
