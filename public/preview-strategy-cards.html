@@ -60,18 +60,24 @@
 
   /* ═══ LAYOUT CHANGE: Data fields ═══ */
   .field { border-top: 1px solid var(--border-light); padding: 8px 16px; }
-  .field-label { font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+  .field-label { font-size: 12px; font-weight: 400; color: var(--text-tertiary); margin-bottom: 2px; }
 
   /* ═══ Grid-aligned fields (Stripe/Linear pattern) ═══ */
   .fields-grid {
-    border-top: 1px solid var(--border-light);
     display: grid;
     grid-template-columns: max-content 1fr;
-    gap: 6px 16px;
-    padding: 10px 16px;
+    column-gap: 16px;
+    padding: 0 16px;
     align-items: baseline;
   }
   .fields-grid .field-label { margin-bottom: 0; }
+  /* Row separators: border-top on each label + its value */
+  .fields-grid > .field-label,
+  .fields-grid > .field-label + * {
+    border-top: 1px solid var(--border-light);
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
 
   /* Inline fallback for single-field rows */
   .field-inline {
@@ -114,7 +120,7 @@
     padding: 8px 16px;
     background: var(--accent-light);
   }
-  .msg-header-label { font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
+  .msg-header-label { font-size: 12px; font-weight: 400; color: var(--text-tertiary); flex-shrink: 0; }
 
   /* Segmented control */
   .seg-control {
@@ -171,7 +177,7 @@
 
   /* Share channel (step 2) */
   .share-row { border-top: 1px solid var(--border-light); padding: 8px 16px; }
-  .share-label { font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+  .share-label { font-size: 12px; font-weight: 400; color: var(--text-tertiary); margin-bottom: 2px; }
   .share-sub { font-size: 11px; color: var(--text-tertiary); font-style: italic; margin-bottom: 6px; }
   .share-icons { display: flex; gap: 8px; }
   .share-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; }
