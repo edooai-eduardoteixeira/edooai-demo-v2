@@ -31,7 +31,7 @@ export default function CTAButton({
         : hovered
           ? 'var(--accent-hover)'
           : 'var(--accent)',
-      color: '#ffffff',
+      color: 'var(--color-white)',
       opacity: disabled ? 0.6 : 1,
       boxShadow: disabled
         ? 'none'

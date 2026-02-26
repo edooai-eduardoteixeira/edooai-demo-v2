@@ -189,16 +189,15 @@ export default function AnalysisPage({ config, onNext }) {
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: '#FAFAFA',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        backgroundColor: 'var(--accent-subtle)',
       }}
     >
       {/* Header */}
       <header
         style={{
           padding: '1.5rem 3rem',
-          borderBottom: '1px solid #E5E5E5',
-          backgroundColor: '#FFFFFF',
+          borderBottom: '1px solid var(--border)',
+          backgroundColor: 'var(--surface)',
         }}
       >
         <Logo />
@@ -222,8 +221,9 @@ export default function AnalysisPage({ config, onNext }) {
             style={{
               fontSize: '28px',
               fontWeight: 700,
-              color: '#111',
+              color: 'var(--text-primary)',
               margin: 0,
+              letterSpacing: '-0.02em',
             }}
           >
             AI Analysis
@@ -237,14 +237,14 @@ export default function AnalysisPage({ config, onNext }) {
             minHeight: phase === 1 ? '80px' : '50px',
             overflow: 'hidden',
             position: 'relative',
-            transition: 'max-height 0.5s ease, min-height 0.5s ease',
+            transition: 'max-height var(--transition-slow), min-height var(--transition-slow)',
           }}
         >
           {phase === 1 && (
             <div
               style={{
                 opacity: fadeOutPhase1 ? 0 : 1,
-                transition: 'opacity 0.4s ease',
+                transition: 'opacity var(--transition-slow)',
               }}
             >
               {lines.map((line, i) => (
@@ -252,7 +252,7 @@ export default function AnalysisPage({ config, onNext }) {
                   key={i}
                   style={{
                     fontSize: '14px',
-                    color: '#666',
+                    color: 'var(--text-secondary)',
                     marginBottom: '4px',
                     lineHeight: 1.6,
                     margin: 0,
@@ -266,7 +266,7 @@ export default function AnalysisPage({ config, onNext }) {
                 <p
                   style={{
                     fontSize: '14px',
-                    color: '#666',
+                    color: 'var(--text-secondary)',
                     lineHeight: 1.6,
                     margin: 0,
                     padding: 0,
@@ -278,7 +278,7 @@ export default function AnalysisPage({ config, onNext }) {
                       display: 'inline-block',
                       width: '2px',
                       height: '1em',
-                      backgroundColor: '#666',
+                      backgroundColor: 'var(--text-secondary)',
                       marginLeft: '2px',
                       animation: 'blink 1s step-end infinite',
                       verticalAlign: 'text-bottom',
@@ -293,7 +293,7 @@ export default function AnalysisPage({ config, onNext }) {
             <div
               style={{
                 opacity: 1,
-                transition: 'opacity 0.4s ease',
+                transition: 'opacity var(--transition-slow)',
               }}
             >
               {phase2Lines.map((line, i) => (
@@ -301,7 +301,7 @@ export default function AnalysisPage({ config, onNext }) {
                   key={i}
                   style={{
                     fontSize: '14px',
-                    color: '#666',
+                    color: 'var(--text-secondary)',
                     lineHeight: 1.6,
                     margin: 0,
                     padding: 0,
@@ -315,7 +315,7 @@ export default function AnalysisPage({ config, onNext }) {
                 <p
                   style={{
                     fontSize: '14px',
-                    color: '#666',
+                    color: 'var(--text-secondary)',
                     lineHeight: 1.6,
                     margin: 0,
                     padding: 0,
@@ -327,7 +327,7 @@ export default function AnalysisPage({ config, onNext }) {
                       display: 'inline-block',
                       width: '2px',
                       height: '1em',
-                      backgroundColor: '#666',
+                      backgroundColor: 'var(--text-secondary)',
                       marginLeft: '2px',
                       animation: 'blink 1s step-end infinite',
                       verticalAlign: 'text-bottom',
@@ -347,7 +347,7 @@ export default function AnalysisPage({ config, onNext }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'min-height 0.5s ease',
+            transition: 'min-height var(--transition-slow)',
             paddingTop: phase === 2 && Object.keys(annotations).length > 0 ? '50px' : '0',
           }}
         >
@@ -373,13 +373,13 @@ export default function AnalysisPage({ config, onNext }) {
               justifyContent: 'center',
               gap: '12px',
               opacity: fadeOutPhase1 ? 0 : 1,
-              transition: 'opacity 0.3s ease',
+              transition: 'opacity var(--transition-slow)',
             }}
           >
             <p
               style={{
                 fontSize: '16px',
-                color: '#666',
+                color: 'var(--text-secondary)',
                 margin: 0,
               }}
             >
@@ -388,18 +388,18 @@ export default function AnalysisPage({ config, onNext }) {
             <button
               onClick={handleConfirm}
               style={{
-                background: '#111',
-                color: '#FFFFFF',
-                borderRadius: '8px',
+                background: 'var(--accent)',
+                color: 'var(--color-white)',
+                borderRadius: 'var(--radius-md)',
                 padding: '14px 32px',
                 fontSize: '16px',
                 fontWeight: 600,
                 border: 'none',
                 cursor: 'pointer',
-                transition: 'background 0.2s ease',
+                transition: 'background var(--transition-base)',
               }}
-              onMouseOver={(e) => (e.currentTarget.style.background = '#333')}
-              onMouseOut={(e) => (e.currentTarget.style.background = '#111')}
+              onMouseOver={(e) => (e.currentTarget.style.background = 'var(--accent-hover)')}
+              onMouseOut={(e) => (e.currentTarget.style.background = 'var(--accent)')}
             >
               Confirm Journey
             </button>
@@ -424,24 +424,24 @@ export default function AnalysisPage({ config, onNext }) {
                 width: 'calc(50% - 12px)',
                 minWidth: '280px',
                 minHeight: '160px',
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E5E5E5',
-                borderRadius: '8px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
+                backgroundColor: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-md)',
+                boxShadow: 'var(--shadow-sm)',
                 padding: '24px',
                 textAlign: 'center',
                 opacity: showCard1 ? 1 : 0,
                 transform: showCard1 ? 'translateY(0)' : 'translateY(20px)',
-                transition: 'opacity 0.4s ease, transform 0.4s ease',
+                transition: 'opacity var(--transition-slow), transform var(--transition-slow)',
               }}
             >
               <div
                 style={{
                   fontSize: '11px',
                   fontWeight: 700,
-                  color: '#999',
+                  color: 'var(--text-tertiary)',
                   textTransform: 'uppercase',
-                  letterSpacing: '1px',
+                  letterSpacing: '0.05em',
                   marginBottom: '12px',
                 }}
               >
@@ -449,9 +449,9 @@ export default function AnalysisPage({ config, onNext }) {
               </div>
               <div
                 style={{
-                  fontSize: '42px',
-                  fontWeight: 700,
-                  color: '#111',
+                  fontSize: '32px',
+                  fontWeight: 800,
+                  color: 'var(--text-primary)',
                   lineHeight: 1.1,
                 }}
               >
@@ -460,7 +460,7 @@ export default function AnalysisPage({ config, onNext }) {
               <div
                 style={{
                   fontSize: '15px',
-                  color: '#666',
+                  color: 'var(--text-secondary)',
                   marginTop: '4px',
                   marginBottom: '12px',
                 }}
@@ -470,7 +470,7 @@ export default function AnalysisPage({ config, onNext }) {
               <div
                 style={{
                   fontSize: '13px',
-                  color: '#888',
+                  color: 'var(--text-tertiary)',
                   lineHeight: 1.5,
                 }}
               >
@@ -486,24 +486,24 @@ export default function AnalysisPage({ config, onNext }) {
                 width: 'calc(50% - 12px)',
                 minWidth: '280px',
                 minHeight: '160px',
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E5E5E5',
-                borderRadius: '8px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
+                backgroundColor: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-md)',
+                boxShadow: 'var(--shadow-sm)',
                 padding: '24px',
                 textAlign: 'center',
                 opacity: showCard2 ? 1 : 0,
                 transform: showCard2 ? 'translateY(0)' : 'translateY(20px)',
-                transition: 'opacity 0.4s ease, transform 0.4s ease',
+                transition: 'opacity var(--transition-slow), transform var(--transition-slow)',
               }}
             >
               <div
                 style={{
                   fontSize: '11px',
                   fontWeight: 700,
-                  color: '#999',
+                  color: 'var(--text-tertiary)',
                   textTransform: 'uppercase',
-                  letterSpacing: '1px',
+                  letterSpacing: '0.05em',
                   marginBottom: '12px',
                 }}
               >
@@ -521,30 +521,30 @@ export default function AnalysisPage({ config, onNext }) {
                   <div
                     style={{
                       fontSize: '32px',
-                      fontWeight: 700,
-                      color: '#111',
+                      fontWeight: 800,
+                      color: 'var(--text-primary)',
                       lineHeight: 1.1,
                     }}
                   >
                     ${rewardPricingExample.signupReward}
                   </div>
-                  <div style={{ fontSize: '13px', color: '#666', marginTop: '2px' }}>
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>
                     sign-up reward
                   </div>
                 </div>
-                <span style={{ fontSize: '24px', color: '#999', lineHeight: 1 }}>→</span>
+                <span style={{ fontSize: '24px', color: 'var(--text-tertiary)', lineHeight: 1 }}>→</span>
                 <div style={{ textAlign: 'center' }}>
                   <div
                     style={{
                       fontSize: '32px',
-                      fontWeight: 700,
-                      color: '#111',
+                      fontWeight: 800,
+                      color: 'var(--text-primary)',
                       lineHeight: 1.1,
                     }}
                   >
                     ~${rewardPricingExample.effectiveCostPerTransaction}
                   </div>
-                  <div style={{ fontSize: '13px', color: '#666', marginTop: '2px' }}>
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>
                     per active user
                   </div>
                 </div>
@@ -552,7 +552,7 @@ export default function AnalysisPage({ config, onNext }) {
               <div
                 style={{
                   fontSize: '13px',
-                  color: '#888',
+                  color: 'var(--text-tertiary)',
                   lineHeight: 1.5,
                   marginTop: '12px',
                 }}
@@ -587,18 +587,18 @@ export default function AnalysisPage({ config, onNext }) {
             <button
               onClick={onNext}
               style={{
-                background: '#111',
-                color: '#FFFFFF',
-                borderRadius: '8px',
+                background: 'var(--accent)',
+                color: 'var(--color-white)',
+                borderRadius: 'var(--radius-md)',
                 padding: '14px 32px',
                 fontSize: '16px',
                 fontWeight: 600,
                 border: 'none',
                 cursor: 'pointer',
-                transition: 'background 0.2s ease',
+                transition: 'background var(--transition-base)',
               }}
-              onMouseOver={(e) => (e.currentTarget.style.background = '#333')}
-              onMouseOut={(e) => (e.currentTarget.style.background = '#111')}
+              onMouseOver={(e) => (e.currentTarget.style.background = 'var(--accent-hover)')}
+              onMouseOut={(e) => (e.currentTarget.style.background = 'var(--accent)')}
             >
               View Strategy Proposal
             </button>
@@ -614,10 +614,6 @@ export default function AnalysisPage({ config, onNext }) {
       <style>{`
         @keyframes blink {
           50% { opacity: 0; }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
         }
       `}</style>
     </div>

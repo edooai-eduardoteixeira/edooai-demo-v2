@@ -10,13 +10,13 @@ function MetricRow({ label, value }) {
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '0.875rem 0',
-        borderBottom: '1px solid var(--color-gray-100)',
+        borderBottom: '1px solid var(--border-light)',
       }}
     >
       <span
         style={{
           fontSize: 'var(--font-size-sm)',
-          color: 'var(--color-gray-600)',
+          color: 'var(--text-secondary)',
         }}
       >
         {label}
@@ -25,7 +25,7 @@ function MetricRow({ label, value }) {
         style={{
           fontSize: 'var(--font-size-base)',
           fontWeight: 600,
-          color: 'var(--color-gray-900)',
+          color: 'var(--text-primary)',
         }}
       >
         {value}
@@ -99,16 +99,15 @@ function SimpleLineChart({ data, phases }) {
               y1={y}
               x2={width - padding.right}
               y2={y}
-              stroke="#e5e5e5"
+              style={{ stroke: 'var(--border)' }}
               strokeWidth="1"
             />
             <text
               x={padding.left - 10}
               y={y + 4}
               textAnchor="end"
-              fill="#a3a3a3"
+              style={{ fill: 'var(--text-tertiary)', fontFamily: 'var(--font-family)' }}
               fontSize="11"
-              fontFamily="Inter, sans-serif"
             >
               {val}
             </text>
@@ -125,9 +124,8 @@ function SimpleLineChart({ data, phases }) {
             x={x}
             y={height - 10}
             textAnchor="middle"
-            fill="#a3a3a3"
+            style={{ fill: 'var(--text-tertiary)', fontFamily: 'var(--font-family)' }}
             fontSize="11"
-            fontFamily="Inter, sans-serif"
           >
             Day {day}
           </text>
@@ -142,7 +140,7 @@ function SimpleLineChart({ data, phases }) {
           y1={padding.top}
           x2={x}
           y2={padding.top + chartH}
-          stroke="#d4d4d4"
+          style={{ stroke: 'var(--color-gray-300)' }}
           strokeWidth="1"
           strokeDasharray="4,4"
         />
@@ -155,9 +153,8 @@ function SimpleLineChart({ data, phases }) {
           x={x}
           y={padding.top - 8}
           textAnchor="middle"
-          fill="#a3a3a3"
-          fontSize="10"
-          fontFamily="Inter, sans-serif"
+          style={{ fill: 'var(--text-tertiary)', fontFamily: 'var(--font-family)' }}
+          fontSize="11"
           fontWeight="500"
         >
           {label}
@@ -168,14 +165,14 @@ function SimpleLineChart({ data, phases }) {
       <path d={areaD} fill="url(#areaGradient)" />
 
       {/* Line */}
-      <path d={pathD} fill="none" stroke="black" strokeWidth="2.5" strokeLinejoin="round" />
+      <path d={pathD} fill="none" style={{ stroke: 'var(--text-primary)' }} strokeWidth="2.5" strokeLinejoin="round" />
 
       {/* End dot */}
       <circle
         cx={points[points.length - 1].x}
         cy={points[points.length - 1].y}
         r="4"
-        fill="black"
+        style={{ fill: 'var(--text-primary)' }}
       />
     </svg>
   );
@@ -196,7 +193,7 @@ export default function DashboardPage({ config }) {
       <header
         style={{
           padding: '1.5rem 3rem',
-          borderBottom: '1px solid var(--color-gray-100)',
+          borderBottom: '1px solid var(--border-light)',
         }}
       >
         <Logo />
@@ -224,7 +221,7 @@ export default function DashboardPage({ config }) {
         <p
           style={{
             fontSize: 'var(--font-size-sm)',
-            color: 'var(--color-gray-500)',
+            color: 'var(--text-tertiary)',
             marginBottom: '2rem',
           }}
         >
@@ -234,7 +231,7 @@ export default function DashboardPage({ config }) {
         {/* Metrics */}
         <div
           style={{
-            border: '1px solid var(--color-gray-200)',
+            border: '1px solid var(--border)',
             borderRadius: 'var(--radius-lg)',
             padding: '1.5rem',
             marginBottom: '2rem',
@@ -269,7 +266,7 @@ export default function DashboardPage({ config }) {
         {/* Chart */}
         <div
           style={{
-            border: '1px solid var(--color-gray-200)',
+            border: '1px solid var(--border)',
             borderRadius: 'var(--radius-lg)',
             padding: '1.5rem',
             marginBottom: '2rem',

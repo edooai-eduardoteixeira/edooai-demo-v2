@@ -52,7 +52,7 @@ export default function Expandable({ title, children }) {
         style={{
           maxHeight: open ? '2000px' : '0',
           overflow: 'hidden',
-          transition: 'max-height 0.4s ease',
+          transition: 'max-height var(--transition-slow)',
         }}
       >
         <div style={{ padding: '1.5rem' }}>{children}</div>

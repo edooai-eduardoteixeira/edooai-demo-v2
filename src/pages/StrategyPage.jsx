@@ -12,10 +12,10 @@ function StrategyCard({ strategy, variant }) {
     <div
       style={{
         flex: 1,
-        border: '1px solid var(--color-gray-200)',
+        border: '1px solid var(--border)',
         borderRadius: 'var(--radius-lg)',
         padding: '1.25rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
+        boxShadow: 'var(--shadow-sm)',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
@@ -26,7 +26,7 @@ function StrategyCard({ strategy, variant }) {
           fontSize: 'var(--font-size-lg)',
           fontWeight: 700,
           marginBottom: '0.75rem',
-          color: 'var(--color-gray-900)',
+          color: 'var(--text-primary)',
         }}
       >
         {strategy.headline}
@@ -55,7 +55,7 @@ function InfoRow({ label, value }) {
         style={{
           fontSize: 'var(--font-size-xs)',
           fontWeight: 600,
-          color: 'var(--color-gray-500)',
+          color: 'var(--text-tertiary)',
           textTransform: 'uppercase',
           letterSpacing: '0.05em',
         }}
@@ -65,7 +65,7 @@ function InfoRow({ label, value }) {
       <p
         style={{
           fontSize: 'var(--font-size-sm)',
-          color: 'var(--color-gray-700)',
+          color: 'var(--text-secondary)',
           marginTop: '0.125rem',
           lineHeight: 1.5,
         }}
@@ -82,17 +82,17 @@ function MetricCard({ label, children }) {
       style={{
         flex: 1,
         padding: '1.25rem',
-        backgroundColor: 'var(--color-gray-50)',
+        backgroundColor: 'var(--accent-subtle)',
         borderRadius: 'var(--radius-lg)',
         textAlign: 'center',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
+        boxShadow: 'var(--shadow-sm)',
       }}
     >
       <div
         style={{
           fontSize: 'var(--font-size-xs)',
           fontWeight: 500,
-          color: 'var(--color-gray-500)',
+          color: 'var(--text-tertiary)',
           marginBottom: '0.5rem',
           textTransform: 'uppercase',
           letterSpacing: '0.05em',
@@ -104,7 +104,7 @@ function MetricCard({ label, children }) {
         style={{
           fontSize: 'var(--font-size-4xl)',
           fontWeight: 700,
-          color: 'var(--color-black)',
+          color: 'var(--text-primary)',
         }}
       >
         {children}
@@ -132,7 +132,7 @@ export default function StrategyPage({ config, onNext }) {
       <header
         style={{
           padding: '1.5rem 3rem',
-          borderBottom: '1px solid var(--color-gray-100)',
+          borderBottom: '1px solid var(--border-light)',
         }}
       >
         <Logo />
@@ -203,7 +203,7 @@ export default function StrategyPage({ config, onNext }) {
               <span
                 style={{
                   fontSize: 'var(--font-size-sm)',
-                  color: 'var(--color-gray-500)',
+                  color: 'var(--text-tertiary)',
                 }}
               >
                 {formatCurrency(budgetSlider.min)}
@@ -212,7 +212,7 @@ export default function StrategyPage({ config, onNext }) {
                 style={{
                   fontSize: 'var(--font-size-2xl)',
                   fontWeight: 700,
-                  color: 'var(--color-black)',
+                  color: 'var(--text-primary)',
                 }}
               >
                 <AnimatedNumber
@@ -224,7 +224,7 @@ export default function StrategyPage({ config, onNext }) {
               <span
                 style={{
                   fontSize: 'var(--font-size-sm)',
-                  color: 'var(--color-gray-500)',
+                  color: 'var(--text-tertiary)',
                 }}
               >
                 {formatCurrency(budgetSlider.max)}
@@ -265,7 +265,7 @@ export default function StrategyPage({ config, onNext }) {
           <p
             style={{
               fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-gray-500)',
+              color: 'var(--text-tertiary)',
               lineHeight: 1.6,
             }}
           >
@@ -296,8 +296,8 @@ export default function StrategyPage({ config, onNext }) {
         style={{
           position: 'sticky',
           bottom: 0,
-          borderTop: '1px solid var(--color-gray-200)',
-          backgroundColor: 'var(--color-white)',
+          borderTop: '1px solid var(--border)',
+          backgroundColor: 'var(--surface)',
           padding: '1.25rem 3rem',
           display: 'flex',
           flexDirection: 'column',
@@ -310,7 +310,7 @@ export default function StrategyPage({ config, onNext }) {
         <p
           style={{
             fontSize: 'var(--font-size-xs)',
-            color: 'var(--color-gray-400)',
+            color: 'var(--text-tertiary)',
           }}
         >
           In production, this triggers autonomous execution. In this demo, we'll
@@ -331,7 +331,7 @@ function StrategyDetailContent({ breakdown, strategies, roiExample, budget }) {
           fontSize: 'var(--font-size-sm)',
           fontWeight: 600,
           marginBottom: '1rem',
-          color: 'var(--color-gray-700)',
+          color: 'var(--text-secondary)',
         }}
       >
         Per-Strategy Breakdown at Current Budget ({formatBudget(budget)})
@@ -347,7 +347,7 @@ function StrategyDetailContent({ breakdown, strategies, roiExample, budget }) {
           }}
         >
           <thead>
-            <tr style={{ borderBottom: '2px solid var(--color-gray-200)' }}>
+            <tr style={{ borderBottom: '2px solid var(--border)' }}>
               <th style={thStyle}></th>
               <th style={thStyle}>Quick Win</th>
               <th style={thStyle}>Look-a-Like</th>
@@ -389,7 +389,7 @@ function StrategyDetailContent({ breakdown, strategies, roiExample, budget }) {
         <p
           style={{
             fontSize: 'var(--font-size-xs)',
-            color: 'var(--color-gray-400)',
+            color: 'var(--text-tertiary)',
             marginTop: '0.75rem',
             fontStyle: 'italic',
           }}
@@ -404,12 +404,12 @@ function StrategyDetailContent({ breakdown, strategies, roiExample, budget }) {
           fontSize: 'var(--font-size-sm)',
           fontWeight: 600,
           marginBottom: '0.75rem',
-          color: 'var(--color-gray-700)',
+          color: 'var(--text-secondary)',
         }}
       >
         A/B Test Variables
       </h4>
-      <ul style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.8, paddingLeft: '1.25rem', marginBottom: '2rem' }}>
+      <ul style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', lineHeight: 1.8, paddingLeft: '1.25rem', marginBottom: '2rem' }}>
         <li>Quick Win: Coupon vs. Account Credit x 2 message variants = 4 combinations.</li>
         <li>Look-a-Like: Cashback vs. Account Credit x 2 message variants = 4 combinations.</li>
         <li>Timing: Quick Win sends within 24h of eligibility detection. Look-a-Like sends at peak engagement time per user (inferred from historical activity patterns).</li>
@@ -422,18 +422,18 @@ function StrategyDetailContent({ breakdown, strategies, roiExample, budget }) {
           fontSize: 'var(--font-size-sm)',
           fontWeight: 600,
           marginBottom: '0.75rem',
-          color: 'var(--color-gray-700)',
+          color: 'var(--text-secondary)',
         }}
       >
         Per-User ROI Ranking Example
       </h4>
       <div
         style={{
-          backgroundColor: 'var(--color-gray-50)',
+          backgroundColor: 'var(--accent-subtle)',
           borderRadius: 'var(--radius-md)',
           padding: '1rem',
           fontSize: 'var(--font-size-sm)',
-          color: 'var(--color-gray-700)',
+          color: 'var(--text-secondary)',
           lineHeight: 1.7,
           marginBottom: '1rem',
         }}
@@ -458,7 +458,7 @@ function StrategyDetailContent({ breakdown, strategies, roiExample, budget }) {
       <p
         style={{
           fontSize: 'var(--font-size-xs)',
-          color: 'var(--color-gray-400)',
+          color: 'var(--text-tertiary)',
           fontStyle: 'italic',
         }}
       >
@@ -472,7 +472,7 @@ function StrategyDetailContent({ breakdown, strategies, roiExample, budget }) {
           fontWeight: 600,
           marginTop: '1.5rem',
           marginBottom: '0.75rem',
-          color: 'var(--color-gray-700)',
+          color: 'var(--text-secondary)',
         }}
       >
         Current Allocation Logic
@@ -480,7 +480,7 @@ function StrategyDetailContent({ breakdown, strategies, roiExample, budget }) {
       <p
         style={{
           fontSize: 'var(--font-size-sm)',
-          color: 'var(--color-gray-600)',
+          color: 'var(--text-secondary)',
           lineHeight: 1.7,
         }}
       >
@@ -510,14 +510,14 @@ function ExecutionPlanContent({ plan }) {
           style={{
             marginBottom: '1.5rem',
             paddingLeft: '1rem',
-            borderLeft: '3px solid var(--color-gray-200)',
+            borderLeft: '3px solid var(--border)',
           }}
         >
           <h4
             style={{
               fontSize: 'var(--font-size-sm)',
               fontWeight: 600,
-              color: 'var(--color-gray-800)',
+              color: 'var(--text-primary)',
               marginBottom: '0.375rem',
             }}
           >
@@ -526,7 +526,7 @@ function ExecutionPlanContent({ plan }) {
           <p
             style={{
               fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-gray-600)',
+              color: 'var(--text-secondary)',
               lineHeight: 1.6,
             }}
           >
@@ -537,10 +537,10 @@ function ExecutionPlanContent({ plan }) {
       <p
         style={{
           fontSize: 'var(--font-size-sm)',
-          color: 'var(--color-gray-500)',
+          color: 'var(--text-tertiary)',
           fontStyle: 'italic',
           padding: '0.75rem',
-          backgroundColor: 'var(--color-gray-50)',
+          backgroundColor: 'var(--accent-subtle)',
           borderRadius: 'var(--radius-md)',
         }}
       >
@@ -555,22 +555,22 @@ const thStyle = {
   padding: '0.75rem',
   fontSize: 'var(--font-size-sm)',
   fontWeight: 600,
-  color: 'var(--color-gray-700)',
+  color: 'var(--text-secondary)',
 };
 
 const trStyle = {
-  borderBottom: '1px solid var(--color-gray-100)',
+  borderBottom: '1px solid var(--border-light)',
 };
 
 const tdLabelStyle = {
   padding: '0.625rem 0.75rem',
   fontSize: 'var(--font-size-sm)',
   fontWeight: 500,
-  color: 'var(--color-gray-600)',
+  color: 'var(--text-secondary)',
 };
 
 const tdStyle = {
   padding: '0.625rem 0.75rem',
   fontSize: 'var(--font-size-sm)',
-  color: 'var(--color-gray-700)',
+  color: 'var(--text-secondary)',
 };

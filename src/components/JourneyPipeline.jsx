@@ -5,7 +5,7 @@ function formatNumber(n) {
   return n.toLocaleString('en-US');
 }
 
-const fillColors = ['#111', '#333', '#555', '#777'];
+const fillColors = ['var(--accent)', 'var(--color-gray-700)', 'var(--color-gray-600)', 'var(--color-gray-500)'];
 
 function StageCard({ stage, index, visible, annotation, animateFill }) {
   const [fillWidth, setFillWidth] = useState(0);
@@ -29,22 +29,22 @@ function StageCard({ stage, index, visible, annotation, animateFill }) {
         alignItems: 'center',
         opacity: visible ? 1 : 0,
         transform: visible ? 'translateX(0)' : 'translateX(-20px)',
-        transition: 'opacity 0.4s ease, transform 0.4s ease',
+        transition: 'opacity var(--transition-slow), transform var(--transition-slow)',
         width: '200px',
         minWidth: '160px',
         flexShrink: 1,
       }}
     >
       {annotation && (
-        <div style={{ marginBottom: '8px', opacity: 1, transition: 'opacity 0.3s ease' }}>
+        <div style={{ marginBottom: '8px', opacity: 1, transition: 'opacity var(--transition-slow)' }}>
           <Badge variant={annotation.variant}>{annotation.text}</Badge>
         </div>
       )}
       <div
         style={{
-          backgroundColor: '#FFFFFF',
-          border: '1px solid #E5E5E5',
-          borderRadius: '8px',
+          backgroundColor: 'var(--surface)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-md)',
           padding: '16px',
           textAlign: 'center',
           width: '100%',
@@ -52,14 +52,14 @@ function StageCard({ stage, index, visible, annotation, animateFill }) {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
+          boxShadow: 'var(--shadow-sm)',
         }}
       >
         <div
           style={{
             fontSize: '14px',
             fontWeight: 700,
-            color: '#111',
+            color: 'var(--text-primary)',
             textAlign: 'left',
           }}
         >
@@ -68,9 +68,9 @@ function StageCard({ stage, index, visible, annotation, animateFill }) {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <div
             style={{
-              fontSize: '26px',
+              fontSize: '24px',
               fontWeight: 700,
-              color: '#111',
+              color: 'var(--text-primary)',
               lineHeight: 1.2,
             }}
           >
@@ -79,7 +79,7 @@ function StageCard({ stage, index, visible, annotation, animateFill }) {
           <div
             style={{
               fontSize: '12px',
-              color: '#999',
+              color: 'var(--text-tertiary)',
               marginTop: '2px',
             }}
           >
@@ -90,7 +90,7 @@ function StageCard({ stage, index, visible, annotation, animateFill }) {
           style={{
             width: '100%',
             height: '6px',
-            backgroundColor: '#EEEEEE',
+            backgroundColor: 'var(--color-gray-200)',
             borderRadius: '3px',
             overflow: 'hidden',
           }}
@@ -99,9 +99,9 @@ function StageCard({ stage, index, visible, annotation, animateFill }) {
             style={{
               width: `${fillWidth}%`,
               height: '100%',
-              backgroundColor: fillColors[index] || '#777',
+              backgroundColor: fillColors[index] || 'var(--color-gray-500)',
               borderRadius: '3px',
-              transition: 'width 0.4s ease',
+              transition: 'width 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
           />
         </div>
@@ -119,7 +119,7 @@ function Connector({ visible, conversionLabel }) {
         alignItems: 'center',
         justifyContent: 'center',
         opacity: visible ? 1 : 0,
-        transition: 'opacity 0.2s ease',
+        transition: 'opacity var(--transition-base)',
         width: '24px',
         flexShrink: 0,
         alignSelf: 'center',
@@ -129,7 +129,7 @@ function Connector({ visible, conversionLabel }) {
         <div
           style={{
             fontSize: '12px',
-            color: '#999',
+            color: 'var(--text-tertiary)',
             whiteSpace: 'nowrap',
             marginBottom: '4px',
           }}
@@ -149,12 +149,12 @@ function Connector({ visible, conversionLabel }) {
           style={{
             flex: 1,
             height: '2px',
-            backgroundColor: '#CCCCCC',
+            backgroundColor: 'var(--color-gray-300)',
           }}
         />
         <span
           style={{
-            color: '#999',
+            color: 'var(--text-tertiary)',
             fontSize: '16px',
             lineHeight: 1,
             marginLeft: '-2px',
@@ -217,13 +217,13 @@ export default function JourneyPipeline({
               transform: 'translateX(-50%)',
               textAlign: 'center',
               opacity: 1,
-              transition: 'opacity 0.3s ease',
+              transition: 'opacity var(--transition-slow)',
             }}
           >
-            <span style={{ fontSize: '18px', fontWeight: 700, color: '#111' }}>
+            <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>
               {conversionAnnotation.rate}
             </span>
-            <span style={{ fontSize: '12px', color: '#888', marginLeft: '6px' }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginLeft: '6px' }}>
               {conversionAnnotation.label}
             </span>
           </div>
@@ -234,12 +234,12 @@ export default function JourneyPipeline({
           style={{
             marginTop: '1rem',
             padding: '0.75rem 1rem',
-            backgroundColor: 'var(--color-gray-50)',
-            border: '1px dashed var(--color-gray-300)',
-            borderRadius: '8px',
+            backgroundColor: 'var(--accent-subtle)',
+            border: '1px dashed var(--border)',
+            borderRadius: 'var(--radius-md)',
             textAlign: 'center',
             fontSize: '14px',
-            color: 'var(--color-gray-600)',
+            color: 'var(--text-secondary)',
           }}
         >
           Edoo AI manages the referred user's journey end-to-end through this window.
