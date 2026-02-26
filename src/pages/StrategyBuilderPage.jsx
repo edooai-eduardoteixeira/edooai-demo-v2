@@ -1001,35 +1001,79 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   fontSize: 'var(--font-size-sm)',
                   color: 'var(--color-gray-600)',
                   lineHeight: 1.6,
-                  marginBottom: '1rem',
+                  marginBottom: '1.25rem',
                 }}
               >
-                Edoo autonomously issues financial rewards on behalf of your business. If a fraudulent referral succeeds, your budget is wasted. Three critical risks:
+                Edoo autonomously issues financial rewards on behalf of your business. If a fraudulent referral succeeds, your budget is wasted. Three adversary profiles, each requiring a different detection strategy:
               </p>
               {riskManagement.fraud.map((item, i) => (
                 <div
                   key={i}
                   style={{
-                    marginBottom: i < riskManagement.fraud.length - 1 ? '1rem' : 0,
+                    marginBottom: '1.25rem',
                     paddingLeft: '1rem',
                     borderLeft: '3px solid var(--color-gray-200)',
                   }}
                 >
-                  <h4
-                    style={{
-                      fontSize: 'var(--font-size-sm)',
-                      fontWeight: 600,
-                      color: 'var(--color-gray-800)',
-                      marginBottom: '0.25rem',
-                    }}
-                  >
-                    {item.type}
-                  </h4>
-                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.5, margin: 0, marginBottom: '0.25rem' }}>
+                  {/* Title + scale badge */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
+                    <h4
+                      style={{
+                        fontSize: 'var(--font-size-sm)',
+                        fontWeight: 600,
+                        color: 'var(--color-gray-800)',
+                        margin: 0,
+                      }}
+                    >
+                      {item.type}
+                    </h4>
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        color: 'var(--color-gray-400)',
+                        backgroundColor: 'var(--color-gray-50)',
+                        border: '1px solid var(--color-gray-200)',
+                        borderRadius: '9999px',
+                        padding: '1px 8px',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {item.scale}
+                    </span>
+                  </div>
+
+                  {/* Description */}
+                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.5, margin: 0, marginBottom: '0.35rem' }}>
                     {item.description}
                   </p>
-                  <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-400)', margin: 0, fontStyle: 'italic' }}>
-                    Detection: {item.detection}
+
+                  {/* Why it matters */}
+                  <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-500)', margin: 0, marginBottom: '0.5rem', fontStyle: 'italic' }}>
+                    {item.whyItMatters}
+                  </p>
+
+                  {/* Detection signals */}
+                  <p style={{ fontSize: 'var(--font-size-xs)', fontWeight: 600, color: 'var(--color-gray-500)', margin: 0, marginBottom: '0.25rem' }}>
+                    Signals:
+                  </p>
+                  <ul style={{ margin: 0, paddingLeft: '1.1rem', marginBottom: '0.4rem' }}>
+                    {item.signals.map((signal, j) => (
+                      <li
+                        key={j}
+                        style={{
+                          fontSize: 'var(--font-size-xs)',
+                          color: 'var(--color-gray-400)',
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {signal}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Response */}
+                  <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-500)', margin: 0 }}>
+                    <span style={{ fontWeight: 600 }}>Response:</span> {item.response}
                   </p>
                 </div>
               ))}
@@ -1038,10 +1082,10 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   fontSize: 'var(--font-size-sm)',
                   color: 'var(--color-gray-600)',
                   fontWeight: 600,
-                  marginTop: '1rem',
+                  marginTop: '0.25rem',
                 }}
               >
-                {riskManagement.fraudAction}
+                {riskManagement.fraudSummary}
               </p>
             </Expandable>
           </section>
