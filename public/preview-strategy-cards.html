@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --text-primary: #0f172a; --text-strong: #334155; --text-secondary: #475569; --text-tertiary: #94a3b8;
+    --text-primary: #0f172a; --text-strong: #334155; --text-secondary: #475569; --text-muted: #64748b; --text-tertiary: #94a3b8;
     --border: #e2e8f0; --border-light: #f1f5f9;
     --accent: #1a1a1a; --accent-subtle: #fafafa; --accent-light: #f5f5f5;
     --surface: #ffffff; --bg: #ffffff;
@@ -60,7 +60,7 @@
 
   /* ═══ LAYOUT CHANGE: Data fields ═══ */
   .field { border-top: 1px solid var(--border-light); padding: 8px 16px; }
-  .field-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 2px; }
+  .field-label { font-size: 12px; font-weight: 400; color: var(--text-muted); margin-bottom: 2px; }
 
   /* ═══ Grid-aligned fields (Stripe/Linear pattern) ═══ */
   .fields-grid {
@@ -94,7 +94,7 @@
   /* Trigger sub-categories */
   .trigger-subs { display: flex; flex-direction: column; gap: 2px; }
   .trigger-sub { display: flex; align-items: baseline; gap: 8px; }
-  .trigger-type { font-size: 12px; font-weight: 400; color: var(--text-tertiary); min-width: 80px; flex-shrink: 0; }
+  .trigger-type { font-size: 12px; font-weight: 400; color: var(--text-muted); min-width: 80px; flex-shrink: 0; }
 
   .or-sep { font-size: 11px; color: var(--text-tertiary); font-weight: 400; font-style: italic; margin: 0 2px; }
   .val-sep { color: var(--text-tertiary); font-weight: 400; margin: 0 2px; }
@@ -109,7 +109,7 @@
     padding: 8px 16px;
     background: var(--accent-light);
   }
-  .msg-header-label { font-size: 12px; font-weight: 400; color: var(--text-tertiary); flex-shrink: 0; }
+  .msg-header-label { font-size: 12px; font-weight: 400; color: var(--text-muted); flex-shrink: 0; }
 
   /* Segmented control */
   .seg-control {
@@ -166,7 +166,7 @@
 
   /* Share channel (step 2) */
   .share-row { border-top: 1px solid var(--border-light); padding: 8px 16px; }
-  .share-label { font-size: 12px; font-weight: 400; color: var(--text-tertiary); margin-bottom: 2px; }
+  .share-label { font-size: 12px; font-weight: 400; color: var(--text-muted); margin-bottom: 2px; }
   .share-sub { font-size: 11px; color: var(--text-tertiary); font-style: italic; margin-bottom: 6px; }
   .share-icons { display: flex; gap: 8px; }
   .share-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; }
