@@ -918,112 +918,186 @@ export default function StrategyBuilderPage({ config, onNext }) {
               How Edoo protects your budget during continuous operations.
             </p>
 
-            {/* Controls table */}
-            <div
-              style={{
-                border: '1px solid var(--color-gray-200)',
-                borderRadius: 'var(--radius-lg)',
-                overflow: 'hidden',
-                marginBottom: '1.5rem',
-              }}
-            >
-              {riskManagement.controls.map((ctrl, i) => (
-                <Tooltip key={ctrl.key} text={ctrl.tooltip}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '0.75rem 1.25rem',
-                      borderBottom: i < riskManagement.controls.length - 1 ? '1px solid var(--color-gray-100)' : 'none',
-                      backgroundColor: '#fff',
-                      transition: 'background-color var(--transition-fast)',
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-gray-50)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#fff'; }}
-                  >
-                    <span
+            {/* Two-column layout: Controls + Fraud side by side on desktop */}
+            <div className="risk-layout">
+              {/* Left column — Controls */}
+              <div
+                style={{
+                  border: '1px solid var(--color-gray-200)',
+                  borderRadius: 'var(--radius-lg)',
+                  overflow: 'hidden',
+                }}
+              >
+                {riskManagement.controls.map((ctrl, i) => {
+                  const displayValue = ctrl.format === 'currency'
+                    ? formatCurrency(Math.round(budget * ctrl.ratio))
+                    : ctrl.fixedValue;
+                  return (
+                    <div
+                      key={ctrl.key}
                       style={{
-                        fontSize: 'var(--font-size-sm)',
-                        fontWeight: 500,
-                        color: 'var(--color-gray-700)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '0.75rem 1.25rem',
+                        borderBottom: i < riskManagement.controls.length - 1 ? '1px solid var(--color-gray-100)' : 'none',
+                        backgroundColor: '#fff',
                       }}
                     >
-                      {ctrl.label}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 'var(--font-size-sm)',
-                        fontWeight: 600,
-                        color: 'var(--color-black)',
-                        padding: '2px 10px',
-                        border: '1px solid var(--color-gray-200)',
-                        borderRadius: 'var(--radius-sm)',
-                        backgroundColor: 'var(--color-gray-50)',
-                        fontFamily: 'monospace',
-                      }}
-                    >
-                      {ctrl.value}
-                    </span>
-                  </div>
-                </Tooltip>
-              ))}
-            </div>
+                      <Tooltip text={ctrl.labelTooltip}>
+                        <span
+                          style={{
+                            fontSize: 'var(--font-size-sm)',
+                            fontWeight: 500,
+                            color: 'var(--color-gray-700)',
+                            borderBottom: '1px dotted var(--color-gray-400)',
+                          }}
+                        >
+                          {ctrl.label}
+                        </span>
+                      </Tooltip>
+                      <Tooltip text={ctrl.valueTooltip}>
+                        <span
+                          style={{
+                            fontSize: 'var(--font-size-sm)',
+                            fontWeight: 600,
+                            color: 'var(--color-black)',
+                            padding: '2px 10px',
+                            border: '1px solid var(--color-gray-200)',
+                            borderRadius: 'var(--radius-sm)',
+                            backgroundColor: 'var(--color-gray-50)',
+                            fontFamily: 'monospace',
+                            cursor: 'help',
+                          }}
+                        >
+                          {displayValue}
+                        </span>
+                      </Tooltip>
+                    </div>
+                  );
+                })}
+              </div>
 
-            {/* Fraud cards */}
-            <div
-              style={{
-                display: 'flex',
-                gap: '1rem',
-                marginBottom: '1rem',
-              }}
-            >
-              {riskManagement.fraud.map((item, i) => (
-                <Tooltip key={i} text={item.tooltip}>
-                  <div
+              {/* Right column — Fraud Estimation */}
+              <div
+                style={{
+                  border: '1px dashed var(--color-gray-200)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '1.25rem',
+                  backgroundColor: '#fff',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                {/* Estimation label */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  <span
+                    className="monitoring-pulse"
                     style={{
-                      flex: 1,
-                      padding: '1rem',
-                      border: '1px solid var(--color-gray-200)',
-                      borderRadius: 'var(--radius-lg)',
-                      backgroundColor: '#fff',
-                      transition: 'background-color var(--transition-fast)',
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      backgroundColor: 'var(--color-gray-400)',
+                      flexShrink: 0,
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-gray-50)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#fff'; }}
+                  />
+                  <span
+                    style={{
+                      fontSize: 'var(--font-size-xs)',
+                      fontWeight: 600,
+                      color: 'var(--color-gray-400)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                      <span
-                        style={{
-                          width: '8px',
-                          height: '8px',
-                          borderRadius: '50%',
-                          backgroundColor: 'var(--color-green-500)',
-                          flexShrink: 0,
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontSize: 'var(--font-size-sm)',
-                          fontWeight: 600,
-                          color: 'var(--color-gray-800)',
-                        }}
-                      >
-                        {item.type}
-                      </span>
+                    Estimated
+                  </span>
+                </div>
+
+                {/* Big KPI — total fraud rate */}
+                <Tooltip text={riskManagement.fraudTotalTooltip}>
+                  <div style={{ marginBottom: '1rem' }}>
+                    <div
+                      style={{
+                        fontSize: 'var(--font-size-4xl)',
+                        fontWeight: 700,
+                        color: 'var(--color-gray-700)',
+                        lineHeight: 1,
+                        cursor: 'help',
+                      }}
+                    >
+                      ~{riskManagement.fraud.reduce((sum, f) => sum + f.rate, 0).toFixed(1)}%
                     </div>
                     <div
                       style={{
-                        fontSize: 'var(--font-size-2xl)',
-                        fontWeight: 700,
-                        color: 'var(--color-black)',
+                        fontSize: 'var(--font-size-xs)',
+                        color: 'var(--color-gray-500)',
+                        marginTop: '0.25rem',
                       }}
                     >
-                      {item.rate}%
+                      Total fraud exposure
                     </div>
                   </div>
                 </Tooltip>
-              ))}
+
+                {/* Breakdown rows */}
+                <div style={{ borderTop: '1px solid var(--color-gray-100)', paddingTop: '0.75rem' }}>
+                  {riskManagement.fraud.map((item, i) => (
+                    <Tooltip key={i} text={item.tooltip}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '0.375rem 0',
+                          borderBottom: i < riskManagement.fraud.length - 1 ? '1px solid var(--color-gray-50)' : 'none',
+                          cursor: 'help',
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: 'var(--font-size-xs)',
+                            color: 'var(--color-gray-600)',
+                          }}
+                        >
+                          {item.type}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 'var(--font-size-sm)',
+                            fontWeight: 600,
+                            color: 'var(--color-gray-700)',
+                            fontFamily: 'monospace',
+                          }}
+                        >
+                          {item.rate}%
+                        </span>
+                      </div>
+                    </Tooltip>
+                  ))}
+                </div>
+
+                {/* Monitoring footer */}
+                <div
+                  style={{
+                    marginTop: 'auto',
+                    paddingTop: '0.75rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.375rem',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      color: 'var(--color-gray-400)',
+                      fontStyle: 'italic',
+                    }}
+                  >
+                    Monitored in real-time during execution
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Policy line */}
@@ -1033,6 +1107,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 fontWeight: 600,
                 color: 'var(--color-gray-600)',
                 margin: 0,
+                marginTop: '1rem',
               }}
             >
               {riskManagement.fraudPolicy}
