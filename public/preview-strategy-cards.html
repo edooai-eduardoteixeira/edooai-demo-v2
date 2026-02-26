@@ -62,17 +62,18 @@
   .field { border-top: 1px solid var(--border-light); padding: 8px 16px; }
   .field-label { font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
 
-  /* CHANGE 1: Horizontal field pairs (Trigger + Promotional side by side) */
-  .field-pair {
+  /* ═══ Grid-aligned fields (Stripe/Linear pattern) ═══ */
+  .fields-grid {
     border-top: 1px solid var(--border-light);
-    padding: 8px 16px;
-    display: flex;
-    gap: 24px;
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 16px;
+    padding: 10px 16px;
+    align-items: baseline;
   }
-  .field-pair .field-item { flex: 1; min-width: 0; }
-  .field-pair .field-item .field-label { margin-bottom: 2px; }
+  .fields-grid .field-label { margin-bottom: 0; }
 
-  /* CHANGE 2: Inline label:value (label and value on same line) */
+  /* Inline fallback for single-field rows */
   .field-inline {
     border-top: 1px solid var(--border-light);
     padding: 8px 16px;
@@ -82,15 +83,26 @@
   }
   .field-inline .field-label { margin-bottom: 0; flex-shrink: 0; }
 
-  .field-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px; }
-  .field-row:last-child { margin-bottom: 0; }
-  .field-sub { font-size: 11px; font-weight: 600; color: var(--text-tertiary); min-width: 80px; flex-shrink: 0; }
-
-  /* CHANGE 3: Lighter field values — weight 500 instead of 600 */
   .field-val { font-size: 13px; font-weight: 400; color: var(--text-primary); line-height: 1.6; }
 
-  .or-sep { font-size: 11px; color: var(--text-tertiary); font-weight: 500; font-style: italic; margin: 0 2px; }
-  .val-sep { color: var(--text-tertiary); font-weight: 400; margin: 0 2px; }
+  /* Trigger sub-categories */
+  .trigger-subs { display: flex; flex-direction: column; gap: 2px; }
+  .trigger-sub { display: flex; align-items: baseline; gap: 8px; }
+  .trigger-type { font-size: 11px; font-weight: 500; color: var(--text-secondary); min-width: 80px; flex-shrink: 0; }
+
+  /* Chips for multi-value fields (wraps on mobile) */
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    background: var(--accent-light);
+    padding: 2px 10px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+
+  .or-sep { font-size: 11px; color: var(--text-tertiary); font-weight: 400; font-style: italic; margin: 0 2px; }
   .range-sep { color: var(--text-tertiary); margin: 0 4px; font-weight: 400; }
 
   /* ═══ CHANGE 4: Message block — unified selectors on one line ═══ */
@@ -199,32 +211,27 @@
           <span class="party-tag referrer">Referrer</span>
         </div>
 
-        <!-- CHANGE: Trigger + Promotional side by side -->
-        <div class="field-pair">
-          <div class="field-item">
-            <div class="field-label">Trigger</div>
-            <span class="field-val">All Transactions</span>
+        <div class="fields-grid">
+          <div class="field-label">Qualifying triggers</div>
+          <div class="trigger-subs">
+            <div class="trigger-sub"><span class="trigger-type">Transactional</span> <span class="field-val">All Transactions</span></div>
+            <div class="trigger-sub"><span class="trigger-type">Promotional</span> <span class="field-val">Scheduled <span class="or-sep">or</span> AI Recommendation</span></div>
           </div>
-          <div class="field-item">
-            <div class="field-label">Promotional</div>
-            <span class="field-val">Scheduled <span class="or-sep">or</span> AI Recommendation</span>
-          </div>
-        </div>
 
-        <!-- CHANGE: Inline label:value -->
-        <div class="field-inline">
           <div class="field-label">Redemption trigger</div>
           <span class="field-val">1st Transaction</span>
-        </div>
 
-        <div class="field-inline">
           <div class="field-label">Reward range</div>
           <span class="field-val">$0 <span class="range-sep">—</span> $75</span>
-        </div>
 
-        <div class="field-inline">
           <div class="field-label">Reward types</div>
-          <span class="field-val">Cashback <span class="val-sep">·</span> Account Credit <span class="val-sep">·</span> Coupon <span class="val-sep">·</span> Gift Card <span class="val-sep">·</span> Organic</span>
+          <div class="chips">
+            <span class="chip">Cashback</span>
+            <span class="chip">Account Credit</span>
+            <span class="chip">Coupon</span>
+            <span class="chip">Gift Card</span>
+            <span class="chip">Organic</span>
+          </div>
         </div>
 
         <!-- CHANGE: Unified message selectors on one line -->
@@ -327,17 +334,21 @@
           <span class="party-tag referee">Referee</span>
         </div>
 
-        <div class="field-inline">
+        <div class="fields-grid">
           <div class="field-label">Redemption trigger</div>
           <span class="field-val">1st Transaction</span>
-        </div>
-        <div class="field-inline">
+
           <div class="field-label">Reward range</div>
           <span class="field-val">$0 <span class="range-sep">—</span> $75</span>
-        </div>
-        <div class="field-inline">
+
           <div class="field-label">Reward types</div>
-          <span class="field-val">Cashback <span class="val-sep">·</span> Account Credit <span class="val-sep">·</span> Coupon <span class="val-sep">·</span> Gift Card <span class="val-sep">·</span> Organic</span>
+          <div class="chips">
+            <span class="chip">Cashback</span>
+            <span class="chip">Account Credit</span>
+            <span class="chip">Coupon</span>
+            <span class="chip">Gift Card</span>
+            <span class="chip">Organic</span>
+          </div>
         </div>
 
         <!-- CHANGE: Unified message selectors on one line -->
