@@ -20,144 +20,129 @@
     --both-bg: #fef3c7; --both-text: #92400e;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font-family); color: var(--text-primary); background: var(--bg); line-height: 1.6; }
-  .page { max-width: 1200px; margin: 0 auto; padding: 48px 32px 64px; }
-  .concept-label { display: inline-block; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 12px; background: var(--accent-light); border-radius: 100px; margin-bottom: 20px; }
-  .section-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
-  .section-sub { font-size: 14px; color: var(--text-tertiary); margin-bottom: 20px; }
-  .params { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px; }
-  .param-badge { font-size: 12px; font-weight: 600; color: var(--text-secondary); padding: 4px 12px; border-radius: 100px; border: 1px solid var(--border); background: var(--surface); }
+  body { font-family: var(--font-family); color: var(--text-primary); background: var(--bg); line-height: 1.5; }
+  .page { max-width: 1200px; margin: 0 auto; padding: 40px 32px 64px; }
+  .concept-label { display: inline-block; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px; }
+  .section-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .section-meta { font-size: 13px; color: var(--text-tertiary); margin-bottom: 28px; }
+  .section-meta .sep { margin: 0 6px; }
 
-  /* Storyboard */
+  /* ═══ Storyboard ═══ */
   .storyboard { display: flex; gap: 0; overflow-x: auto; padding-bottom: 16px; align-items: flex-start; }
-  .connector { display: flex; align-items: flex-start; padding-top: 32px; justify-content: center; min-width: 24px; flex-shrink: 0; color: var(--border); font-size: 16px; }
+  .connector { display: flex; align-items: flex-start; padding-top: 28px; justify-content: center; min-width: 20px; flex-shrink: 0; color: var(--border); font-size: 14px; }
 
-  /* Frame */
-  .frame { flex: 0 0 268px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; overflow: hidden; cursor: pointer; transition: border-color 0.2s ease, box-shadow 0.2s ease; position: relative; }
+  /* ═══ Frame ═══ */
+  .frame { flex: 0 0 268px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; overflow: hidden; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; position: relative; }
   .frame:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
   .frame:hover .edit-hint { opacity: 1; }
-  .edit-hint { position: absolute; top: 10px; right: 12px; font-size: 11px; color: var(--text-tertiary); opacity: 0; transition: opacity 0.2s ease; display: flex; align-items: center; gap: 4px; z-index: 2; }
+  .edit-hint { position: absolute; top: 8px; right: 10px; font-size: 11px; color: var(--text-tertiary); opacity: 0; transition: opacity 0.2s; display: flex; align-items: center; gap: 4px; z-index: 2; }
   .edit-hint svg { width: 12px; height: 12px; }
 
   /* Frame header */
-  .frame-header { padding: 10px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-light); }
+  .frame-header { padding: 8px 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-light); }
   .frame-header.referrer { background: var(--referrer-bg); }
   .frame-header.referee { background: var(--referee-bg); }
   .frame-header.both { background: var(--both-bg); }
-  .frame-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .frame-icon { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .frame-icon.referrer { background: var(--referrer-text); color: #fff; }
   .frame-icon.referee { background: var(--referee-text); color: #fff; }
   .frame-icon.both { background: var(--both-text); color: #fff; }
-  .frame-icon svg { width: 14px; height: 14px; }
-  .frame-num { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .frame-icon svg { width: 12px; height: 12px; }
+  .frame-num { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
   .frame-header.referrer .frame-num { color: var(--referrer-text); }
   .frame-header.referee .frame-num { color: var(--referee-text); }
   .frame-header.both .frame-num { color: var(--both-text); }
-  .frame-name { font-size: 14px; font-weight: 700; }
+  .frame-name { font-size: 13px; font-weight: 700; }
 
   /* Frame body */
   .frame-body { padding: 0; flex: 1; display: flex; flex-direction: column; }
 
-  /* ─── Data fields (non-interactive) ─── */
-  .field { border-top: 1px solid var(--border-light); padding: 8px 14px; }
-  .field-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
-  .field-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  /* ═══ Data fields — plain text, NOT buttons ═══ */
+  .field { border-top: 1px solid var(--border-light); padding: 6px 12px; }
+  .field-label { font-size: 10px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1px; }
+  .field-row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 1px; }
   .field-row:last-child { margin-bottom: 0; }
-  .field-sub { font-size: 10px; font-weight: 600; color: var(--text-tertiary); min-width: 70px; flex-shrink: 0; }
-  .field-values { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+  .field-sub { font-size: 10px; font-weight: 600; color: var(--text-tertiary); min-width: 64px; flex-shrink: 0; }
+  .field-val { font-size: 12px; font-weight: 600; color: var(--text-primary); line-height: 1.5; }
+  .or-sep { font-size: 10px; color: var(--text-tertiary); font-weight: 500; font-style: italic; margin: 0 1px; }
+  .val-sep { color: var(--text-tertiary); font-weight: 400; margin: 0 1px; }
+  .range-sep { color: var(--text-tertiary); margin: 0 3px; font-weight: 400; }
 
-  /* Value tags — structured info, NOT buttons */
-  .tag {
-    font-size: 11px; font-weight: 500;
-    padding: 2px 8px; border-radius: 100px;
-    background: var(--accent-light);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-    cursor: default; user-select: none;
-  }
-  .or-sep { font-size: 10px; color: var(--text-tertiary); font-weight: 600; }
-
-  /* ─── Selector tabs (interactive) ─── */
-  .selector-bar { border-top: 1px solid var(--border-light); padding: 0 14px; }
-  .selector-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; padding-top: 8px; }
-  .selector-tabs { display: flex; gap: 0; }
-  .sel-tab {
-    padding: 8px 12px 6px;
-    font-size: 12px; font-weight: 500;
-    color: var(--text-tertiary);
-    border: none; background: none;
+  /* ═══ Message block (tabs + channel + collapsible preview) ═══ */
+  .message-block { border-top: 1px solid var(--border-light); margin-top: auto; }
+  .msg-label { font-size: 10px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; padding: 6px 12px 0; }
+  .msg-tabs { display: flex; padding: 0 12px; border-bottom: 1px solid var(--border-light); }
+  .msg-tab {
+    padding: 6px 10px 4px; font-size: 12px; font-weight: 500;
+    color: var(--text-tertiary); border: none; background: none;
     border-bottom: 2px solid transparent;
-    cursor: pointer; font-family: inherit;
-    transition: all 0.15s ease;
+    cursor: pointer; font-family: inherit; transition: all 0.15s;
   }
-  .sel-tab:hover { color: var(--text-secondary); }
-  .sel-tab.active { color: var(--text-primary); font-weight: 600; border-bottom-color: var(--accent); }
-
-  .channel-bar { border-top: 1px solid var(--border-light); padding: 0 14px; }
-  .channel-tabs { display: flex; gap: 0; }
+  .msg-tab:hover { color: var(--text-secondary); }
+  .msg-tab.active { color: var(--text-primary); font-weight: 600; border-bottom-color: var(--accent); }
+  .ch-row { display: flex; padding: 0 12px; border-bottom: 1px solid var(--border-light); }
   .ch-tab {
-    padding: 6px 10px 4px;
-    font-size: 11px; font-weight: 500;
-    color: var(--text-tertiary);
-    border: none; background: none;
+    padding: 4px 8px 3px; font-size: 11px; font-weight: 500;
+    color: var(--text-tertiary); border: none; background: none;
     border-bottom: 2px solid transparent;
-    cursor: pointer; font-family: inherit;
-    transition: all 0.15s ease;
+    cursor: pointer; font-family: inherit; transition: all 0.15s;
   }
   .ch-tab:hover { color: var(--text-secondary); }
   .ch-tab.active { color: var(--text-primary); font-weight: 600; border-bottom-color: var(--accent); }
 
-  /* ─── Preview — collapsed by default ─── */
-  .preview-toggle { border-top: 1px solid var(--border-light); margin-top: auto; }
-  .preview-trigger { width: 100%; padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; background: none; border: none; cursor: pointer; font-family: inherit; }
-  .preview-trigger-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
-  .preview-trigger-icon { font-size: 11px; color: var(--text-tertiary); transition: transform 0.2s ease; }
-  .preview-toggle.open .preview-trigger-icon { transform: rotate(180deg); }
-  .preview-content { display: none; padding: 0 14px 12px; }
-  .preview-toggle.open .preview-content { display: block; }
+  /* Expandable mockup area */
+  .msg-expand { border-top: 1px solid var(--border-light); }
+  .msg-expand-btn {
+    width: 100%; padding: 6px 12px; display: flex; align-items: center;
+    justify-content: space-between; background: none; border: none;
+    cursor: pointer; font-family: inherit;
+  }
+  .msg-expand-label { font-size: 10px; font-weight: 600; color: var(--text-tertiary); }
+  .msg-expand-icon { font-size: 10px; color: var(--text-tertiary); transition: transform 0.2s; }
+  .msg-expand[data-open="true"] .msg-expand-icon { transform: rotate(180deg); }
+  .msg-expand-content { display: none; padding: 8px 12px 10px; background: var(--accent-subtle); }
+  .msg-expand[data-open="true"] .msg-expand-content { display: block; }
 
-  /* Push mockup */
-  .mockup-push { background: #f8f8f8; border-radius: 12px; padding: 10px 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-  .push-header { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
-  .push-icon { width: 16px; height: 16px; border-radius: 3px; background: var(--accent); display: flex; align-items: center; justify-content: center; }
-  .push-icon svg { width: 10px; height: 10px; color: #fff; }
+  /* ═══ Mockups ═══ */
+  .mockup-push { background: #f8f8f8; border-radius: 10px; padding: 8px 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .push-header { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; }
+  .push-icon { width: 14px; height: 14px; border-radius: 3px; background: var(--accent); display: flex; align-items: center; justify-content: center; }
+  .push-icon svg { width: 8px; height: 8px; color: #fff; }
   .push-app { font-size: 10px; font-weight: 600; color: var(--text-secondary); }
-  .push-time { font-size: 10px; color: var(--text-tertiary); margin-left: auto; }
-  .push-title { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
-  .push-body { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
+  .push-time { font-size: 9px; color: var(--text-tertiary); margin-left: auto; }
+  .push-title { font-size: 11px; font-weight: 700; margin-bottom: 1px; }
+  .push-body { font-size: 10px; color: var(--text-secondary); line-height: 1.4; }
 
-  /* SMS mockup */
-  .sms-sender { font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px; }
-  .sms-bubble { background: #e5e5ea; border-radius: 14px; padding: 8px 12px; font-size: 12px; line-height: 1.5; }
+  .sms-sender { font-size: 9px; color: var(--text-tertiary); margin-bottom: 3px; }
+  .sms-bubble { background: #e5e5ea; border-radius: 12px; padding: 6px 10px; font-size: 11px; line-height: 1.4; }
 
-  /* Email mockup */
   .mockup-email { border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: var(--surface); }
-  .email-header { padding: 8px 10px; border-bottom: 1px solid var(--border-light); }
-  .email-from { font-size: 10px; color: var(--text-tertiary); }
-  .email-subject { font-size: 12px; font-weight: 700; }
-  .email-body { padding: 10px; }
-  .email-hero { background: linear-gradient(135deg, #1a1a1a, #333); color: #fff; padding: 14px 12px; text-align: center; margin-bottom: 8px; border-radius: 4px; }
-  .email-hero-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
-  .email-hero-sub { font-size: 11px; opacity: 0.8; }
-  .email-text { font-size: 11px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 8px; }
-  .email-cta { display: inline-block; padding: 6px 16px; background: var(--accent); color: #fff; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; }
+  .email-header { padding: 6px 8px; border-bottom: 1px solid var(--border-light); }
+  .email-from { font-size: 9px; color: var(--text-tertiary); }
+  .email-subject { font-size: 11px; font-weight: 700; }
+  .email-body { padding: 8px; }
+  .email-hero { background: linear-gradient(135deg, #1a1a1a, #333); color: #fff; padding: 12px 10px; text-align: center; margin-bottom: 6px; border-radius: 4px; }
+  .email-hero-title { font-size: 13px; font-weight: 700; margin-bottom: 1px; }
+  .email-hero-sub { font-size: 10px; opacity: 0.8; }
+  .email-text { font-size: 10px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 6px; }
+  .email-cta { display: inline-block; padding: 5px 14px; background: var(--accent); color: #fff; border-radius: var(--radius-sm); font-size: 11px; font-weight: 600; }
 
-  /* Share channel */
-  .share-row { border-top: 1px solid var(--border-light); padding: 8px 14px; }
-  .share-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
-  .share-sub { font-size: 10px; color: var(--text-tertiary); font-style: italic; margin-bottom: 6px; }
+  /* Share channel (step 2) */
+  .share-row { border-top: 1px solid var(--border-light); padding: 6px 12px; }
+  .share-label { font-size: 10px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+  .share-sub { font-size: 10px; color: var(--text-tertiary); font-style: italic; margin-bottom: 4px; }
   .share-icons { display: flex; gap: 6px; }
-  .share-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #fff; }
-  .share-bubble { background: #dcf8c6; border-radius: 12px; padding: 8px 12px; font-size: 12px; line-height: 1.5; }
+  .share-icon { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; color: #fff; }
+  .share-bubble { background: #dcf8c6; border-radius: 10px; padding: 6px 10px; font-size: 11px; line-height: 1.4; }
   .share-bubble .link { color: #1e40af; text-decoration: underline; }
 
-  /* Step 4 — event */
-  .event-marker { padding: 14px; display: flex; align-items: center; gap: 12px; justify-content: center; }
-  .event-reward { text-align: center; padding: 10px 16px; background: var(--accent-subtle); border-radius: var(--radius-md); }
-  .event-who { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
-  .event-amount { font-size: 20px; font-weight: 800; }
-  .event-plus { font-size: 14px; color: var(--text-tertiary); font-weight: 700; }
-  .event-done { text-align: center; padding: 6px; font-size: 11px; color: var(--text-tertiary); font-style: italic; border-top: 1px solid var(--border-light); }
+  /* ═══ Milestone (step 4) — compact endpoint, NOT a frame ═══ */
+  .milestone-cap { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 16px; flex-shrink: 0; }
+  .milestone-dot { width: 36px; height: 36px; border-radius: 50%; background: var(--both-bg); color: var(--both-text); display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .milestone-dot svg { width: 16px; height: 16px; }
+  .milestone-label { font-size: 11px; font-weight: 700; text-align: center; white-space: nowrap; }
+  .milestone-amounts { font-size: 10px; color: var(--text-secondary); text-align: center; }
+  .milestone-amounts b { font-weight: 700; }
 
   .hidden { display: none; }
 </style>
@@ -166,13 +151,7 @@
 <div class="page">
   <div class="concept-label">Proposal B — Storyboard Frames</div>
   <h2 class="section-title">Referral Journey</h2>
-  <p class="section-sub">How Edoo turns a referral into a new active user — from first ask to reward.</p>
-
-  <div class="params">
-    <span class="param-badge">$75 per side · $150 total</span>
-    <span class="param-badge">14-day window</span>
-    <span class="param-badge">Pay on first transaction</span>
-  </div>
+  <div class="section-meta">$75 per side · $150 total<span class="sep">·</span>14-day window<span class="sep">·</span>Pay on 1st transaction</div>
 
   <div class="storyboard">
 
@@ -180,66 +159,63 @@
     <div class="frame" id="step1">
       <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg></span>
       <div class="frame-header referrer">
-        <div class="frame-icon referrer"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="4" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div>
+        <div class="frame-icon referrer">
+          <!-- Megaphone — outreach / ask -->
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13 3v10l-5-2.5H4.5A1.5 1.5 0 013 9V7a1.5 1.5 0 011.5-1.5H8L13 3z"/></svg>
+        </div>
         <div><span class="frame-num">Step 1</span><div class="frame-name">Referral Ask</div></div>
       </div>
       <div class="frame-body">
         <div class="field">
           <div class="field-label">Qualifying</div>
-          <div class="field-row"><span class="field-sub">Trigger</span><div class="field-values"><span class="tag">All Transactions</span></div></div>
-          <div class="field-row"><span class="field-sub">Promotional</span><div class="field-values"><span class="tag">Scheduled</span><span class="or-sep">OR</span><span class="tag">AI Rec.</span></div></div>
+          <div class="field-row"><span class="field-sub">Trigger</span><span class="field-val">All Transactions</span></div>
+          <div class="field-row"><span class="field-sub">Promotional</span><span class="field-val">Scheduled <span class="or-sep">or</span> AI Rec.</span></div>
         </div>
         <div class="field">
           <div class="field-label">Redemption trigger</div>
-          <div class="field-values"><span class="tag">1st Transaction</span></div>
+          <span class="field-val">1st Transaction</span>
         </div>
         <div class="field">
           <div class="field-label">Reward range</div>
-          <div class="field-values"><span class="tag">$0 — $75</span></div>
+          <span class="field-val">$0 <span class="range-sep">—</span> $75</span>
         </div>
         <div class="field">
           <div class="field-label">Reward types</div>
-          <div class="field-values">
-            <span class="tag">Cashback</span><span class="tag">Credit</span><span class="tag">Coupon</span><span class="tag">Gift Card</span><span class="tag">Organic</span>
-          </div>
+          <span class="field-val">Cashback <span class="val-sep">·</span> Credit <span class="val-sep">·</span> Coupon <span class="val-sep">·</span> Gift Card <span class="val-sep">·</span> Organic</span>
         </div>
 
-        <div class="selector-bar">
-          <div class="selector-label">Message</div>
-          <div class="selector-tabs">
-            <button class="sel-tab active" onclick="selectMsgType('s1','ask')">Ask</button>
-            <button class="sel-tab" onclick="selectMsgType('s1','reminder')">Reminder</button>
+        <div class="message-block">
+          <div class="msg-label">Message</div>
+          <div class="msg-tabs">
+            <button class="msg-tab active" onclick="selectMsgType('s1','ask')">Ask</button>
+            <button class="msg-tab" onclick="selectMsgType('s1','reminder')">Reminder</button>
           </div>
-        </div>
-        <div class="channel-bar">
-          <div class="selector-label">Channel</div>
-          <div class="channel-tabs">
+          <div class="ch-row">
+            <button class="ch-tab active" onclick="selectChannel('s1','push')">Push</button>
             <button class="ch-tab" onclick="selectChannel('s1','sms')">SMS</button>
             <button class="ch-tab" onclick="selectChannel('s1','email')">Email</button>
-            <button class="ch-tab active" onclick="selectChannel('s1','push')">Push</button>
           </div>
-        </div>
-
-        <div class="preview-toggle" onclick="this.classList.toggle('open')">
-          <button class="preview-trigger"><span class="preview-trigger-label">Preview</span><span class="preview-trigger-icon">▼</span></button>
-          <div class="preview-content">
-            <div class="preview-mock" data-step="s1" data-msg="ask" data-ch="push">
-              <div class="mockup-push"><div class="push-header"><div class="push-icon"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="10" height="12" rx="2"/><circle cx="8" cy="11" r="1"/></svg></div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Know someone who'd love NeoBank?</div><div class="push-body">Share your link — you both get up to $75 when your friend transacts.</div></div>
-            </div>
-            <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="sms">
-              <div class="mockup-sms"><div class="sms-sender">NeoBank</div><div class="sms-bubble">Hey! Share your referral link and you both get up to $75 when your friend transacts. neo.bnk/r/gina</div></div>
-            </div>
-            <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="email">
-              <div class="mockup-email"><div class="email-header"><div class="email-from">NeoBank</div><div class="email-subject">Know someone who'd love NeoBank?</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Refer a friend, earn $75</div><div class="email-hero-sub">Your friend gets $75 too</div></div><div class="email-text">Share your referral link. When your friend transacts, you both earn up to $75.</div><span class="email-cta">Share My Link</span></div></div>
-            </div>
-            <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="push">
-              <div class="mockup-push"><div class="push-header"><div class="push-icon"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="10" height="12" rx="2"/><circle cx="8" cy="11" r="1"/></svg></div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Your friends are waiting</div><div class="push-body">You have an unused referral reward. Share your link — up to $75 for you both.</div></div>
-            </div>
-            <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="sms">
-              <div class="mockup-sms"><div class="sms-sender">NeoBank</div><div class="sms-bubble">Reminder — your referral link is ready. Share with a friend and get up to $75 each. neo.bnk/r/gina</div></div>
-            </div>
-            <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="email">
-              <div class="mockup-email"><div class="email-header"><div class="email-from">NeoBank</div><div class="email-subject">Still have a referral reward waiting</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Your reward is waiting</div><div class="email-hero-sub">Share your link, earn $75</div></div><div class="email-text">You haven't shared yet. Share with a friend and you both earn up to $75.</div><span class="email-cta">Share Now</span></div></div>
+          <div class="msg-expand" data-open="false">
+            <button class="msg-expand-btn" onclick="toggleExpand(this)"><span class="msg-expand-label">Show preview</span><span class="msg-expand-icon">▼</span></button>
+            <div class="msg-expand-content">
+              <div class="preview-mock" data-step="s1" data-msg="ask" data-ch="push">
+                <div class="mockup-push"><div class="push-header"><div class="push-icon"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="10" height="12" rx="2"/><circle cx="8" cy="11" r="1"/></svg></div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Know someone who'd love NeoBank?</div><div class="push-body">Share your link — you both get up to $75 when your friend transacts.</div></div>
+              </div>
+              <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="sms">
+                <div class="mockup-sms"><div class="sms-sender">NeoBank</div><div class="sms-bubble">Hey! Share your referral link and you both get up to $75 when your friend transacts. neo.bnk/r/gina</div></div>
+              </div>
+              <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="email">
+                <div class="mockup-email"><div class="email-header"><div class="email-from">NeoBank</div><div class="email-subject">Know someone who'd love NeoBank?</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Refer a friend, earn $75</div><div class="email-hero-sub">Your friend gets $75 too</div></div><div class="email-text">Share your referral link. When your friend transacts, you both earn up to $75.</div><span class="email-cta">Share My Link</span></div></div>
+              </div>
+              <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="push">
+                <div class="mockup-push"><div class="push-header"><div class="push-icon"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="10" height="12" rx="2"/><circle cx="8" cy="11" r="1"/></svg></div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Your friends are waiting</div><div class="push-body">You have an unused referral reward. Share your link — up to $75 for you both.</div></div>
+              </div>
+              <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="sms">
+                <div class="mockup-sms"><div class="sms-sender">NeoBank</div><div class="sms-bubble">Reminder — your referral link is ready. Share with a friend and get up to $75 each. neo.bnk/r/gina</div></div>
+              </div>
+              <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="email">
+                <div class="mockup-email"><div class="email-header"><div class="email-from">NeoBank</div><div class="email-subject">Still have a referral reward waiting</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Your reward is waiting</div><div class="email-hero-sub">Share your link, earn $75</div></div><div class="email-text">You haven't shared yet. Share with a friend and you both earn up to $75.</div><span class="email-cta">Share Now</span></div></div>
+              </div>
             </div>
           </div>
         </div>
@@ -252,7 +228,10 @@
     <div class="frame" id="step2">
       <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg></span>
       <div class="frame-header referee">
-        <div class="frame-icon referee"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="4" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div>
+        <div class="frame-icon referee">
+          <!-- Paper plane — send / share -->
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 1.5L2 7.5l5 2L10.5 5 7.5 10l2 5z"/></svg>
+        </div>
         <div><span class="frame-num">Step 2</span><div class="frame-name">Invite</div></div>
       </div>
       <div class="frame-body">
@@ -269,16 +248,19 @@
           </div>
         </div>
 
-        <div class="preview-toggle" onclick="this.classList.toggle('open')">
-          <button class="preview-trigger"><span class="preview-trigger-label">Pre-loaded message</span><span class="preview-trigger-icon">▼</span></button>
-          <div class="preview-content">
-            <div class="share-bubble">Hey! I've been using NeoBank and love it. Sign up with my link and we both get up to $75: <span class="link">neo.bnk/r/gina</span></div>
+        <div class="message-block">
+          <div class="msg-label">Message</div>
+          <div class="msg-expand" data-open="false">
+            <button class="msg-expand-btn" onclick="toggleExpand(this)"><span class="msg-expand-label">Show preview</span><span class="msg-expand-icon">▼</span></button>
+            <div class="msg-expand-content">
+              <div class="share-bubble">Hey! I've been using NeoBank and love it. Sign up with my link and we both get up to $75: <span class="link">neo.bnk/r/gina</span></div>
+            </div>
           </div>
         </div>
 
         <div class="field">
           <div class="field-label">Tracking</div>
-          <div class="field-values"><span class="tag">Referral Link</span></div>
+          <span class="field-val">Referral Link</span>
         </div>
       </div>
     </div>
@@ -289,61 +271,58 @@
     <div class="frame" id="step3">
       <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg></span>
       <div class="frame-header referee">
-        <div class="frame-icon referee"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="4" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div>
+        <div class="frame-icon referee">
+          <!-- Checkmark circle — action completed -->
+          <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 15A7 7 0 108 1a7 7 0 000 14zm3.4-8.8a.75.75 0 00-1.1-1L7 8.5 5.65 7.15a.75.75 0 10-1.1 1l2 2a.75.75 0 001.1 0l4.05-4z"/></svg>
+        </div>
         <div><span class="frame-num">Step 3</span><div class="frame-name">Redemption</div></div>
       </div>
       <div class="frame-body">
         <div class="field">
           <div class="field-label">Redemption trigger</div>
-          <div class="field-values"><span class="tag">1st Transaction</span></div>
+          <span class="field-val">1st Transaction</span>
         </div>
         <div class="field">
           <div class="field-label">Reward range</div>
-          <div class="field-values"><span class="tag">$0 — $75</span></div>
+          <span class="field-val">$0 <span class="range-sep">—</span> $75</span>
         </div>
         <div class="field">
           <div class="field-label">Reward types</div>
-          <div class="field-values">
-            <span class="tag">Cashback</span><span class="tag">Credit</span><span class="tag">Coupon</span><span class="tag">Gift Card</span><span class="tag">Organic</span>
-          </div>
+          <span class="field-val">Cashback <span class="val-sep">·</span> Credit <span class="val-sep">·</span> Coupon <span class="val-sep">·</span> Gift Card <span class="val-sep">·</span> Organic</span>
         </div>
 
-        <div class="selector-bar">
-          <div class="selector-label">Message</div>
-          <div class="selector-tabs">
-            <button class="sel-tab active" onclick="selectMsgType('s3','reminder')">Reminder</button>
-            <button class="sel-tab" onclick="selectMsgType('s3','success')">Success</button>
+        <div class="message-block">
+          <div class="msg-label">Message</div>
+          <div class="msg-tabs">
+            <button class="msg-tab active" onclick="selectMsgType('s3','reminder')">Reminder</button>
+            <button class="msg-tab" onclick="selectMsgType('s3','success')">Success</button>
           </div>
-        </div>
-        <div class="channel-bar">
-          <div class="selector-label">Channel</div>
-          <div class="channel-tabs">
+          <div class="ch-row">
+            <button class="ch-tab active" onclick="selectChannel('s3','push')">Push</button>
             <button class="ch-tab" onclick="selectChannel('s3','sms')">SMS</button>
             <button class="ch-tab" onclick="selectChannel('s3','email')">Email</button>
-            <button class="ch-tab active" onclick="selectChannel('s3','push')">Push</button>
           </div>
-        </div>
-
-        <div class="preview-toggle" onclick="this.classList.toggle('open')">
-          <button class="preview-trigger"><span class="preview-trigger-label">Preview</span><span class="preview-trigger-icon">▼</span></button>
-          <div class="preview-content">
-            <div class="preview-mock" data-step="s3" data-msg="reminder" data-ch="push">
-              <div class="mockup-push"><div class="push-header"><div class="push-icon"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="10" height="12" rx="2"/><circle cx="8" cy="11" r="1"/></svg></div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Don't forget your $75</div><div class="push-body">Complete your first transaction to claim your reward. Expires in 7 days.</div></div>
-            </div>
-            <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="sms">
-              <div class="mockup-sms"><div class="sms-sender">NeoBank</div><div class="sms-bubble">Your $75 reward is waiting! Make your first transaction to claim it. Expires in 7 days.</div></div>
-            </div>
-            <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="email">
-              <div class="mockup-email"><div class="email-header"><div class="email-from">NeoBank</div><div class="email-subject">Your $75 reward is waiting</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 is waiting for you</div><div class="email-hero-sub">Make your first transaction</div></div><div class="email-text">Complete your first transaction within 7 days and you'll both earn up to $75.</div><span class="email-cta">Make My First Transaction</span></div></div>
-            </div>
-            <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="push">
-              <div class="mockup-push"><div class="push-header"><div class="push-icon"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="10" height="12" rx="2"/><circle cx="8" cy="11" r="1"/></svg></div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">You earned $75!</div><div class="push-body">Your first transaction is complete. $75 has been credited to your account.</div></div>
-            </div>
-            <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="sms">
-              <div class="mockup-sms"><div class="sms-sender">NeoBank</div><div class="sms-bubble">Congrats! Your $75 reward has been credited. Welcome to NeoBank!</div></div>
-            </div>
-            <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="email">
-              <div class="mockup-email"><div class="email-header"><div class="email-from">NeoBank</div><div class="email-subject">You earned $75!</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 credited</div><div class="email-hero-sub">Your referral reward is ready</div></div><div class="email-text">Congratulations! You earned $75. Welcome to NeoBank!</div><span class="email-cta">View My Balance</span></div></div>
+          <div class="msg-expand" data-open="false">
+            <button class="msg-expand-btn" onclick="toggleExpand(this)"><span class="msg-expand-label">Show preview</span><span class="msg-expand-icon">▼</span></button>
+            <div class="msg-expand-content">
+              <div class="preview-mock" data-step="s3" data-msg="reminder" data-ch="push">
+                <div class="mockup-push"><div class="push-header"><div class="push-icon"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="10" height="12" rx="2"/><circle cx="8" cy="11" r="1"/></svg></div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Don't forget your $75</div><div class="push-body">Complete your first transaction to claim your reward. Expires in 7 days.</div></div>
+              </div>
+              <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="sms">
+                <div class="mockup-sms"><div class="sms-sender">NeoBank</div><div class="sms-bubble">Your $75 reward is waiting! Make your first transaction to claim it. Expires in 7 days.</div></div>
+              </div>
+              <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="email">
+                <div class="mockup-email"><div class="email-header"><div class="email-from">NeoBank</div><div class="email-subject">Your $75 reward is waiting</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 is waiting for you</div><div class="email-hero-sub">Make your first transaction</div></div><div class="email-text">Complete your first transaction within 7 days and you'll both earn up to $75.</div><span class="email-cta">Make My First Transaction</span></div></div>
+              </div>
+              <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="push">
+                <div class="mockup-push"><div class="push-header"><div class="push-icon"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="10" height="12" rx="2"/><circle cx="8" cy="11" r="1"/></svg></div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">You earned $75!</div><div class="push-body">Your first transaction is complete. $75 has been credited to your account.</div></div>
+              </div>
+              <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="sms">
+                <div class="mockup-sms"><div class="sms-sender">NeoBank</div><div class="sms-bubble">Congrats! Your $75 reward has been credited. Welcome to NeoBank!</div></div>
+              </div>
+              <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="email">
+                <div class="mockup-email"><div class="email-header"><div class="email-from">NeoBank</div><div class="email-subject">You earned $75!</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 credited</div><div class="email-hero-sub">Your referral reward is ready</div></div><div class="email-text">Congratulations! You earned $75. Welcome to NeoBank!</div><span class="email-cta">View My Balance</span></div></div>
+              </div>
             </div>
           </div>
         </div>
@@ -352,20 +331,14 @@
 
     <div class="connector">→</div>
 
-    <!-- ═══ FRAME 4: Reward Credited ═══ -->
-    <div class="frame">
-      <div class="frame-header both">
-        <div class="frame-icon both"><svg viewBox="0 0 20 16" fill="currentColor"><circle cx="6" cy="4" r="3"/><path d="M0 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="14" cy="4" r="3"/><path d="M8 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div>
-        <div><span class="frame-num">Step 4</span><div class="frame-name">Reward Credited</div></div>
+    <!-- ═══ STEP 4: Reward Credited — milestone, NOT a frame ═══ -->
+    <div class="milestone-cap">
+      <div class="milestone-dot">
+        <!-- Star — reward / achievement -->
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.6l1.7 3.5 3.8.6-2.7 2.7.6 3.8L8 10.5l-3.4 1.7.6-3.8L2.5 5.7l3.8-.6z"/></svg>
       </div>
-      <div class="frame-body">
-        <div class="event-marker">
-          <div class="event-reward"><div class="event-who" style="color:var(--referrer-text);">Referrer</div><div class="event-amount">$75</div></div>
-          <span class="event-plus">+</span>
-          <div class="event-reward"><div class="event-who" style="color:var(--referee-text);">Referee</div><div class="event-amount">$75</div></div>
-        </div>
-        <div class="event-done">Journey complete</div>
-      </div>
+      <div class="milestone-label">Reward<br/>Credited</div>
+      <div class="milestone-amounts"><b>$75</b> + <b>$75</b></div>
     </div>
 
   </div>
@@ -377,7 +350,7 @@ function selectMsgType(stepId, type) {
   state[stepId].msg = type;
   updatePreview(stepId);
   const card = document.getElementById(stepId === 's1' ? 'step1' : 'step3');
-  card.querySelectorAll('.sel-tab').forEach(t => t.classList.toggle('active', t.textContent.toLowerCase() === type));
+  card.querySelectorAll('.msg-tab').forEach(t => t.classList.toggle('active', t.textContent.toLowerCase() === type));
 }
 function selectChannel(stepId, ch) {
   state[stepId].ch = ch;
@@ -390,6 +363,12 @@ function updatePreview(stepId) {
   document.querySelectorAll(`.preview-mock[data-step="${stepId}"]`).forEach(el => {
     el.classList.toggle('hidden', !(el.dataset.msg === msg && el.dataset.ch === ch));
   });
+}
+function toggleExpand(btn) {
+  const wrap = btn.closest('.msg-expand');
+  const open = wrap.dataset.open === 'true';
+  wrap.dataset.open = open ? 'false' : 'true';
+  btn.querySelector('.msg-expand-label').textContent = open ? 'Show preview' : 'Hide preview';
 }
 </script>
 </body>
