@@ -127,7 +127,7 @@ export default function DataConnectionPage({ config, onNext }) {
       <header
         style={{
           padding: '1.5rem 3rem',
-          borderBottom: '1px solid var(--color-gray-100)',
+          borderBottom: '1px solid var(--border-light)',
         }}
       >
         <Logo />
@@ -148,7 +148,7 @@ export default function DataConnectionPage({ config, onNext }) {
             style={{
               fontSize: '2rem',
               fontWeight: 700,
-              color: 'var(--color-gray-900)',
+              color: 'var(--text-primary)',
               marginBottom: '0.75rem',
               lineHeight: 1.2,
               letterSpacing: '-0.025em',
@@ -159,7 +159,7 @@ export default function DataConnectionPage({ config, onNext }) {
           <p
             style={{
               fontSize: 'var(--font-size-lg)',
-              color: 'var(--color-gray-500)',
+              color: 'var(--text-secondary)',
               fontWeight: 400,
               lineHeight: 1.6,
             }}
@@ -226,13 +226,13 @@ export default function DataConnectionPage({ config, onNext }) {
           bottom: 0,
           borderTop: '1px solid var(--border)',
           boxShadow: 'var(--shadow-up-md)',
-          backgroundColor: bothRequired ? 'var(--color-white)' : 'var(--color-gray-50)',
+          backgroundColor: bothRequired ? 'var(--surface)' : 'var(--accent-subtle)',
           padding: '1.25rem 3rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: '2rem',
-          transition: 'background-color 300ms ease',
+          transition: 'background-color var(--transition-slow)',
         }}
       >
         <div style={{ flex: 1 }}>
@@ -240,7 +240,7 @@ export default function DataConnectionPage({ config, onNext }) {
             <p
               style={{
                 fontSize: 'var(--font-size-base)',
-                color: 'var(--color-gray-900)',
+                color: 'var(--text-primary)',
                 fontWeight: 400,
                 display: 'flex',
                 alignItems: 'center',
@@ -248,7 +248,7 @@ export default function DataConnectionPage({ config, onNext }) {
               }}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-                <circle cx="8" cy="8" r="7" fill="#2D8A4E" />
+                <circle cx="8" cy="8" r="7" fill="var(--success)" />
                 <path
                   d="M4.5 8l2.25 2.25 4.75-4.75"
                   stroke="white"
@@ -267,7 +267,7 @@ export default function DataConnectionPage({ config, onNext }) {
             <p
               style={{
                 fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-gray-500)',
+                color: 'var(--text-secondary)',
               }}
             >
               {bottomText}
@@ -280,7 +280,7 @@ export default function DataConnectionPage({ config, onNext }) {
           style={{
             padding: '1rem 2.5rem',
             flexShrink: 0,
-            transition: 'all 300ms ease',
+            transition: 'all var(--transition-slow)',
             transform: bothRequired ? 'scale(1)' : 'scale(0.98)',
           }}
         >

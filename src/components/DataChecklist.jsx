@@ -32,8 +32,8 @@ function CheckItem({ field, checked, source }) {
         backgroundColor: 'transparent',
         cursor: 'default',
         userSelect: 'none',
-        marginTop: '3px',
-        transition: 'background-color 200ms ease',
+        marginTop: '4px',
+        transition: 'background-color var(--transition-base)',
       }}
     >
       {/* Status indicator: ○ waiting → ✓ connected */}
@@ -41,10 +41,10 @@ function CheckItem({ field, checked, source }) {
         style={{
           width: '14px',
           flexShrink: 0,
-          fontSize: '0.75rem',
+          fontSize: '12px',
           lineHeight: 1,
           color: checked && checkVisible ? 'var(--color-green-600)' : 'var(--text-tertiary)',
-          transition: 'color 200ms ease',
+          transition: 'color var(--transition-base)',
         }}
       >
         {checked && checkVisible ? '✓' : '○'}
@@ -53,13 +53,13 @@ function CheckItem({ field, checked, source }) {
       {/* Field label — single line, single style */}
       <span
         style={{
-          fontSize: '0.875rem',
+          fontSize: '14px',
           fontWeight: 500,
           color: checked ? 'var(--text-primary)' : 'var(--text-tertiary)',
           flex: 1,
           minWidth: 0,
           lineHeight: 1.5,
-          transition: 'color 200ms ease',
+          transition: 'color var(--transition-base)',
         }}
       >
         {field.framework}
@@ -69,13 +69,13 @@ function CheckItem({ field, checked, source }) {
       {source && (
         <span
           style={{
-            fontSize: '0.75rem',
+            fontSize: '12px',
             color: 'var(--text-tertiary)',
             fontWeight: 400,
             whiteSpace: 'nowrap',
             flexShrink: 0,
             opacity: sourceVisible ? 1 : 0,
-            transition: 'opacity 200ms ease',
+            transition: 'opacity var(--transition-base)',
           }}
         >
           via {source}
@@ -115,8 +115,8 @@ export default function DataChecklist({
   return (
     <div
       style={{
-        backgroundColor: 'var(--color-gray-50)',
-        border: '1px solid var(--color-gray-200)',
+        backgroundColor: 'var(--accent-subtle)',
+        border: '1px solid var(--border)',
         borderRadius: 'var(--radius-lg)',
         padding: '28px 32px',
         boxShadow: 'var(--shadow-inset-sm)',
@@ -142,16 +142,16 @@ export default function DataChecklist({
                 marginBottom: '8px',
                 borderBottom: '1px solid var(--border)',
                 backgroundColor: isHighlighted
-                  ? 'rgba(0,0,0,0.03)'
+                  ? 'var(--accent-subtle)'
                   : 'transparent',
                 borderRadius: '4px',
                 padding: isHighlighted ? '2px 6px 6px 6px' : '0 0 6px 0',
-                transition: 'background-color 300ms ease',
+                transition: 'background-color var(--transition-slow)',
               }}
             >
               <span
                 style={{
-                  fontSize: '0.8125rem',
+                  fontSize: '13px',
                   fontWeight: 600,
                   color: 'var(--text-secondary)',
                   letterSpacing: '0.06em',
