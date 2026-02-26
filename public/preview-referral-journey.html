@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Referral Journey — Unified Section Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #94a3b8;
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --accent: #1a1a1a;
+    --accent-hover: #000000;
+    --accent-subtle: #fafafa;
+    --accent-light: #f5f5f5;
+    --border: #e2e8f0;
+    --border-light: #f1f5f9;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+    --transition-fast: 150ms ease;
+    --transition-base: 200ms ease;
+    --transition-slow: 300ms ease;
+  }
+
+  html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+  body {
+    font-family: var(--font-family);
+    color: var(--text-primary);
+    background: var(--bg);
+    line-height: 1.6;
+  }
+
+  /* Page shell */
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 48px 80px;
+  }
+
+  /* Section header */
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .section-subtitle {
+    font-size: 14px;
+    color: var(--text-tertiary);
+    margin-bottom: 20px;
+  }
+
+  /* ── Mini Rail (horizontal context indicator) ── */
+  .mini-rail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 16px;
+    padding: 0 40px;
+  }
+  .rail-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    cursor: pointer;
+    position: relative;
+  }
+  .rail-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    border: 2px solid var(--border);
+    transition: all var(--transition-base);
+  }
+  .rail-node.active .rail-dot {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .rail-node:hover .rail-dot {
+    border-color: var(--text-tertiary);
+  }
+  .rail-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .rail-node.active .rail-label {
+    color: var(--text-primary);
+  }
+  .rail-line {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    min-width: 24px;
+    margin-bottom: 20px; /* offset for label height */
+  }
+
+  /* ── Parameter badges ── */
+  .param-badges {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .param-badge {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    padding: 4px 12px;
+    background: var(--accent-subtle);
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+  }
+
+  /* ── Vertical Stepper ── */
+  .stepper {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .step {
+    border-bottom: 1px solid var(--border-light);
+  }
+  .step:last-child {
+    border-bottom: none;
+  }
+
+  /* Step header (always visible) */
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+    user-select: none;
+  }
+  .step-header:hover {
+    background: var(--accent-subtle);
+  }
+
+  .step-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .step-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .step-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step-recipient {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    padding: 2px 8px;
+    background: var(--accent-light);
+    border-radius: 9999px;
+  }
+  .step-summary {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  .step-chevron {
+    width: 20px;
+    height: 20px;
+    color: var(--text-tertiary);
+    transition: transform var(--transition-base);
+    flex-shrink: 0;
+  }
+  .step.open .step-chevron {
+    transform: rotate(90deg);
+  }
+
+  /* Step detail panel (expandable) */
+  .step-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, opacity 0.25s ease;
+    opacity: 0;
+  }
+  .step.open .step-detail {
+    max-height: 600px;
+    opacity: 1;
+  }
+
+  .step-detail-inner {
+    display: flex;
+    gap: 20px;
+    padding: 0 20px 20px;
+    padding-left: 62px; /* aligned with text after number + gap */
+  }
+
+  /* Left column: strategy details */
+  .detail-left {
+    flex: 1;
+    min-width: 0;
+  }
+  .detail-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .detail-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .detail-key {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 70px;
+    flex-shrink: 0;
+  }
+  .detail-value {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* Right column: preview mockup */
+  .detail-right {
+    width: 260px;
+    flex-shrink: 0;
+  }
+  .preview-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .preview-channel {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-style: italic;
+    padding: 12px 16px 0;
+  }
+  .preview-body {
+    padding: 10px 16px 16px;
+  }
+  .preview-headline {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  .preview-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .preview-reward {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--accent-subtle);
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+  }
+  .preview-reward-amount {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .preview-reward-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+  .preview-cta {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    font-family: var(--font-family);
+  }
+
+  /* Preview for steps without a full mockup */
+  .preview-simple {
+    padding: 16px;
+    background: var(--accent-subtle);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    text-align: center;
+  }
+  .preview-simple-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+    opacity: 0.4;
+  }
+  .preview-simple-text {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    line-height: 1.5;
+  }
+  .preview-simple-sample {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-style: italic;
+    text-align: left;
+    line-height: 1.5;
+  }
+
+  /* ── Bottom expandable ── */
+  .expandable {
+    margin-top: 16px;
+  }
+  .expandable-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 12px 0;
+    user-select: none;
+  }
+  .expandable-header:hover .expandable-title {
+    color: var(--text-primary);
+  }
+  .expandable-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: color var(--transition-fast);
+  }
+  .expandable-chevron {
+    width: 16px;
+    height: 16px;
+    color: var(--text-tertiary);
+    transition: transform var(--transition-base);
+  }
+  .expandable.open .expandable-chevron {
+    transform: rotate(90deg);
+  }
+  .expandable-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, opacity 0.25s ease;
+    opacity: 0;
+  }
+  .expandable.open .expandable-content {
+    max-height: 500px;
+    opacity: 1;
+  }
+  .expandable-inner {
+    padding: 0 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .expandable-item-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+  .expandable-item-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .expandable-item-list {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    padding-left: 20px;
+  }
+
+  /* Reward pills inside preview */
+  .reward-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .reward-pill-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+  .reward-pill {
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+  }
+  .reward-pill.selected {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Section Header -->
+  <h3 class="section-title">Referral Journey</h3>
+  <p class="section-subtitle">Success = referee makes a first transaction. Edoo manages the entire path.</p>
+
+  <!-- Mini Rail (horizontal context indicator) -->
+  <div class="mini-rail">
+    <div class="rail-node active" onclick="openStep(0)">
+      <div class="rail-dot"></div>
+      <span class="rail-label">Ask</span>
+    </div>
+    <div class="rail-line"></div>
+    <div class="rail-node" onclick="openStep(1)">
+      <div class="rail-dot"></div>
+      <span class="rail-label">Invite</span>
+    </div>
+    <div class="rail-line"></div>
+    <div class="rail-node" onclick="openStep(2)">
+      <div class="rail-dot"></div>
+      <span class="rail-label">Sign-up</span>
+    </div>
+    <div class="rail-line"></div>
+    <div class="rail-node" onclick="openStep(3)">
+      <div class="rail-dot"></div>
+      <span class="rail-label">Transaction</span>
+    </div>
+    <div class="rail-line"></div>
+    <div class="rail-node" onclick="openStep(4)">
+      <div class="rail-dot"></div>
+      <span class="rail-label">Reward</span>
+    </div>
+  </div>
+
+  <!-- Parameter Badges -->
+  <div class="param-badges">
+    <span class="param-badge">$75 per side</span>
+    <span class="param-badge">Account Credit / Cashback</span>
+    <span class="param-badge">14-day window</span>
+  </div>
+
+  <!-- Vertical Stepper -->
+  <div class="stepper">
+
+    <!-- Step 1: Referral Ask -->
+    <div class="step open" data-step="0">
+      <div class="step-header" onclick="toggleStep(this)">
+        <div class="step-number">1</div>
+        <div class="step-info">
+          <div class="step-name">
+            Referral Ask
+            <span class="step-recipient">Referrer</span>
+          </div>
+          <div class="step-summary">Edoo selects the right customer and sends a personalized referral ask</div>
+        </div>
+        <svg class="step-chevron" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+      <div class="step-detail">
+        <div class="step-detail-inner">
+          <div class="detail-left">
+            <div class="detail-section-label">What Edoo decides</div>
+            <div class="detail-row">
+              <span class="detail-key">Channel</span>
+              <span class="detail-value">Push, email, SMS, or WhatsApp — per user's most responsive</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Timing</span>
+              <span class="detail-value">Peak engagement moment per user</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Message</span>
+              <span class="detail-value">2 variants A/B tested, winner scaled</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Reward</span>
+              <span class="detail-value">$75 — Account Credit vs. Cashback, personalized per user</span>
+            </div>
+          </div>
+          <div class="detail-right">
+            <div class="preview-card">
+              <div class="preview-channel">Push notification</div>
+              <div class="preview-body">
+                <div class="preview-headline">Know someone who'd love us?</div>
+                <div class="preview-text">Share your personal link — you both get $75 when your friend makes their first transaction.</div>
+                <div style="margin-bottom: 10px;">
+                  <div class="reward-pill-label">Choose your reward:</div>
+                  <div class="reward-pills">
+                    <span class="reward-pill selected">$75 Account Credit</span>
+                    <span class="reward-pill">$75 Cashback</span>
+                  </div>
+                </div>
+                <button class="preview-cta">Share My Link</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Invite Landing -->
+    <div class="step" data-step="1">
+      <div class="step-header" onclick="toggleStep(this)">
+        <div class="step-number">2</div>
+        <div class="step-info">
+          <div class="step-name">
+            Invite Landing
+            <span class="step-recipient">Referee</span>
+          </div>
+          <div class="step-summary">Referee lands on a personalized page with the referral offer</div>
+        </div>
+        <svg class="step-chevron" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+      <div class="step-detail">
+        <div class="step-detail-inner">
+          <div class="detail-left">
+            <div class="detail-section-label">What Edoo decides</div>
+            <div class="detail-row">
+              <span class="detail-key">Page</span>
+              <span class="detail-value">Landing page variant, layout, and imagery</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Framing</span>
+              <span class="detail-value">Reward framing and urgency signals</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Social proof</span>
+              <span class="detail-value">Referrer name and personalized context</span>
+            </div>
+          </div>
+          <div class="detail-right">
+            <div class="preview-card">
+              <div class="preview-channel">Personalized landing page</div>
+              <div class="preview-body">
+                <div class="preview-headline">Sarah invited you!</div>
+                <div class="preview-text">Open an account and make your first transaction — you both get $75.</div>
+                <div class="preview-reward">
+                  <span class="preview-reward-amount">$75</span>
+                  <span class="preview-reward-label">after your first transaction</span>
+                </div>
+                <button class="preview-cta">Claim My $75</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Sign-up & KYC -->
+    <div class="step" data-step="2">
+      <div class="step-header" onclick="toggleStep(this)">
+        <div class="step-number">3</div>
+        <div class="step-info">
+          <div class="step-name">
+            Sign-up & KYC
+            <span class="step-recipient">Referee</span>
+          </div>
+          <div class="step-summary">Referee completes registration and identity verification</div>
+        </div>
+        <svg class="step-chevron" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+      <div class="step-detail">
+        <div class="step-detail-inner">
+          <div class="detail-left">
+            <div class="detail-section-label">What Edoo decides</div>
+            <div class="detail-row">
+              <span class="detail-key">Nudges</span>
+              <span class="detail-value">Timing of sign-up reminders if referee drops off</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Channel</span>
+              <span class="detail-value">Reminder via SMS or email based on engagement</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Messaging</span>
+              <span class="detail-value">Friction-reduction messaging and reward reminders</span>
+            </div>
+          </div>
+          <div class="detail-right">
+            <div class="preview-simple">
+              <div class="preview-simple-icon">&#9993;</div>
+              <div class="preview-simple-text">Reminder if referee hasn't completed sign-up</div>
+              <div class="preview-simple-sample">
+                "You're almost there! Complete your account to claim your $75 reward. It only takes 2 minutes."
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: First Transaction -->
+    <div class="step" data-step="3">
+      <div class="step-header" onclick="toggleStep(this)">
+        <div class="step-number">4</div>
+        <div class="step-info">
+          <div class="step-name">
+            First Transaction
+            <span class="step-recipient">Referee</span>
+          </div>
+          <div class="step-summary">Referee makes their first transaction — this is the success event</div>
+        </div>
+        <svg class="step-chevron" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+      <div class="step-detail">
+        <div class="step-detail-inner">
+          <div class="detail-left">
+            <div class="detail-section-label">What Edoo decides</div>
+            <div class="detail-row">
+              <span class="detail-key">Activation</span>
+              <span class="detail-value">Nudge timing to encourage first transaction</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Reminder</span>
+              <span class="detail-value">Reward reminder before offer window expires</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Trigger</span>
+              <span class="detail-value">Reward triggered for both parties on completion</span>
+            </div>
+          </div>
+          <div class="detail-right">
+            <div class="preview-simple">
+              <div class="preview-simple-icon">&#128176;</div>
+              <div class="preview-simple-text">Activation nudge before window expires</div>
+              <div class="preview-simple-sample">
+                "Your $75 reward is waiting! Make your first transaction before your offer expires in 3 days."
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5: Reward Credited -->
+    <div class="step" data-step="4">
+      <div class="step-header" onclick="toggleStep(this)">
+        <div class="step-number">5</div>
+        <div class="step-info">
+          <div class="step-name">
+            Reward Credited
+            <span class="step-recipient">Both</span>
+          </div>
+          <div class="step-summary">Both referrer and referee receive their reward</div>
+        </div>
+        <svg class="step-chevron" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+      <div class="step-detail">
+        <div class="step-detail-inner">
+          <div class="detail-left">
+            <div class="detail-section-label">What Edoo decides</div>
+            <div class="detail-row">
+              <span class="detail-key">Type</span>
+              <span class="detail-value">Account Credit vs. Cashback — A/B tested per user preference</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Amount</span>
+              <span class="detail-value">$75 credited to each party</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Delivery</span>
+              <span class="detail-value">Instant credit upon transaction confirmation</span>
+            </div>
+          </div>
+          <div class="detail-right">
+            <div class="preview-simple">
+              <div class="preview-simple-icon">&#127881;</div>
+              <div class="preview-simple-text">Confirmation sent to both parties</div>
+              <div class="preview-simple-sample">
+                "You earned $75! Your friend completed their first transaction. Your reward has been credited to your account."
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /stepper -->
+
+  <!-- Bottom expandable: Strategy details -->
+  <div class="expandable" id="strategyDetails">
+    <div class="expandable-header" onclick="toggleExpandable()">
+      <svg class="expandable-chevron" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+      </svg>
+      <span class="expandable-title">Strategy details</span>
+    </div>
+    <div class="expandable-content">
+      <div class="expandable-inner">
+        <div>
+          <div class="expandable-item-label">Reward structure</div>
+          <div class="expandable-item-text">$75 per side ($150 total per successful conversion). Paid only when referee completes first transaction.</div>
+        </div>
+        <div>
+          <div class="expandable-item-label">Reward types</div>
+          <div class="expandable-item-text">Account Credit vs. Cashback — A/B tested per user</div>
+        </div>
+        <div>
+          <div class="expandable-item-label">Customer targeting</div>
+          <div class="expandable-item-text">Customers ranked by expected ROI: (propensity to refer × expected referee conversion × LTV) minus reward cost. Top-ranked activated first.</div>
+        </div>
+        <div>
+          <div class="expandable-item-label">Personalization variables</div>
+          <ul class="expandable-item-list">
+            <li>Channel: per user's most responsive channel (email, push, SMS, WhatsApp)</li>
+            <li>Timing: peak engagement time per user (inferred from historical activity)</li>
+            <li>Message: 2 variants A/B tested, winner scaled</li>
+            <li>Reward type: Account Credit vs. Cashback, personalized per user preference signals</li>
+          </ul>
+        </div>
+        <div>
+          <div class="expandable-item-label">Offer window</div>
+          <div class="expandable-item-text">Referee has 14 days from invite to complete first transaction. Expired offers free budget back to the pool.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function toggleStep(header) {
+    const step = header.closest('.step');
+    const wasOpen = step.classList.contains('open');
+
+    // Update rail
+    const idx = parseInt(step.dataset.step);
+    updateRail(wasOpen ? -1 : idx);
+
+    step.classList.toggle('open');
+  }
+
+  function openStep(idx) {
+    const steps = document.querySelectorAll('.step');
+    steps.forEach(s => s.classList.remove('open'));
+    steps[idx].classList.add('open');
+    updateRail(idx);
+
+    // Scroll into view
+    steps[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function updateRail(activeIdx) {
+    const nodes = document.querySelectorAll('.rail-node');
+    nodes.forEach((node, i) => {
+      node.classList.toggle('active', i === activeIdx);
+    });
+  }
+
+  function toggleExpandable() {
+    document.getElementById('strategyDetails').classList.toggle('open');
+  }
+
+  // Initialize: first step open, first rail node active
+  updateRail(0);
+</script>
+
+</body>
+</html>
