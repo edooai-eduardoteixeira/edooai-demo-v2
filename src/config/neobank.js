@@ -230,83 +230,60 @@ const neobank = {
       { days: '8\u201321', activeUsersPerDay: 12, note: 'Scaling based on early data' },
       { days: '22\u201330', activeUsersPerDay: 18, note: 'Optimized allocation' },
     ],
-    budgetPacing:
-      'Daily budget target = monthly budget \u00f7 remaining days. Edoo adjusts for day-of-week patterns and offer expiration timing. If daily performance exceeds expectations, Edoo accelerates. If underperforming, it conserves.',
-    offerLifecycle:
-      'Each offer has a 14-day window. Multiple offers are in flight simultaneously at different stages. Expired offers free budget back to the allocation pool. This is ongoing portfolio management.',
   },
 
   // Risk management
   riskManagement: {
-    pacing: {
-      label: 'Pacing & spend limits',
-      description: 'Daily and weekly spend limits prevent front-loading. Budget lasts the full month.',
-    },
-    offerLiability: {
-      label: 'Offer liability',
-      description: 'Offers issued but not yet redeemed are financial commitments. Edoo tracks outstanding exposure and caps it.',
-    },
-    rewardTracking: {
-      label: 'Reward commitment tracking',
-      description: 'Committed rewards vs. paid rewards \u2014 the gap is your financial exposure at any moment. Edoo keeps this visible and capped.',
-    },
-    anomalyDetection: {
-      label: 'Anomaly detection',
-      description: 'Pattern-based detection when results indicate something is off \u2014 unexpected conversion drops, spend spikes, behavioral shifts. Auto-pauses affected segments.',
-    },
-    fraud: [
+    controls: [
       {
-        type: 'Fake Identity',
-        scale: 'Individual \u00b7 manual \u00b7 small scale',
-        description:
-          'One person creates fake accounts to self-refer. Includes account cycling \u2014 open, earn reward, go dormant, repeat as a \u201cnew\u201d referee elsewhere.',
-        whyItMatters:
-          'Highest-volume type. Each instance is small, but it is constant and compounds over time.',
-        signals: [
-          'Device fingerprint persistence across accounts',
-          'IP / network correlation',
-          'Behavioral biometrics (navigation patterns, timing)',
-          'KYC data overlap detection',
-          'Account-then-dormancy cycling patterns',
-        ],
-        response:
-          'Reward held pre-payout. Both accounts flagged. Fingerprint cluster blacklisted for future matches.',
+        key: 'dailySpendCap',
+        label: 'Daily spend cap',
+        value: 'Budget \u00f7 remaining days',
+        tooltip: 'Daily budget target adjusts for day-of-week patterns and offer expiration timing. Accelerates when outperforming, conserves when under.',
       },
       {
-        type: 'Organized Fraud Rings',
-        scale: 'High volume \u00b7 coordinated',
-        description:
-          'Groups \u2014 human, bot, or both \u2014 that systematically extract referral rewards. Closed referral loops, bot-farmed signups, or paid workers completing minimum qualifying actions.',
-        whyItMatters:
-          'Can drain significant budget in days. Damage concentrates before detection if not caught early.',
-        signals: [
-          'Network graph analysis (closed loops, star patterns, isolated clusters)',
-          'Velocity anomalies (batch-like signup / activation timing)',
-          'Shared infrastructure markers (IP ranges, device similarity, email patterns)',
-          'Bot signals (session duration, navigation speed, headless browser detection)',
-        ],
-        response:
-          'Entire cluster frozen simultaneously \u2014 not one-by-one. Pattern fed back into model. Escalation triggered.',
+        key: 'weeklySpendCap',
+        label: 'Weekly spend cap',
+        value: '25% of monthly budget',
+        tooltip: 'Weekly ceiling prevents front-loading. Budget lasts the full month even if early cohorts convert fast.',
+      },
+      {
+        key: 'outstandingExposure',
+        label: 'Outstanding exposure',
+        value: '40% of monthly budget',
+        tooltip: 'Offers issued but not yet redeemed are financial commitments. This cap limits how much can be in flight at once.',
+      },
+      {
+        key: 'offerWindow',
+        label: 'Offer expiration',
+        value: '14 days',
+        tooltip: 'Referee has 14 days to complete first transaction. Expired offers free budget back to the allocation pool.',
+      },
+      {
+        key: 'anomalyPause',
+        label: 'Anomaly auto-pause',
+        value: 'On',
+        tooltip: 'Pattern-based detection for unexpected conversion drops, spend spikes, or behavioral shifts. Auto-pauses affected segments.',
+      },
+    ],
+    fraud: [
+      {
+        type: 'Suspicious Individuals',
+        rate: 2.1,
+        tooltip: 'Fake accounts self-referring. Detected via device fingerprint + KYC overlap + dormancy cycling patterns.',
+      },
+      {
+        type: 'Fraud Rings',
+        rate: 0.4,
+        tooltip: 'Organized groups extracting rewards. Detected via graph analysis + velocity anomalies + shared infrastructure markers.',
       },
       {
         type: 'Attribution Abuse',
-        scale: 'Medium volume \u00b7 invisible until measured',
-        description:
-          'Referrer posts their code or link publicly \u2014 Reddit, coupon sites, social media. Real people sign up using the code, but the referrer had zero influence on their decision. You pay referral rewards for what would have been free organic acquisition.',
-        whyItMatters:
-          'Not fraud in the traditional sense \u2014 the referee is real, the transaction is genuine. But the economic damage is identical: budget spent with no incremental value.',
-        signals: [
-          'Referral channel classification (personal share via SMS / email vs. public broadcast)',
-          'Referrer volume anomalies (normal: 2\u20135 conversions, broadcaster: 50+)',
-          'Link appearance on known coupon / deal sites',
-          'Click-to-signup timing (personal referrals are fast, broadcast pickups are delayed and scattered)',
-        ],
-        response:
-          'Attribution downweighted or rejected for broadcast-originated signups. Per-referrer reward cap enforced. Referral codes monitored on public surfaces.',
+        rate: 1.3,
+        tooltip: 'Referral codes posted publicly. Detected via channel classification + referrer volume caps + click-to-signup timing.',
       },
     ],
-    fraudSummary:
-      'Three different adversary profiles, three different detection strategies. Edoo runs all three continuously \u2014 rewards are never released until signals clear.',
+    fraudPolicy: 'Rewards held until signals clear.',
   },
 
   // Approval scope
