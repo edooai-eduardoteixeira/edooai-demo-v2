@@ -1,97 +1,21 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Logo from '../components/Logo.jsx';
 import CTAButton from '../components/CTAButton.jsx';
-import JourneyPipeline from '../components/JourneyPipeline.jsx';
 import AnimatedNumber from '../components/AnimatedNumber.jsx';
-import Badge from '../components/Badge.jsx';
 import Expandable from '../components/Expandable.jsx';
 import { useProjections } from '../hooks/useProjections.js';
 
-/* ───────── Info Row (label + value pair) ───────── */
-function InfoRow({ label, value }) {
-  return (
-    <div style={{ display: 'flex', gap: '0.5rem' }}>
-      <span
-        style={{
-          fontWeight: 600,
-          color: 'var(--color-gray-500)',
-          minWidth: '70px',
-          flexShrink: 0,
-          fontSize: 'var(--font-size-sm)',
-        }}
-      >
-        {label}
-      </span>
-      <span style={{ color: 'var(--color-gray-700)', fontSize: 'var(--font-size-sm)' }}>
-        {value}
-      </span>
-    </div>
-  );
-}
-
-/* ───────── Strategy Card (enriched) ───────── */
-function StrategyCard({ strategy, variant }) {
-  const tagLine =
-    variant === 'quickwin'
-      ? 'High volume \u00b7 Lower cost'
-      : 'Lower volume \u00b7 Higher LTV';
-
+/* ───────── KPI Card ───────── */
+function KPICard({ label, children }) {
   return (
     <div
       style={{
         flex: 1,
-        border: '1px solid var(--color-gray-200)',
-        borderRadius: 'var(--radius-lg)',
-        padding: '1.5rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          marginBottom: '0.75rem',
-        }}
-      >
-        <Badge variant={variant}>{strategy.name}</Badge>
-        <span style={{ fontSize: '12px', color: 'var(--color-gray-400)' }}>{tagLine}</span>
-      </div>
-      <h3
-        style={{
-          fontSize: 'var(--font-size-lg)',
-          fontWeight: 700,
-          marginBottom: '1rem',
-          color: 'var(--color-gray-900)',
-        }}
-      >
-        {strategy.headline}
-      </h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <InfoRow label="Target" value={strategy.target} />
-        <InfoRow label="Success" value={strategy.successMetric} />
-        <InfoRow
-          label="Reward"
-          value={`$${strategy.rewardPerSide}/side \u00b7 ${strategy.rewardTypes.join(' or ')}`}
-        />
-        <InfoRow label="Timing" value={strategy.timing} />
-      </div>
-    </div>
-  );
-}
-
-/* ───────── KPI Metric Card ───────── */
-function MetricCard({ label, children }) {
-  return (
-    <div
-      style={{
-        flex: 1,
-        minWidth: '140px',
-        padding: '1.25rem',
+        minWidth: '120px',
+        padding: '1rem',
         backgroundColor: 'var(--color-gray-50)',
         borderRadius: 'var(--radius-lg)',
         textAlign: 'center',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
       }}
     >
       <div
@@ -99,21 +23,126 @@ function MetricCard({ label, children }) {
           fontSize: 'var(--font-size-xs)',
           fontWeight: 500,
           color: 'var(--color-gray-500)',
-          marginBottom: '0.5rem',
           textTransform: 'uppercase',
           letterSpacing: '0.05em',
+          marginBottom: '0.375rem',
         }}
       >
         {label}
       </div>
       <div
         style={{
-          fontSize: 'var(--font-size-2xl)',
+          fontSize: 'var(--font-size-xl)',
           fontWeight: 700,
           color: 'var(--color-black)',
         }}
       >
         {children}
+      </div>
+    </div>
+  );
+}
+
+/* ───────── Journey Step Card ───────── */
+function JourneyStep({ step, index, isLast }) {
+  return (
+    <div style={{ display: 'flex', gap: '1rem', marginBottom: isLast ? 0 : '1.5rem' }}>
+      {/* Step number + connector line */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          minWidth: '32px',
+        }}
+      >
+        <div
+          style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            backgroundColor: 'var(--color-black)',
+            color: 'var(--color-white)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '13px',
+            fontWeight: 700,
+            flexShrink: 0,
+          }}
+        >
+          {index + 1}
+        </div>
+        {!isLast && (
+          <div
+            style={{
+              width: '2px',
+              flex: 1,
+              backgroundColor: 'var(--color-gray-200)',
+              marginTop: '4px',
+            }}
+          />
+        )}
+      </div>
+
+      {/* Content */}
+      <div style={{ flex: 1, paddingBottom: isLast ? 0 : '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem' }}>
+          <h4
+            style={{
+              fontSize: 'var(--font-size-base)',
+              fontWeight: 700,
+              color: 'var(--color-gray-900)',
+              margin: 0,
+            }}
+          >
+            {step.step}
+          </h4>
+          <span
+            style={{
+              fontSize: '11px',
+              color: 'var(--color-gray-400)',
+              fontWeight: 500,
+            }}
+          >
+            {step.recipient}
+          </span>
+        </div>
+        <p
+          style={{
+            fontSize: 'var(--font-size-sm)',
+            color: 'var(--color-gray-600)',
+            lineHeight: 1.5,
+            margin: 0,
+            marginBottom: '0.375rem',
+          }}
+        >
+          {step.whatHappens}
+        </p>
+        <p
+          style={{
+            fontSize: 'var(--font-size-sm)',
+            color: 'var(--color-gray-500)',
+            lineHeight: 1.5,
+            margin: 0,
+            fontStyle: 'italic',
+          }}
+        >
+          Edoo decides: {step.edooDecides}
+        </p>
+        {step.reward && (
+          <p
+            style={{
+              fontSize: 'var(--font-size-sm)',
+              color: 'var(--color-black)',
+              fontWeight: 600,
+              margin: 0,
+              marginTop: '0.375rem',
+            }}
+          >
+            {step.reward}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -273,364 +302,153 @@ function PreviewCard({ label, data }) {
   );
 }
 
-/* ───────── Strategy Detail (expandable content) ───────── */
-function StrategyDetailContent({ breakdown, strategies, roiExample, budget }) {
-  const formatBudget = (v) => '$' + (v / 1000).toFixed(0) + 'K';
-
+/* ───────── Operations Cycle Step ───────── */
+function CycleStep({ step, index, total }) {
   return (
-    <div>
-      <h4
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '0.75rem',
+        padding: '0.75rem 0',
+        borderBottom: index < total - 1 ? '1px solid var(--color-gray-100)' : 'none',
+      }}
+    >
+      <span
         style={{
           fontSize: 'var(--font-size-sm)',
-          fontWeight: 600,
-          marginBottom: '1rem',
-          color: 'var(--color-gray-700)',
+          fontWeight: 700,
+          color: 'var(--color-black)',
+          minWidth: '70px',
+          flexShrink: 0,
         }}
       >
-        Per-Strategy Breakdown at {formatBudget(budget)}
-      </h4>
-
-      <div style={{ overflowX: 'auto', marginBottom: '2rem' }}>
-        <table
-          style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            fontSize: 'var(--font-size-sm)',
-          }}
-        >
-          <thead>
-            <tr style={{ borderBottom: '2px solid var(--color-gray-200)' }}>
-              <th style={thStyle}></th>
-              <th style={thStyle}>Quick Win</th>
-              <th style={thStyle}>Look-a-Like</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr style={trStyle}>
-              <td style={tdLabelStyle}>Eligible referrers</td>
-              <td style={tdStyle}>
-                {breakdown.quickWin.eligibleReferrers.toLocaleString()}
-              </td>
-              <td style={tdStyle}>
-                {breakdown.lookALike.eligibleReferrers.toLocaleString()}
-              </td>
-            </tr>
-            <tr style={trStyle}>
-              <td style={tdLabelStyle}>Projected referrals sent</td>
-              <td style={tdStyle}>
-                {breakdown.quickWin.projectedReferralsSent.toLocaleString()}
-              </td>
-              <td style={tdStyle}>
-                {breakdown.lookALike.projectedReferralsSent.toLocaleString()}
-              </td>
-            </tr>
-            <tr style={trStyle}>
-              <td style={tdLabelStyle}>Projected conversions</td>
-              <td style={tdStyle}>
-                {breakdown.quickWin.projectedConversions.toLocaleString()}{' '}
-                {breakdown.quickWin.conversionUnit}
-              </td>
-              <td style={tdStyle}>
-                {breakdown.lookALike.projectedConversions.toLocaleString()}{' '}
-                {breakdown.lookALike.conversionUnit}
-              </td>
-            </tr>
-            <tr style={trStyle}>
-              <td style={tdLabelStyle}>Reward per conversion</td>
-              <td style={tdStyle}>
-                ${breakdown.quickWin.rewardPerConversion} total ($
-                {strategies.quickWin.rewardPerSide}/side x 2)
-              </td>
-              <td style={tdStyle}>
-                ${breakdown.lookALike.rewardPerConversion} total ($
-                {strategies.lookALike.rewardPerSide}/side x 2)
-              </td>
-            </tr>
-            <tr style={trStyle}>
-              <td style={tdLabelStyle}>Projected spend</td>
-              <td style={tdStyle}>
-                ${breakdown.quickWin.projectedSpend.toLocaleString()}
-              </td>
-              <td style={tdStyle}>
-                ${breakdown.lookALike.projectedSpend.toLocaleString()}
-              </td>
-            </tr>
-            <tr style={trStyle}>
-              <td style={tdLabelStyle}>Allocation</td>
-              <td style={tdStyle}>
-                {breakdown.quickWin.allocationPercent}% of eligible users
-              </td>
-              <td style={tdStyle}>
-                {breakdown.lookALike.allocationPercent}% of eligible users
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <p
-          style={{
-            fontSize: 'var(--font-size-xs)',
-            color: 'var(--color-gray-400)',
-            marginTop: '0.75rem',
-            fontStyle: 'italic',
-          }}
-        >
-          Note: Remaining budget (~$
-          {(breakdown.reservedBudget / 1000).toFixed(0)}K of the budget) is{' '}
-          {breakdown.reservedNote.toLowerCase()}.
-        </p>
-      </div>
-
-      <h4
-        style={{
-          fontSize: 'var(--font-size-sm)',
-          fontWeight: 600,
-          marginBottom: '0.75rem',
-          color: 'var(--color-gray-700)',
-        }}
-      >
-        A/B Test Variables
-      </h4>
-      <ul
+        {step.name}
+      </span>
+      <span
         style={{
           fontSize: 'var(--font-size-sm)',
           color: 'var(--color-gray-600)',
-          lineHeight: 1.8,
-          paddingLeft: '1.25rem',
-          marginBottom: '2rem',
+          lineHeight: 1.5,
         }}
       >
-        <li>Quick Win: Coupon vs. Account Credit x 2 message variants = 4 combinations.</li>
-        <li>Look-a-Like: Cashback vs. Account Credit x 2 message variants = 4 combinations.</li>
-        <li>
-          Timing: Quick Win sends within 24h of eligibility detection. Look-a-Like sends at peak
-          engagement time per user (inferred from historical activity patterns).
-        </li>
-        <li>Channel: Per user's most responsive channel (email, push, SMS, WhatsApp).</li>
-      </ul>
+        {step.description}
+      </span>
+    </div>
+  );
+}
 
+/* ───────── Risk Item ───────── */
+function RiskItem({ label, description }) {
+  return (
+    <div
+      style={{
+        padding: '1rem',
+        backgroundColor: 'var(--color-gray-50)',
+        borderRadius: 'var(--radius-md)',
+        marginBottom: '0.75rem',
+      }}
+    >
       <h4
         style={{
           fontSize: 'var(--font-size-sm)',
-          fontWeight: 600,
-          marginBottom: '0.75rem',
-          color: 'var(--color-gray-700)',
+          fontWeight: 700,
+          color: 'var(--color-gray-800)',
+          marginBottom: '0.25rem',
         }}
       >
-        Per-User ROI Ranking Example
-      </h4>
-      <div
-        style={{
-          backgroundColor: 'var(--color-gray-50)',
-          borderRadius: 'var(--radius-md)',
-          padding: '1rem',
-          fontSize: 'var(--font-size-sm)',
-          color: 'var(--color-gray-700)',
-          lineHeight: 1.7,
-          marginBottom: '1rem',
-        }}
-      >
-        <p>User #{roiExample.userId}: Eligible for both strategies.</p>
-        <p>
-          Quick Win: ${roiExample.quickWin.costPerSide}/side x 2 = $
-          {roiExample.quickWin.totalCost} total cost,{' '}
-          {(roiExample.quickWin.successProbability * 100).toFixed(0)}% success probability.
-          Expected cost per conversion: ${roiExample.quickWin.totalCost} /{' '}
-          {roiExample.quickWin.successProbability.toFixed(2)} = $
-          {roiExample.quickWin.expectedCostPerConversion}.
-        </p>
-        <p>
-          Look-a-Like: ${roiExample.lookALike.costPerSide}/side x 2 = $
-          {roiExample.lookALike.totalCost} total cost,{' '}
-          {(roiExample.lookALike.successProbability * 100).toFixed(0)}% success probability.
-          Expected cost per conversion: ${roiExample.lookALike.totalCost} /{' '}
-          {roiExample.lookALike.successProbability.toFixed(2)} = $
-          {roiExample.lookALike.expectedCostPerConversion}.
-        </p>
-        <p style={{ fontWeight: 600 }}>
-          Assigned to: {roiExample.assignedTo} ({roiExample.reason}).
-        </p>
-      </div>
-      <p
-        style={{
-          fontSize: 'var(--font-size-xs)',
-          color: 'var(--color-gray-400)',
-          fontStyle: 'italic',
-        }}
-      >
-        {roiExample.note}
-      </p>
-
-      <h4
-        style={{
-          fontSize: 'var(--font-size-sm)',
-          fontWeight: 600,
-          marginTop: '1.5rem',
-          marginBottom: '0.75rem',
-          color: 'var(--color-gray-700)',
-        }}
-      >
-        Current Allocation Logic
+        {label}
       </h4>
       <p
         style={{
           fontSize: 'var(--font-size-sm)',
           color: 'var(--color-gray-600)',
-          lineHeight: 1.7,
+          lineHeight: 1.5,
+          margin: 0,
         }}
       >
-        Each eligible user is evaluated for both strategies. The system calculates expected cost per
-        conversion: total reward cost divided by estimated success probability. Users are assigned to
-        the strategy with the lower expected cost per conversion. At $
-        {(budget / 1000).toFixed(0)}K budget:{' '}
-        {breakdown.quickWin.allocationPercent}% of eligible users assigned to Quick Win (higher
-        volume, lower cost), {breakdown.lookALike.allocationPercent}% to Look-a-Like (lower volume,
-        higher value). This ratio shifts daily as campaign performance data comes in.
+        {description}
       </p>
     </div>
   );
 }
 
-/* ───────── Table styles ───────── */
-const thStyle = {
-  textAlign: 'left',
-  padding: '0.75rem',
-  fontSize: 'var(--font-size-sm)',
-  fontWeight: 600,
-  color: 'var(--color-gray-700)',
-};
-
-const trStyle = {
-  borderBottom: '1px solid var(--color-gray-100)',
-};
-
-const tdLabelStyle = {
-  padding: '0.625rem 0.75rem',
-  fontSize: 'var(--font-size-sm)',
-  fontWeight: 500,
-  color: 'var(--color-gray-600)',
-};
-
-const tdStyle = {
-  padding: '0.625rem 0.75rem',
-  fontSize: 'var(--font-size-sm)',
-  color: 'var(--color-gray-700)',
-};
-
 /* ═════════════════════════════════════════════════════════
-   Main Page Component — single continuous reveal
+   Main Page Component
    ═════════════════════════════════════════════════════════ */
 export default function StrategyBuilderPage({ config, onNext }) {
   const {
-    journeyInference,
-    strategies,
+    strategy,
     budgetSlider,
+    recommendedBudget,
+    budgetAnnotation,
     projections: projData,
-    strategyBreakdown150K,
-    perUserROIExample,
-    executionPlan,
-    refereeTouchpoints,
+    redemptionJourney,
     refereePreview,
+    offerDetails,
+    operationsCycle,
+    riskManagement,
+    approvalScope,
   } = config;
-
-  /* ── Streaming text state ── */
-  const [lines, setLines] = useState([]);
-  const [currentText, setCurrentText] = useState('');
-
-  /* ── Progressive reveal flags (time-based, no user interaction) ── */
-  const [showPipeline, setShowPipeline] = useState(false);
-  const [showBudget, setShowBudget] = useState(false);
-  const [showFunnel, setShowFunnel] = useState(false);
-  const [showKPIs, setShowKPIs] = useState(false);
-  const [showStrategies, setShowStrategies] = useState(false);
-  const [showRefereeJourney, setShowRefereeJourney] = useState(false);
-  const [showExecution, setShowExecution] = useState(false);
-  const [showExpandables, setShowExpandables] = useState(false);
-  const [showLaunchCTA, setShowLaunchCTA] = useState(false);
 
   /* ── Budget + projections ── */
   const [budget, setBudget] = useState(budgetSlider.default);
   const proj = useProjections(projData, budget);
+
+  /* ── Progressive reveal ── */
+  const [showResult, setShowResult] = useState(false);
+  const [showJourney, setShowJourney] = useState(false);
+  const [showExecution, setShowExecution] = useState(false);
+  const [showRisk, setShowRisk] = useState(false);
+  const [showCTA, setShowCTA] = useState(false);
+
+  const [lines, setLines] = useState([]);
+  const [currentText, setCurrentText] = useState('');
 
   const cancelRef = useRef(false);
   const hasStartedRef = useRef(false);
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  const streamText = useCallback(
-    async (text, duration) => {
-      const charDelay = duration / text.length;
-      let built = '';
-      for (let i = 0; i < text.length; i++) {
-        if (cancelRef.current) return;
-        built += text[i];
-        setCurrentText(built);
-        await new Promise((r) => setTimeout(r, charDelay));
-      }
-      setLines((prev) => [...prev, text]);
-      setCurrentText('');
-    },
-    []
-  );
+  const streamText = useCallback(async (text, duration) => {
+    const charDelay = duration / text.length;
+    let built = '';
+    for (let i = 0; i < text.length; i++) {
+      if (cancelRef.current) return;
+      built += text[i];
+      setCurrentText(built);
+      await new Promise((r) => setTimeout(r, charDelay));
+    }
+    setLines((prev) => [...prev, text]);
+    setCurrentText('');
+  }, []);
 
-  /* ── Single animation sequence on mount ── */
   const runReveal = useCallback(async () => {
-    // Brief streaming analysis (~3 seconds total)
-    await streamText(
-      'Mapping your users\u2019 activation path...',
-      1200
-    );
+    await streamText('Analyzing your customer base and transaction data...', 1200);
+    await sleep(400);
+    if (cancelRef.current) return;
+
+    await streamText('Building your referral execution plan...', 1000);
+    await sleep(400);
+    if (cancelRef.current) return;
+
+    setShowResult(true);
     await sleep(500);
     if (cancelRef.current) return;
 
-    await streamText(
-      'Designing your referral strategy...',
-      1200
-    );
-    await sleep(500);
-    if (cancelRef.current) return;
-
-    // 1. Pipeline as context
-    setShowPipeline(true);
-    await sleep(600);
-    if (cancelRef.current) return;
-
-    // 2. Budget slider — the dial
-    setShowBudget(true);
+    setShowJourney(true);
     await sleep(400);
     if (cancelRef.current) return;
 
-    // 3. Projected funnel — the hook
-    setShowFunnel(true);
-    await sleep(400);
-    if (cancelRef.current) return;
-
-    // 4. Supporting KPIs
-    setShowKPIs(true);
-    await sleep(400);
-    if (cancelRef.current) return;
-
-    // 5. Strategy cards — how Edoo gets there
-    setShowStrategies(true);
-    await sleep(400);
-    if (cancelRef.current) return;
-
-    // 6. Referee experience preview
-    setShowRefereeJourney(true);
-    await sleep(400);
-    if (cancelRef.current) return;
-
-    // 7. Execution timeline
     setShowExecution(true);
+    await sleep(400);
+    if (cancelRef.current) return;
+
+    setShowRisk(true);
     await sleep(300);
     if (cancelRef.current) return;
 
-    // 8. Expandable deep detail
-    setShowExpandables(true);
-    await sleep(200);
-    if (cancelRef.current) return;
-
-    // 9. Launch CTA
-    setShowLaunchCTA(true);
+    setShowCTA(true);
   }, [streamText]);
 
   useEffect(() => {
@@ -643,34 +461,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
     };
   }, []);
 
-  /* ── Projected funnel cards (dynamic with slider) ── */
-  const funnelCards = [
-    { label: 'Sign-Ups', value: proj.signups, dark: true },
-    { label: 'KYC', value: Math.round(proj.signups * 0.72), dark: false },
-    { label: 'First Transaction', value: proj.firstTransactions, dark: false },
-    { label: 'Recurring', value: Math.round(proj.signups * 0.17), dark: false },
-  ];
-
-  /* ── Pipeline annotations (where each strategy triggers) ── */
-  const pipelineAnnotations = {
-    0: { text: 'Quick Win', variant: 'quickwin' },
-    2: { text: 'Look-a-Like', variant: 'lookalike' },
-  };
-
   const formatCurrency = (val) => '$' + val.toLocaleString('en-US');
-
-  /* ── Execution plan phases ── */
-  const execPhases = [
-    { label: `Seed (Days ${executionPlan.seed.days})`, text: executionPlan.seed.description },
-    {
-      label: `Expand (Days ${executionPlan.expand.days})`,
-      text: executionPlan.expand.description,
-    },
-    {
-      label: `Optimize (Day ${executionPlan.optimize.days})`,
-      text: executionPlan.optimize.description,
-    },
-  ];
 
   /* ═══════ RENDER ═══════ */
   return (
@@ -736,67 +527,92 @@ export default function StrategyBuilderPage({ config, onNext }) {
           )}
         </div>
 
-        {/* ── 1. Journey pipeline as context (with strategy annotations) ── */}
-        {showPipeline && (
+        {/* ════════════════════════════════════════════
+            SECTION 1 — Result + Budget (one unit)
+            ════════════════════════════════════════════ */}
+        {showResult && (
           <section
             style={{
-              marginBottom: '2rem',
+              marginBottom: '3rem',
               animation: 'fadeIn 0.4s ease forwards',
             }}
           >
-            <JourneyPipeline
-              stages={journeyInference.stages}
-              visibleCount={journeyInference.stages.length}
-              annotations={pipelineAnnotations}
-              showManagementBracket={true}
-              hideNumbers={true}
-            />
-          </section>
-        )}
+            {/* Primary result */}
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '2rem 0 1.5rem',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '3.5rem',
+                  fontWeight: 700,
+                  color: 'var(--color-black)',
+                  lineHeight: 1,
+                  marginBottom: '0.5rem',
+                }}
+              >
+                <AnimatedNumber value={proj.activeUsers} duration={300} />
+              </div>
+              <div
+                style={{
+                  fontSize: 'var(--font-size-lg)',
+                  color: 'var(--color-gray-600)',
+                  fontWeight: 500,
+                }}
+              >
+                projected new active users in 30 days
+              </div>
+            </div>
 
-        {/* ── 2. Budget slider ── */}
-        {showBudget && (
-          <section
-            style={{
-              marginBottom: '2rem',
-              animation: 'fadeIn 0.4s ease forwards',
-            }}
-          >
-            <h3
+            {/* KPI row */}
+            <div
               style={{
-                fontSize: 'var(--font-size-lg)',
-                fontWeight: 700,
-                marginBottom: '0.25rem',
+                display: 'flex',
+                gap: '0.75rem',
+                marginBottom: '2rem',
               }}
             >
-              Monthly Budget
-            </h3>
-            <p
+              <KPICard label="CAC">
+                <AnimatedNumber value={proj.cac} prefix="$" duration={300} />
+              </KPICard>
+              <KPICard label="ROI">
+                <span>{typeof proj.roi === 'number' ? proj.roi.toFixed(1) : proj.roi}x</span>
+              </KPICard>
+              <KPICard label="Conv Rate">
+                <span>{typeof proj.convRate === 'number' ? proj.convRate.toFixed(1) : proj.convRate}%</span>
+              </KPICard>
+              <KPICard label="Fraud Saved">
+                <AnimatedNumber value={proj.fraudSaved} prefix="$" duration={300} />
+              </KPICard>
+            </div>
+
+            {/* Budget slider */}
+            <div
               style={{
-                fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-gray-500)',
-                marginBottom: '1rem',
+                padding: '1.5rem',
+                backgroundColor: 'var(--color-gray-50)',
+                borderRadius: 'var(--radius-lg)',
               }}
             >
-              Edoo recommends starting at $150K/month based on your user base.
-            </p>
-            <div style={{ marginBottom: '1.25rem' }}>
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  marginBottom: '0.75rem',
+                  marginBottom: '0.5rem',
                 }}
               >
-                <span
+                <h3
                   style={{
-                    fontSize: 'var(--font-size-sm)',
-                    color: 'var(--color-gray-500)',
+                    fontSize: 'var(--font-size-base)',
+                    fontWeight: 700,
+                    margin: 0,
                   }}
                 >
-                  {formatCurrency(budgetSlider.min)}
-                </span>
+                  Monthly Budget
+                </h3>
                 <span
                   style={{
                     fontSize: 'var(--font-size-2xl)',
@@ -806,247 +622,185 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 >
                   <AnimatedNumber value={budget} prefix="$" duration={200} />
                 </span>
-                <span
+              </div>
+              <p
+                style={{
+                  fontSize: 'var(--font-size-sm)',
+                  color: 'var(--color-gray-500)',
+                  margin: 0,
+                  marginBottom: '1rem',
+                }}
+              >
+                {recommendedBudget.rationale}
+              </p>
+              <div style={{ marginBottom: '0.75rem' }}>
+                <div
                   style={{
-                    fontSize: 'var(--font-size-sm)',
-                    color: 'var(--color-gray-500)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginBottom: '0.5rem',
                   }}
                 >
-                  {formatCurrency(budgetSlider.max)}
-                </span>
+                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-400)' }}>
+                    {formatCurrency(budgetSlider.min)}
+                  </span>
+                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-400)' }}>
+                    {formatCurrency(budgetSlider.max)}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={budgetSlider.min}
+                  max={budgetSlider.max}
+                  step={budgetSlider.step}
+                  value={budget}
+                  onChange={(e) => setBudget(Number(e.target.value))}
+                  style={{
+                    width: '100%',
+                    height: '8px',
+                    appearance: 'none',
+                    background: `linear-gradient(to right, var(--color-black) ${((budget - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100}%, var(--color-gray-200) ${((budget - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100}%)`,
+                    borderRadius: '4px',
+                    outline: 'none',
+                    cursor: 'pointer',
+                  }}
+                />
               </div>
-              <input
-                type="range"
-                min={budgetSlider.min}
-                max={budgetSlider.max}
-                step={budgetSlider.step}
-                value={budget}
-                onChange={(e) => setBudget(Number(e.target.value))}
+              <p
                 style={{
-                  width: '100%',
-                  height: '8px',
-                  appearance: 'none',
-                  background: `linear-gradient(to right, var(--color-black) ${((budget - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100}%, var(--color-gray-200) ${((budget - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100}%)`,
-                  borderRadius: '4px',
-                  outline: 'none',
-                  cursor: 'pointer',
+                  fontSize: 'var(--font-size-xs)',
+                  color: 'var(--color-gray-400)',
+                  margin: 0,
+                  fontStyle: 'italic',
                 }}
-              />
+              >
+                {budgetAnnotation}
+              </p>
             </div>
           </section>
         )}
 
-        {/* ── 3. Projected funnel impact (4-card layout) ── */}
-        {showFunnel && (
+        {/* ════════════════════════════════════════════
+            SECTION 2 — Redemption Journey
+            ════════════════════════════════════════════ */}
+        {showJourney && (
           <section
             style={{
-              marginBottom: '2rem',
+              marginBottom: '3rem',
               animation: 'fadeIn 0.4s ease forwards',
             }}
           >
+            <h3
+              style={{
+                fontSize: 'var(--font-size-lg)',
+                fontWeight: 700,
+                marginBottom: '0.25rem',
+              }}
+            >
+              The Redemption Journey
+            </h3>
             <p
               style={{
                 fontSize: 'var(--font-size-sm)',
                 color: 'var(--color-gray-500)',
-                marginBottom: '1rem',
+                marginBottom: '1.5rem',
               }}
             >
-              Here&apos;s what Edoo projects for your first 30 days:
+              Success = referee makes a first transaction. Edoo manages the entire path.
             </p>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              {funnelCards.map((card) => (
-                <div
-                  key={card.label}
-                  style={{
-                    flex: 1,
-                    padding: '1.5rem',
-                    borderRadius: 'var(--radius-lg)',
-                    textAlign: 'center',
-                    backgroundColor: card.dark ? 'var(--color-gray-900)' : 'var(--color-gray-50)',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 'var(--font-size-xs)',
-                      fontWeight: 500,
-                      color: card.dark ? 'rgba(255,255,255,0.6)' : 'var(--color-gray-500)',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      marginBottom: '0.5rem',
-                    }}
-                  >
-                    {card.label}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '2rem',
-                      fontWeight: 700,
-                      color: card.dark ? 'var(--color-white)' : 'var(--color-black)',
-                    }}
-                  >
-                    <AnimatedNumber value={card.value} duration={300} />
-                  </div>
-                </div>
+
+            {/* Journey steps */}
+            <div
+              style={{
+                border: '1px solid var(--color-gray-200)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '1.5rem',
+                marginBottom: '1.5rem',
+              }}
+            >
+              {redemptionJourney.map((step, i) => (
+                <JourneyStep
+                  key={i}
+                  step={step}
+                  index={i}
+                  isLast={i === redemptionJourney.length - 1}
+                />
               ))}
             </div>
-          </section>
-        )}
 
-        {/* ── 4. Supporting KPIs ── */}
-        {showKPIs && (
-          <section
-            style={{
-              marginBottom: '2rem',
-              animation: 'fadeIn 0.4s ease forwards',
-            }}
-          >
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              <MetricCard label="Conv Rate">
-                <span>{typeof proj.convRate === 'number' ? proj.convRate.toFixed(1) : proj.convRate}%</span>
-              </MetricCard>
-              <MetricCard label="CAC">
-                <AnimatedNumber value={proj.cac} prefix="$" duration={300} />
-              </MetricCard>
-              <MetricCard label="Rev / Referral">
-                <AnimatedNumber value={proj.revPerReferral} prefix="$" duration={300} />
-              </MetricCard>
-              <MetricCard label="ROI">
-                <span>{typeof proj.roi === 'number' ? proj.roi.toFixed(1) : proj.roi}x</span>
-              </MetricCard>
-              <MetricCard label="Fraud Saved">
-                <AnimatedNumber value={proj.fraudSaved} prefix="$" duration={300} />
-              </MetricCard>
-            </div>
-          </section>
-        )}
-
-        {/* ── 5. Strategy cards ── */}
-        {showStrategies && (
-          <section
-            style={{
-              marginBottom: '2rem',
-              animation: 'fadeIn 0.4s ease forwards',
-            }}
-          >
-            <h3
+            {/* Preview cards */}
+            <h4
               style={{
-                fontSize: 'var(--font-size-lg)',
+                fontSize: 'var(--font-size-base)',
                 fontWeight: 700,
-                marginBottom: '0.25rem',
+                marginBottom: '0.75rem',
+                color: 'var(--color-gray-700)',
               }}
             >
-              How Edoo Gets There
-            </h3>
-            <p
-              style={{
-                fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-gray-500)',
-                marginBottom: '1rem',
-              }}
-            >
-              Two complementary strategies, each targeting a different milestone on your users&apos; journey.
-            </p>
-            <div style={{ display: 'flex', gap: '1.5rem' }}>
-              <StrategyCard strategy={strategies.quickWin} variant="quickwin" />
-              <StrategyCard strategy={strategies.lookALike} variant="lookalike" />
-            </div>
-          </section>
-        )}
-
-        {/* ── 6. Referee experience preview (side-by-side) ── */}
-        {showRefereeJourney && (
-          <section
-            style={{
-              marginBottom: '2rem',
-              animation: 'fadeIn 0.4s ease forwards',
-            }}
-          >
-            <h3
-              style={{
-                fontSize: 'var(--font-size-lg)',
-                fontWeight: 700,
-                marginBottom: '0.25rem',
-              }}
-            >
-              The Referral Experience
-            </h3>
-            <p
-              style={{
-                fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-gray-500)',
-                marginBottom: '1rem',
-              }}
-            >
-              What your users see at each side of the referral flow
-            </p>
-            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1rem' }}>
+              What your users see
+            </h4>
+            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem' }}>
               <PreviewCard label="REFERRER SEES" data={refereePreview.referrer} />
               <PreviewCard label="REFEREE SEES" data={refereePreview.referee} />
             </div>
-            {/* Compact journey steps showing full automation scope */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                flexWrap: 'wrap',
-                padding: '0.75rem 1rem',
-                backgroundColor: 'var(--color-gray-50)',
-                borderRadius: 'var(--radius-md)',
-                border: '1px dashed var(--color-gray-300)',
-                marginBottom: '0.75rem',
-              }}
-            >
-              <span
-                style={{
-                  fontSize: '12px',
-                  color: 'var(--color-gray-500)',
-                  fontWeight: 600,
-                }}
-              >
-                Edoo automates:
-              </span>
-              {refereeTouchpoints.map((tp, i) => (
-                <React.Fragment key={i}>
-                  <span
-                    style={{
-                      fontSize: '12px',
-                      color: 'var(--color-gray-600)',
-                    }}
-                  >
-                    {tp.step}
-                  </span>
-                  {i < refereeTouchpoints.length - 1 && (
-                    <span
-                      style={{
-                        fontSize: '10px',
-                        color: 'var(--color-gray-300)',
-                      }}
-                    >
-                      {'\u2192'}
-                    </span>
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-            <p
-              style={{
-                fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-gray-500)',
-                fontStyle: 'italic',
-              }}
-            >
-              Edoo personalizes the trigger, message, channel, and reward for each user automatically.
-            </p>
+
+            {/* Expandable offer details */}
+            <Expandable title="Offer details & personalization">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
+                    Reward structure
+                  </h4>
+                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.6, margin: 0 }}>
+                    {offerDetails.rewardStructure}
+                  </p>
+                </div>
+                <div>
+                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
+                    Reward types
+                  </h4>
+                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.6, margin: 0 }}>
+                    {offerDetails.rewardTypes}
+                  </p>
+                </div>
+                <div>
+                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
+                    Customer targeting
+                  </h4>
+                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.6, margin: 0 }}>
+                    {offerDetails.targeting}
+                  </p>
+                </div>
+                <div>
+                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
+                    Personalization variables
+                  </h4>
+                  <ul style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.8, paddingLeft: '1.25rem', margin: 0 }}>
+                    {offerDetails.personalization.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
+                    Offer window
+                  </h4>
+                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.6, margin: 0 }}>
+                    {offerDetails.offerWindow}
+                  </p>
+                </div>
+              </div>
+            </Expandable>
           </section>
         )}
 
-        {/* ── 7. Execution timeline ── */}
+        {/* ════════════════════════════════════════════
+            SECTION 3 — Execution: How Edoo Operates
+            ════════════════════════════════════════════ */}
         {showExecution && (
           <section
             style={{
-              marginBottom: '2rem',
+              marginBottom: '3rem',
               animation: 'fadeIn 0.4s ease forwards',
             }}
           >
@@ -1054,24 +808,209 @@ export default function StrategyBuilderPage({ config, onNext }) {
               style={{
                 fontSize: 'var(--font-size-lg)',
                 fontWeight: 700,
-                marginBottom: '1rem',
+                marginBottom: '0.25rem',
               }}
             >
-              Execution Timeline
+              How Edoo Operates
             </h3>
+            <p
+              style={{
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-gray-500)',
+                marginBottom: '1.5rem',
+              }}
+            >
+              {operationsCycle.summary}
+            </p>
+
+            {/* Daily cycle */}
             <div
               style={{
                 border: '1px solid var(--color-gray-200)',
                 borderRadius: 'var(--radius-lg)',
                 padding: '1.25rem',
-                marginBottom: '0.75rem',
+                marginBottom: '1.5rem',
               }}
             >
-              {execPhases.map((phase, i) => (
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '0.375rem',
+                  marginBottom: '1rem',
+                  flexWrap: 'wrap',
+                }}
+              >
+                {operationsCycle.steps.map((step, i) => (
+                  <React.Fragment key={i}>
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        color: 'var(--color-black)',
+                        padding: '4px 10px',
+                        backgroundColor: 'var(--color-gray-100)',
+                        borderRadius: '12px',
+                      }}
+                    >
+                      {step.name}
+                    </span>
+                    {i < operationsCycle.steps.length - 1 && (
+                      <span style={{ fontSize: '12px', color: 'var(--color-gray-300)', alignSelf: 'center' }}>
+                        {'\u2192'}
+                      </span>
+                    )}
+                  </React.Fragment>
+                ))}
+                <span style={{ fontSize: '12px', color: 'var(--color-gray-300)', alignSelf: 'center' }}>
+                  {'\u21BB'}
+                </span>
+              </div>
+
+              {operationsCycle.steps.map((step, i) => (
+                <CycleStep key={i} step={step} index={i} total={operationsCycle.steps.length} />
+              ))}
+            </div>
+
+            {/* Expected daily ramp */}
+            <div
+              style={{
+                display: 'flex',
+                gap: '1rem',
+                marginBottom: '1.5rem',
+              }}
+            >
+              {operationsCycle.dailyRamp.map((phase, i) => (
                 <div
                   key={i}
                   style={{
-                    marginBottom: i < execPhases.length - 1 ? '1.25rem' : 0,
+                    flex: 1,
+                    padding: '1rem',
+                    backgroundColor: 'var(--color-gray-50)',
+                    borderRadius: 'var(--radius-md)',
+                    textAlign: 'center',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 'var(--font-size-xs)',
+                      fontWeight: 600,
+                      color: 'var(--color-gray-500)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      marginBottom: '0.25rem',
+                    }}
+                  >
+                    Days {phase.days}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 'var(--font-size-xl)',
+                      fontWeight: 700,
+                      color: 'var(--color-black)',
+                      marginBottom: '0.25rem',
+                    }}
+                  >
+                    ~{phase.activeUsersPerDay}/day
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 'var(--font-size-xs)',
+                      color: 'var(--color-gray-400)',
+                    }}
+                  >
+                    {phase.note}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Budget pacing & offer lifecycle */}
+            <Expandable title="Budget pacing & offer lifecycle">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
+                    Budget pacing
+                  </h4>
+                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.6, margin: 0 }}>
+                    {operationsCycle.budgetPacing}
+                  </p>
+                </div>
+                <div>
+                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
+                    Offer lifecycle
+                  </h4>
+                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.6, margin: 0 }}>
+                    {operationsCycle.offerLifecycle}
+                  </p>
+                </div>
+              </div>
+            </Expandable>
+          </section>
+        )}
+
+        {/* ════════════════════════════════════════════
+            SECTION 4 — Risk Management
+            ════════════════════════════════════════════ */}
+        {showRisk && (
+          <section
+            style={{
+              marginBottom: '2rem',
+              animation: 'fadeIn 0.4s ease forwards',
+            }}
+          >
+            <h3
+              style={{
+                fontSize: 'var(--font-size-lg)',
+                fontWeight: 700,
+                marginBottom: '0.25rem',
+              }}
+            >
+              Risk Management
+            </h3>
+            <p
+              style={{
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-gray-500)',
+                marginBottom: '1.5rem',
+              }}
+            >
+              How Edoo protects your budget during continuous operations.
+            </p>
+
+            <RiskItem
+              label={riskManagement.pacing.label}
+              description={riskManagement.pacing.description}
+            />
+            <RiskItem
+              label={riskManagement.offerLiability.label}
+              description={riskManagement.offerLiability.description}
+            />
+            <RiskItem
+              label={riskManagement.rewardTracking.label}
+              description={riskManagement.rewardTracking.description}
+            />
+            <RiskItem
+              label={riskManagement.anomalyDetection.label}
+              description={riskManagement.anomalyDetection.description}
+            />
+
+            {/* Fraud */}
+            <Expandable title="Fraud detection">
+              <p
+                style={{
+                  fontSize: 'var(--font-size-sm)',
+                  color: 'var(--color-gray-600)',
+                  lineHeight: 1.6,
+                  marginBottom: '1rem',
+                }}
+              >
+                Edoo autonomously issues financial rewards on behalf of your business. If a fraudulent referral succeeds, your budget is wasted. Three critical risks:
+              </p>
+              {riskManagement.fraud.map((item, i) => (
+                <div
+                  key={i}
+                  style={{
+                    marginBottom: i < riskManagement.fraud.length - 1 ? '1rem' : 0,
                     paddingLeft: '1rem',
                     borderLeft: '3px solid var(--color-gray-200)',
                   }}
@@ -1084,60 +1023,33 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       marginBottom: '0.25rem',
                     }}
                   >
-                    {phase.label}
+                    {item.type}
                   </h4>
-                  <p
-                    style={{
-                      fontSize: 'var(--font-size-sm)',
-                      color: 'var(--color-gray-600)',
-                      lineHeight: 1.6,
-                      margin: 0,
-                    }}
-                  >
-                    {phase.text}
+                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.5, margin: 0, marginBottom: '0.25rem' }}>
+                    {item.description}
+                  </p>
+                  <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-400)', margin: 0, fontStyle: 'italic' }}>
+                    Detection: {item.detection}
                   </p>
                 </div>
               ))}
-            </div>
-            <p
-              style={{
-                fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-gray-500)',
-                fontStyle: 'italic',
-                padding: '0.75rem',
-                backgroundColor: 'var(--color-gray-50)',
-                borderRadius: 'var(--radius-md)',
-              }}
-            >
-              Guardrail: {executionPlan.guardrail}
-            </p>
-          </section>
-        )}
-
-        {/* ── 8. Expandable deep detail ── */}
-        {showExpandables && (
-          <section
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.75rem',
-              animation: 'fadeIn 0.4s ease forwards',
-            }}
-          >
-            <Expandable title="View Full Strategy Detail">
-              <StrategyDetailContent
-                breakdown={strategyBreakdown150K}
-                strategies={strategies}
-                roiExample={perUserROIExample}
-                budget={150000}
-              />
+              <p
+                style={{
+                  fontSize: 'var(--font-size-sm)',
+                  color: 'var(--color-gray-600)',
+                  fontWeight: 600,
+                  marginTop: '1rem',
+                }}
+              >
+                {riskManagement.fraudAction}
+              </p>
             </Expandable>
           </section>
         )}
       </main>
 
-      {/* ── 9. Bottom bar: Launch Campaigns ── */}
-      {showLaunchCTA && (
+      {/* ── Approve button (sticky bottom) ── */}
+      {showCTA && (
         <div
           style={{
             position: 'sticky',
@@ -1156,10 +1068,11 @@ export default function StrategyBuilderPage({ config, onNext }) {
             style={{
               fontSize: 'var(--font-size-xs)',
               color: 'var(--color-gray-400)',
+              margin: 0,
+              textAlign: 'center',
             }}
           >
-            In production, this triggers autonomous execution. In this demo, we'll show you
-            projected 30-day results.
+            {approvalScope}
           </p>
         </div>
       )}
