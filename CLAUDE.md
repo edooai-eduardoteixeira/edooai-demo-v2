@@ -28,16 +28,9 @@ Quando o usuário pedir mudanças visuais em um componente:
 
 ## Comunicação
 
-- Falar em português (pt-BR)
 - Ser direto e conciso
 - Sempre fornecer o link do preview após push
 - Não sugerir ações que dependam de terminal ou ambiente local
-
-## Stack do projeto
-
-- React + Vite
-- Deploy via Railway
-- Repo: edooai-eduardoteixeira/edooai-demo-v2
 
 ## Design System
 
