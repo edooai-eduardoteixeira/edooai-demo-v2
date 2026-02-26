@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Proposal A — Conversation Flow</title>
+<title>Proposal A — Vertical Single-Column</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
   :root {
@@ -20,77 +20,71 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: var(--font-family); color: var(--text-primary); background: var(--bg); line-height: 1.6; }
-  .page { max-width: 900px; margin: 0 auto; padding: 48px 32px 64px; }
+  .page { max-width: 720px; margin: 0 auto; padding: 48px 32px 64px; }
   .concept-label { display: inline-block; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 12px; background: var(--accent-light); border-radius: 100px; margin-bottom: 20px; }
   .section-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
   .section-sub { font-size: 14px; color: var(--text-tertiary); margin-bottom: 20px; }
   .params { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px; }
   .param-badge { font-size: 12px; font-weight: 600; color: var(--text-secondary); padding: 4px 12px; border-radius: 100px; border: 1px solid var(--border); background: var(--surface); }
 
-  /* Legend */
-  .legend { display: flex; gap: 20px; margin-bottom: 24px; }
-  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  /* Vertical stepper */
+  .stepper { position: relative; padding-left: 48px; }
+  .stepper::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: var(--border); }
 
-  /* Conversation layout */
-  .conversation { position: relative; }
-  .conversation::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: var(--border); transform: translateX(-50%); }
-  .step-row { position: relative; display: flex; margin-bottom: 32px; }
-  .step-row:last-child { margin-bottom: 0; }
-  .step-row.left .card-wrap { margin-right: auto; }
-  .step-row.left .spacer { order: 2; }
-  .step-row.left .card-wrap { order: 1; }
-  .step-row.right .spacer { order: 1; }
-  .step-row.right .card-wrap { order: 2; }
-  .step-row.center { justify-content: center; }
-  .spacer { width: 50%; flex-shrink: 0; }
-  .step-dot { position: absolute; left: 50%; top: 20px; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; transform: translateX(-50%); z-index: 2; box-shadow: 0 0 0 4px var(--bg); }
+  .step { position: relative; margin-bottom: 24px; }
+  .step:last-child { margin-bottom: 0; }
+
+  /* Step dot on the left rail */
+  .step-dot {
+    position: absolute; left: -48px; top: 16px;
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff;
+    z-index: 2; box-shadow: 0 0 0 4px var(--bg);
+  }
   .step-dot.referrer { background: var(--referrer-text); }
   .step-dot.referee { background: var(--referee-text); }
   .step-dot.both { background: var(--both-text); }
-  .card-wrap { width: calc(50% - 32px); }
-  .step-row.center .card-wrap { width: 60%; }
 
-  /* Card shell */
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
+  /* Card */
+  .card { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); overflow: hidden; }
 
-  /* Block: Header */
-  .card-header { padding: 16px 20px 12px; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  /* Card header — party icon + name + badge, all in one row */
+  .card-header { padding: 14px 20px 10px; display: flex; align-items: center; gap: 10px; }
+  .party-icon {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .party-icon.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
+  .party-icon.referee { background: var(--referee-bg); color: var(--referee-text); }
+  .party-icon.both { background: var(--both-bg); color: var(--both-text); }
+  .party-icon svg { width: 14px; height: 14px; }
+  .header-text { flex: 1; }
   .step-name { font-size: 16px; font-weight: 700; }
-  .step-summary { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
-  .party-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 10px; border-radius: 100px; white-space: nowrap; flex-shrink: 0; }
+  .step-summary { font-size: 13px; color: var(--text-secondary); }
+  .party-tag {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 2px 10px; border-radius: 100px; white-space: nowrap; flex-shrink: 0;
+  }
   .party-tag.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
   .party-tag.referee { background: var(--referee-bg); color: var(--referee-text); }
   .party-tag.both { background: var(--both-bg); color: var(--both-text); }
 
-  /* Block: Edoo Decides (key-value table) */
+  /* Blocks */
   .block { border-top: 1px solid var(--border-light); }
-  .block-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 20px 0; }
-  .kv-table { padding: 6px 20px 12px; }
-  .kv-row { display: flex; gap: 12px; padding: 4px 0; font-size: 13px; }
+  .block-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 20px 0; }
+  .kv-table { padding: 4px 20px 10px; }
+  .kv-row { display: flex; gap: 12px; padding: 3px 0; font-size: 13px; }
   .kv-key { color: var(--text-tertiary); font-weight: 600; min-width: 80px; flex-shrink: 0; }
   .kv-val { color: var(--text-secondary); }
 
-  /* Block: Reward */
-  .reward-block { border-top: 1px solid var(--border-light); padding: 12px 20px; display: flex; align-items: center; gap: 10px; background: var(--accent-subtle); }
-  .reward-amount { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+  /* Reward */
+  .reward-block { border-top: 1px solid var(--border-light); padding: 10px 20px; display: flex; align-items: center; gap: 10px; background: var(--accent-subtle); }
+  .reward-amount { font-size: 18px; font-weight: 700; }
   .reward-cond { font-size: 13px; color: var(--text-secondary); }
 
-  /* Block: Details (collapsed) */
-  .details-toggle { border-top: 1px solid var(--border-light); }
-  .details-trigger { width: 100%; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; background: none; border: none; cursor: pointer; font-family: inherit; }
-  .details-trigger-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
-  .details-trigger-icon { font-size: 12px; color: var(--text-tertiary); transition: transform 0.2s ease; }
-  .details-toggle.open .details-trigger-icon { transform: rotate(180deg); }
-  .details-content { display: none; padding: 0 20px 14px; }
-  .details-toggle.open .details-content { display: block; }
-  .detail-field { margin-bottom: 8px; }
-  .detail-field:last-child { margin-bottom: 0; }
-  .detail-field-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
-  .detail-field-value { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
-  .detail-list { font-size: 13px; color: var(--text-secondary); line-height: 1.7; padding-left: 16px; margin: 0; }
-
-  /* Block: Preview */
+  /* Preview */
   .preview-block { border-top: 1px solid var(--border-light); padding: 12px 20px 16px; }
   .preview-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
   .preview-card { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; background: var(--bg); }
@@ -101,19 +95,36 @@
   .preview-reward { display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: var(--accent-subtle); border-radius: var(--radius-sm); margin-bottom: 8px; }
   .preview-reward .val { font-size: 14px; font-weight: 700; }
   .preview-reward .lbl { font-size: 11px; color: var(--text-tertiary); }
-  .pill-row { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px; }
-  .pill-label { font-size: 11px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 4px; }
+  .pill-row { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 4px; }
+  .pill-label { font-size: 11px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 2px; }
   .pill { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); }
   .pill.on { border-color: var(--accent); background: var(--accent); color: #fff; }
 
-  /* Both-party dual reward */
-  .dual-reward { display: flex; gap: 12px; }
-  .dual-reward .reward-block { flex: 1; border-top: none; border-radius: var(--radius-sm); justify-content: center; }
+  /* Details (collapsed) */
+  .details-toggle { border-top: 1px solid var(--border-light); }
+  .details-trigger { width: 100%; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; background: none; border: none; cursor: pointer; font-family: inherit; }
+  .details-trigger-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+  .details-trigger-icon { font-size: 12px; color: var(--text-tertiary); transition: transform 0.2s ease; }
+  .details-toggle.open .details-trigger-icon { transform: rotate(180deg); }
+  .details-content { display: none; padding: 0 20px 12px; }
+  .details-toggle.open .details-content { display: block; }
+  .detail-field { margin-bottom: 8px; }
+  .detail-field:last-child { margin-bottom: 0; }
+  .detail-field-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+  .detail-field-value { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+  .detail-list { font-size: 13px; color: var(--text-secondary); line-height: 1.8; padding-left: 16px; margin: 0; }
+
+  /* Dual reward */
+  .dual-reward { display: flex; gap: 12px; padding: 12px 20px; border-top: 1px solid var(--border-light); }
+  .dual-reward .rw { flex: 1; padding: 10px; background: var(--accent-subtle); border-radius: var(--radius-sm); text-align: center; }
+  .dual-reward .rw-amount { font-size: 18px; font-weight: 700; }
+  .dual-reward .rw-who { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+  .dual-reward .rw-sub { font-size: 11px; color: var(--text-secondary); }
 </style>
 </head>
 <body>
 <div class="page">
-  <div class="concept-label">Proposal A — Conversation Flow</div>
+  <div class="concept-label">Proposal A — Vertical Single-Column</div>
   <h2 class="section-title">Referral Journey</h2>
   <p class="section-sub">How Edoo turns a referral into a new active user — from first ask to reward.</p>
 
@@ -124,213 +135,183 @@
     <span class="param-badge">Pay on first transaction</span>
   </div>
 
-  <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background: var(--referrer-text)"></div>Referrer</div>
-    <div class="legend-item"><div class="legend-dot" style="background: var(--referee-text)"></div>Referee</div>
-    <div class="legend-item"><div class="legend-dot" style="background: var(--both-text)"></div>Both</div>
-  </div>
+  <div class="stepper">
 
-  <div class="conversation">
-
-    <!-- STEP 1 — Referral Ask (Referrer, LEFT) -->
-    <div class="step-row left">
-      <div class="card-wrap">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="step-name">1. Referral Ask</div>
-              <div class="step-summary">Personalized ask sent to selected customer</div>
-            </div>
-            <span class="party-tag referrer">Referrer</span>
-          </div>
-          <div class="block">
-            <div class="block-label">Edoo decides</div>
-            <div class="kv-table">
-              <div class="kv-row"><span class="kv-key">Channel</span><span class="kv-val">push · email · SMS · WhatsApp</span></div>
-              <div class="kv-row"><span class="kv-key">Timing</span><span class="kv-val">peak engagement moment per user</span></div>
-              <div class="kv-row"><span class="kv-key">Message</span><span class="kv-val">2 variants A/B tested, winner scaled</span></div>
-              <div class="kv-row"><span class="kv-key">Reward type</span><span class="kv-val">Account Credit or Cashback per preference</span></div>
-            </div>
-          </div>
-          <div class="reward-block">
-            <span class="reward-amount">$75</span>
-            <span class="reward-cond">when friend completes first transaction</span>
-          </div>
-          <div class="preview-block">
-            <div class="preview-label">What they see</div>
-            <div class="preview-card">
-              <div class="preview-channel">Push notification</div>
-              <div class="preview-headline">Know someone who'd love us?</div>
-              <div class="preview-body">Share your link — you both get $75 when your friend makes their first transaction.</div>
-              <div class="pill-label">Choose reward:</div>
-              <div class="pill-row"><span class="pill on">$75 Credit</span><span class="pill">$75 Cashback</span></div>
-              <div class="pill-label">Gift your friend:</div>
-              <div class="pill-row"><span class="pill on">$75 Credit</span><span class="pill">$75 Cashback</span></div>
-              <div style="margin-top: 8px;"><span class="preview-cta">Share My Link</span></div>
-            </div>
-          </div>
-          <div class="details-toggle" onclick="this.classList.toggle('open')">
-            <button class="details-trigger">
-              <span class="details-trigger-label">Details</span>
-              <span class="details-trigger-icon">▼</span>
-            </button>
-            <div class="details-content">
-              <div class="detail-field">
-                <div class="detail-field-label">Targeting formula</div>
-                <div class="detail-field-value">propensity to refer × conversion × LTV − reward cost</div>
-              </div>
-              <div class="detail-field">
-                <div class="detail-field-label">Selection</div>
-                <div class="detail-field-value">Top-ranked customers activated first</div>
-              </div>
-              <div class="detail-field">
-                <div class="detail-field-label">Personalization variables</div>
-                <ul class="detail-list">
-                  <li>Channel per user's most responsive</li>
-                  <li>Timing at peak engagement</li>
-                  <li>Message: 2 variants A/B tested</li>
-                  <li>Reward type per preference signals</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="spacer"></div>
+    <!-- STEP 1 — Referral Ask -->
+    <div class="step">
       <div class="step-dot referrer">1</div>
-    </div>
-
-    <!-- STEP 2 — Invite Landing (Referee, RIGHT) -->
-    <div class="step-row right">
-      <div class="spacer"></div>
-      <div class="card-wrap">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="step-name">2. Invite Landing</div>
-              <div class="step-summary">Referee lands on personalized referral page</div>
-            </div>
-            <span class="party-tag referee">Referee</span>
+      <div class="card">
+        <div class="card-header">
+          <div class="party-icon referrer"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="4" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div>
+          <div class="header-text">
+            <div class="step-name">Referral Ask</div>
+            <div class="step-summary">Personalized ask sent to selected customer</div>
           </div>
-          <div class="block">
-            <div class="block-label">Edoo decides</div>
-            <div class="kv-table">
-              <div class="kv-row"><span class="kv-key">Landing page</span><span class="kv-val">variant tested</span></div>
-              <div class="kv-row"><span class="kv-key">Reward framing</span><span class="kv-val">optimized per context</span></div>
-              <div class="kv-row"><span class="kv-key">Urgency</span><span class="kv-val">signals calibrated</span></div>
-            </div>
+          <span class="party-tag referrer">Referrer</span>
+        </div>
+        <div class="block">
+          <div class="block-label">Edoo decides</div>
+          <div class="kv-table">
+            <div class="kv-row"><span class="kv-key">Channel</span><span class="kv-val">push · email · SMS · WhatsApp</span></div>
+            <div class="kv-row"><span class="kv-key">Timing</span><span class="kv-val">peak engagement moment per user</span></div>
+            <div class="kv-row"><span class="kv-key">Message</span><span class="kv-val">2 variants A/B tested, winner scaled</span></div>
+            <div class="kv-row"><span class="kv-key">Reward type</span><span class="kv-val">Account Credit or Cashback per preference</span></div>
           </div>
-          <div class="preview-block">
-            <div class="preview-label">What they see</div>
-            <div class="preview-card">
-              <div class="preview-channel">Personalized landing page</div>
-              <div class="preview-headline">Sarah invited you!</div>
-              <div class="preview-body">Open an account and make your first transaction — you both get $75.</div>
-              <div class="preview-reward"><span class="val">$75</span><span class="lbl">after your first transaction</span></div>
-              <span class="preview-cta">Claim My $75</span>
-            </div>
+        </div>
+        <div class="reward-block">
+          <span class="reward-amount">$75</span>
+          <span class="reward-cond">when friend completes first transaction</span>
+        </div>
+        <div class="preview-block">
+          <div class="preview-label">What they see</div>
+          <div class="preview-card">
+            <div class="preview-channel">Push notification</div>
+            <div class="preview-headline">Know someone who'd love us?</div>
+            <div class="preview-body">Share your link — you both get $75 when your friend makes their first transaction.</div>
+            <div class="pill-label">Choose reward:</div>
+            <div class="pill-row"><span class="pill on">$75 Credit</span><span class="pill">$75 Cashback</span></div>
+            <div class="pill-label">Gift your friend:</div>
+            <div class="pill-row"><span class="pill on">$75 Credit</span><span class="pill">$75 Cashback</span></div>
+            <div style="margin-top: 8px;"><span class="preview-cta">Share My Link</span></div>
           </div>
-          <div class="details-toggle" onclick="this.classList.toggle('open')">
-            <button class="details-trigger">
-              <span class="details-trigger-label">Details</span>
-              <span class="details-trigger-icon">▼</span>
-            </button>
-            <div class="details-content">
-              <div class="detail-field">
-                <div class="detail-field-label">Offer window</div>
-                <div class="detail-field-value">14 days from invite · expired offers free budget back to pool</div>
-              </div>
+        </div>
+        <div class="details-toggle" onclick="this.classList.toggle('open')">
+          <button class="details-trigger"><span class="details-trigger-label">Details</span><span class="details-trigger-icon">▼</span></button>
+          <div class="details-content">
+            <div class="detail-field"><div class="detail-field-label">Targeting formula</div><div class="detail-field-value">propensity to refer × conversion × LTV − reward cost</div></div>
+            <div class="detail-field"><div class="detail-field-label">Selection</div><div class="detail-field-value">Top-ranked customers activated first</div></div>
+            <div class="detail-field"><div class="detail-field-label">Personalization variables</div>
+              <ul class="detail-list"><li>Channel per user's most responsive</li><li>Timing at peak engagement</li><li>Message: 2 variants A/B tested</li><li>Reward type per preference signals</li></ul>
             </div>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- STEP 2 — Invite Landing -->
+    <div class="step">
       <div class="step-dot referee">2</div>
-    </div>
-
-    <!-- STEP 3 — Sign-up & KYC (Referee, RIGHT) -->
-    <div class="step-row right">
-      <div class="spacer"></div>
-      <div class="card-wrap">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="step-name">3. Sign-up & KYC</div>
-              <div class="step-summary">Registration and identity verification</div>
-            </div>
-            <span class="party-tag referee">Referee</span>
+      <div class="card">
+        <div class="card-header">
+          <div class="party-icon referee"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="4" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div>
+          <div class="header-text">
+            <div class="step-name">Invite Landing</div>
+            <div class="step-summary">Referee lands on personalized referral page</div>
           </div>
-          <div class="block">
-            <div class="block-label">Edoo decides</div>
-            <div class="kv-table">
-              <div class="kv-row"><span class="kv-key">Nudge timing</span><span class="kv-val">calibrated to behavior</span></div>
-              <div class="kv-row"><span class="kv-key">Reminder</span><span class="kv-val">channel per engagement patterns</span></div>
-              <div class="kv-row"><span class="kv-key">Messaging</span><span class="kv-val">friction-reduction focus</span></div>
-            </div>
+          <span class="party-tag referee">Referee</span>
+        </div>
+        <div class="block">
+          <div class="block-label">Edoo decides</div>
+          <div class="kv-table">
+            <div class="kv-row"><span class="kv-key">Landing page</span><span class="kv-val">variant tested</span></div>
+            <div class="kv-row"><span class="kv-key">Reward framing</span><span class="kv-val">optimized per context</span></div>
+            <div class="kv-row"><span class="kv-key">Urgency</span><span class="kv-val">signals calibrated</span></div>
+          </div>
+        </div>
+        <div class="preview-block">
+          <div class="preview-label">What they see</div>
+          <div class="preview-card">
+            <div class="preview-channel">Personalized landing page</div>
+            <div class="preview-headline">Sarah invited you!</div>
+            <div class="preview-body">Open an account and make your first transaction — you both get $75.</div>
+            <div class="preview-reward"><span class="val">$75</span><span class="lbl">after your first transaction</span></div>
+            <span class="preview-cta">Claim My $75</span>
+          </div>
+        </div>
+        <div class="details-toggle" onclick="this.classList.toggle('open')">
+          <button class="details-trigger"><span class="details-trigger-label">Details</span><span class="details-trigger-icon">▼</span></button>
+          <div class="details-content">
+            <div class="detail-field"><div class="detail-field-label">Offer window</div><div class="detail-field-value">14 days from invite · expired offers free budget back to pool</div></div>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- STEP 3 — Sign-up & KYC -->
+    <div class="step">
       <div class="step-dot referee">3</div>
-    </div>
-
-    <!-- STEP 4 — First Transaction (Referee, RIGHT) -->
-    <div class="step-row right">
-      <div class="spacer"></div>
-      <div class="card-wrap">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="step-name">4. First Transaction</div>
-              <div class="step-summary">Success event — triggers rewards for both parties</div>
-            </div>
-            <span class="party-tag referee">Referee</span>
+      <div class="card">
+        <div class="card-header">
+          <div class="party-icon referee"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="4" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div>
+          <div class="header-text">
+            <div class="step-name">Sign-up & KYC</div>
+            <div class="step-summary">Registration and identity verification</div>
           </div>
-          <div class="block">
-            <div class="block-label">Edoo decides</div>
-            <div class="kv-table">
-              <div class="kv-row"><span class="kv-key">Activation</span><span class="kv-val">nudge timed to behavior</span></div>
-              <div class="kv-row"><span class="kv-key">Reminder</span><span class="kv-val">reward reminder before expiry</span></div>
-              <div class="kv-row"><span class="kv-key">Encouragement</span><span class="kv-val">transaction motivation</span></div>
-            </div>
-          </div>
-          <div class="reward-block">
-            <span class="reward-amount">$150</span>
-            <span class="reward-cond">total triggered · $75 per side · paid on completion only</span>
+          <span class="party-tag referee">Referee</span>
+        </div>
+        <div class="block">
+          <div class="block-label">Edoo decides</div>
+          <div class="kv-table">
+            <div class="kv-row"><span class="kv-key">Nudge timing</span><span class="kv-val">calibrated to behavior</span></div>
+            <div class="kv-row"><span class="kv-key">Reminder</span><span class="kv-val">channel per engagement patterns</span></div>
+            <div class="kv-row"><span class="kv-key">Messaging</span><span class="kv-val">friction-reduction focus</span></div>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- STEP 4 — First Transaction -->
+    <div class="step">
       <div class="step-dot referee">4</div>
+      <div class="card">
+        <div class="card-header">
+          <div class="party-icon referee"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="4" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div>
+          <div class="header-text">
+            <div class="step-name">First Transaction</div>
+            <div class="step-summary">Success event — triggers rewards for both parties</div>
+          </div>
+          <span class="party-tag referee">Referee</span>
+        </div>
+        <div class="block">
+          <div class="block-label">Edoo decides</div>
+          <div class="kv-table">
+            <div class="kv-row"><span class="kv-key">Activation</span><span class="kv-val">nudge timed to behavior</span></div>
+            <div class="kv-row"><span class="kv-key">Reminder</span><span class="kv-val">reward reminder before expiry</span></div>
+            <div class="kv-row"><span class="kv-key">Encouragement</span><span class="kv-val">transaction motivation</span></div>
+          </div>
+        </div>
+        <div class="reward-block">
+          <span class="reward-amount">$150</span>
+          <span class="reward-cond">total triggered · $75 per side · paid on completion only</span>
+        </div>
+      </div>
     </div>
 
-    <!-- STEP 5 — Reward Credited (Both, CENTER) -->
-    <div class="step-row center">
-      <div class="card-wrap">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="step-name">5. Reward Credited</div>
-              <div class="step-summary">Both parties receive their reward</div>
-            </div>
-            <span class="party-tag both">Both</span>
+    <!-- STEP 5 — Reward Credited -->
+    <div class="step">
+      <div class="step-dot both">5</div>
+      <div class="card">
+        <div class="card-header">
+          <div class="party-icon both"><svg viewBox="0 0 20 16" fill="currentColor"><circle cx="6" cy="4" r="3"/><path d="M0 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="14" cy="4" r="3"/><path d="M8 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div>
+          <div class="header-text">
+            <div class="step-name">Reward Credited</div>
+            <div class="step-summary">Both parties receive their reward</div>
           </div>
-          <div class="block">
-            <div class="block-label">Edoo decides</div>
-            <div class="kv-table">
-              <div class="kv-row"><span class="kv-key">Reward type</span><span class="kv-val">Account Credit vs. Cashback</span></div>
-              <div class="kv-row"><span class="kv-key">Selection</span><span class="kv-val">A/B tested per user preference signals</span></div>
-            </div>
+          <span class="party-tag both">Both</span>
+        </div>
+        <div class="block">
+          <div class="block-label">Edoo decides</div>
+          <div class="kv-table">
+            <div class="kv-row"><span class="kv-key">Reward type</span><span class="kv-val">Account Credit vs. Cashback</span></div>
+            <div class="kv-row"><span class="kv-key">Selection</span><span class="kv-val">A/B tested per user preference signals</span></div>
           </div>
-          <div style="padding: 12px 20px; border-top: 1px solid var(--border-light);">
-            <div class="dual-reward">
-              <div class="reward-block"><span class="reward-amount">$75</span><span class="reward-cond">to referrer</span></div>
-              <div class="reward-block"><span class="reward-amount">$75</span><span class="reward-cond">to referee</span></div>
-            </div>
+        </div>
+        <div class="dual-reward">
+          <div class="rw">
+            <div class="rw-who" style="color: var(--referrer-text);">Referrer</div>
+            <div class="rw-amount">$75</div>
+            <div class="rw-sub">Account Credit or Cashback</div>
+          </div>
+          <div class="rw">
+            <div class="rw-who" style="color: var(--referee-text);">Referee</div>
+            <div class="rw-amount">$75</div>
+            <div class="rw-sub">Account Credit or Cashback</div>
           </div>
         </div>
       </div>
-      <div class="step-dot both">5</div>
     </div>
 
-  </div>
+  </div><!-- /stepper -->
 </div>
 </body>
 </html>
