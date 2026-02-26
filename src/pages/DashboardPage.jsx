@@ -51,10 +51,8 @@ function SimpleLineChart({ data, phases }) {
     .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
     .join(' ');
 
-  // Area fill path
   const areaD = `${pathD} L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`;
 
-  // Parse phases into zones with start/end days
   const parsedPhases = (phases || []).map((phase) => {
     const parts = phase.days.split(/[–\u2013-]/);
     const startDay = parseInt(parts[0]);
@@ -62,14 +60,12 @@ function SimpleLineChart({ data, phases }) {
     return { startDay, endDay, label: phase.label };
   });
 
-  // Compute boundary X positions (between phases)
   const boundaries = [];
   for (let i = 0; i < parsedPhases.length - 1; i++) {
     const boundaryDay = parsedPhases[i].endDay;
     boundaries.push(padding.left + ((boundaryDay - 1) / (data.length - 1)) * chartW);
   }
 
-  // Compute label center X for each phase
   const phaseLabels = parsedPhases.map((phase) => {
     const midDay = (phase.startDay + phase.endDay) / 2;
     const x = padding.left + ((midDay - 1) / (data.length - 1)) * chartW;
@@ -88,7 +84,6 @@ function SimpleLineChart({ data, phases }) {
         </linearGradient>
       </defs>
 
-      {/* Grid lines */}
       {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => {
         const y = padding.top + chartH * (1 - frac);
         const val = Math.round(maxVal * frac);
@@ -115,7 +110,6 @@ function SimpleLineChart({ data, phases }) {
         );
       })}
 
-      {/* X-axis labels */}
       {[1, 7, 14, 21, 30].map((day) => {
         const x = padding.left + ((day - 1) / (data.length - 1)) * chartW;
         return (
@@ -132,7 +126,6 @@ function SimpleLineChart({ data, phases }) {
         );
       })}
 
-      {/* Phase boundary dividers */}
       {boundaries.map((x, i) => (
         <line
           key={`boundary-${i}`}
@@ -146,7 +139,6 @@ function SimpleLineChart({ data, phases }) {
         />
       ))}
 
-      {/* Phase labels centered in zone */}
       {phaseLabels.map(({ x, label }, i) => (
         <text
           key={`label-${i}`}
@@ -161,13 +153,8 @@ function SimpleLineChart({ data, phases }) {
         </text>
       ))}
 
-      {/* Area with gradient */}
       <path d={areaD} fill="url(#areaGradient)" />
-
-      {/* Line */}
       <path d={pathD} fill="none" style={{ stroke: 'var(--text-primary)' }} strokeWidth="2.5" strokeLinejoin="round" />
-
-      {/* End dot */}
       <circle
         cx={points[points.length - 1].x}
         cy={points[points.length - 1].y}
@@ -189,7 +176,6 @@ export default function DashboardPage({ config }) {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
       <header
         style={{
           padding: '1.5rem 3rem',
@@ -199,7 +185,6 @@ export default function DashboardPage({ config }) {
         <Logo />
       </header>
 
-      {/* Main Content */}
       <main
         style={{
           flex: 1,
@@ -225,7 +210,7 @@ export default function DashboardPage({ config }) {
             marginBottom: '2rem',
           }}
         >
-          Based on $150K monthly budget cap
+          Based on $150K monthly budget
         </p>
 
         {/* Metrics */}
@@ -238,28 +223,28 @@ export default function DashboardPage({ config }) {
           }}
         >
           <MetricRow
+            label="New active users (first transaction)"
+            value={dashboard30Day.activeUsers.toLocaleString()}
+          />
+          <MetricRow
             label="Total referrals sent"
             value={dashboard30Day.totalReferralsSent.toLocaleString()}
-          />
-          <MetricRow
-            label="Sign-ups (Quick Win)"
-            value={dashboard30Day.signups.toLocaleString()}
-          />
-          <MetricRow
-            label="First transactions (Look-a-Like)"
-            value={dashboard30Day.firstTransactions.toLocaleString()}
-          />
-          <MetricRow
-            label="Total new users"
-            value={dashboard30Day.totalNewUsers.toLocaleString()}
           />
           <MetricRow
             label="Total spend"
             value={'$' + dashboard30Day.totalSpend.toLocaleString()}
           />
           <MetricRow
-            label="Blended CAC"
-            value={'$' + dashboard30Day.blendedCAC.toLocaleString()}
+            label="CAC"
+            value={'$' + dashboard30Day.cac.toLocaleString()}
+          />
+          <MetricRow
+            label="ROI"
+            value={dashboard30Day.roi + 'x'}
+          />
+          <MetricRow
+            label="Fraud saved"
+            value={'$' + dashboard30Day.fraudSaved.toLocaleString()}
           />
         </div>
 
@@ -279,7 +264,7 @@ export default function DashboardPage({ config }) {
               marginBottom: '1rem',
             }}
           >
-            Cumulative Conversions (30 Days)
+            Cumulative Active Users (30 Days)
           </h3>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <SimpleLineChart
