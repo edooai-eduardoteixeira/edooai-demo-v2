@@ -96,7 +96,7 @@
   .trigger-sub { display: flex; align-items: baseline; gap: 8px; }
   .trigger-type { font-size: 11px; font-weight: 400; color: var(--text-tertiary); min-width: 80px; flex-shrink: 0; }
 
-  .or-sep { font-size: 11px; color: var(--text-tertiary); font-weight: 400; font-style: italic; margin: 0 2px; }
+  .or-sep { font-size: 10px; color: var(--text-tertiary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 6px; }
   .val-sep { color: var(--text-tertiary); font-weight: 400; margin: 0 2px; }
   .range-sep { color: var(--text-tertiary); margin: 0 4px; font-weight: 400; }
 
@@ -207,11 +207,11 @@
         </div>
 
         <div class="fields-grid">
-          <div class="field-label">Qualifying triggers</div>
-          <div class="trigger-subs">
-            <div class="trigger-sub"><span class="trigger-type">Transactional</span> <span class="field-val">All Transactions</span></div>
-            <div class="trigger-sub"><span class="trigger-type">Promotional</span> <span class="field-val">Scheduled <span class="or-sep">or</span> AI Recommendation</span></div>
-          </div>
+          <div class="field-label">Transactional trigger</div>
+          <span class="field-val">All Transactions</span>
+
+          <div class="field-label">Promotional trigger</div>
+          <span class="field-val">Scheduled <span class="or-sep">or</span> AI Recommendation</span>
 
           <div class="field-label">Redemption trigger</div>
           <span class="field-val">1st Transaction</span>
