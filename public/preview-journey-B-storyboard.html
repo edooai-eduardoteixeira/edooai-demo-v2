@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Proposal B — Storyboard Frames</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #94a3b8;
+    --border: #e2e8f0;
+    --border-light: #f1f5f9;
+    --accent: #1a1a1a;
+    --accent-subtle: #fafafa;
+    --accent-light: #f5f5f5;
+    --surface: #ffffff;
+    --bg: #ffffff;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+    --referrer-bg: #dbeafe;
+    --referrer-text: #1e40af;
+    --referee-bg: #d1fae5;
+    --referee-text: #065f46;
+    --both-bg: #fef3c7;
+    --both-text: #92400e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-family); color: var(--text-primary); background: var(--bg); line-height: 1.6; }
+
+  .page { max-width: 1200px; margin: 0 auto; padding: 48px 32px 64px; }
+
+  .concept-label {
+    display: inline-block;
+    font-size: 11px; font-weight: 700; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 4px 12px; background: var(--accent-light);
+    border-radius: 100px; margin-bottom: 20px;
+  }
+
+  .section-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .section-sub { font-size: 14px; color: var(--text-tertiary); margin-bottom: 20px; }
+
+  .params { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px; }
+  .param-badge {
+    font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    padding: 4px 12px; border-radius: 100px;
+    border: 1px solid var(--border); background: var(--surface);
+  }
+
+  /* Storyboard strip */
+  .storyboard {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 16px;
+    scroll-snap-type: x mandatory;
+  }
+
+  /* Arrow connector between frames */
+  .frame-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    flex-shrink: 0;
+    color: var(--border);
+    font-size: 20px;
+  }
+
+  /* Storyboard frame */
+  .frame {
+    flex: 0 0 280px;
+    min-height: 500px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    scroll-snap-align: start;
+  }
+
+  /* Frame header with party color */
+  .frame-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .frame-header.referrer { background: var(--referrer-bg); }
+  .frame-header.referee { background: var(--referee-bg); }
+  .frame-header.both { background: var(--both-bg); }
+
+  .frame-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .frame-icon.referrer { background: var(--referrer-text); color: #fff; }
+  .frame-icon.referee { background: var(--referee-text); color: #fff; }
+  .frame-icon.both { background: var(--both-text); color: #fff; }
+  .frame-icon svg { width: 18px; height: 18px; }
+
+  .frame-header-text { display: flex; flex-direction: column; }
+  .frame-step-num {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .frame-header.referrer .frame-step-num { color: var(--referrer-text); }
+  .frame-header.referee .frame-step-num { color: var(--referee-text); }
+  .frame-header.both .frame-step-num { color: var(--both-text); }
+  .frame-step-name { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+
+  /* Frame body */
+  .frame-body {
+    padding: 16px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .frame-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+  .edoo-block {
+    background: var(--accent-subtle);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+  }
+  .edoo-label {
+    font-size: 11px; font-weight: 700; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;
+  }
+  .edoo-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+  .detail-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+  .detail-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+  .detail-list { font-size: 12px; color: var(--text-secondary); line-height: 1.7; padding-left: 16px; }
+
+  .reward-strip {
+    margin-top: auto;
+    padding: 10px 12px;
+    background: var(--accent-subtle);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--accent);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .reward-strip .amount { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+  .reward-strip .label { font-size: 12px; color: var(--text-secondary); }
+
+  /* Preview mockup inside frame */
+  .preview-box {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    background: var(--bg);
+  }
+  .preview-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .preview-channel { font-size: 11px; color: var(--text-tertiary); font-style: italic; margin-bottom: 4px; }
+  .preview-headline { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+  .preview-body { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 8px; }
+  .preview-cta {
+    display: inline-block; padding: 4px 12px;
+    background: var(--accent); color: #fff;
+    border-radius: var(--radius-sm); font-size: 12px; font-weight: 600;
+  }
+  .preview-reward-row {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 8px; background: var(--accent-subtle);
+    border-radius: var(--radius-sm); margin-bottom: 8px;
+  }
+  .preview-reward-row .val { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+  .preview-reward-row .lbl { font-size: 11px; color: var(--text-tertiary); }
+
+  .reward-options { margin-bottom: 8px; }
+  .reward-options-label { font-size: 11px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 4px; }
+  .reward-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+  .reward-pill {
+    font-size: 11px; font-weight: 500;
+    padding: 2px 8px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary);
+  }
+  .reward-pill.active { border-color: var(--accent); background: var(--text-primary); color: #fff; }
+
+  /* Both-party dual reward */
+  .dual-reward {
+    display: flex; gap: 10px;
+  }
+  .dual-reward .reward-strip { flex: 1; justify-content: center; flex-direction: column; align-items: center; text-align: center; border-left: none; border-top: 3px solid var(--accent); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="concept-label">Proposal B — Storyboard Frames</div>
+
+  <h2 class="section-title">Referral Journey</h2>
+  <p class="section-sub">How Edoo turns a referral into a new active user — from first ask to reward.</p>
+
+  <div class="params">
+    <span class="param-badge">$75 per side · $150 total</span>
+    <span class="param-badge">Account Credit / Cashback</span>
+    <span class="param-badge">14-day window</span>
+    <span class="param-badge">Pay on first transaction</span>
+  </div>
+
+  <!-- Storyboard strip -->
+  <div class="storyboard">
+
+    <!-- Frame 1: Referral Ask -->
+    <div class="frame">
+      <div class="frame-header referrer">
+        <div class="frame-icon referrer">
+          <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="4" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+        </div>
+        <div class="frame-header-text">
+          <span class="frame-step-num">Step 1</span>
+          <span class="frame-step-name">Referral Ask</span>
+        </div>
+      </div>
+      <div class="frame-body">
+        <p class="frame-desc">Edoo selects the right customer at the right moment and sends a personalized referral ask.</p>
+
+        <div class="edoo-block">
+          <div class="edoo-label">Edoo decides</div>
+          <div class="edoo-text">Channel · Timing · Message variant · Reward framing</div>
+        </div>
+
+        <div>
+          <div class="detail-label">Targeting</div>
+          <div class="detail-text">Ranked by expected ROI: propensity × conversion × LTV minus cost</div>
+        </div>
+
+        <div>
+          <div class="detail-label">Personalization</div>
+          <ul class="detail-list">
+            <li>Best channel per user</li>
+            <li>Peak engagement timing</li>
+            <li>2 variants A/B tested</li>
+            <li>Reward type per signals</li>
+          </ul>
+        </div>
+
+        <!-- Preview -->
+        <div class="preview-box">
+          <div class="preview-label">User sees</div>
+          <div class="preview-channel">Push notification</div>
+          <div class="preview-headline">Know someone who'd love us?</div>
+          <div class="preview-body">Share your link — you both get $75 when your friend transacts.</div>
+          <div class="reward-options">
+            <div class="reward-options-label">Choose reward:</div>
+            <div class="reward-pills">
+              <span class="reward-pill active">Credit</span>
+              <span class="reward-pill">Cashback</span>
+            </div>
+          </div>
+          <span class="preview-cta">Share My Link</span>
+        </div>
+
+        <div class="reward-strip">
+          <span class="amount">$75</span>
+          <span class="label">for you when friend transacts</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame-connector">→</div>
+
+    <!-- Frame 2: Invite Landing -->
+    <div class="frame">
+      <div class="frame-header referee">
+        <div class="frame-icon referee">
+          <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="4" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+        </div>
+        <div class="frame-header-text">
+          <span class="frame-step-num">Step 2</span>
+          <span class="frame-step-name">Invite Landing</span>
+        </div>
+      </div>
+      <div class="frame-body">
+        <p class="frame-desc">Referee lands on a personalized page with the referral offer. 14 days to complete their first transaction.</p>
+
+        <div class="edoo-block">
+          <div class="edoo-label">Edoo decides</div>
+          <div class="edoo-text">Landing page variant · Reward framing · Urgency signals</div>
+        </div>
+
+        <div>
+          <div class="detail-label">Offer window</div>
+          <div class="detail-text">14 days from invite. Expired offers free budget back to pool.</div>
+        </div>
+
+        <!-- Preview -->
+        <div class="preview-box">
+          <div class="preview-label">User sees</div>
+          <div class="preview-channel">Personalized landing page</div>
+          <div class="preview-headline">Sarah invited you!</div>
+          <div class="preview-body">Open an account and make your first transaction — you both get $75.</div>
+          <div class="preview-reward-row">
+            <span class="val">$75</span>
+            <span class="lbl">after first transaction</span>
+          </div>
+          <span class="preview-cta">Claim My $75</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame-connector">→</div>
+
+    <!-- Frame 3: Sign-up & KYC -->
+    <div class="frame">
+      <div class="frame-header referee">
+        <div class="frame-icon referee">
+          <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="4" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+        </div>
+        <div class="frame-header-text">
+          <span class="frame-step-num">Step 3</span>
+          <span class="frame-step-name">Sign-up & KYC</span>
+        </div>
+      </div>
+      <div class="frame-body">
+        <p class="frame-desc">Referee completes registration and identity verification. Edoo monitors progress and nudges at the right moment to reduce drop-off.</p>
+
+        <div class="edoo-block">
+          <div class="edoo-label">Edoo decides</div>
+          <div class="edoo-text">Nudge timing · Reminder channel · Friction-reduction messaging</div>
+        </div>
+
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+          <div style="text-align: center; padding: 20px;">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style="margin-bottom: 8px;">
+              <rect x="8" y="4" width="32" height="40" rx="4" stroke="#94a3b8" stroke-width="2" fill="none"/>
+              <circle cx="24" cy="18" r="6" stroke="#94a3b8" stroke-width="2" fill="none"/>
+              <path d="M14 36c0-5.5 4.5-10 10-10s10 4.5 10 10" stroke="#94a3b8" stroke-width="2" fill="none"/>
+            </svg>
+            <div style="font-size: 12px; color: var(--text-tertiary);">Identity verification in progress</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame-connector">→</div>
+
+    <!-- Frame 4: First Transaction -->
+    <div class="frame">
+      <div class="frame-header referee">
+        <div class="frame-icon referee">
+          <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="4" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+        </div>
+        <div class="frame-header-text">
+          <span class="frame-step-num">Step 4</span>
+          <span class="frame-step-name">First Transaction</span>
+        </div>
+      </div>
+      <div class="frame-body">
+        <p class="frame-desc">Referee makes their first transaction — this is the success event that triggers rewards for both parties.</p>
+
+        <div class="edoo-block">
+          <div class="edoo-label">Edoo decides</div>
+          <div class="edoo-text">Activation nudge timing · Reward reminder · Transaction encouragement</div>
+        </div>
+
+        <div>
+          <div class="detail-label">Reward structure</div>
+          <div class="detail-text">$75 per side ($150 total). Paid only when referee completes first transaction.</div>
+        </div>
+
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+          <div style="text-align: center; padding: 20px;">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style="margin-bottom: 8px;">
+              <circle cx="24" cy="24" r="20" stroke="#065f46" stroke-width="2" fill="#d1fae5"/>
+              <path d="M15 24l6 6 12-12" stroke="#065f46" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div style="font-size: 12px; color: var(--referee-text); font-weight: 600;">Success event</div>
+          </div>
+        </div>
+
+        <div class="reward-strip">
+          <span class="amount">$150</span>
+          <span class="label">total reward triggered</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame-connector">→</div>
+
+    <!-- Frame 5: Reward Credited -->
+    <div class="frame">
+      <div class="frame-header both">
+        <div class="frame-icon both">
+          <svg viewBox="0 0 20 16" fill="currentColor"><circle cx="6" cy="4" r="3"/><path d="M0 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="14" cy="4" r="3"/><path d="M8 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+        </div>
+        <div class="frame-header-text">
+          <span class="frame-step-num">Step 5</span>
+          <span class="frame-step-name">Reward Credited</span>
+        </div>
+      </div>
+      <div class="frame-body">
+        <p class="frame-desc">Both referrer and referee receive their reward. Edoo selects the optimal reward type for each user.</p>
+
+        <div class="edoo-block">
+          <div class="edoo-label">Edoo decides</div>
+          <div class="edoo-text">Reward type — Account Credit vs. Cashback, A/B tested per user preference signals</div>
+        </div>
+
+        <div>
+          <div class="detail-label">Reward types</div>
+          <div class="detail-text">Account Credit vs. Cashback — A/B tested per user</div>
+        </div>
+
+        <div style="flex: 1;"></div>
+
+        <div class="dual-reward">
+          <div class="reward-strip">
+            <span class="amount">$75</span>
+            <span class="label">Referrer</span>
+          </div>
+          <div class="reward-strip">
+            <span class="amount">$75</span>
+            <span class="label">Referee</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /storyboard -->
+</div><!-- /page -->
+</body>
+</html>
