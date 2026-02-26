@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strategy Cards — Improved Interior Layout</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #94a3b8;
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --accent: #1a1a1a;
+    --accent-subtle: #fafafa;
+    --accent-light: #f5f5f5;
+    --border: #e2e8f0;
+    --border-light: #f1f5f9;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+    --transition-fast: 150ms ease;
+    --transition-base: 200ms ease;
+  }
+
+  html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+  body {
+    font-family: var(--font-family);
+    color: var(--text-primary);
+    background: var(--bg);
+    line-height: 1.6;
+  }
+
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 48px 80px;
+  }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .section-subtitle {
+    font-size: 14px;
+    color: var(--text-tertiary);
+    margin-bottom: 24px;
+  }
+
+  /* ── Step Card ── */
+  .step-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  /* Card header */
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .step-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+  }
+
+  .recipient-badge {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    padding: 2px 10px;
+    background: var(--accent-light);
+    border-radius: 9999px;
+    letter-spacing: 0.03em;
+  }
+
+  /* Card body */
+  .card-body {
+    padding: 16px 20px;
+  }
+
+  /* ── Field rows ── */
+  .field-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .field-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .field-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+
+  .field-value {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-primary);
+  }
+
+  /* Two-column field pair (side by side) */
+  .field-pair {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 10px;
+  }
+  .field-pair .field-item {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Inline tags (reward types etc) */
+  .tag-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .tag-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .tag-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+
+  .tag {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    padding: 2px 10px;
+    background: var(--accent-subtle);
+    border: 1px solid var(--border-light);
+    border-radius: 9999px;
+  }
+
+  /* ── Separator ── */
+  .card-divider {
+    height: 1px;
+    background: var(--border-light);
+    margin: 14px 0;
+  }
+
+  /* ── Message Section ── */
+  .message-section {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-light);
+  }
+
+  .message-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  .message-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+
+  /* Segmented control (pill group) */
+  .seg-control {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--accent-subtle);
+  }
+
+  .seg-option {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border-right: 1px solid var(--border);
+    user-select: none;
+  }
+  .seg-option:last-child {
+    border-right: none;
+  }
+  .seg-option:hover {
+    background: var(--accent-light);
+  }
+  .seg-option.active {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .seg-via {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-weight: 400;
+  }
+
+  /* Message preview */
+  .message-preview {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    overflow: hidden;
+  }
+
+  .preview-channel {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-style: italic;
+    padding: 10px 16px 0;
+  }
+
+  .preview-body {
+    padding: 8px 16px 14px;
+  }
+
+  .preview-headline {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .preview-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .preview-reward {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: var(--accent-subtle);
+    border-radius: var(--radius-sm);
+    margin-bottom: 10px;
+  }
+
+  .preview-reward-amount {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .preview-reward-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+
+  .preview-cta {
+    display: block;
+    width: 100%;
+    padding: 7px 14px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    font-family: var(--font-family);
+  }
+
+  /* Reward pills inside preview */
+  .reward-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .reward-pill-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+  .reward-pill {
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+  }
+  .reward-pill.selected {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* ── Simple preview (for non-message steps) ── */
+  .preview-simple {
+    padding: 14px;
+    background: var(--accent-subtle);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    text-align: center;
+  }
+  .preview-simple-icon {
+    font-size: 20px;
+    margin-bottom: 6px;
+    opacity: 0.4;
+  }
+  .preview-simple-text {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    line-height: 1.5;
+  }
+  .preview-simple-sample {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-style: italic;
+    text-align: left;
+    line-height: 1.5;
+  }
+
+  /* ── Edoo decides row (compact) ── */
+  .edoo-note {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-style: italic;
+    line-height: 1.5;
+    margin-top: 6px;
+  }
+  .edoo-note strong {
+    font-weight: 500;
+    font-style: normal;
+    color: var(--text-tertiary);
+  }
+
+  /* ── Comparison labels ── */
+  .comparison-label {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 48px 0 20px;
+    padding-top: 32px;
+    border-top: 2px dashed var(--border);
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <h3 class="section-title">Referral Journey</h3>
+  <p class="section-subtitle">Success = referee makes a first transaction. Edoo manages the entire path.</p>
+
+  <!-- ════════════════════════════════════════════════════════
+       STEP 1: Referral Ask — Full card with message section
+       ════════════════════════════════════════════════════════ -->
+  <div class="step-card">
+    <div class="card-header">
+      <div class="step-number">1</div>
+      <div class="card-title">Referral Ask</div>
+      <span class="recipient-badge">Referrer</span>
+    </div>
+    <div class="card-body">
+
+      <!-- Two fields side by side -->
+      <div class="field-pair">
+        <div class="field-item">
+          <span class="field-label">Trigger</span>
+          <span class="field-value">All Transactions</span>
+        </div>
+        <div class="field-item">
+          <span class="field-label">Promotional</span>
+          <span class="field-value">Scheduled or AI Recommendation</span>
+        </div>
+      </div>
+
+      <!-- Single-line fields (label: value horizontal) -->
+      <div class="field-row">
+        <span class="field-label">Redemption Trigger</span>
+        <span class="field-value">1st Transaction</span>
+      </div>
+
+      <div class="field-row">
+        <span class="field-label">Reward Range</span>
+        <span class="field-value">$0 — $75</span>
+      </div>
+
+      <!-- Reward types as inline tags -->
+      <div class="tag-row">
+        <span class="tag-label">Reward Types</span>
+        <span class="tag">Cashback</span>
+        <span class="tag">Account Credit</span>
+        <span class="tag">Coupon</span>
+        <span class="tag">Gift Card</span>
+        <span class="tag">Organic</span>
+      </div>
+
+      <!-- ── Message section (unified) ── -->
+      <div class="message-section">
+        <div class="message-header">
+          <span class="message-label">Message</span>
+          <div class="seg-control">
+            <span class="seg-option active">Ask</span>
+            <span class="seg-option">Reminder</span>
+          </div>
+          <span class="seg-via">via</span>
+          <div class="seg-control">
+            <span class="seg-option active">Push</span>
+            <span class="seg-option">SMS</span>
+            <span class="seg-option">Email</span>
+          </div>
+        </div>
+
+        <div class="message-preview">
+          <div class="preview-channel">Push notification</div>
+          <div class="preview-body">
+            <div class="preview-headline">Know someone who'd love us?</div>
+            <div class="preview-text">Share your personal link — you both get $75 when your friend makes their first transaction.</div>
+            <div style="margin-bottom: 10px;">
+              <div class="reward-pill-label">Choose your reward:</div>
+              <div class="reward-pills">
+                <span class="reward-pill selected">$75 Account Credit</span>
+                <span class="reward-pill">$75 Cashback</span>
+              </div>
+            </div>
+            <button class="preview-cta">Share My Link</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       STEP 2: Invite Landing
+       ════════════════════════════════════════════════════════ -->
+  <div class="step-card">
+    <div class="card-header">
+      <div class="step-number">2</div>
+      <div class="card-title">Invite Landing</div>
+      <span class="recipient-badge">Referee</span>
+    </div>
+    <div class="card-body">
+
+      <div class="field-row">
+        <span class="field-label">Page Type</span>
+        <span class="field-value">Personalized landing page</span>
+      </div>
+
+      <div class="field-pair">
+        <div class="field-item">
+          <span class="field-label">Framing</span>
+          <span class="field-value">Reward value + urgency signals</span>
+        </div>
+        <div class="field-item">
+          <span class="field-label">Social Proof</span>
+          <span class="field-value">Referrer name + context</span>
+        </div>
+      </div>
+
+      <div class="edoo-note">
+        <strong>Edoo decides:</strong> Landing page variant, layout, imagery, and reward framing
+      </div>
+
+      <!-- Message section for this step -->
+      <div class="message-section">
+        <div class="message-header">
+          <span class="message-label">Preview</span>
+        </div>
+
+        <div class="message-preview">
+          <div class="preview-channel">Personalized landing page</div>
+          <div class="preview-body">
+            <div class="preview-headline">Sarah invited you!</div>
+            <div class="preview-text">Open an account and make your first transaction — you both get $75.</div>
+            <div class="preview-reward">
+              <span class="preview-reward-amount">$75</span>
+              <span class="preview-reward-label">after your first transaction</span>
+            </div>
+            <button class="preview-cta">Claim My $75</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       STEP 3: Sign-up & KYC
+       ════════════════════════════════════════════════════════ -->
+  <div class="step-card">
+    <div class="card-header">
+      <div class="step-number">3</div>
+      <div class="card-title">Sign-up & KYC</div>
+      <span class="recipient-badge">Referee</span>
+    </div>
+    <div class="card-body">
+
+      <div class="field-pair">
+        <div class="field-item">
+          <span class="field-label">Nudge Timing</span>
+          <span class="field-value">If drop-off detected</span>
+        </div>
+        <div class="field-item">
+          <span class="field-label">Channel</span>
+          <span class="field-value">SMS or Email (per engagement)</span>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <span class="field-label">Messaging</span>
+        <span class="field-value">Friction-reduction + reward reminders</span>
+      </div>
+
+      <div class="edoo-note">
+        <strong>Edoo decides:</strong> Nudge timing, reminder channel, friction-reduction messaging
+      </div>
+
+      <div class="message-section">
+        <div class="message-header">
+          <span class="message-label">Sample Nudge</span>
+          <div class="seg-control">
+            <span class="seg-option active">SMS</span>
+            <span class="seg-option">Email</span>
+          </div>
+        </div>
+        <div class="preview-simple">
+          <div class="preview-simple-sample">
+            "You're almost there! Complete your account to claim your $75 reward. It only takes 2 minutes."
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       STEP 4: First Transaction
+       ════════════════════════════════════════════════════════ -->
+  <div class="step-card">
+    <div class="card-header">
+      <div class="step-number">4</div>
+      <div class="card-title">First Transaction</div>
+      <span class="recipient-badge">Referee</span>
+    </div>
+    <div class="card-body">
+
+      <div class="field-pair">
+        <div class="field-item">
+          <span class="field-label">Activation</span>
+          <span class="field-value">Nudge to first transaction</span>
+        </div>
+        <div class="field-item">
+          <span class="field-label">Window</span>
+          <span class="field-value">14 days from invite</span>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <span class="field-label">On Success</span>
+        <span class="field-value">Reward triggered for both parties</span>
+      </div>
+
+      <div class="edoo-note">
+        <strong>Edoo decides:</strong> Activation nudge timing, reward reminder before offer expiry
+      </div>
+
+      <div class="message-section">
+        <div class="message-header">
+          <span class="message-label">Sample Nudge</span>
+          <div class="seg-control">
+            <span class="seg-option active">Push</span>
+            <span class="seg-option">SMS</span>
+          </div>
+        </div>
+        <div class="preview-simple">
+          <div class="preview-simple-sample">
+            "Your $75 reward is waiting! Make your first transaction before your offer expires in 3 days."
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       STEP 5: Reward Credited
+       ════════════════════════════════════════════════════════ -->
+  <div class="step-card">
+    <div class="card-header">
+      <div class="step-number">5</div>
+      <div class="card-title">Reward Credited</div>
+      <span class="recipient-badge">Both</span>
+    </div>
+    <div class="card-body">
+
+      <div class="field-pair">
+        <div class="field-item">
+          <span class="field-label">Amount</span>
+          <span class="field-value">$75 per side</span>
+        </div>
+        <div class="field-item">
+          <span class="field-label">Delivery</span>
+          <span class="field-value">Instant on transaction confirmation</span>
+        </div>
+      </div>
+
+      <!-- Reward type as inline tags -->
+      <div class="tag-row">
+        <span class="tag-label">Type</span>
+        <span class="tag">Account Credit</span>
+        <span class="tag">Cashback</span>
+      </div>
+
+      <div class="edoo-note">
+        <strong>Edoo decides:</strong> Reward type per user (A/B tested by preference signals)
+      </div>
+
+      <div class="message-section">
+        <div class="message-header">
+          <span class="message-label">Confirmation</span>
+          <div class="seg-control">
+            <span class="seg-option active">Push</span>
+            <span class="seg-option">Email</span>
+          </div>
+        </div>
+        <div class="preview-simple">
+          <div class="preview-simple-sample">
+            "You earned $75! Your friend completed their first transaction. Your reward has been credited to your account."
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Segmented control interactivity
+  document.querySelectorAll('.seg-control').forEach(ctrl => {
+    ctrl.querySelectorAll('.seg-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        ctrl.querySelectorAll('.seg-option').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
