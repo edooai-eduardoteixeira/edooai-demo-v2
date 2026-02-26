@@ -3,6 +3,7 @@ import Logo from '../components/Logo.jsx';
 import CTAButton from '../components/CTAButton.jsx';
 import AnimatedNumber from '../components/AnimatedNumber.jsx';
 import Expandable from '../components/Expandable.jsx';
+import Tooltip from '../components/Tooltip.jsx';
 import { useProjections } from '../hooks/useProjections.js';
 
 /* ───────── KPI Card ───────── */
@@ -338,41 +339,6 @@ function CycleStep({ step, index, total }) {
   );
 }
 
-/* ───────── Risk Item ───────── */
-function RiskItem({ label, description }) {
-  return (
-    <div
-      style={{
-        padding: '1rem',
-        backgroundColor: 'var(--color-gray-50)',
-        borderRadius: 'var(--radius-md)',
-        marginBottom: '0.75rem',
-      }}
-    >
-      <h4
-        style={{
-          fontSize: 'var(--font-size-sm)',
-          fontWeight: 700,
-          color: 'var(--color-gray-800)',
-          marginBottom: '0.25rem',
-        }}
-      >
-        {label}
-      </h4>
-      <p
-        style={{
-          fontSize: 'var(--font-size-sm)',
-          color: 'var(--color-gray-600)',
-          lineHeight: 1.5,
-          margin: 0,
-        }}
-      >
-        {description}
-      </p>
-    </div>
-  );
-}
-
 /* ═════════════════════════════════════════════════════════
    Main Page Component
    ═════════════════════════════════════════════════════════ */
@@ -424,11 +390,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
   }, []);
 
   const runReveal = useCallback(async () => {
-    await streamText('Analyzing your customer base and transaction data...', 1200);
-    await sleep(400);
-    if (cancelRef.current) return;
-
-    await streamText('Building your referral execution plan...', 1000);
+    await streamText('Analyzing your data to propose Referral Strategy and Execution Plan...', 1600);
     await sleep(400);
     if (cancelRef.current) return;
 
@@ -924,27 +886,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
               ))}
             </div>
 
-            {/* Budget pacing & offer lifecycle */}
-            <Expandable title="Budget pacing & offer lifecycle">
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div>
-                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
-                    Budget pacing
-                  </h4>
-                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.6, margin: 0 }}>
-                    {operationsCycle.budgetPacing}
-                  </p>
-                </div>
-                <div>
-                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
-                    Offer lifecycle
-                  </h4>
-                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.6, margin: 0 }}>
-                    {operationsCycle.offerLifecycle}
-                  </p>
-                </div>
-              </div>
-            </Expandable>
           </section>
         )}
 
@@ -977,117 +918,125 @@ export default function StrategyBuilderPage({ config, onNext }) {
               How Edoo protects your budget during continuous operations.
             </p>
 
-            <RiskItem
-              label={riskManagement.pacing.label}
-              description={riskManagement.pacing.description}
-            />
-            <RiskItem
-              label={riskManagement.offerLiability.label}
-              description={riskManagement.offerLiability.description}
-            />
-            <RiskItem
-              label={riskManagement.rewardTracking.label}
-              description={riskManagement.rewardTracking.description}
-            />
-            <RiskItem
-              label={riskManagement.anomalyDetection.label}
-              description={riskManagement.anomalyDetection.description}
-            />
-
-            {/* Fraud */}
-            <Expandable title="Fraud detection">
-              <p
-                style={{
-                  fontSize: 'var(--font-size-sm)',
-                  color: 'var(--color-gray-600)',
-                  lineHeight: 1.6,
-                  marginBottom: '1.25rem',
-                }}
-              >
-                Edoo autonomously issues financial rewards on behalf of your business. If a fraudulent referral succeeds, your budget is wasted. Three adversary profiles, each requiring a different detection strategy:
-              </p>
-              {riskManagement.fraud.map((item, i) => (
-                <div
-                  key={i}
-                  style={{
-                    marginBottom: '1.25rem',
-                    paddingLeft: '1rem',
-                    borderLeft: '3px solid var(--color-gray-200)',
-                  }}
-                >
-                  {/* Title + scale badge */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                    <h4
+            {/* Controls table */}
+            <div
+              style={{
+                border: '1px solid var(--color-gray-200)',
+                borderRadius: 'var(--radius-lg)',
+                overflow: 'hidden',
+                marginBottom: '1.5rem',
+              }}
+            >
+              {riskManagement.controls.map((ctrl, i) => (
+                <Tooltip key={ctrl.key} text={ctrl.tooltip}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '0.75rem 1.25rem',
+                      borderBottom: i < riskManagement.controls.length - 1 ? '1px solid var(--color-gray-100)' : 'none',
+                      backgroundColor: '#fff',
+                      transition: 'background-color var(--transition-fast)',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-gray-50)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#fff'; }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 'var(--font-size-sm)',
+                        fontWeight: 500,
+                        color: 'var(--color-gray-700)',
+                      }}
+                    >
+                      {ctrl.label}
+                    </span>
+                    <span
                       style={{
                         fontSize: 'var(--font-size-sm)',
                         fontWeight: 600,
-                        color: 'var(--color-gray-800)',
-                        margin: 0,
-                      }}
-                    >
-                      {item.type}
-                    </h4>
-                    <span
-                      style={{
-                        fontSize: '10px',
-                        color: 'var(--color-gray-400)',
-                        backgroundColor: 'var(--color-gray-50)',
+                        color: 'var(--color-black)',
+                        padding: '2px 10px',
                         border: '1px solid var(--color-gray-200)',
-                        borderRadius: '9999px',
-                        padding: '1px 8px',
-                        whiteSpace: 'nowrap',
+                        borderRadius: 'var(--radius-sm)',
+                        backgroundColor: 'var(--color-gray-50)',
+                        fontFamily: 'monospace',
                       }}
                     >
-                      {item.scale}
+                      {ctrl.value}
                     </span>
                   </div>
+                </Tooltip>
+              ))}
+            </div>
 
-                  {/* Description */}
-                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.5, margin: 0, marginBottom: '0.35rem' }}>
-                    {item.description}
-                  </p>
-
-                  {/* Why it matters */}
-                  <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-500)', margin: 0, marginBottom: '0.5rem', fontStyle: 'italic' }}>
-                    {item.whyItMatters}
-                  </p>
-
-                  {/* Detection signals */}
-                  <p style={{ fontSize: 'var(--font-size-xs)', fontWeight: 600, color: 'var(--color-gray-500)', margin: 0, marginBottom: '0.25rem' }}>
-                    Signals:
-                  </p>
-                  <ul style={{ margin: 0, paddingLeft: '1.1rem', marginBottom: '0.4rem' }}>
-                    {item.signals.map((signal, j) => (
-                      <li
-                        key={j}
+            {/* Fraud cards */}
+            <div
+              style={{
+                display: 'flex',
+                gap: '1rem',
+                marginBottom: '1rem',
+              }}
+            >
+              {riskManagement.fraud.map((item, i) => (
+                <Tooltip key={i} text={item.tooltip}>
+                  <div
+                    style={{
+                      flex: 1,
+                      padding: '1rem',
+                      border: '1px solid var(--color-gray-200)',
+                      borderRadius: 'var(--radius-lg)',
+                      backgroundColor: '#fff',
+                      transition: 'background-color var(--transition-fast)',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-gray-50)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#fff'; }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <span
                         style={{
-                          fontSize: 'var(--font-size-xs)',
-                          color: 'var(--color-gray-400)',
-                          lineHeight: 1.5,
+                          width: '8px',
+                          height: '8px',
+                          borderRadius: '50%',
+                          backgroundColor: 'var(--color-green-500)',
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontSize: 'var(--font-size-sm)',
+                          fontWeight: 600,
+                          color: 'var(--color-gray-800)',
                         }}
                       >
-                        {signal}
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* Response */}
-                  <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-500)', margin: 0 }}>
-                    <span style={{ fontWeight: 600 }}>Response:</span> {item.response}
-                  </p>
-                </div>
+                        {item.type}
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 'var(--font-size-2xl)',
+                        fontWeight: 700,
+                        color: 'var(--color-black)',
+                      }}
+                    >
+                      {item.rate}%
+                    </div>
+                  </div>
+                </Tooltip>
               ))}
-              <p
-                style={{
-                  fontSize: 'var(--font-size-sm)',
-                  color: 'var(--color-gray-600)',
-                  fontWeight: 600,
-                  marginTop: '0.25rem',
-                }}
-              >
-                {riskManagement.fraudSummary}
-              </p>
-            </Expandable>
+            </div>
+
+            {/* Policy line */}
+            <p
+              style={{
+                fontSize: 'var(--font-size-sm)',
+                fontWeight: 600,
+                color: 'var(--color-gray-600)',
+                margin: 0,
+              }}
+            >
+              {riskManagement.fraudPolicy}
+            </p>
           </section>
         )}
       </main>
