@@ -122,11 +122,11 @@ export default function DataConnectionPage({ config, onNext }) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', animation: 'pageEnter 0.4s ease' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <header
         style={{
-          padding: '18px 48px',
+          padding: '1.5rem 3rem',
           borderBottom: '1px solid var(--border-light)',
         }}
       >
@@ -137,28 +137,28 @@ export default function DataConnectionPage({ config, onNext }) {
       <main
         style={{
           flex: 1,
-          padding: '40px 48px',
+          padding: '2rem 3rem',
           maxWidth: '1280px',
           margin: '0 auto',
           width: '100%',
         }}
       >
-        <div style={{ marginBottom: '36px' }}>
+        <div style={{ marginBottom: '2.5rem' }}>
           <h2
             style={{
-              fontSize: '28px',
+              fontSize: '2rem',
               fontWeight: 700,
               color: 'var(--text-primary)',
-              marginBottom: '8px',
+              marginBottom: '0.75rem',
               lineHeight: 1.2,
-              letterSpacing: '-0.03em',
+              letterSpacing: '-0.025em',
             }}
           >
             Connect Your Data Sources
           </h2>
           <p
             style={{
-              fontSize: '16px',
+              fontSize: 'var(--font-size-lg)',
               color: 'var(--text-secondary)',
               fontWeight: 400,
               lineHeight: 1.6,
@@ -173,12 +173,12 @@ export default function DataConnectionPage({ config, onNext }) {
           style={{
             display: 'grid',
             gridTemplateColumns: '1fr 0.65fr',
-            gap: '36px',
+            gap: '3rem',
             alignItems: 'start',
           }}
         >
           {/* Left Column — Integration Groups */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
             <IntegrationGroup
               group={connection.group1}
               connected={group1Connected}
@@ -227,7 +227,7 @@ export default function DataConnectionPage({ config, onNext }) {
           borderTop: '1px solid var(--border)',
           boxShadow: 'var(--shadow-up-md)',
           backgroundColor: bothRequired ? 'var(--surface)' : 'var(--accent-subtle)',
-          padding: '18px 48px',
+          padding: '1.25rem 3rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',

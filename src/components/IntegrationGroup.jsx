@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PlatformLogo from './PlatformLogo.jsx';
 
 export default function IntegrationGroup({
@@ -10,62 +10,43 @@ export default function IntegrationGroup({
   step,
   isOptional,
 }) {
-  const [hovered, setHovered] = useState(false);
-
   return (
     <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       style={{
         border: isOptional ? '1px dashed var(--border)' : '1px solid var(--border)',
         borderRadius: 'var(--radius-lg)',
-        padding: '28px 32px',
+        padding: '32px',
         backgroundColor: 'var(--surface)',
-        boxShadow: isOptional
-          ? 'none'
-          : hovered
-            ? 'var(--shadow-md)'
-            : 'var(--shadow-sm)',
+        boxShadow: isOptional ? 'none' : 'var(--shadow-sm)',
         opacity: isOptional && !connected ? 0.75 : 1,
-        transition: 'all var(--transition-base)',
+        transition: 'opacity var(--transition-slow)',
         marginTop: isOptional ? '12px' : 0,
       }}
     >
-      {/* Title row: step badge · title + data direction tag */}
+      {/* Title row: step · title + data direction tag */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: '12px',
+          marginBottom: '10px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* Step number badge */}
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0' }}>
           <span
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '28px',
-              height: '28px',
-              borderRadius: '50%',
-              backgroundColor: connected ? 'var(--success)' : 'var(--accent)',
-              color: '#ffffff',
-              fontSize: '13px',
+              fontSize: '1.0625rem',
               fontWeight: 700,
-              flexShrink: 0,
-              transition: 'background-color var(--transition-base)',
+              color: 'var(--text-primary)',
             }}
           >
-            {connected ? '✓' : step}
+            {step} &middot;&nbsp;
           </span>
           <span
             style={{
-              fontSize: '17px',
+              fontSize: '1.0625rem',
               fontWeight: 700,
               color: 'var(--text-primary)',
-              letterSpacing: '-0.01em',
             }}
           >
             {group.label}
@@ -73,9 +54,10 @@ export default function IntegrationGroup({
           {isOptional && (
             <span
               style={{
-                fontSize: '14px',
+                fontSize: '1.0625rem',
                 fontWeight: 400,
                 color: 'var(--text-tertiary)',
+                marginLeft: '4px',
               }}
             >
               (optional)
@@ -86,13 +68,11 @@ export default function IntegrationGroup({
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            fontSize: '11px',
+            fontSize: '0.6875rem',
             fontWeight: 600,
-            padding: '4px 10px',
+            padding: '3px 10px',
             borderRadius: 'var(--radius-full)',
             whiteSpace: 'nowrap',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
             backgroundColor: group.dataDirection === 'Read only' ? '#dbeafe' : 'var(--border-light)',
             color: group.dataDirection === 'Read only' ? '#1e40af' : '#334155',
           }}
@@ -104,10 +84,10 @@ export default function IntegrationGroup({
       {/* WHY line */}
       <p
         style={{
-          fontSize: '15px',
+          fontSize: '0.9375rem',
           color: 'var(--text-secondary)',
           fontWeight: 400,
-          lineHeight: 1.6,
+          lineHeight: 1.5,
           marginBottom: '24px',
         }}
       >
@@ -129,6 +109,7 @@ export default function IntegrationGroup({
           />
         ))}
       </div>
+
     </div>
   );
 }
