@@ -148,7 +148,7 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
       <button
         onClick={onClick}
         onMouseEnter={() => setHovered(true)}
@@ -157,22 +157,20 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: '64px',
-          height: '64px',
+          width: '56px',
+          height: '56px',
           padding: 0,
-          borderRadius: 'var(--radius-lg)',
-          border: `1.5px solid ${getBorderColor()}`,
+          borderRadius: 'var(--radius-md)',
+          border: `1px solid ${getBorderColor()}`,
           backgroundColor: getBgColor(),
           cursor: isInteractive ? 'pointer' : 'default',
-          transition: 'all var(--transition-base)',
+          transition: 'all var(--transition-fast)',
           position: 'relative',
-          transform: hovered && isInteractive ? 'translateY(-2px) scale(1.04)' : 'scale(1)',
-          boxShadow: connected
-            ? '0 0 0 3px rgba(16, 185, 129, 0.15)'
-            : hovered && isInteractive
-              ? 'var(--shadow-md)'
-              : 'var(--shadow-xs)',
-          opacity: disabled && !connected ? 0.4 : 1,
+          transform: hovered && isInteractive ? 'scale(1.05)' : 'scale(1)',
+          boxShadow: hovered && isInteractive
+            ? 'var(--shadow-md)'
+            : 'none',
+          opacity: disabled && !connected ? 0.45 : 1,
         }}
       >
         {connecting ? (
@@ -180,33 +178,32 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
             style={{
               width: '24px',
               height: '24px',
-              border: '2.5px solid var(--border)',
-              borderTopColor: 'var(--accent)',
+              border: '2.5px solid var(--color-gray-200)',
+              borderTopColor: 'var(--color-gray-700)',
               borderRadius: '50%',
               animation: 'spin 0.7s linear infinite',
             }}
           />
         ) : (
-          <PlatformIcon name={name} color={color} size={30} />
+          <PlatformIcon name={name} color={color} size={28} />
         )}
         {connected && (
           <div
             style={{
               position: 'absolute',
-              bottom: '-4px',
-              right: '-4px',
-              width: '18px',
-              height: '18px',
+              bottom: '-3px',
+              right: '-3px',
+              width: '14px',
+              height: '14px',
               borderRadius: '50%',
               backgroundColor: 'var(--success)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               border: '2px solid var(--surface)',
-              boxShadow: 'var(--shadow-xs)',
             }}
           >
-            <svg width="9" height="9" viewBox="0 0 8 8" fill="none">
+            <svg width="7" height="7" viewBox="0 0 8 8" fill="none">
               <path
                 d="M1.5 4l1.75 1.75 3.25-3.25"
                 stroke="white"
@@ -220,13 +217,12 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
       </button>
       <span
         style={{
-          fontSize: '12px',
-          fontWeight: 500,
-          color: connected ? 'var(--text-primary)' : 'var(--text-secondary)',
+          fontSize: '0.75rem',
+          fontWeight: 600,
+          color: 'var(--text-secondary)',
           textAlign: 'center',
           lineHeight: 1.2,
           whiteSpace: 'nowrap',
-          transition: 'color var(--transition-base)',
         }}
       >
         {name}
@@ -234,16 +230,16 @@ export default function PlatformLogo({ name, connected, connecting, disabled, on
       {connected && (
         <span
           style={{
-            fontSize: '11px',
+            fontSize: '0.625rem',
             fontWeight: 600,
-            color: 'var(--success)',
+            color: 'var(--color-green-600)',
             textAlign: 'center',
             lineHeight: 1,
             whiteSpace: 'nowrap',
-            marginTop: '-4px',
+            marginTop: '-2px',
           }}
         >
-          Connected
+          ✓ Connected
         </span>
       )}
     </div>
