@@ -2,14 +2,14 @@ const neobank = {
   // Vertical Metadata
   vertical: 'neobank',
   companyType: 'Mid-sized US neobank',
-  companyStage: 'Series B–C',
+  companyStage: 'Series B\u2013C',
   totalCustomers: 847000,
 
   // Screen 1 — Landing Page
   landing: {
     headline: 'Turn your best customers into your best acquisition channel.',
     subheadline:
-      'Edoo AI is an autonomous agent that runs your referral program — from data analysis to campaign execution.',
+      'Edoo AI is an autonomous agent that runs your referral program \u2014 from data analysis to campaign execution.',
     ctaText: 'Connect Your Data',
     valueProps: [
       'Analyzes your customer data to find the right referrers.',
@@ -63,7 +63,7 @@ const neobank = {
     group3: {
       label: 'Support & Feedback',
       dataDirection: 'Read only',
-      whyLine: "To know who\u2019s happy \u2014 and who isn\u2019t",
+      whyLine: 'To know who\u2019s happy \u2014 and who isn\u2019t',
       platforms: ['Zendesk', 'Intercom', 'Delighted'],
       defaultPlatform: 'Zendesk',
       fieldsProvided: [
@@ -78,117 +78,23 @@ const neobank = {
     },
     requiredFieldCount: 4,
     bottomBarSummary:
-      '2 sources connected · 847,000 customer records · 4 of 4 required fields detected',
+      '2 sources connected \u00b7 847,000 customer records \u00b7 4 of 4 required fields detected',
   },
 
-  // Screen 3 — Journey & Conversion
-  journeyInference: {
-    uniqueEventTypes: 18,
-    canonicalPathPercentage: 82,
-    stages: [
-      { name: 'Sign-Up', users: 847000, percentage: 100 },
-      { name: 'KYC Completed', users: 612000, percentage: 72 },
-      { name: 'First Transaction', users: 285000, percentage: 34 },
-      { name: 'Recurring Transactions', users: 142000, percentage: 17 },
-    ],
-    stageCount: 4,
-    milestoneCategory: 'standard fintech lifecycle milestones',
+  // ─── Screen 3 — Customer Offer Allocation ───
+
+  // Single strategy
+  strategy: {
+    name: 'Maximize New Active Users',
+    goal: 'Get as many referred users as possible to complete their first transaction',
+    successMetric: 'Referee completes first transaction',
+    rewardPerSide: 75,
+    rewardTotal: 150,
+    rewardTypes: ['Account Credit', 'Cashback'],
+    offerWindowDays: 14,
   },
 
-  conversionAnalysis: {
-    windowDays: 90,
-    signupToFirstTransaction: 0.34,
-    rewardPricingExample: {
-      signupReward: 40,
-      effectiveCostPerTransaction: 118,
-      calculationNote: '$40 ÷ 0.34 = ~$118',
-      validatedRange: '$100–$200',
-    },
-  },
-
-  streamingText: {
-    phase1: [
-      {
-        type: 'text',
-        text: 'Scanning 847,000 customer records...',
-        duration: 1500,
-      },
-      { type: 'pause', duration: 1500 },
-      {
-        type: 'text',
-        text: 'Mapping how your users move from sign-up to active engagement...',
-        duration: 1500,
-      },
-      { type: 'pause', duration: 2000 },
-      {
-        type: 'text',
-        text: 'Found a clear pattern. 82% of your customers follow this journey:',
-        duration: 1500,
-      },
-      { type: 'pause', duration: 1000 },
-      { type: 'action', action: 'animatePipeline' },
-      {
-        type: 'text',
-        text: '4 key stages from sign-up to repeat usage. This is how your users activate.',
-        duration: 1500,
-      },
-    ],
-    phase2: [
-      {
-        type: 'text',
-        text: 'Calculating conversion between referral milestones...',
-        duration: 1500,
-      },
-      { type: 'pause', duration: 1500 },
-      {
-        type: 'text',
-        text: 'Based on the last 90 days of your data:',
-        duration: 1000,
-      },
-      { type: 'pause', duration: 1000 },
-      { type: 'action', action: 'annotateConversion' },
-    ],
-  },
-
-  // Screen 4 — Strategy & Projections
-  strategies: {
-    quickWin: {
-      name: 'Quick Win',
-      headline: 'Maximize New Sign-Ups',
-      target:
-        'High-propensity referrers (users with strong social signals and recent engagement)',
-      successMetric: 'Referee completes sign-up',
-      qualificationBehavioral:
-        'Behavioral only (profile data not connected)',
-      qualificationWithProfile:
-        'Sign-up + age 25–45 in target metros',
-      rewardPerSide: 40,
-      rewardTotal: 80,
-      rewardTypes: ['Coupon', 'Account Credit'],
-      abTestNote: 'A/B tested',
-      basis: 'Quick-acquisition approach. Low barrier, high volume.',
-      timing: 'Sends within 24h of eligibility detection',
-    },
-    lookALike: {
-      name: 'Look-a-Like',
-      headline: 'Maximize Active Users',
-      target:
-        'Most engaged existing users; acquire referees who resemble them',
-      successMetric: 'Referee completes first transaction',
-      qualificationBehavioral:
-        'Behavioral only (profile data not connected)',
-      qualificationWithProfile:
-        '1st transaction + income bracket match',
-      rewardPerSide: 150,
-      rewardTotal: 300,
-      rewardTypes: ['Cashback', 'Account Credit'],
-      abTestNote: 'A/B tested',
-      basis:
-        'Clone-the-best approach. Higher barrier, higher lifetime value. Based on your 34% sign-up to first transaction conversion rate.',
-      timing: 'Sends at peak engagement time per user',
-    },
-  },
-
+  // Budget
   budgetSlider: {
     min: 50000,
     max: 1000000,
@@ -196,154 +102,207 @@ const neobank = {
     default: 150000,
   },
 
+  recommendedBudget: {
+    amount: 150000,
+    rationale: 'Based on your 847K customers, we recommend $150K/month',
+  },
+
+  budgetAnnotation:
+    'Edoo AI prioritizes highest-ROI customers first \u2014 CAC expected to increase with budget',
+
+  // Projections — single strategy, diminishing returns
+  // CAC monotonically increases, ROI monotonically decreases, conv rate decreases
   projections: [
-    { budget: 50000, newUsers: 198, spend: 49200, cac: 249, signups: 312, firstTransactions: 67, convRate: 3.2, revPerReferral: 145, roi: 1.1, fraudSaved: 18200, fraudBlocked: 156 },
-    { budget: 100000, newUsers: 438, spend: 98400, cac: 225, signups: 680, firstTransactions: 149, convRate: 4.1, revPerReferral: 155, roi: 1.3, fraudSaved: 38400, fraudBlocked: 324 },
-    { budget: 150000, newUsers: 684, spend: 147600, cac: 216, signups: 1050, firstTransactions: 233, convRate: 5.0, revPerReferral: 165, roi: 1.5, fraudSaved: 63454, fraudBlocked: 583 },
-    { budget: 250000, newUsers: 1120, spend: 246000, cac: 220, signups: 1720, firstTransactions: 381, convRate: 4.6, revPerReferral: 160, roi: 1.4, fraudSaved: 98700, fraudBlocked: 892 },
-    { budget: 500000, newUsers: 2180, spend: 492000, cac: 226, signups: 3350, firstTransactions: 741, convRate: 4.2, revPerReferral: 155, roi: 1.3, fraudSaved: 178500, fraudBlocked: 1640 },
-    { budget: 1000000, newUsers: 4050, spend: 972000, cac: 240, signups: 6200, firstTransactions: 1377, convRate: 3.8, revPerReferral: 148, roi: 1.2, fraudSaved: 312000, fraudBlocked: 2890 },
+    { budget: 50000,   activeUsers: 95,   cac: 526,  convRate: 4.8, roi: 1.8, fraudSaved: 14000 },
+    { budget: 100000,  activeUsers: 180,  cac: 556,  convRate: 4.4, roi: 1.6, fraudSaved: 28000 },
+    { budget: 150000,  activeUsers: 260,  cac: 577,  convRate: 4.0, roi: 1.5, fraudSaved: 42000 },
+    { budget: 250000,  activeUsers: 400,  cac: 625,  convRate: 3.6, roi: 1.3, fraudSaved: 68000 },
+    { budget: 500000,  activeUsers: 680,  cac: 735,  convRate: 3.2, roi: 1.2, fraudSaved: 125000 },
+    { budget: 1000000, activeUsers: 1050, cac: 952,  convRate: 2.8, roi: 1.1, fraudSaved: 220000 },
   ],
 
-  strategyBreakdown150K: {
-    quickWin: {
-      eligibleReferrers: 2400,
-      projectedReferralsSent: 3600,
-      projectedConversions: 540,
-      conversionUnit: 'sign-ups',
-      rewardPerConversion: 80,
-      projectedSpend: 43200,
-      allocationPercent: 78,
-    },
-    lookALike: {
-      eligibleReferrers: 680,
-      projectedReferralsSent: 1360,
-      projectedConversions: 144,
-      conversionUnit: 'first transactions',
-      rewardPerConversion: 300,
-      projectedSpend: 43200,
-      allocationPercent: 22,
-    },
-    reservedBudget: 61200,
-    reservedNote:
-      'Allocated for expand and optimize phases (weeks 2–4)',
-  },
-
-  perUserROIExample: {
-    userId: '4,821',
-    quickWin: {
-      costPerSide: 40,
-      totalCost: 80,
-      successProbability: 0.6,
-      expectedCostPerConversion: 133,
-    },
-    lookALike: {
-      costPerSide: 150,
-      totalCost: 300,
-      successProbability: 0.35,
-      expectedCostPerConversion: 857,
-    },
-    assignedTo: 'Quick Win',
-    reason: '$133 vs. $857 per conversion',
-    note: "Success probability is per-user (based on individual behavioral signals), not the aggregate conversion rate. High-probability individuals are selected first, which is why per-user probabilities (60%, 35%) are higher than the population average.",
-  },
-
-  refereeTouchpoints: [
+  // Redemption journey — the "how"
+  redemptionJourney: [
     {
       step: 'Referral Ask',
-      channel: 'Push / Email',
       recipient: 'Referrer',
-      message: 'Hey [name], share your personal link and you both get $40 when your friend signs up.',
+      whatHappens: 'Edoo selects the right customer at the right moment and sends a personalized referral ask.',
+      edooDecides: 'Channel (push, email, SMS, WhatsApp), timing (peak engagement moment), message variant',
+      reward: '$75 for you when your friend makes their first transaction',
     },
     {
       step: 'Invite Landing',
-      channel: 'Link',
       recipient: 'Referee',
-      message: '[Referrer name] invited you to join. Sign up and you both get $40.',
+      whatHappens: 'Referee lands on a personalized page with the referral offer.',
+      edooDecides: 'Landing page variant, reward framing, urgency signals',
+      reward: null,
     },
     {
-      step: 'Welcome & KYC',
-      channel: 'Push + Email',
+      step: 'Sign-up & KYC',
       recipient: 'Referee',
-      message: 'Welcome! Complete your ID verification to unlock your reward.',
+      whatHappens: 'Referee completes registration and identity verification.',
+      edooDecides: 'Nudge timing, reminder channel, friction-reduction messaging',
+      reward: null,
     },
     {
-      step: 'Activation Nudge',
-      channel: 'Push',
+      step: 'First Transaction',
       recipient: 'Referee',
-      message: 'Make your first deposit to start earning — your $40 reward is waiting.',
+      whatHappens: 'Referee makes their first transaction \u2014 this is the success event.',
+      edooDecides: 'Activation nudge timing, reward reminder, transaction encouragement',
+      reward: 'Reward triggered for both parties on completion',
     },
     {
       step: 'Reward Credited',
-      channel: 'Push + In-App',
       recipient: 'Both',
-      message: 'Your $40 reward has been credited to your account.',
+      whatHappens: 'Both referrer and referee receive their reward.',
+      edooDecides: 'Reward type (account credit, cashback)',
+      reward: '$75 credited to each',
     },
   ],
 
+  // Preview cards
   refereePreview: {
     referrer: {
-      headline: 'You just made a deposit!',
-      body: 'Share your personal link and you both get $40 when your friend signs up.',
-      rewardDisplay: '$40',
+      headline: 'Know someone who\u2019d love us?',
+      body: 'Share your personal link \u2014 you both get $75 when your friend makes their first transaction.',
+      rewardDisplay: '$75',
       rewardLabel: 'for you & your friend',
       ctaText: 'Share My Link',
       channel: 'Push notification',
-      rewardOptions: ['$40 Account Credit', '$40 Cashback', '1 month Netflix free'],
-      giftOptions: ['$40 Account Credit', '$40 Cashback', '$25 Amazon Gift Card'],
+      rewardOptions: ['$75 Account Credit', '$75 Cashback'],
+      giftOptions: ['$75 Account Credit', '$75 Cashback'],
     },
     referee: {
-      headline: 'Sarah sent you a gift!',
-      body: 'Sign up for an account and get $40 credit instantly \u2014 plus Sarah gets $40 too.',
-      rewardDisplay: '$40',
-      rewardLabel: 'sign-up credit',
-      ctaText: 'Claim My $40',
+      headline: 'Sarah invited you!',
+      body: 'Open an account and make your first transaction \u2014 you both get $75.',
+      rewardDisplay: '$75',
+      rewardLabel: 'after your first transaction',
+      ctaText: 'Claim My $75',
       channel: 'Personalized landing page',
     },
   },
 
-  executionPlan: {
-    seed: {
-      days: '1–7',
-      description:
-        'Start with the top 50 highest-ROI users per strategy. Small batch to validate assumptions and calibrate messaging.',
-    },
-    expand: {
-      days: '8–21',
-      description:
-        'Based on early performance, expand to next tier of eligible users. Adjust reward amounts within ranges. A/B test results start informing allocation.',
-    },
-    optimize: {
-      days: '22+',
-      description:
-        'Daily recalculation: reassign users between strategies if ROI shifts. Winning A/B combinations get more budget. Underperforming combinations paused.',
-    },
-    guardrail:
-      'Each user stays in their assigned campaign for minimum 7 days before reassignment.',
+  // Expandable offer details (the "deep dive" from v1)
+  offerDetails: {
+    rewardStructure: '$75 per side ($150 total per successful conversion). Paid only when referee completes first transaction.',
+    rewardTypes: 'Account Credit vs. Cashback \u2014 A/B tested per user',
+    targeting: 'Customers ranked by expected ROI: (propensity to refer \u00d7 expected referee conversion \u00d7 LTV) minus reward cost. Top-ranked activated first.',
+    personalization: [
+      'Channel: per user\u2019s most responsive channel (email, push, SMS, WhatsApp)',
+      'Timing: peak engagement time per user (inferred from historical activity)',
+      'Message: 2 variants A/B tested, winner scaled',
+      'Reward type: Account Credit vs. Cashback, personalized per user preference signals',
+    ],
+    offerWindow: 'Referee has 14 days from invite to complete first transaction. Expired offers free budget back to the pool.',
   },
 
-  // Screen 5 — Dashboard
+  // Execution — daily operations cycle
+  operationsCycle: {
+    summary: 'Edoo runs a continuous daily cycle to acquire new active users within your budget.',
+    steps: [
+      {
+        name: 'Rank',
+        description: 'Score all eligible customers by expected ROI: (propensity to refer \u00d7 expected referee conversion \u00d7 LTV) minus reward cost. Ranked highest to lowest.',
+      },
+      {
+        name: 'Allocate',
+        description: 'Given today\u2019s remaining budget, select top-N customers to activate. Outstanding offers in flight count against budget.',
+      },
+      {
+        name: 'Activate',
+        description: 'Send personalized referral asks \u2014 right channel, right time, right message, right offer. Each activation is a budget commitment.',
+      },
+      {
+        name: 'Monitor',
+        description: 'Track the full funnel in real-time: referral sends, invite opens, sign-ups, KYC completions, first transactions. Flag anomalies.',
+      },
+      {
+        name: 'Close',
+        description: 'When a referee completes their first transaction, credit rewards to both parties. When an offer expires, free budget back to the pool.',
+      },
+      {
+        name: 'Learn',
+        description: 'Update models with today\u2019s data \u2014 which customers converted, which offers worked, which channels performed. Tomorrow\u2019s ranking uses today\u2019s results.',
+      },
+    ],
+    dailyRamp: [
+      { days: '1\u20137', activeUsersPerDay: 5, note: 'Small initial cohort, learning' },
+      { days: '8\u201321', activeUsersPerDay: 12, note: 'Scaling based on early data' },
+      { days: '22\u201330', activeUsersPerDay: 18, note: 'Optimized allocation' },
+    ],
+    budgetPacing:
+      'Daily budget target = monthly budget \u00f7 remaining days. Edoo adjusts for day-of-week patterns and offer expiration timing. If daily performance exceeds expectations, Edoo accelerates. If underperforming, it conserves.',
+    offerLifecycle:
+      'Each offer has a 14-day window. Multiple offers are in flight simultaneously at different stages. Expired offers free budget back to the allocation pool. This is ongoing portfolio management.',
+  },
+
+  // Risk management
+  riskManagement: {
+    pacing: {
+      label: 'Pacing & spend limits',
+      description: 'Daily and weekly spend limits prevent front-loading. Budget lasts the full month.',
+    },
+    offerLiability: {
+      label: 'Offer liability',
+      description: 'Offers issued but not yet redeemed are financial commitments. Edoo tracks outstanding exposure and caps it.',
+    },
+    rewardTracking: {
+      label: 'Reward commitment tracking',
+      description: 'Committed rewards vs. paid rewards \u2014 the gap is your financial exposure at any moment. Edoo keeps this visible and capped.',
+    },
+    anomalyDetection: {
+      label: 'Anomaly detection',
+      description: 'Pattern-based detection when results indicate something is off \u2014 unexpected conversion drops, spend spikes, behavioral shifts. Auto-pauses affected segments.',
+    },
+    fraud: [
+      {
+        type: 'Self-referral',
+        description: 'A customer refers themselves using a second account \u2014 same person, two accounts, free rewards.',
+        whyItMatters: 'Highest-volume referral fraud type. Directly wastes budget.',
+        detection: 'Device fingerprinting, IP correlation, behavioral signals.',
+      },
+      {
+        type: 'Fake activation',
+        description: 'Referee makes a minimal qualifying transaction just to capture the reward, with no intent to become a real customer.',
+        whyItMatters: 'Success metric is technically met but the customer gained no real value.',
+        detection: 'Transaction pattern analysis (amount, timing, merchant) against genuine user baselines.',
+      },
+      {
+        type: 'Referral collusion',
+        description: 'Organized groups referring each other in a ring to collect multiple rewards.',
+        whyItMatters: 'Can drain budget rapidly through coordinated abuse.',
+        detection: 'Network graph analysis \u2014 detecting closed loops in referral chains.',
+      },
+    ],
+    fraudAction: 'When detected: reward held pending review, account flagged, pattern added to detection model.',
+  },
+
+  // Approval scope
+  approvalScope:
+    'You\u2019re approving the budget and the goal. Edoo handles customer selection, timing, channel, messaging, and rewards autonomously.',
+
+  // ─── Screen 4 — Dashboard (30-day projected results) ───
+
   dashboard30Day: {
-    totalReferralsSent: 4960,
-    signups: 540,
-    firstTransactions: 144,
-    totalNewUsers: 684,
-    totalSpend: 147600,
-    blendedCAC: 216,
-    chartShape: 'S-curve',
+    activeUsers: 260,
+    totalReferralsSent: 6500,
+    totalSpend: 150000,
+    cac: 577,
+    roi: 1.5,
+    fraudSaved: 42000,
     chartPhases: [
-      { label: 'Seed', days: '1–7', note: 'Slow start' },
-      { label: 'Expand', days: '8–21', note: 'Acceleration' },
-      { label: 'Optimize', days: '22–30', note: 'Plateau' },
+      { label: 'Learning', days: '1\u20137', note: 'Small cohort' },
+      { label: 'Scaling', days: '8\u201321', note: 'Acceleration' },
+      { label: 'Optimized', days: '22\u201330', note: 'Peak efficiency' },
     ],
     ctaText: 'Book a Call',
     ctaLink: '#',
-    // S-curve daily data points (cumulative conversions)
+    // S-curve daily data points (cumulative active users, building to 260)
     dailyData: [
-      5, 12, 20, 30, 42, 55, 70,
-      92, 120, 155, 195, 240, 290, 345,
-      400, 450, 495, 535, 570, 600, 625,
-      645, 655, 662, 668, 673, 677, 680, 682, 684,
+      5, 10, 16, 22, 29, 37, 45,
+      56, 68, 82, 97, 113, 130, 147,
+      162, 176, 189, 200, 210, 219, 227,
+      234, 239, 244, 248, 251, 254, 256, 258, 260,
     ],
   },
 };
