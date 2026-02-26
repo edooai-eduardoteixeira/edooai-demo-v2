@@ -14,7 +14,7 @@ function KPICard({ label, children }) {
         flex: 1,
         minWidth: '120px',
         padding: '1rem',
-        backgroundColor: 'var(--color-gray-50)',
+        backgroundColor: 'var(--accent-subtle)',
         borderRadius: 'var(--radius-lg)',
         textAlign: 'center',
       }}
@@ -23,7 +23,7 @@ function KPICard({ label, children }) {
         style={{
           fontSize: 'var(--font-size-xs)',
           fontWeight: 500,
-          color: 'var(--color-gray-500)',
+          color: 'var(--text-tertiary)',
           textTransform: 'uppercase',
           letterSpacing: '0.05em',
           marginBottom: '0.375rem',
@@ -35,7 +35,7 @@ function KPICard({ label, children }) {
         style={{
           fontSize: 'var(--font-size-xl)',
           fontWeight: 700,
-          color: 'var(--color-black)',
+          color: 'var(--text-primary)',
         }}
       >
         {children}
@@ -62,7 +62,7 @@ function JourneyStep({ step, index, isLast }) {
             width: '32px',
             height: '32px',
             borderRadius: '50%',
-            backgroundColor: 'var(--color-black)',
+            backgroundColor: 'var(--accent)',
             color: 'var(--color-white)',
             display: 'flex',
             alignItems: 'center',
@@ -79,7 +79,7 @@ function JourneyStep({ step, index, isLast }) {
             style={{
               width: '2px',
               flex: 1,
-              backgroundColor: 'var(--color-gray-200)',
+              backgroundColor: 'var(--border)',
               marginTop: '4px',
             }}
           />
@@ -93,7 +93,7 @@ function JourneyStep({ step, index, isLast }) {
             style={{
               fontSize: 'var(--font-size-base)',
               fontWeight: 700,
-              color: 'var(--color-gray-900)',
+              color: 'var(--text-primary)',
               margin: 0,
             }}
           >
@@ -102,7 +102,7 @@ function JourneyStep({ step, index, isLast }) {
           <span
             style={{
               fontSize: '11px',
-              color: 'var(--color-gray-400)',
+              color: 'var(--text-tertiary)',
               fontWeight: 500,
             }}
           >
@@ -112,7 +112,7 @@ function JourneyStep({ step, index, isLast }) {
         <p
           style={{
             fontSize: 'var(--font-size-sm)',
-            color: 'var(--color-gray-600)',
+            color: 'var(--text-secondary)',
             lineHeight: 1.5,
             margin: 0,
             marginBottom: '0.375rem',
@@ -123,7 +123,7 @@ function JourneyStep({ step, index, isLast }) {
         <p
           style={{
             fontSize: 'var(--font-size-sm)',
-            color: 'var(--color-gray-500)',
+            color: 'var(--text-tertiary)',
             lineHeight: 1.5,
             margin: 0,
             fontStyle: 'italic',
@@ -135,7 +135,7 @@ function JourneyStep({ step, index, isLast }) {
           <p
             style={{
               fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-black)',
+              color: 'var(--text-primary)',
               fontWeight: 600,
               margin: 0,
               marginTop: '0.375rem',
@@ -157,7 +157,7 @@ function RewardSelector({ label, options, selectedIndex = 0 }) {
         style={{
           fontSize: '11px',
           fontWeight: 600,
-          color: 'var(--color-gray-500)',
+          color: 'var(--text-tertiary)',
           marginBottom: '0.375rem',
         }}
       >
@@ -173,9 +173,9 @@ function RewardSelector({ label, options, selectedIndex = 0 }) {
               fontWeight: 500,
               borderRadius: '12px',
               border: '1px solid',
-              borderColor: i === selectedIndex ? 'var(--color-black)' : 'var(--color-gray-200)',
-              backgroundColor: i === selectedIndex ? 'var(--color-black)' : '#fff',
-              color: i === selectedIndex ? 'var(--color-white)' : 'var(--color-gray-600)',
+              borderColor: i === selectedIndex ? 'var(--accent)' : 'var(--border)',
+              backgroundColor: i === selectedIndex ? 'var(--text-primary)' : 'var(--surface)',
+              color: i === selectedIndex ? 'var(--color-white)' : 'var(--text-secondary)',
               cursor: 'pointer',
             }}
           >
@@ -197,7 +197,7 @@ function PreviewCard({ label, data }) {
         style={{
           fontSize: '11px',
           fontWeight: 700,
-          color: 'var(--color-gray-400)',
+          color: 'var(--text-tertiary)',
           textTransform: 'uppercase',
           letterSpacing: '0.05em',
           marginBottom: '0.5rem',
@@ -208,11 +208,11 @@ function PreviewCard({ label, data }) {
       <div
         style={{
           flex: 1,
-          border: '1px solid var(--color-gray-200)',
+          border: '1px solid var(--border)',
           borderRadius: 'var(--radius-lg)',
           padding: '1.5rem',
-          backgroundColor: '#fff',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+          backgroundColor: 'var(--surface)',
+          boxShadow: 'var(--shadow-sm)',
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -220,7 +220,7 @@ function PreviewCard({ label, data }) {
         <div
           style={{
             fontSize: '11px',
-            color: 'var(--color-gray-400)',
+            color: 'var(--text-tertiary)',
             marginBottom: '1rem',
             fontStyle: 'italic',
           }}
@@ -231,7 +231,7 @@ function PreviewCard({ label, data }) {
           style={{
             fontSize: 'var(--font-size-base)',
             fontWeight: 700,
-            color: 'var(--color-gray-900)',
+            color: 'var(--text-primary)',
             marginBottom: '0.5rem',
           }}
         >
@@ -240,7 +240,7 @@ function PreviewCard({ label, data }) {
         <p
           style={{
             fontSize: 'var(--font-size-sm)',
-            color: 'var(--color-gray-600)',
+            color: 'var(--text-secondary)',
             lineHeight: 1.5,
             marginBottom: '1rem',
           }}
@@ -260,7 +260,7 @@ function PreviewCard({ label, data }) {
               gap: '0.5rem',
               marginBottom: '1.25rem',
               padding: '0.75rem',
-              backgroundColor: 'var(--color-gray-50)',
+              backgroundColor: 'var(--accent-subtle)',
               borderRadius: 'var(--radius-md)',
             }}
           >
@@ -268,7 +268,7 @@ function PreviewCard({ label, data }) {
               style={{
                 fontSize: 'var(--font-size-2xl)',
                 fontWeight: 700,
-                color: 'var(--color-black)',
+                color: 'var(--text-primary)',
               }}
             >
               {data.rewardDisplay}
@@ -276,7 +276,7 @@ function PreviewCard({ label, data }) {
             <span
               style={{
                 fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-gray-500)',
+                color: 'var(--text-tertiary)',
               }}
             >
               {data.rewardLabel}
@@ -287,7 +287,7 @@ function PreviewCard({ label, data }) {
           <div
             style={{
               padding: '0.625rem 1.5rem',
-              backgroundColor: 'var(--color-black)',
+              backgroundColor: 'var(--accent)',
               color: 'var(--color-white)',
               borderRadius: 'var(--radius-md)',
               fontSize: 'var(--font-size-sm)',
@@ -312,14 +312,14 @@ function CycleStep({ step, index, total }) {
         alignItems: 'flex-start',
         gap: '0.75rem',
         padding: '0.75rem 0',
-        borderBottom: index < total - 1 ? '1px solid var(--color-gray-100)' : 'none',
+        borderBottom: index < total - 1 ? '1px solid var(--border-light)' : 'none',
       }}
     >
       <span
         style={{
           fontSize: 'var(--font-size-sm)',
           fontWeight: 700,
-          color: 'var(--color-black)',
+          color: 'var(--text-primary)',
           minWidth: '70px',
           flexShrink: 0,
         }}
@@ -329,7 +329,7 @@ function CycleStep({ step, index, total }) {
       <span
         style={{
           fontSize: 'var(--font-size-sm)',
-          color: 'var(--color-gray-600)',
+          color: 'var(--text-secondary)',
           lineHeight: 1.5,
         }}
       >
@@ -432,7 +432,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
       <header
         style={{
           padding: '1.5rem 3rem',
-          borderBottom: '1px solid var(--color-gray-100)',
+          borderBottom: '1px solid var(--border-light)',
         }}
       >
         <Logo />
@@ -455,7 +455,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
               key={i}
               style={{
                 fontSize: '14px',
-                color: '#666',
+                color: 'var(--text-secondary)',
                 lineHeight: 1.6,
                 margin: 0,
                 marginBottom: '4px',
@@ -468,7 +468,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
             <p
               style={{
                 fontSize: '14px',
-                color: '#666',
+                color: 'var(--text-secondary)',
                 lineHeight: 1.6,
                 margin: 0,
               }}
@@ -479,7 +479,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   display: 'inline-block',
                   width: '2px',
                   height: '1em',
-                  backgroundColor: '#666',
+                  backgroundColor: 'var(--text-secondary)',
                   marginLeft: '2px',
                   animation: 'blink 1s step-end infinite',
                   verticalAlign: 'text-bottom',
@@ -510,7 +510,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 style={{
                   fontSize: '3.5rem',
                   fontWeight: 700,
-                  color: 'var(--color-black)',
+                  color: 'var(--text-primary)',
                   lineHeight: 1,
                   marginBottom: '0.5rem',
                 }}
@@ -520,7 +520,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
               <div
                 style={{
                   fontSize: 'var(--font-size-lg)',
-                  color: 'var(--color-gray-600)',
+                  color: 'var(--text-secondary)',
                   fontWeight: 500,
                 }}
               >
@@ -554,7 +554,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
             <div
               style={{
                 padding: '1.5rem',
-                backgroundColor: 'var(--color-gray-50)',
+                backgroundColor: 'var(--accent-subtle)',
                 borderRadius: 'var(--radius-lg)',
               }}
             >
@@ -579,7 +579,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   style={{
                     fontSize: 'var(--font-size-2xl)',
                     fontWeight: 700,
-                    color: 'var(--color-black)',
+                    color: 'var(--text-primary)',
                   }}
                 >
                   <AnimatedNumber value={budget} prefix="$" duration={200} />
@@ -588,7 +588,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
               <p
                 style={{
                   fontSize: 'var(--font-size-sm)',
-                  color: 'var(--color-gray-500)',
+                  color: 'var(--text-tertiary)',
                   margin: 0,
                   marginBottom: '1rem',
                 }}
@@ -603,10 +603,10 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     marginBottom: '0.5rem',
                   }}
                 >
-                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-400)' }}>
+                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>
                     {formatCurrency(budgetSlider.min)}
                   </span>
-                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-400)' }}>
+                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>
                     {formatCurrency(budgetSlider.max)}
                   </span>
                 </div>
@@ -621,7 +621,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     width: '100%',
                     height: '8px',
                     appearance: 'none',
-                    background: `linear-gradient(to right, var(--color-black) ${((budget - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100}%, var(--color-gray-200) ${((budget - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100}%)`,
+                    background: `linear-gradient(to right, var(--accent) ${((budget - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100}%, var(--border) ${((budget - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100}%)`,
                     borderRadius: '4px',
                     outline: 'none',
                     cursor: 'pointer',
@@ -631,7 +631,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
               <p
                 style={{
                   fontSize: 'var(--font-size-xs)',
-                  color: 'var(--color-gray-400)',
+                  color: 'var(--text-tertiary)',
                   margin: 0,
                   fontStyle: 'italic',
                 }}
@@ -664,7 +664,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
             <p
               style={{
                 fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-gray-500)',
+                color: 'var(--text-tertiary)',
                 marginBottom: '1.5rem',
               }}
             >
@@ -674,7 +674,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
             {/* Journey steps */}
             <div
               style={{
-                border: '1px solid var(--color-gray-200)',
+                border: '1px solid var(--border)',
                 borderRadius: 'var(--radius-lg)',
                 padding: '1.5rem',
                 marginBottom: '1.5rem',
@@ -696,7 +696,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 fontSize: 'var(--font-size-base)',
                 fontWeight: 700,
                 marginBottom: '0.75rem',
-                color: 'var(--color-gray-700)',
+                color: 'var(--text-secondary)',
               }}
             >
               What your users see
@@ -710,44 +710,44 @@ export default function StrategyBuilderPage({ config, onNext }) {
             <Expandable title="Offer details & personalization">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div>
-                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
+                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.375rem' }}>
                     Reward structure
                   </h4>
-                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.6, margin: 0 }}>
+                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
                     {offerDetails.rewardStructure}
                   </p>
                 </div>
                 <div>
-                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
+                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.375rem' }}>
                     Reward types
                   </h4>
-                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.6, margin: 0 }}>
+                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
                     {offerDetails.rewardTypes}
                   </p>
                 </div>
                 <div>
-                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
+                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.375rem' }}>
                     Customer targeting
                   </h4>
-                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.6, margin: 0 }}>
+                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
                     {offerDetails.targeting}
                   </p>
                 </div>
                 <div>
-                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
+                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.375rem' }}>
                     Personalization variables
                   </h4>
-                  <ul style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.8, paddingLeft: '1.25rem', margin: 0 }}>
+                  <ul style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', lineHeight: 1.8, paddingLeft: '1.25rem', margin: 0 }}>
                     {offerDetails.personalization.map((item, i) => (
                       <li key={i}>{item}</li>
                     ))}
                   </ul>
                 </div>
                 <div>
-                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
+                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.375rem' }}>
                     Offer window
                   </h4>
-                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)', lineHeight: 1.6, margin: 0 }}>
+                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
                     {offerDetails.offerWindow}
                   </p>
                 </div>
@@ -778,7 +778,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
             <p
               style={{
                 fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-gray-500)',
+                color: 'var(--text-tertiary)',
                 marginBottom: '1.5rem',
               }}
             >
@@ -788,7 +788,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
             {/* Daily cycle */}
             <div
               style={{
-                border: '1px solid var(--color-gray-200)',
+                border: '1px solid var(--border)',
                 borderRadius: 'var(--radius-lg)',
                 padding: '1.25rem',
                 marginBottom: '1.5rem',
@@ -808,22 +808,22 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       style={{
                         fontSize: '12px',
                         fontWeight: 700,
-                        color: 'var(--color-black)',
+                        color: 'var(--text-primary)',
                         padding: '4px 10px',
-                        backgroundColor: 'var(--color-gray-100)',
+                        backgroundColor: 'var(--accent-light)',
                         borderRadius: '12px',
                       }}
                     >
                       {step.name}
                     </span>
                     {i < operationsCycle.steps.length - 1 && (
-                      <span style={{ fontSize: '12px', color: 'var(--color-gray-300)', alignSelf: 'center' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--border)', alignSelf: 'center' }}>
                         {'\u2192'}
                       </span>
                     )}
                   </React.Fragment>
                 ))}
-                <span style={{ fontSize: '12px', color: 'var(--color-gray-300)', alignSelf: 'center' }}>
+                <span style={{ fontSize: '12px', color: 'var(--border)', alignSelf: 'center' }}>
                   {'\u21BB'}
                 </span>
               </div>
@@ -847,7 +847,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   style={{
                     flex: 1,
                     padding: '1rem',
-                    backgroundColor: 'var(--color-gray-50)',
+                    backgroundColor: 'var(--accent-subtle)',
                     borderRadius: 'var(--radius-md)',
                     textAlign: 'center',
                   }}
@@ -856,7 +856,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     style={{
                       fontSize: 'var(--font-size-xs)',
                       fontWeight: 600,
-                      color: 'var(--color-gray-500)',
+                      color: 'var(--text-tertiary)',
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
                       marginBottom: '0.25rem',
@@ -868,7 +868,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     style={{
                       fontSize: 'var(--font-size-xl)',
                       fontWeight: 700,
-                      color: 'var(--color-black)',
+                      color: 'var(--text-primary)',
                       marginBottom: '0.25rem',
                     }}
                   >
@@ -877,7 +877,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   <div
                     style={{
                       fontSize: 'var(--font-size-xs)',
-                      color: 'var(--color-gray-400)',
+                      color: 'var(--text-tertiary)',
                     }}
                   >
                     {phase.note}
@@ -911,7 +911,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
             <p
               style={{
                 fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-gray-500)',
+                color: 'var(--text-tertiary)',
                 marginBottom: '1.5rem',
               }}
             >
@@ -923,7 +923,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
               {/* Left column — Controls */}
               <div
                 style={{
-                  border: '1px solid var(--color-gray-200)',
+                  border: '1px solid var(--border)',
                   borderRadius: 'var(--radius-lg)',
                   overflow: 'hidden',
                 }}
@@ -940,8 +940,8 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         padding: '0.75rem 1.25rem',
-                        borderBottom: i < riskManagement.controls.length - 1 ? '1px solid var(--color-gray-100)' : 'none',
-                        backgroundColor: '#fff',
+                        borderBottom: i < riskManagement.controls.length - 1 ? '1px solid var(--border-light)' : 'none',
+                        backgroundColor: 'var(--surface)',
                       }}
                     >
                       <Tooltip text={ctrl.labelTooltip}>
@@ -949,8 +949,8 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           style={{
                             fontSize: 'var(--font-size-sm)',
                             fontWeight: 500,
-                            color: 'var(--color-gray-700)',
-                            borderBottom: '1px dotted var(--color-gray-400)',
+                            color: 'var(--text-secondary)',
+                            borderBottom: '1px dotted var(--text-tertiary)',
                           }}
                         >
                           {ctrl.label}
@@ -961,11 +961,11 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           style={{
                             fontSize: 'var(--font-size-sm)',
                             fontWeight: 600,
-                            color: 'var(--color-black)',
+                            color: 'var(--text-primary)',
                             padding: '2px 10px',
-                            border: '1px solid var(--color-gray-200)',
+                            border: '1px solid var(--border)',
                             borderRadius: 'var(--radius-sm)',
-                            backgroundColor: 'var(--color-gray-50)',
+                            backgroundColor: 'var(--accent-subtle)',
                             fontFamily: 'monospace',
                             cursor: 'help',
                           }}
@@ -981,10 +981,10 @@ export default function StrategyBuilderPage({ config, onNext }) {
               {/* Right column — Fraud Estimation */}
               <div
                 style={{
-                  border: '1px dashed var(--color-gray-200)',
+                  border: '1px dashed var(--border)',
                   borderRadius: 'var(--radius-lg)',
                   padding: '1.25rem',
-                  backgroundColor: '#fff',
+                  backgroundColor: 'var(--surface)',
                   display: 'flex',
                   flexDirection: 'column',
                 }}
@@ -997,7 +997,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       width: '6px',
                       height: '6px',
                       borderRadius: '50%',
-                      backgroundColor: 'var(--color-gray-400)',
+                      backgroundColor: 'var(--text-tertiary)',
                       flexShrink: 0,
                     }}
                   />
@@ -1005,7 +1005,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     style={{
                       fontSize: 'var(--font-size-xs)',
                       fontWeight: 600,
-                      color: 'var(--color-gray-400)',
+                      color: 'var(--text-tertiary)',
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
                     }}
@@ -1021,7 +1021,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       style={{
                         fontSize: 'var(--font-size-4xl)',
                         fontWeight: 700,
-                        color: 'var(--color-gray-700)',
+                        color: 'var(--text-secondary)',
                         lineHeight: 1,
                         cursor: 'help',
                       }}
@@ -1031,7 +1031,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     <div
                       style={{
                         fontSize: 'var(--font-size-xs)',
-                        color: 'var(--color-gray-500)',
+                        color: 'var(--text-tertiary)',
                         marginTop: '0.25rem',
                       }}
                     >
@@ -1041,7 +1041,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 </Tooltip>
 
                 {/* Breakdown rows */}
-                <div style={{ borderTop: '1px solid var(--color-gray-100)', paddingTop: '0.75rem' }}>
+                <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '0.75rem' }}>
                   {riskManagement.fraud.map((item, i) => (
                     <Tooltip key={i} text={item.tooltip}>
                       <div
@@ -1050,14 +1050,14 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           justifyContent: 'space-between',
                           alignItems: 'center',
                           padding: '0.375rem 0',
-                          borderBottom: i < riskManagement.fraud.length - 1 ? '1px solid var(--color-gray-50)' : 'none',
+                          borderBottom: i < riskManagement.fraud.length - 1 ? '1px solid var(--border-light)' : 'none',
                           cursor: 'help',
                         }}
                       >
                         <span
                           style={{
                             fontSize: 'var(--font-size-xs)',
-                            color: 'var(--color-gray-600)',
+                            color: 'var(--text-secondary)',
                           }}
                         >
                           {item.type}
@@ -1066,7 +1066,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           style={{
                             fontSize: 'var(--font-size-sm)',
                             fontWeight: 600,
-                            color: 'var(--color-gray-700)',
+                            color: 'var(--text-secondary)',
                             fontFamily: 'monospace',
                           }}
                         >
@@ -1090,7 +1090,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   <span
                     style={{
                       fontSize: '11px',
-                      color: 'var(--color-gray-400)',
+                      color: 'var(--text-tertiary)',
                       fontStyle: 'italic',
                     }}
                   >
@@ -1105,7 +1105,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
               style={{
                 fontSize: 'var(--font-size-sm)',
                 fontWeight: 600,
-                color: 'var(--color-gray-600)',
+                color: 'var(--text-secondary)',
                 margin: 0,
                 marginTop: '1rem',
               }}
@@ -1122,8 +1122,8 @@ export default function StrategyBuilderPage({ config, onNext }) {
           style={{
             position: 'sticky',
             bottom: 0,
-            borderTop: '1px solid var(--color-gray-200)',
-            backgroundColor: 'var(--color-white)',
+            borderTop: '1px solid var(--border)',
+            backgroundColor: 'var(--surface)',
             padding: '1.25rem 3rem',
             display: 'flex',
             flexDirection: 'column',
@@ -1135,7 +1135,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
           <p
             style={{
               fontSize: 'var(--font-size-xs)',
-              color: 'var(--color-gray-400)',
+              color: 'var(--text-tertiary)',
               margin: 0,
               textAlign: 'center',
             }}
