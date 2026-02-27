@@ -129,10 +129,10 @@
   .edit-hint { position: absolute; top: 10px; right: 12px; font-size: 11px; color: var(--text-tertiary); opacity: 0; transition: opacity 0.2s; display: flex; align-items: center; gap: 4px; }
   .edit-hint svg { width: 12px; height: 12px; }
 
-  /* Step badge — sits above the card */
-  .step-badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 4px 14px; border-radius: 12px; letter-spacing: 0.02em; }
-  .step-badge.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
-  .step-badge.referee { background: var(--referee-bg); color: var(--referee-text); }
+  /* Step title — sits above the card */
+  .step-title { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; }
+  .step-title.referrer { color: var(--referrer-text); }
+  .step-title.referee { color: var(--referee-text); }
   .party-tag { font-size: 9px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 6px; border-radius: 100px; }
   .party-tag.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
   .party-tag.referee { background: var(--referee-bg); color: var(--referee-text); }
@@ -331,7 +331,7 @@
         <div class="tl-subtitle">Ask</div>
       </div>
       <div class="card-column">
-      <span class="step-badge referrer">Referrer</span>
+      <span class="step-title referrer">Referrer</span>
       <div class="card" id="step1">
         <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
 
@@ -435,7 +435,7 @@
         <div class="tl-subtitle">Redeem</div>
       </div>
       <div class="card-column">
-      <span class="step-badge referee">Referee</span>
+      <span class="step-title referee">Referee</span>
       <div class="card" id="step3">
         <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
 
