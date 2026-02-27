@@ -49,7 +49,7 @@
   .timeline::before {
     content: '';
     position: absolute;
-    left: 23px;
+    left: 39px;
     top: 16px;
     bottom: 16px;
     width: 2px;
@@ -66,41 +66,36 @@
   .tl-step:last-child { margin-bottom: 0; }
 
   @media (min-width: 600px) {
-    .timeline { margin-left: 40px; max-width: 660px; }
-    .tl-step { gap: 200px; }
+    .timeline { margin-left: 20px; max-width: 780px; }
+    .tl-step { gap: 24px; }
   }
 
   .tl-sidebar {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    width: 48px;
+    width: 80px;
     flex-shrink: 0;
+    padding-top: 14px;
   }
 
   .tl-number {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
+    font-size: 24px;
     font-weight: 700;
-    color: var(--surface);
-    background: var(--accent);
+    color: var(--text-primary);
+    line-height: 1;
     position: relative;
     z-index: 1;
-    box-shadow: 0 0 0 4px var(--bg);
+    background: var(--bg);
+    padding: 2px 4px;
   }
 
   .tl-subtitle {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: -0.01em;
     color: var(--text-secondary);
-    margin-top: 6px;
+    margin-top: 4px;
     white-space: nowrap;
     position: relative;
     z-index: 1;
@@ -334,8 +329,7 @@
           <div class="step-icon referrer">
             <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13 3v10l-5-2.5H4.5A1.5 1.5 0 013 9V7a1.5 1.5 0 011.5-1.5H8L13 3z"/></svg>
           </div>
-          <div class="step-name">Referral Ask</div>
-          <span class="party-tag referrer">Referrer</span>
+          <div class="step-name">Referrer</div>
         </div>
 
         <div class="fields-grid">
@@ -401,14 +395,6 @@
       </div>
       <div class="card" id="step2">
         <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
-        <div class="card-header">
-          <div class="step-icon connection">
-            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 1.5L2 7.5l5 2L10.5 5 7.5 10l2 5z"/></svg>
-          </div>
-          <div class="step-name">Invite</div>
-          <span class="party-tag referee">Referee</span>
-        </div>
-
         <div class="share-row">
           <div class="share-label">Shared via</div>
           <div class="share-sub">Referrer chooses how to share with their friend</div>
@@ -450,8 +436,7 @@
           <div class="step-icon referee">
             <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 15A7 7 0 108 1a7 7 0 000 14zm3.4-8.8a.75.75 0 00-1.1-1L7 8.5 5.65 7.15a.75.75 0 10-1.1 1l2 2a.75.75 0 001.1 0l4.05-4z"/></svg>
           </div>
-          <div class="step-name">Redemption</div>
-          <span class="party-tag referee">Referee</span>
+          <div class="step-name">Referee</div>
         </div>
 
         <div class="fields-grid">
