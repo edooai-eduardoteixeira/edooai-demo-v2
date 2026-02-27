@@ -22,10 +22,10 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: var(--font-family); color: var(--text-primary); background: var(--bg); line-height: 1.5; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-  .page { max-width: 375px; margin: 0 auto; padding: 20px 16px 40px; }
+  .page { max-width: 1100px; margin: 0 auto; padding: 20px 16px 40px; }
 
   @media (min-width: 600px) {
-    .page { max-width: 520px; padding: 32px 24px 48px; }
+    .page { padding: 32px 48px 64px; }
     .card-header { padding: 12px 16px; }
     .fields-grid { column-gap: 16px; padding: 0 16px; }
     .field-inline { padding: 6px 16px; }
@@ -45,6 +45,7 @@
   /* ═══ Timeline — vertical stepper ═══ */
   .timeline {
     position: relative;
+    max-width: 472px;
   }
   .timeline::before {
     content: '';
