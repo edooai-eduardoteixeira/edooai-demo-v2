@@ -22,6 +22,20 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: var(--font-family); color: var(--text-primary); background: var(--bg); line-height: 1.5; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
   .page { max-width: 375px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  /* Desktop responsive */
+  @media (min-width: 600px) {
+    .page { max-width: 520px; padding: 32px 24px 48px; }
+    .card-header { padding: 12px 16px; }
+    .fields-grid { column-gap: 16px; padding: 0 16px; }
+    .field-inline { padding: 6px 16px; }
+    .msg-header { padding: 6px 16px; }
+    .msg-content { padding: 16px; }
+    .share-row { padding: 8px 16px; }
+    .step-name { font-size: 15px; }
+    .field-val { font-size: 13px; }
+    .field-label { font-size: 12px; }
+  }
   .concept-label { display: inline-block; font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
   .section-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 2px; }
   .section-meta { font-size: 12px; color: var(--text-tertiary); margin-bottom: 20px; }
@@ -112,18 +126,19 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 4px 8px;
+    padding: 4px 10px;
     font-size: 11px;
-    font-weight: 500;
-    color: var(--text-muted);
-    background: var(--surface);
-    border: 1px solid var(--border);
+    font-weight: 600;
+    color: #fff;
+    background: var(--accent);
+    border: none;
     border-radius: var(--radius-sm);
     cursor: pointer;
     font-family: inherit;
-    transition: color var(--transition-fast), border-color var(--transition-fast);
+    transition: opacity var(--transition-fast);
   }
-  .msg-dropdown-trigger:hover { color: var(--text-strong); border-color: var(--text-tertiary); }
+  .msg-dropdown-trigger:hover { opacity: 0.85; }
+  .msg-dropdown-trigger .chevron { color: #fff; }
   .msg-dropdown-trigger .chevron {
     width: 10px;
     height: 10px;
@@ -221,7 +236,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 6px 20px 2px;
+    padding: 14px 20px 4px;
     font-size: 11px;
     font-weight: 600;
     color: var(--text-primary);
