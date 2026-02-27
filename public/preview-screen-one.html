@@ -75,7 +75,7 @@
       justify-content: center;
       align-items: center;
       padding: 80px 48px;
-      max-width: 800px;
+      max-width: 720px;
       margin: 0 auto;
       text-align: center;
     }
@@ -83,18 +83,19 @@
     .hero h1 {
       font-size: 48px;
       font-weight: 700;
-      color: var(--color-black);
-      line-height: 1.1;
+      color: var(--text-primary);
+      line-height: 1.08;
       letter-spacing: -0.03em;
       margin-bottom: 24px;
     }
 
-    .hero p {
-      font-size: 20px;
-      color: var(--color-gray-600);
-      line-height: 1.6;
-      margin-bottom: 40px;
-      max-width: 600px;
+    .hero .subtitle {
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 48px;
+      max-width: 540px;
     }
 
     /* ── CTA Button ── */
@@ -112,6 +113,7 @@
       cursor: pointer;
       transition: all var(--transition-base);
       line-height: 1.4;
+      letter-spacing: -0.01em;
     }
 
     .cta-button:hover {
@@ -120,35 +122,18 @@
       box-shadow: var(--shadow-md);
     }
 
-    /* ── Value Props ── */
-    .value-props {
-      padding: 64px 48px;
-      border-top: 1px solid var(--color-gray-100);
-      background-color: var(--color-gray-50);
+    /* ── Footer ── */
+    .footer {
+      padding: 32px 48px;
+      text-align: center;
     }
 
-    .value-props-inner {
-      max-width: 800px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .value-prop {
-      font-size: 18px;
-      color: var(--color-gray-700);
-      font-weight: 500;
-      padding-left: 20px;
-      border-left: 3px solid var(--color-gray-900);
+    .footer p {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-tertiary);
+      letter-spacing: 0;
       line-height: 1.5;
-    }
-
-    .credibility {
-      font-size: 14px;
-      color: var(--color-gray-500);
-      margin-top: 24px;
-      font-weight: 500;
     }
 
     /* ── Responsive ── */
@@ -162,11 +147,11 @@
       .hero h1 {
         font-size: 28px;
       }
-      .hero p {
+      .hero .subtitle {
         font-size: 16px;
       }
-      .value-props {
-        padding: 40px 24px;
+      .footer {
+        padding: 24px;
       }
     }
   </style>
@@ -187,20 +172,15 @@
 
     <!-- Hero -->
     <main class="hero">
-      <h1>Turn your best customers into your best acquisition channel.</h1>
-      <p>Edoo AI is an autonomous agent that runs your referral program — from data analysis to campaign execution.</p>
-      <button class="cta-button">Connect Your Data</button>
+      <h1>Turn your best customers into your distribution leverage.</h1>
+      <p class="subtitle">Stop overpaying for ads. Edoo AI runs your referral strategy autonomously to deliver new active customers at a fraction of the cost. Zero manual effort.</p>
+      <button class="cta-button">Start Now</button>
     </main>
 
-    <!-- Value Props -->
-    <section class="value-props">
-      <div class="value-props-inner">
-        <p class="value-prop">Analyzes your customer data to find the right referrers.</p>
-        <p class="value-prop">Designs and runs campaigns autonomously.</p>
-        <p class="value-prop">Optimizes daily based on real performance.</p>
-        <p class="credibility">Built for growth teams at high-growth fintechs.</p>
-      </div>
-    </section>
+    <!-- Footer -->
+    <footer class="footer">
+      <p>On a mission to give the best products the distribution they deserve.</p>
+    </footer>
 
   </div>
 </body>
