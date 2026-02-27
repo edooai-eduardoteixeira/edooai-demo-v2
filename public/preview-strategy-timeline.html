@@ -41,23 +41,8 @@
   .section-meta { font-size: 12px; color: var(--text-tertiary); margin-bottom: 24px; }
   .section-meta .sep { margin: 0 4px; }
 
-  /* ═══ Journey stepper ═══ */
-  .journey {
-    position: relative;
-    padding-left: 36px;
-  }
-  .journey::before {
-    content: '';
-    position: absolute;
-    left: 11px;
-    top: 12px;
-    bottom: 12px;
-    width: 2px;
-    background: var(--border);
-  }
-
+  /* ═══ Journey ═══ */
   .journey-step {
-    position: relative;
     margin-bottom: 24px;
   }
   .journey-step:last-child { margin-bottom: 0; }
@@ -72,8 +57,6 @@
   }
 
   .step-num {
-    position: absolute;
-    left: -36px;
     width: 24px;
     height: 24px;
     border-radius: 50%;
@@ -83,8 +66,7 @@
     font-size: 11px;
     font-weight: 700;
     color: #fff;
-    z-index: 2;
-    box-shadow: 0 0 0 3px var(--bg);
+    flex-shrink: 0;
   }
   .step-num.referrer { background: var(--referrer-text); }
   .step-num.connection { background: var(--connection-text); }
