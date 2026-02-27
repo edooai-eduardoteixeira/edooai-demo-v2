@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Referral Journey — Timeline v2</title>
+<title>Referral Journey — Timeline Layout</title>
 <style>
   :root {
     --text-primary: #0f172a; --text-strong: #334155; --text-secondary: #475569; --text-muted: #64748b; --text-tertiary: #94a3b8;
@@ -21,103 +21,124 @@
     --transition-fast: 150ms ease;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font-family); color: var(--text-primary); background: var(--bg); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  body { font-family: var(--font-family); color: var(--text-primary); background: var(--bg); line-height: 1.5; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
   .page { max-width: 375px; margin: 0 auto; padding: 20px 16px 40px; }
 
   @media (min-width: 600px) {
     .page { max-width: 520px; padding: 32px 24px 48px; }
-    .step-title { font-size: 16px; }
+    .tl-left > .card { margin-right: 56px; }
+    .tl-right > .card { margin-left: 56px; }
+    .card-header { padding: 12px 16px; }
     .fields-grid { column-gap: 16px; padding: 0 16px; }
     .field-inline { padding: 6px 16px; }
     .msg-header { padding: 6px 16px; }
     .msg-content { padding: 16px; }
     .share-row { padding: 8px 16px; }
+    .step-name { font-size: 15px; }
     .field-val { font-size: 13px; }
     .field-label { font-size: 12px; }
   }
 
   .concept-label { display: inline-block; font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
   .section-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 2px; }
-  .section-meta { font-size: 12px; color: var(--text-tertiary); margin-bottom: 24px; }
+  .section-meta { font-size: 12px; color: var(--text-tertiary); margin-bottom: 20px; }
   .section-meta .sep { margin: 0 4px; }
 
-  /* ═══ Journey ═══ */
-  .journey-step {
-    margin-bottom: 24px;
+  /* ═══ Timeline ═══ */
+  .timeline {
+    position: relative;
   }
-  .journey-step:last-child { margin-bottom: 0; }
-
-  /* Step header — inside card */
-  .step-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border-light);
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(
+      to bottom,
+      var(--referrer-text) 0%,
+      var(--connection-text) 30%,
+      var(--referee-text) 70%,
+      var(--both-text) 100%
+    );
+    opacity: 0.2;
+    z-index: 0;
   }
 
-  .step-num {
-    width: 24px;
-    height: 24px;
+  .tl-step {
+    position: relative;
+  }
+
+  /* Timeline dot — always centered on the line */
+  .tl-dot {
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     color: #fff;
-    flex-shrink: 0;
+    margin: 0 auto 10px;
+    position: relative;
+    z-index: 3;
+    box-shadow: 0 0 0 4px var(--bg);
   }
-  .step-num.referrer { background: var(--referrer-text); }
-  .step-num.connection { background: var(--connection-text); }
-  .step-num.referee { background: var(--referee-text); }
-  .step-num.both { background: var(--both-text); }
+  .tl-dot.referrer { background: var(--referrer-text); }
+  .tl-dot.connection { background: var(--connection-text); }
+  .tl-dot.referee { background: var(--referee-text); }
+  .tl-dot.both { background: var(--both-text); }
 
-  .step-title {
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+  /* Card offset — the zigzag */
+  .tl-left > .card {
+    margin-right: 40px;
+    border-left: 4px solid var(--referrer-text);
+  }
+  .tl-right > .card {
+    margin-left: 40px;
+    border-right: 4px solid var(--referee-text);
+  }
+  .tl-center > .card,
+  .tl-center > .milestone-wrap {
+    margin: 0;
   }
 
-  .party-tag {
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    padding: 2px 6px;
-    border-radius: 100px;
-    margin-left: auto;
-    flex-shrink: 0;
+  /* Gap between steps — let the center line breathe */
+  .tl-step .card,
+  .tl-step .milestone-wrap {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 16px;
   }
+
+  /* ═══ Card ═══ */
+  .card { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); overflow: hidden; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; position: relative; }
+  .card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
+  .card:hover .edit-hint { opacity: 1; }
+  .edit-hint { position: absolute; top: 10px; right: 12px; font-size: 11px; color: var(--text-tertiary); opacity: 0; transition: opacity 0.2s; display: flex; align-items: center; gap: 4px; }
+  .edit-hint svg { width: 12px; height: 12px; }
+
+  /* Card header */
+  .card-header { padding: 10px 12px; display: flex; align-items: center; gap: 8px; }
+  .step-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .step-icon.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
+  .step-icon.referee { background: var(--referee-bg); color: var(--referee-text); }
+  .step-icon.both { background: var(--both-bg); color: var(--both-text); }
+  .step-icon.connection { background: var(--connection-bg); color: var(--connection-text); }
+  .step-icon svg { width: 12px; height: 12px; }
+  .step-name { font-size: 14px; font-weight: 600; flex: 1; }
+  .party-tag { font-size: 9px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 6px; border-radius: 100px; }
   .party-tag.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
   .party-tag.referee { background: var(--referee-bg); color: var(--referee-text); }
   .party-tag.both { background: var(--both-bg); color: var(--both-text); }
   .party-tag.connection { background: var(--connection-bg); color: var(--connection-text); }
 
-  /* ═══ Card ═══ */
-  .card {
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: var(--surface);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-    cursor: pointer;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    position: relative;
-  }
-  .card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
-  .card:hover .edit-hint { opacity: 1; }
-
-  /* Colored top accent */
-  .card.referrer-card { border-top: 3px solid var(--referrer-text); }
-  .card.connection-card { border-top: 3px solid var(--connection-text); }
-  .card.referee-card { border-top: 3px solid var(--referee-text); }
-  .card.both-card { border-top: 3px solid var(--both-text); }
-
-  .edit-hint { position: absolute; top: 10px; right: 12px; font-size: 11px; color: var(--text-tertiary); opacity: 0; transition: opacity 0.2s; display: flex; align-items: center; gap: 4px; }
-  .edit-hint svg { width: 12px; height: 12px; }
-
   /* ═══ Data fields ═══ */
+  .field { border-top: 1px solid var(--border-light); padding: 6px 12px; }
+  .field-label { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-bottom: 1px; }
   .fields-grid {
     display: grid;
     grid-template-columns: max-content 1fr;
@@ -125,22 +146,13 @@
     padding: 0 12px;
     align-items: baseline;
   }
+  .fields-grid .field-label { margin-bottom: 0; }
   .fields-grid > .field-label,
   .fields-grid > .field-label + * {
     border-top: 1px solid var(--border-light);
     padding-top: 6px;
     padding-bottom: 6px;
   }
-  /* Remove top border from first row */
-  .fields-grid > .field-label:first-child,
-  .fields-grid > .field-label:first-child + * {
-    border-top: none;
-  }
-  .field-label { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-bottom: 0; }
-  .field-val { font-size: 12px; font-weight: 400; color: var(--text-strong); line-height: 1.5; }
-  .or-sep { font-size: 10px; color: var(--text-tertiary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 6px; }
-  .range-sep { color: var(--text-tertiary); margin: 0 4px; font-weight: 400; }
-
   .field-inline {
     border-top: 1px solid var(--border-light);
     padding: 6px 12px;
@@ -149,10 +161,14 @@
     gap: 8px;
     min-height: 36px;
   }
-  .field-inline .field-label { flex-shrink: 0; }
+  .field-inline .field-label { margin-bottom: 0; flex-shrink: 0; }
+  .field-val { font-size: 12px; font-weight: 400; color: var(--text-strong); line-height: 1.5; }
+  .or-sep { font-size: 10px; color: var(--text-tertiary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 6px; }
+  .val-sep { color: var(--text-tertiary); font-weight: 400; margin: 0 2px; }
+  .range-sep { color: var(--text-tertiary); margin: 0 4px; font-weight: 400; }
 
   /* ═══ Message block ═══ */
-  .message-block { border-top: 1px solid var(--border-light); }
+  .message-block { border-top: 1px solid var(--border-light); margin-top: 0; }
   .msg-header {
     display: flex;
     align-items: center;
@@ -163,43 +179,56 @@
   .msg-header-label { font-size: 11px; font-weight: 400; color: var(--text-muted); flex-shrink: 0; }
   .msg-dropdown-wrap { position: relative; margin-left: auto; }
   .msg-dropdown-trigger {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 4px 8px; font-size: 11px; font-weight: 500;
-    color: var(--text-muted); background: var(--surface);
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
-    cursor: pointer; font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: inherit;
     transition: color var(--transition-fast), border-color var(--transition-fast);
   }
   .msg-dropdown-trigger:hover { color: var(--text-strong); border-color: var(--text-tertiary); }
   .msg-dropdown-trigger .chevron { width: 10px; height: 10px; transition: transform var(--transition-fast); }
   .msg-dropdown-wrap.open .chevron { transform: rotate(180deg); }
   .msg-dropdown-menu {
-    display: none; position: absolute; top: calc(100% + 4px); right: 0;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); box-shadow: var(--shadow-md);
-    min-width: 160px; z-index: 10; padding: 4px 0;
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
+    min-width: 160px;
+    z-index: 10;
+    padding: 4px 0;
   }
   .msg-dropdown-wrap.open .msg-dropdown-menu { display: block; }
   .msg-dropdown-item {
-    display: block; width: 100%; padding: 6px 12px;
-    font-size: 12px; font-weight: 400; color: var(--text-secondary);
-    background: none; border: none; cursor: pointer; font-family: inherit;
-    text-align: left; transition: background var(--transition-fast);
+    display: block;
+    width: 100%;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background var(--transition-fast);
   }
   .msg-dropdown-item:hover { background: var(--accent-light); }
   .msg-dropdown-item.active { color: var(--text-primary); font-weight: 500; }
   .msg-content { padding: 12px; background: var(--accent-light); display: flex; flex-wrap: wrap; justify-content: center; }
 
-  /* ═══ Device & mockups ═══ */
-  .device-phone { border: 1px solid var(--border); border-radius: 16px; max-width: 100%; width: 100%; overflow: hidden; background: var(--surface); box-shadow: var(--shadow-sm); }
-  .device-statusbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px 4px; font-size: 11px; font-weight: 600; }
-  .device-statusbar-icons { display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 500; }
-  .device-screen { padding: 4px 10px 6px; }
-  .device-home-bar { display: flex; justify-content: center; padding: 4px 0 8px; }
-  .device-home-bar::after { content: ''; width: 36%; height: 4px; background: var(--border); border-radius: 100px; }
-  .device-screen .mockup-push, .device-screen .mockup-sms { max-width: none; box-shadow: none; }
-  .device-screen .mockup-email { max-width: none; }
-
+  /* ═══ Mockups ═══ */
   .mockup-push { background: #f8f8f8; border-radius: 14px; padding: 10px 14px; max-width: 320px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
   .push-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
   .push-icon { width: 20px; height: 20px; border-radius: var(--radius-sm); background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--surface); flex-shrink: 0; }
@@ -207,13 +236,9 @@
   .push-time { font-size: 10px; color: var(--text-tertiary); margin-left: auto; }
   .push-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
   .push-body { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
-
   .mockup-sms { max-width: 280px; }
   .sms-sender { font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px; }
   .sms-bubble { background: #e5e5ea; border-radius: 16px; padding: 8px 12px; font-size: 13px; line-height: 1.4; }
-  .sms-app-header { font-size: 11px; font-weight: 600; text-align: center; padding: 2px 0 6px; }
-  .sms-meta { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 4px; font-size: 10px; color: var(--text-tertiary); }
-
   .mockup-email { border: 1px solid var(--border); border-radius: var(--radius-sm); max-width: 380px; overflow: hidden; background: var(--surface); }
   .email-header { padding: 10px 12px; border-bottom: 1px solid var(--border-light); }
   .email-from { font-size: 10px; color: var(--text-tertiary); margin-bottom: 2px; }
@@ -224,15 +249,9 @@
   .email-hero-sub { font-size: 12px; opacity: 0.8; }
   .email-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px; }
   .email-cta { display: block; padding: 8px 20px; background: #7c3aed; color: #fff; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; text-align: center; width: 100%; }
-  .email-logo { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-  .email-logo-icon { width: 20px; height: 20px; background: var(--accent); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--surface); }
-  .email-logo-name { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
-  .email-after-cta { font-size: 11px; color: var(--text-tertiary); margin-top: 10px; }
-  .email-footer { padding: 10px 12px; border-top: 1px solid var(--border-light); font-size: 11px; color: var(--text-tertiary); text-align: center; }
 
-  /* Share (step 2) */
-  .share-row { padding: 6px 12px; }
-  .share-row { padding-top: 8px; }
+  /* Share channel (step 2) */
+  .share-row { border-top: 1px solid var(--border-light); padding: 6px 12px; }
   .share-label { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-bottom: 2px; }
   .share-sub { font-size: 10px; color: var(--text-tertiary); font-style: italic; margin-bottom: 6px; }
   .share-icons { display: flex; gap: 6px; }
@@ -240,9 +259,8 @@
   .share-bubble { background: #dcf8c6; border-radius: 14px; padding: 8px 12px; font-size: 12px; line-height: 1.4; max-width: 100%; }
   .share-bubble .link { color: #1e40af; text-decoration: underline; }
 
-  /* Milestone (step 4) */
+  /* ═══ Milestone (step 4) ═══ */
   .milestone-wrap {
-    position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -251,7 +269,6 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
-    border-top: 3px solid var(--both-text);
   }
   .milestone-icon { width: 24px; height: 24px; border-radius: 50%; background: var(--both-bg); color: var(--both-text); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .milestone-icon svg { width: 12px; height: 12px; }
@@ -260,26 +277,65 @@
   .milestone-detail { font-size: 11px; color: var(--text-secondary); }
   .milestone-detail b { font-weight: 700; }
 
+  /* ═══ Device phone frame ═══ */
+  .device-phone {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    max-width: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+  }
+  .device-statusbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .device-statusbar-icons { display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 500; }
+  .device-screen { padding: 4px 10px 6px; }
+  .device-home-bar { display: flex; justify-content: center; padding: 4px 0 8px; }
+  .device-home-bar::after { content: ''; width: 36%; height: 4px; background: var(--border); border-radius: 100px; }
+  .device-screen .mockup-push,
+  .device-screen .mockup-sms { max-width: none; box-shadow: none; }
+  .device-screen .mockup-email { max-width: none; }
+  .sms-app-header { font-size: 11px; font-weight: 600; text-align: center; color: var(--text-primary); padding: 2px 0 6px; }
+  .sms-meta { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 4px; font-size: 10px; color: var(--text-tertiary); }
+  .sms-meta svg { width: 10px; height: 10px; }
+  .email-logo { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .email-logo-icon { width: 20px; height: 20px; background: var(--accent); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--surface); flex-shrink: 0; }
+  .email-logo-name { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+  .email-after-cta { font-size: 11px; color: var(--text-tertiary); margin-top: 10px; }
+  .email-footer { padding: 10px 12px; border-top: 1px solid var(--border-light); font-size: 11px; color: var(--text-tertiary); text-align: center; }
+
   .hidden { display: none; }
 </style>
 </head>
 <body>
 <div class="page">
-  <div class="concept-label">Strategy Preview — Timeline v2</div>
+  <div class="concept-label">Strategy Preview — Timeline Layout</div>
   <h2 class="section-title">Referral Journey</h2>
   <div class="section-meta">$75 per side · $150 total<span class="sep">·</span>14-day window<span class="sep">·</span>Pay on 1st transaction</div>
 
-  <div class="journey">
+  <div class="timeline">
 
-    <!-- ═══ STEP 1 — REFERRER ═══ -->
-    <div class="journey-step">
-      <div class="card referrer-card" id="step1">
-        <div class="step-header">
-          <div class="step-num referrer">1</div>
-          <span class="step-title">Ask to Share</span>
+    <!-- ═══ STEP 1: Referral Ask — REFERRER (left) ═══ -->
+    <div class="tl-step tl-left">
+      <div class="tl-dot referrer">1</div>
+      <div class="card" id="step1">
+        <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
+        <div class="card-header">
+          <div class="step-icon referrer">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13 3v10l-5-2.5H4.5A1.5 1.5 0 013 9V7a1.5 1.5 0 011.5-1.5H8L13 3z"/></svg>
+          </div>
+          <div class="step-name">Referral Ask</div>
           <span class="party-tag referrer">Referrer</span>
         </div>
-        <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
+
         <div class="fields-grid">
           <div class="field-label">Transactional trigger</div>
           <span class="field-val">All Transactions</span>
@@ -292,6 +348,7 @@
           <div class="field-label">Reward format</div>
           <span class="field-val">Cashback, Account Credit, Coupon, Gift Card, Organic</span>
         </div>
+
         <div class="message-block">
           <div class="msg-header">
             <span class="msg-header-label">Message</span>
@@ -334,15 +391,19 @@
       </div>
     </div>
 
-    <!-- ═══ STEP 2 — CONNECTION ═══ -->
-    <div class="journey-step">
-      <div class="card connection-card" id="step2">
-        <div class="step-header">
-          <div class="step-num connection">2</div>
-          <span class="step-title">Invite</span>
+    <!-- ═══ STEP 2: Invite — CONNECTION (center) ═══ -->
+    <div class="tl-step tl-center">
+      <div class="tl-dot connection">2</div>
+      <div class="card" id="step2">
+        <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
+        <div class="card-header">
+          <div class="step-icon connection">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 1.5L2 7.5l5 2L10.5 5 7.5 10l2 5z"/></svg>
+          </div>
+          <div class="step-name">Invite</div>
           <span class="party-tag referee">Referee</span>
         </div>
-        <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
+
         <div class="share-row">
           <div class="share-label">Shared via</div>
           <div class="share-sub">Referrer chooses how to share with their friend</div>
@@ -355,6 +416,7 @@
             <div class="share-icon" style="background:var(--text-tertiary);">···</div>
           </div>
         </div>
+
         <div class="message-block">
           <div class="msg-header">
             <span class="msg-header-label">Message</span>
@@ -363,6 +425,7 @@
             <div class="share-bubble">Hey! I've been using NeoBank and love it. Sign up with my link and we both get up to $75: <span class="link">neo.bnk/r/gina</span></div>
           </div>
         </div>
+
         <div class="field-inline">
           <div class="field-label">Tracking</div>
           <span class="field-val">Referral Link</span>
@@ -370,15 +433,19 @@
       </div>
     </div>
 
-    <!-- ═══ STEP 3 — REFEREE ═══ -->
-    <div class="journey-step">
-      <div class="card referee-card" id="step3">
-        <div class="step-header">
-          <div class="step-num referee">3</div>
-          <span class="step-title">Redemption</span>
+    <!-- ═══ STEP 3: Redemption — REFEREE (right) ═══ -->
+    <div class="tl-step tl-right">
+      <div class="tl-dot referee">3</div>
+      <div class="card" id="step3">
+        <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
+        <div class="card-header">
+          <div class="step-icon referee">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 15A7 7 0 108 1a7 7 0 000 14zm3.4-8.8a.75.75 0 00-1.1-1L7 8.5 5.65 7.15a.75.75 0 10-1.1 1l2 2a.75.75 0 001.1 0l4.05-4z"/></svg>
+          </div>
+          <div class="step-name">Redemption</div>
           <span class="party-tag referee">Referee</span>
         </div>
-        <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
+
         <div class="fields-grid">
           <div class="field-label">Qualifying event</div>
           <span class="field-val">1st Transaction</span>
@@ -387,6 +454,7 @@
           <div class="field-label">Reward format</div>
           <span class="field-val">Cashback, Account Credit, Coupon, Gift Card, Organic</span>
         </div>
+
         <div class="message-block">
           <div class="msg-header">
             <span class="msg-header-label">Message</span>
@@ -429,10 +497,10 @@
       </div>
     </div>
 
-    <!-- ═══ STEP 4 — BOTH ═══ -->
-    <div class="journey-step">
+    <!-- ═══ STEP 4: Reward Credited — BOTH (center) ═══ -->
+    <div class="tl-step tl-center tl-final">
+      <div class="tl-dot both" style="font-size: 14px;">✓</div>
       <div class="milestone-wrap">
-        <div class="step-num both" style="font-size: 14px;">✓</div>
         <div class="milestone-icon">
           <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.6l1.7 3.5 3.8.6-2.7 2.7.6 3.8L8 10.5l-3.4 1.7.6-3.8L2.5 5.7l3.8-.6z"/></svg>
         </div>
@@ -440,7 +508,7 @@
           <div class="milestone-title">Reward Credited</div>
           <div class="milestone-detail"><b>$75</b> referrer + <b>$75</b> referee</div>
         </div>
-        <span class="party-tag both">Both</span>
+        <span class="party-tag both" style="margin-left: auto;">Both</span>
       </div>
     </div>
 
