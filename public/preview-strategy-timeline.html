@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- v5 - message blocks on top of cards 1 and 3 -->
+<!-- v6 - remove Message labels, delete milestone, Success first in card 3 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -181,7 +181,7 @@
     background: var(--accent-light);
   }
   .msg-header-label { font-size: 11px; font-weight: 400; color: var(--text-muted); flex-shrink: 0; }
-  .msg-dropdown-wrap { position: relative; margin-left: auto; }
+  .msg-dropdown-wrap { position: relative; }
   .msg-dropdown-trigger {
     display: inline-flex;
     align-items: center;
@@ -338,7 +338,6 @@
 
         <div class="message-block message-top">
           <div class="msg-header">
-            <span class="msg-header-label">Message</span>
             <div class="msg-dropdown-wrap" id="dd-s1">
               <button class="msg-dropdown-trigger" onclick="toggleDropdown('dd-s1')">
                 <span class="dd-label">Ask · Push</span>
@@ -442,40 +441,41 @@
 
         <div class="message-block message-top">
           <div class="msg-header">
-            <span class="msg-header-label">Message</span>
             <div class="msg-dropdown-wrap" id="dd-s3">
               <button class="msg-dropdown-trigger" onclick="toggleDropdown('dd-s3')">
-                <span class="dd-label">Reminder · Push</span>
+                <span class="dd-label">Success · Push</span>
                 <svg class="chevron" viewBox="0 0 10 10" fill="currentColor"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
               <div class="msg-dropdown-menu">
-                <button class="msg-dropdown-item active" onclick="selectCombo('s3','reminder','push')">Reminder · Push</button>
-                <button class="msg-dropdown-item" onclick="selectCombo('s3','reminder','sms')">Reminder · SMS</button>
-                <button class="msg-dropdown-item" onclick="selectCombo('s3','reminder','email')">Reminder · Email</button>
-                <button class="msg-dropdown-item" onclick="selectCombo('s3','success','push')">Success · Push</button>
+                <button class="msg-dropdown-item active" onclick="selectCombo('s3','success','push')">Success · Push</button>
                 <button class="msg-dropdown-item" onclick="selectCombo('s3','success','sms')">Success · SMS</button>
                 <button class="msg-dropdown-item" onclick="selectCombo('s3','success','email')">Success · Email</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','reminder','push')">Reminder · Push</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','reminder','sms')">Reminder · SMS</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','reminder','email')">Reminder · Email</button>
               </div>
             </div>
           </div>
           <div class="msg-content">
-            <div class="preview-mock" data-step="s3" data-msg="reminder" data-ch="push">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Don't forget your $75</div><div class="push-body">Complete your first transaction to claim your reward. Your offer expires in 7 days.</div></div></div><div class="device-home-bar"></div></div>
-            </div>
-            <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="sms">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Your $75 reward is waiting! Make your first transaction to claim it. Expires in 7 days.</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
-            </div>
-            <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="email">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Your $75 reward is waiting</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 is waiting for you</div><div class="email-hero-sub">Make your first transaction</div></div><div class="email-text">Your friend referred you to NeoBank. Complete your first transaction within 7 days and you'll both earn up to $75.</div><span class="email-cta">Make My First Transaction</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
-            </div>
-            <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="push">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">You earned $75!</div><div class="push-body">Your first transaction is complete. $75 has been credited to your account.</div></div></div><div class="device-home-bar"></div></div>
+            <!-- Success messages (default) — reward credited to both -->
+            <div class="preview-mock" data-step="s3" data-msg="success" data-ch="push">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">You both earned $75! 🎉</div><div class="push-body">Your first transaction is done! $75 credited to you and $75 to Gina. Welcome to NeoBank!</div></div></div><div class="device-home-bar"></div></div>
             </div>
             <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="sms">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Congrats! Your $75 reward has been credited to your account. Welcome to NeoBank!</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">You did it! 🎉 $75 credited to your account and $75 to Gina. You're both rewarded. Welcome to NeoBank!</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
             </div>
             <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="email">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">You earned $75!</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 credited</div><div class="email-hero-sub">Your referral reward is ready</div></div><div class="email-text">Congratulations! You completed your first transaction and earned $75. Welcome to NeoBank!</div><span class="email-cta">View My Balance</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">You both earned $75! 🎉</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 + $75 credited</div><div class="email-hero-sub">You and Gina are both rewarded</div></div><div class="email-text">Congratulations! Your first transaction is complete. $75 has been credited to your account — and Gina earned $75 too. Welcome to NeoBank!</div><span class="email-cta">View My Balance</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <!-- Reminder messages — nudge to complete first transaction -->
+            <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="push">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Don't forget your $75</div><div class="push-body">Complete your first transaction to claim your reward. Gina is waiting for hers too! Expires in 7 days.</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="sms">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Your $75 reward is waiting! Make your first transaction — Gina gets $75 too when you do. Expires in 7 days.</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="email">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">$75 waiting for you (and Gina)</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 is waiting for you</div><div class="email-hero-sub">And $75 for Gina too</div></div><div class="email-text">Your friend Gina referred you to NeoBank. Complete your first transaction within 7 days and you'll both earn $75.</div><span class="email-cta">Make My First Transaction</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
             </div>
           </div>
         </div>
@@ -492,28 +492,11 @@
       </div>
     </div>
 
-    <!-- ═══ STEP 4: Reward Credited — BOTH (center) ═══ -->
-    <div class="tl-step tl-final">
-      <div class="tl-sidebar">
-        <div class="tl-number">✓</div>
-      </div>
-      <div class="milestone-wrap">
-        <div class="milestone-icon">
-          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.6l1.7 3.5 3.8.6-2.7 2.7.6 3.8L8 10.5l-3.4 1.7.6-3.8L2.5 5.7l3.8-.6z"/></svg>
-        </div>
-        <div class="milestone-body">
-          <div class="milestone-title">Reward Credited</div>
-          <div class="milestone-detail"><b>$75</b> referrer + <b>$75</b> referee</div>
-        </div>
-        <span class="party-tag both" style="margin-left: auto;">Both</span>
-      </div>
-    </div>
-
   </div>
 </div>
 
 <script>
-const state = { s1: { msg: 'ask', ch: 'push' }, s3: { msg: 'reminder', ch: 'push' } };
+const state = { s1: { msg: 'ask', ch: 'push' }, s3: { msg: 'success', ch: 'push' } };
 
 function toggleDropdown(ddId) {
   const wrap = document.getElementById(ddId);
