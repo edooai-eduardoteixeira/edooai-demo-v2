@@ -96,7 +96,7 @@
   .range-sep { color: var(--text-tertiary); margin: 0 4px; font-weight: 400; }
 
   /* ═══ Message block — ghost dropdown (Figma/Iterable pattern) ═══ */
-  .message-block { border-top: 1px solid var(--border-light); }
+  .message-block { border-top: 1px solid var(--border-light); margin-top: 4px; }
   .msg-header {
     display: flex;
     align-items: center;
@@ -161,13 +161,12 @@
   .msg-dropdown-item:hover { background: var(--accent-light); }
   .msg-dropdown-item.active { color: var(--text-primary); font-weight: 500; }
 
-  .msg-content { padding: 0 16px 10px; background: var(--accent-light); }
+  .msg-content { padding: 16px; background: var(--accent-light); display: flex; flex-wrap: wrap; justify-content: center; }
 
   /* ═══ Mockups (unchanged) ═══ */
   .mockup-push { background: #f8f8f8; border-radius: 14px; padding: 10px 14px; max-width: 320px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
   .push-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-  .push-icon { width: 18px; height: 18px; border-radius: 4px; background: var(--accent); display: flex; align-items: center; justify-content: center; }
-  .push-icon svg { width: 10px; height: 10px; color: #fff; }
+  .push-icon { width: 20px; height: 20px; border-radius: var(--radius-sm); background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--surface); flex-shrink: 0; }
   .push-app { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
   .push-time { font-size: 10px; color: var(--text-tertiary); margin-left: auto; }
   .push-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
@@ -205,6 +204,61 @@
   .milestone-title { font-size: 14px; font-weight: 700; }
   .milestone-detail { font-size: 12px; color: var(--text-secondary); }
   .milestone-detail b { font-weight: 700; }
+
+  /* ═══ Device phone frame ═══ */
+  .device-phone {
+    border: 1.5px solid var(--border);
+    border-radius: 28px;
+    max-width: 300px;
+    overflow: hidden;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+  }
+  .device-statusbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 20px 2px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .device-statusbar-icons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .device-screen {
+    padding: 4px 10px 6px;
+  }
+  .device-home-bar {
+    display: flex;
+    justify-content: center;
+    padding: 4px 0 8px;
+  }
+  .device-home-bar::after {
+    content: '';
+    width: 36%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 100px;
+  }
+  .device-screen .mockup-push,
+  .device-screen .mockup-sms { max-width: none; box-shadow: none; }
+
+  /* SMS enhancements */
+  .sms-app-header { font-size: 11px; font-weight: 600; text-align: center; color: var(--text-primary); padding: 2px 0 6px; }
+  .sms-meta { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 4px; font-size: 10px; color: var(--text-tertiary); }
+  .sms-meta svg { width: 10px; height: 10px; }
+
+  /* Email enhancements */
+  .email-logo { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .email-logo-icon { width: 20px; height: 20px; background: var(--accent); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--surface); flex-shrink: 0; }
+  .email-logo-name { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+  .email-after-cta { font-size: 11px; color: var(--text-tertiary); margin-top: 10px; }
+  .email-footer { padding: 10px 12px; border-top: 1px solid var(--border-light); font-size: 11px; color: var(--text-tertiary); text-align: center; }
 
   .hidden { display: none; }
 </style>
@@ -268,27 +322,27 @@
           <div class="msg-content">
             <!-- Ask × Push -->
             <div class="preview-mock" data-step="s1" data-msg="ask" data-ch="push">
-              <div class="mockup-push"><div class="push-header"><div class="push-icon"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="10" height="12" rx="2"/><circle cx="8" cy="11" r="1"/></svg></div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Know someone who'd love NeoBank?</div><div class="push-body">Share your link — you both get up to $75 when your friend makes their first transaction.</div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">$211 on streaming, Gina? 💸</div><div class="push-body">Give your wallet a break. Refer a friend and you BOTH get a free month of Netflix. Tap to share! 🍿</div></div></div><div class="device-home-bar"></div></div>
             </div>
             <!-- Ask × SMS -->
             <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="sms">
-              <div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Hey! Share your referral link and you both get up to $75 when your friend transacts. Share here: neo.bnk/r/gina</div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Gina, you spent $211 on streaming last month! 💸 Give your wallet a break. Refer a friend and you BOTH get a free month of Netflix. Tap to share https://nflx.it/gina 🍿</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
             </div>
             <!-- Ask × Email -->
             <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="email">
-              <div class="mockup-email"><div class="email-header"><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Know someone who'd love NeoBank?</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Refer a friend, earn $75</div><div class="email-hero-sub">Your friend gets $75 too</div></div><div class="email-text">Share your personal referral link. When your friend opens an account and makes their first transaction, you both earn up to $75.</div><span class="email-cta">Share My Link</span></div></div>
+              <div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Gina, let's get that $211 back? 🍿</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Netflix for free, Gina</div><div class="email-hero-sub">One for you, one for a friend</div></div><div class="email-text">Hi Gina,<br><br>You spent $211 on streaming last month. Ready to give your wallet a break? 🍿<br><br>Invite a friend to NeoBank. When they make their first transaction, we'll cover a full month of Netflix for both of you.</div><span class="email-cta">Share My Link</span><div class="email-after-cta">Your friend gets a free month, too!</div></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div>
             </div>
             <!-- Reminder × Push -->
             <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="push">
-              <div class="mockup-push"><div class="push-header"><div class="push-icon"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="10" height="12" rx="2"/><circle cx="8" cy="11" r="1"/></svg></div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Your friends are waiting</div><div class="push-body">You have an unused referral reward. Share your link — up to $75 for you both.</div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Your friends are waiting</div><div class="push-body">You have an unused referral reward. Share your link — up to $75 for you both.</div></div></div><div class="device-home-bar"></div></div>
             </div>
             <!-- Reminder × SMS -->
             <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="sms">
-              <div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Reminder — your referral link is ready. Share with a friend and get up to $75 each. neo.bnk/r/gina</div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Reminder — your referral link is ready. Share with a friend and get up to $75 each. neo.bnk/r/gina</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
             </div>
             <!-- Reminder × Email -->
             <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="email">
-              <div class="mockup-email"><div class="email-header"><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Still have a referral reward waiting</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Your reward is waiting</div><div class="email-hero-sub">Share your link, earn $75</div></div><div class="email-text">You haven't shared your referral link yet. When your friend opens an account and makes their first transaction, you both earn up to $75.</div><span class="email-cta">Share Now</span></div></div>
+              <div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Still have a referral reward waiting</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Your reward is waiting</div><div class="email-hero-sub">Share your link, earn $75</div></div><div class="email-text">You haven't shared your referral link yet. When your friend opens an account and makes their first transaction, you both earn up to $75.</div><span class="email-cta">Share Now</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div>
             </div>
           </div>
         </div>
@@ -382,27 +436,27 @@
           <div class="msg-content">
             <!-- Reminder × Push -->
             <div class="preview-mock" data-step="s3" data-msg="reminder" data-ch="push">
-              <div class="mockup-push"><div class="push-header"><div class="push-icon"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="10" height="12" rx="2"/><circle cx="8" cy="11" r="1"/></svg></div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Don't forget your $75</div><div class="push-body">Complete your first transaction to claim your reward. Your offer expires in 7 days.</div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Don't forget your $75</div><div class="push-body">Complete your first transaction to claim your reward. Your offer expires in 7 days.</div></div></div><div class="device-home-bar"></div></div>
             </div>
             <!-- Reminder × SMS -->
             <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="sms">
-              <div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Your $75 reward is waiting! Make your first transaction to claim it. Expires in 7 days.</div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Your $75 reward is waiting! Make your first transaction to claim it. Expires in 7 days.</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
             </div>
             <!-- Reminder × Email -->
             <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="email">
-              <div class="mockup-email"><div class="email-header"><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Your $75 reward is waiting</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 is waiting for you</div><div class="email-hero-sub">Make your first transaction</div></div><div class="email-text">Your friend referred you to NeoBank. Complete your first transaction within 7 days and you'll both earn up to $75.</div><span class="email-cta">Make My First Transaction</span></div></div>
+              <div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Your $75 reward is waiting</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 is waiting for you</div><div class="email-hero-sub">Make your first transaction</div></div><div class="email-text">Your friend referred you to NeoBank. Complete your first transaction within 7 days and you'll both earn up to $75.</div><span class="email-cta">Make My First Transaction</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div>
             </div>
             <!-- Success × Push -->
             <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="push">
-              <div class="mockup-push"><div class="push-header"><div class="push-icon"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="10" height="12" rx="2"/><circle cx="8" cy="11" r="1"/></svg></div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">You earned $75!</div><div class="push-body">Your first transaction is complete. $75 has been credited to your account.</div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">You earned $75!</div><div class="push-body">Your first transaction is complete. $75 has been credited to your account.</div></div></div><div class="device-home-bar"></div></div>
             </div>
             <!-- Success × SMS -->
             <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="sms">
-              <div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Congrats! Your $75 reward has been credited to your account. Welcome to NeoBank!</div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Congrats! Your $75 reward has been credited to your account. Welcome to NeoBank!</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
             </div>
             <!-- Success × Email -->
             <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="email">
-              <div class="mockup-email"><div class="email-header"><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">You earned $75!</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 credited</div><div class="email-hero-sub">Your referral reward is ready</div></div><div class="email-text">Congratulations! You completed your first transaction and earned $75. Welcome to NeoBank!</div><span class="email-cta">View My Balance</span></div></div>
+              <div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">You earned $75!</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 credited</div><div class="email-hero-sub">Your referral reward is ready</div></div><div class="email-text">Congratulations! You completed your first transaction and earned $75. Welcome to NeoBank!</div><span class="email-cta">View My Balance</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div>
             </div>
           </div>
         </div>
