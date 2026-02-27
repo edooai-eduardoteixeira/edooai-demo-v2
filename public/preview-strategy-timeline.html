@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- v4 - all black text for titles, numbers, subtitles -->
+<!-- v5 - message blocks on top of cards 1 and 3 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -171,6 +171,8 @@
 
   /* ═══ Message block ═══ */
   .message-block { border-top: 1px solid var(--border-light); margin-top: 0; }
+  .message-block.message-top { border-top: none; }
+  .message-block.message-top + .fields-grid { border-top: 1px solid var(--border-light); padding-top: 6px; padding-bottom: 6px; }
   .msg-header {
     display: flex;
     align-items: center;
@@ -334,20 +336,7 @@
       <div class="card" id="step1">
         <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
 
-        <div class="fields-grid">
-          <div class="field-label">Transactional trigger</div>
-          <span class="field-val">All Transactions</span>
-          <div class="field-label">Promotional trigger</div>
-          <span class="field-val">Scheduled <span class="or-sep">or</span> AI Recommendation</span>
-          <div class="field-label">Qualifying event</div>
-          <span class="field-val">1st Transaction</span>
-          <div class="field-label">Reward range</div>
-          <span class="field-val">$0 <span class="range-sep">—</span> $75</span>
-          <div class="field-label">Reward format</div>
-          <span class="field-val">Cashback, Account Credit, Coupon, Gift Card, Organic</span>
-        </div>
-
-        <div class="message-block">
+        <div class="message-block message-top">
           <div class="msg-header">
             <span class="msg-header-label">Message</span>
             <div class="msg-dropdown-wrap" id="dd-s1">
@@ -385,6 +374,19 @@
               <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Gina, your Netflix reward is still here 🍿</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Don't let it expire, Gina</div><div class="email-hero-sub">Your free month is still waiting</div></div><div class="email-text">Remember those $211 on streaming? Your free Netflix month is still available. Share your link with a friend — when they make their first transaction, you both get rewarded.</div><span class="email-cta">Share Now</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
             </div>
           </div>
+        </div>
+
+        <div class="fields-grid">
+          <div class="field-label">Transactional trigger</div>
+          <span class="field-val">All Transactions</span>
+          <div class="field-label">Promotional trigger</div>
+          <span class="field-val">Scheduled <span class="or-sep">or</span> AI Recommendation</span>
+          <div class="field-label">Qualifying event</div>
+          <span class="field-val">1st Transaction</span>
+          <div class="field-label">Reward range</div>
+          <span class="field-val">$0 <span class="range-sep">—</span> $75</span>
+          <div class="field-label">Reward format</div>
+          <span class="field-val">Cashback, Account Credit, Coupon, Gift Card, Organic</span>
         </div>
       </div>
       </div>
@@ -438,16 +440,7 @@
       <div class="card" id="step3">
         <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
 
-        <div class="fields-grid">
-          <div class="field-label">Qualifying event</div>
-          <span class="field-val">1st Transaction</span>
-          <div class="field-label">Reward range</div>
-          <span class="field-val">$0 <span class="range-sep">—</span> $75</span>
-          <div class="field-label">Reward format</div>
-          <span class="field-val">Cashback, Account Credit, Coupon, Gift Card, Organic</span>
-        </div>
-
-        <div class="message-block">
+        <div class="message-block message-top">
           <div class="msg-header">
             <span class="msg-header-label">Message</span>
             <div class="msg-dropdown-wrap" id="dd-s3">
@@ -485,6 +478,15 @@
               <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">You earned $75!</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 credited</div><div class="email-hero-sub">Your referral reward is ready</div></div><div class="email-text">Congratulations! You completed your first transaction and earned $75. Welcome to NeoBank!</div><span class="email-cta">View My Balance</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
             </div>
           </div>
+        </div>
+
+        <div class="fields-grid">
+          <div class="field-label">Qualifying event</div>
+          <span class="field-val">1st Transaction</span>
+          <div class="field-label">Reward range</div>
+          <span class="field-val">$0 <span class="range-sep">—</span> $75</span>
+          <div class="field-label">Reward format</div>
+          <span class="field-val">Cashback, Account Credit, Coupon, Gift Card, Organic</span>
         </div>
       </div>
       </div>
