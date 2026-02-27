@@ -35,8 +35,6 @@
     .step-name { font-size: 15px; }
     .field-val { font-size: 13px; }
     .field-label { font-size: 12px; }
-    .timeline { margin-left: 40px; max-width: 640px; }
-    .tl-step { gap: 140px; }
   }
 
   .concept-label { display: inline-block; font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
@@ -66,6 +64,11 @@
     margin-bottom: 16px;
   }
   .tl-step:last-child { margin-bottom: 0; }
+
+  @media (min-width: 600px) {
+    .timeline { margin-left: 40px; max-width: 660px; }
+    .tl-step { gap: 200px; }
+  }
 
   .tl-sidebar {
     display: flex;
