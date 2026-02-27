@@ -26,7 +26,6 @@
 
   @media (min-width: 600px) {
     .page { padding: 32px 48px 64px; }
-    .card-header { padding: 12px 16px; }
     .fields-grid { column-gap: 16px; padding: 0 16px; }
     .field-inline { padding: 6px 16px; }
     .msg-header { padding: 6px 16px; }
@@ -110,10 +109,17 @@
   }
 
   .tl-step > .card,
-  .tl-step > .milestone-wrap {
+  .tl-step > .milestone-wrap,
+  .tl-step > .card-column {
     flex: 1;
     min-width: 0;
     max-width: 475px;
+  }
+
+  .card-column {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
 
   /* ═══ Card ═══ */
@@ -123,9 +129,8 @@
   .edit-hint { position: absolute; top: 10px; right: 12px; font-size: 11px; color: var(--text-tertiary); opacity: 0; transition: opacity 0.2s; display: flex; align-items: center; gap: 4px; }
   .edit-hint svg { width: 12px; height: 12px; }
 
-  /* Card header */
-  .card-header { padding: 10px 12px; display: flex; align-items: center; }
-  .step-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 16px; letter-spacing: 0.02em; }
+  /* Step badge — sits above the card */
+  .step-badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 4px 14px; border-radius: 12px; letter-spacing: 0.02em; }
   .step-badge.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
   .step-badge.referee { background: var(--referee-bg); color: var(--referee-text); }
   .party-tag { font-size: 9px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 6px; border-radius: 100px; }
@@ -325,11 +330,10 @@
         <div class="tl-number">1</div>
         <div class="tl-subtitle">Ask</div>
       </div>
+      <div class="card-column">
+      <span class="step-badge referrer">Referrer</span>
       <div class="card" id="step1">
         <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
-        <div class="card-header">
-          <span class="step-badge referrer">Referrer</span>
-        </div>
 
         <div class="fields-grid">
           <div class="field-label">Transactional trigger</div>
@@ -384,6 +388,7 @@
           </div>
         </div>
       </div>
+      </div>
     </div>
 
     <!-- ═══ STEP 2: Invite — CONNECTION (center) ═══ -->
@@ -429,11 +434,10 @@
         <div class="tl-number">3</div>
         <div class="tl-subtitle">Redeem</div>
       </div>
+      <div class="card-column">
+      <span class="step-badge referee">Referee</span>
       <div class="card" id="step3">
         <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
-        <div class="card-header">
-          <span class="step-badge referee">Referee</span>
-        </div>
 
         <div class="fields-grid">
           <div class="field-label">Qualifying event</div>
@@ -483,6 +487,7 @@
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
 
