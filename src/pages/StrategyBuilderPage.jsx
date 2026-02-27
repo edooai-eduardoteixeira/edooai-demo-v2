@@ -477,7 +477,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     <div className={tl.fieldLabel}>Activated by</div>
                     <span className={tl.fieldVal}>All Transactions, Timing Insights</span>
                     <div className={tl.fieldLabel}>Redemption upon</div>
-                    <span className={tl.fieldVal}>1st Transaction</span>
+                    <span className={tl.fieldVal}>Sign Up, KYC, 1st Transaction</span>
                     <div className={tl.fieldLabel}>Reward</div>
                     <span className={tl.fieldVal}>$0, $10, $30, $50, $75</span>
                     <div className={tl.fieldLabel}>Paid as</div>
@@ -505,9 +505,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   </div>
 
                   <div className={tl.messageBlock}>
-                    <div className={tl.msgHeader}>
-                      <span className={tl.msgHeaderLabel}>Message</span>
-                    </div>
                     <div className={tl.msgContent}>
                       <div className={tl.shareBubble}>Hey! I use NeoBank and they&apos;re giving us both a free month of Netflix 🍿 Sign up with my link and make one purchase — we both get it: <span className={tl.shareBubbleLink}>neo.bnk/r/gina</span></div>
                     </div>
@@ -573,7 +570,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
                   <div className={tl.fieldsGrid}>
                     <div className={tl.fieldLabel}>Redemption upon</div>
-                    <span className={tl.fieldVal}>1st Transaction</span>
+                    <span className={tl.fieldVal}>Sign Up, KYC, 1st Transaction</span>
                     <div className={tl.fieldLabel}>Reward</div>
                     <span className={tl.fieldVal}>$0, $10, $30, $50, $75</span>
                     <div className={tl.fieldLabel}>Paid as</div>
