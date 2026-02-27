@@ -182,19 +182,20 @@
     background: var(--accent-light);
   }
   .message-block.message-top {
-    position: relative;
+    display: grid;
   }
-  .message-block.message-top .msg-header {
-    position: absolute;
-    top: 6px;
-    right: 6px;
+  .message-block.message-top > .msg-header,
+  .message-block.message-top > .msg-content {
+    grid-row: 1;
+    grid-column: 1;
+  }
+  .message-block.message-top > .msg-header {
     z-index: 5;
-    background: transparent;
-    min-height: 0;
-    padding: 0;
+    align-self: start;
+    justify-self: end;
+    background: var(--accent-light);
   }
-  .message-block.message-top .msg-content {
-    padding-top: 0;
+  .message-block.message-top > .msg-content {
     background: transparent;
   }
   .msg-header-label { font-size: 11px; font-weight: 400; color: var(--text-muted); flex-shrink: 0; }
