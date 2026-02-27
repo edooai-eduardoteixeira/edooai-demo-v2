@@ -4,36 +4,35 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Referral Journey — Strategy Preview</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
   :root {
     --text-primary: #0f172a; --text-strong: #334155; --text-secondary: #475569; --text-muted: #64748b; --text-tertiary: #94a3b8;
     --border: #e2e8f0; --border-light: #f1f5f9;
     --accent: #1a1a1a; --accent-subtle: #fafafa; --accent-light: #f5f5f5;
-    --surface: #ffffff; --bg: #ffffff;
+    --surface: #ffffff; --bg: #f8f8f8;
     --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
     --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
-    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-family: -apple-system, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', sans-serif;
     --referrer-bg: #dbeafe; --referrer-text: #1e40af;
     --referee-bg: #d1fae5; --referee-text: #065f46;
     --both-bg: #fef3c7; --both-text: #92400e;
     --transition-fast: 150ms ease;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font-family); color: var(--text-primary); background: var(--bg); line-height: 1.5; }
-  .page { max-width: 720px; margin: 0 auto; padding: 40px 32px 64px; }
-  .concept-label { display: inline-block; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px; }
-  .section-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
-  .section-meta { font-size: 13px; color: var(--text-tertiary); margin-bottom: 28px; }
-  .section-meta .sep { margin: 0 6px; }
+  body { font-family: var(--font-family); color: var(--text-primary); background: var(--bg); line-height: 1.5; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  .page { max-width: 375px; margin: 0 auto; padding: 20px 16px 40px; }
+  .concept-label { display: inline-block; font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .section-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 2px; }
+  .section-meta { font-size: 12px; color: var(--text-tertiary); margin-bottom: 20px; }
+  .section-meta .sep { margin: 0 4px; }
 
   /* ═══ Stepper ═══ */
-  .stepper { position: relative; padding-left: 44px; }
-  .stepper::before { content: ''; position: absolute; left: 14px; top: 0; bottom: 0; width: 2px; background: var(--border); }
-  .step { position: relative; margin-bottom: 20px; }
+  .stepper { position: relative; padding-left: 36px; }
+  .stepper::before { content: ''; position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+  .step { position: relative; margin-bottom: 16px; }
   .step:last-child { margin-bottom: 0; }
-  .step-dot { position: absolute; left: -44px; top: 14px; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; z-index: 2; box-shadow: 0 0 0 3px var(--bg); }
+  .step-dot { position: absolute; left: -36px; top: 12px; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; z-index: 2; box-shadow: 0 0 0 3px var(--bg); }
   .step-dot.referrer { background: var(--referrer-text); }
   .step-dot.referee { background: var(--referee-text); }
   .step-dot.both { background: var(--both-text); }
@@ -46,28 +45,28 @@
   .edit-hint svg { width: 12px; height: 12px; }
 
   /* Card header */
-  .card-header { padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
-  .step-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .card-header { padding: 10px 12px; display: flex; align-items: center; gap: 8px; }
+  .step-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .step-icon.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
   .step-icon.referee { background: var(--referee-bg); color: var(--referee-text); }
   .step-icon.both { background: var(--both-bg); color: var(--both-text); }
-  .step-icon svg { width: 14px; height: 14px; }
-  .step-name { font-size: 15px; font-weight: 600; flex: 1; }
-  .party-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 100px; }
+  .step-icon svg { width: 12px; height: 12px; }
+  .step-name { font-size: 14px; font-weight: 600; flex: 1; }
+  .party-tag { font-size: 9px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 6px; border-radius: 100px; }
   .party-tag.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
   .party-tag.referee { background: var(--referee-bg); color: var(--referee-text); }
   .party-tag.both { background: var(--both-bg); color: var(--both-text); }
 
   /* ═══ LAYOUT CHANGE: Data fields ═══ */
-  .field { border-top: 1px solid var(--border-light); padding: 8px 16px; }
-  .field-label { font-size: 12px; font-weight: 400; color: var(--text-muted); margin-bottom: 2px; }
+  .field { border-top: 1px solid var(--border-light); padding: 6px 12px; }
+  .field-label { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-bottom: 1px; }
 
   /* ═══ Grid-aligned fields (Stripe/Linear pattern) ═══ */
   .fields-grid {
     display: grid;
     grid-template-columns: max-content 1fr;
-    column-gap: 16px;
-    padding: 0 16px;
+    column-gap: 12px;
+    padding: 0 12px;
     align-items: baseline;
   }
   .fields-grid .field-label { margin-bottom: 0; }
@@ -75,35 +74,37 @@
   .fields-grid > .field-label,
   .fields-grid > .field-label + * {
     border-top: 1px solid var(--border-light);
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding-top: 6px;
+    padding-bottom: 6px;
   }
 
   /* Inline fallback for single-field rows */
   .field-inline {
     border-top: 1px solid var(--border-light);
-    padding: 8px 16px;
+    padding: 6px 12px;
     display: flex;
-    align-items: baseline;
-    gap: 10px;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
   }
   .field-inline .field-label { margin-bottom: 0; flex-shrink: 0; }
 
-  .field-val { font-size: 13px; font-weight: 400; color: var(--text-strong); line-height: 1.6; }
+  .field-val { font-size: 12px; font-weight: 400; color: var(--text-strong); line-height: 1.5; }
 
   .or-sep { font-size: 10px; color: var(--text-tertiary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 6px; }
   .val-sep { color: var(--text-tertiary); font-weight: 400; margin: 0 2px; }
   .range-sep { color: var(--text-tertiary); margin: 0 4px; font-weight: 400; }
 
   /* ═══ Message block — ghost dropdown (Figma/Iterable pattern) ═══ */
-  .message-block { border-top: 1px solid var(--border-light); margin-top: 4px; }
+  .message-block { border-top: 1px solid var(--border-light); margin-top: 0; }
   .msg-header {
     display: flex;
     align-items: center;
-    padding: 6px 16px;
+    padding: 6px 12px;
+    min-height: 36px;
     background: var(--accent-light);
   }
-  .msg-header-label { font-size: 12px; font-weight: 400; color: var(--text-muted); flex-shrink: 0; }
+  .msg-header-label { font-size: 11px; font-weight: 400; color: var(--text-muted); flex-shrink: 0; }
 
   /* Ghost dropdown trigger — text + chevron, no border/background */
   .msg-dropdown-wrap { position: relative; margin-left: auto; }
@@ -111,17 +112,18 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 4px 0;
-    font-size: 12px;
-    font-weight: 400;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 500;
     color: var(--text-muted);
-    background: none;
-    border: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
     cursor: pointer;
     font-family: inherit;
-    transition: color var(--transition-fast);
+    transition: color var(--transition-fast), border-color var(--transition-fast);
   }
-  .msg-dropdown-trigger:hover { color: var(--text-strong); }
+  .msg-dropdown-trigger:hover { color: var(--text-strong); border-color: var(--text-tertiary); }
   .msg-dropdown-trigger .chevron {
     width: 10px;
     height: 10px;
@@ -161,7 +163,7 @@
   .msg-dropdown-item:hover { background: var(--accent-light); }
   .msg-dropdown-item.active { color: var(--text-primary); font-weight: 500; }
 
-  .msg-content { padding: 16px; background: var(--accent-light); display: flex; flex-wrap: wrap; justify-content: center; }
+  .msg-content { padding: 12px; background: var(--accent-light); display: flex; flex-wrap: wrap; justify-content: center; }
 
   /* ═══ Mockups (unchanged) ═══ */
   .mockup-push { background: #f8f8f8; border-radius: 14px; padding: 10px 14px; max-width: 320px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
@@ -185,31 +187,32 @@
   .email-hero-title { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
   .email-hero-sub { font-size: 12px; opacity: 0.8; }
   .email-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px; }
-  .email-cta { display: inline-block; padding: 8px 20px; background: var(--accent); color: #fff; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; }
+  .email-cta { display: block; padding: 8px 20px; background: var(--accent); color: #fff; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; text-align: center; width: 100%; }
 
   /* Share channel (step 2) */
-  .share-row { border-top: 1px solid var(--border-light); padding: 8px 16px; }
-  .share-label { font-size: 12px; font-weight: 400; color: var(--text-muted); margin-bottom: 2px; }
-  .share-sub { font-size: 11px; color: var(--text-tertiary); font-style: italic; margin-bottom: 6px; }
-  .share-icons { display: flex; gap: 8px; }
-  .share-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; }
-  .share-bubble { background: #dcf8c6; border-radius: 14px; padding: 10px 14px; font-size: 13px; line-height: 1.4; max-width: 320px; }
+  .share-row { border-top: 1px solid var(--border-light); padding: 6px 12px; }
+  .share-label { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-bottom: 2px; }
+  .share-sub { font-size: 10px; color: var(--text-tertiary); font-style: italic; margin-bottom: 6px; }
+  .share-icons { display: flex; gap: 6px; }
+  .share-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #fff; }
+  .share-bubble { background: #dcf8c6; border-radius: 14px; padding: 8px 12px; font-size: 12px; line-height: 1.4; max-width: 100%; }
   .share-bubble .link { color: #1e40af; text-decoration: underline; }
 
   /* ═══ Milestone (step 4) ═══ */
-  .milestone { display: flex; align-items: center; gap: 12px; padding: 6px 0; }
-  .milestone-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--both-bg); color: var(--both-text); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .milestone-icon svg { width: 14px; height: 14px; }
+  .milestone { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+  .milestone-icon { width: 24px; height: 24px; border-radius: 50%; background: var(--both-bg); color: var(--both-text); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .milestone-icon svg { width: 12px; height: 12px; }
   .milestone-body { flex: 1; }
-  .milestone-title { font-size: 14px; font-weight: 700; }
-  .milestone-detail { font-size: 12px; color: var(--text-secondary); }
+  .milestone-title { font-size: 13px; font-weight: 700; }
+  .milestone-detail { font-size: 11px; color: var(--text-secondary); }
   .milestone-detail b { font-weight: 700; }
 
   /* ═══ Device phone frame ═══ */
   .device-phone {
     border: 1.5px solid var(--border);
-    border-radius: 28px;
-    max-width: 300px;
+    border-radius: 24px;
+    max-width: 100%;
+    width: 100%;
     overflow: hidden;
     background: var(--surface);
     box-shadow: var(--shadow-sm);
@@ -266,7 +269,7 @@
 </head>
 <body>
 <div class="page">
-  <div class="concept-label">Proposal A — Vertical (Layout Improved)</div>
+  <div class="concept-label">Strategy Preview — Mobile</div>
   <h2 class="section-title">Referral Journey</h2>
   <div class="section-meta">$75 per side · $150 total<span class="sep">·</span>14-day window<span class="sep">·</span>Pay on 1st transaction</div>
 
