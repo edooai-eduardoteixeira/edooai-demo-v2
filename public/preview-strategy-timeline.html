@@ -67,7 +67,7 @@
 
   @media (min-width: 600px) {
     .timeline { margin-left: 40px; max-width: 740px; }
-    .tl-step { gap: 200px; }
+    .tl-step { gap: 160px; }
   }
 
   .tl-sidebar {
@@ -113,7 +113,7 @@
   .tl-step > .milestone-wrap {
     flex: 1;
     min-width: 0;
-    max-width: 450px;
+    max-width: 475px;
   }
 
   /* ═══ Card ═══ */
@@ -124,14 +124,10 @@
   .edit-hint svg { width: 12px; height: 12px; }
 
   /* Card header */
-  .card-header { padding: 10px 12px; display: flex; align-items: center; gap: 8px; }
-  .step-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .step-icon.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
-  .step-icon.referee { background: var(--referee-bg); color: var(--referee-text); }
-  .step-icon.both { background: var(--both-bg); color: var(--both-text); }
-  .step-icon.connection { background: var(--connection-bg); color: var(--connection-text); }
-  .step-icon svg { width: 12px; height: 12px; }
-  .step-name { font-size: 14px; font-weight: 600; flex: 1; }
+  .card-header { padding: 10px 12px; display: flex; align-items: center; }
+  .step-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 16px; letter-spacing: 0.02em; }
+  .step-badge.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
+  .step-badge.referee { background: var(--referee-bg); color: var(--referee-text); }
   .party-tag { font-size: 9px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 6px; border-radius: 100px; }
   .party-tag.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
   .party-tag.referee { background: var(--referee-bg); color: var(--referee-text); }
@@ -332,10 +328,7 @@
       <div class="card" id="step1">
         <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
         <div class="card-header">
-          <div class="step-icon referrer">
-            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13 3v10l-5-2.5H4.5A1.5 1.5 0 013 9V7a1.5 1.5 0 011.5-1.5H8L13 3z"/></svg>
-          </div>
-          <div class="step-name">Referrer</div>
+          <span class="step-badge referrer">Referrer</span>
         </div>
 
         <div class="fields-grid">
@@ -439,10 +432,7 @@
       <div class="card" id="step3">
         <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
         <div class="card-header">
-          <div class="step-icon referee">
-            <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 15A7 7 0 108 1a7 7 0 000 14zm3.4-8.8a.75.75 0 00-1.1-1L7 8.5 5.65 7.15a.75.75 0 10-1.1 1l2 2a.75.75 0 001.1 0l4.05-4z"/></svg>
-          </div>
-          <div class="step-name">Referee</div>
+          <span class="step-badge referee">Referee</span>
         </div>
 
         <div class="fields-grid">
