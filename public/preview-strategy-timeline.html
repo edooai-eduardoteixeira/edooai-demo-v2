@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Referral Journey — Timeline Layout</title>
+<style>
+  :root {
+    --text-primary: #0f172a; --text-strong: #334155; --text-secondary: #475569; --text-muted: #64748b; --text-tertiary: #94a3b8;
+    --border: #e2e8f0; --border-light: #f1f5f9;
+    --accent: #1a1a1a; --accent-subtle: #fafafa; --accent-light: #f5f5f5;
+    --surface: #ffffff; --bg: #f8f8f8;
+    --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+    --font-family: -apple-system, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', sans-serif;
+    --referrer-bg: #dbeafe; --referrer-text: #1e40af;
+    --referee-bg: #d1fae5; --referee-text: #065f46;
+    --both-bg: #fef3c7; --both-text: #92400e;
+    --connection-bg: #e0e7ff; --connection-text: #4338ca;
+    --transition-fast: 150ms ease;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-family); color: var(--text-primary); background: var(--bg); line-height: 1.5; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  .page { max-width: 375px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  @media (min-width: 600px) {
+    .page { max-width: 520px; padding: 32px 24px 48px; }
+    .tl-left > .card { margin-right: 56px; }
+    .tl-right > .card { margin-left: 56px; }
+    .card-header { padding: 12px 16px; }
+    .fields-grid { column-gap: 16px; padding: 0 16px; }
+    .field-inline { padding: 6px 16px; }
+    .msg-header { padding: 6px 16px; }
+    .msg-content { padding: 16px; }
+    .share-row { padding: 8px 16px; }
+    .step-name { font-size: 15px; }
+    .field-val { font-size: 13px; }
+    .field-label { font-size: 12px; }
+  }
+
+  .concept-label { display: inline-block; font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .section-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 2px; }
+  .section-meta { font-size: 12px; color: var(--text-tertiary); margin-bottom: 20px; }
+  .section-meta .sep { margin: 0 4px; }
+
+  /* ═══ Timeline ═══ */
+  .timeline {
+    position: relative;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(
+      to bottom,
+      var(--referrer-text) 0%,
+      var(--connection-text) 30%,
+      var(--referee-text) 70%,
+      var(--both-text) 100%
+    );
+    opacity: 0.2;
+    z-index: 0;
+  }
+
+  .tl-step {
+    position: relative;
+  }
+
+  /* Timeline dot — always centered on the line */
+  .tl-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 auto 10px;
+    position: relative;
+    z-index: 3;
+    box-shadow: 0 0 0 4px var(--bg);
+  }
+  .tl-dot.referrer { background: var(--referrer-text); }
+  .tl-dot.connection { background: var(--connection-text); }
+  .tl-dot.referee { background: var(--referee-text); }
+  .tl-dot.both { background: var(--both-text); }
+
+  /* Card offset — the zigzag */
+  .tl-left > .card {
+    margin-right: 40px;
+    border-left: 4px solid var(--referrer-text);
+  }
+  .tl-right > .card {
+    margin-left: 40px;
+    border-right: 4px solid var(--referee-text);
+  }
+  .tl-center > .card,
+  .tl-center > .milestone-wrap {
+    margin: 0;
+  }
+
+  /* Gap between steps — let the center line breathe */
+  .tl-step .card,
+  .tl-step .milestone-wrap {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 16px;
+  }
+
+  /* ═══ Card ═══ */
+  .card { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); overflow: hidden; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; position: relative; }
+  .card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
+  .card:hover .edit-hint { opacity: 1; }
+  .edit-hint { position: absolute; top: 10px; right: 12px; font-size: 11px; color: var(--text-tertiary); opacity: 0; transition: opacity 0.2s; display: flex; align-items: center; gap: 4px; }
+  .edit-hint svg { width: 12px; height: 12px; }
+
+  /* Card header */
+  .card-header { padding: 10px 12px; display: flex; align-items: center; gap: 8px; }
+  .step-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .step-icon.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
+  .step-icon.referee { background: var(--referee-bg); color: var(--referee-text); }
+  .step-icon.both { background: var(--both-bg); color: var(--both-text); }
+  .step-icon.connection { background: var(--connection-bg); color: var(--connection-text); }
+  .step-icon svg { width: 12px; height: 12px; }
+  .step-name { font-size: 14px; font-weight: 600; flex: 1; }
+  .party-tag { font-size: 9px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 6px; border-radius: 100px; }
+  .party-tag.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
+  .party-tag.referee { background: var(--referee-bg); color: var(--referee-text); }
+  .party-tag.both { background: var(--both-bg); color: var(--both-text); }
+  .party-tag.connection { background: var(--connection-bg); color: var(--connection-text); }
+
+  /* ═══ Data fields ═══ */
+  .field { border-top: 1px solid var(--border-light); padding: 6px 12px; }
+  .field-label { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-bottom: 1px; }
+  .fields-grid {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: 12px;
+    padding: 0 12px;
+    align-items: baseline;
+  }
+  .fields-grid .field-label { margin-bottom: 0; }
+  .fields-grid > .field-label,
+  .fields-grid > .field-label + * {
+    border-top: 1px solid var(--border-light);
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .field-inline {
+    border-top: 1px solid var(--border-light);
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+  }
+  .field-inline .field-label { margin-bottom: 0; flex-shrink: 0; }
+  .field-val { font-size: 12px; font-weight: 400; color: var(--text-strong); line-height: 1.5; }
+  .or-sep { font-size: 10px; color: var(--text-tertiary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 6px; }
+  .val-sep { color: var(--text-tertiary); font-weight: 400; margin: 0 2px; }
+  .range-sep { color: var(--text-tertiary); margin: 0 4px; font-weight: 400; }
+
+  /* ═══ Message block ═══ */
+  .message-block { border-top: 1px solid var(--border-light); margin-top: 0; }
+  .msg-header {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    min-height: 36px;
+    background: var(--accent-light);
+  }
+  .msg-header-label { font-size: 11px; font-weight: 400; color: var(--text-muted); flex-shrink: 0; }
+  .msg-dropdown-wrap { position: relative; margin-left: auto; }
+  .msg-dropdown-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: inherit;
+    transition: color var(--transition-fast), border-color var(--transition-fast);
+  }
+  .msg-dropdown-trigger:hover { color: var(--text-strong); border-color: var(--text-tertiary); }
+  .msg-dropdown-trigger .chevron { width: 10px; height: 10px; transition: transform var(--transition-fast); }
+  .msg-dropdown-wrap.open .chevron { transform: rotate(180deg); }
+  .msg-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
+    min-width: 160px;
+    z-index: 10;
+    padding: 4px 0;
+  }
+  .msg-dropdown-wrap.open .msg-dropdown-menu { display: block; }
+  .msg-dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background var(--transition-fast);
+  }
+  .msg-dropdown-item:hover { background: var(--accent-light); }
+  .msg-dropdown-item.active { color: var(--text-primary); font-weight: 500; }
+  .msg-content { padding: 12px; background: var(--accent-light); display: flex; flex-wrap: wrap; justify-content: center; }
+
+  /* ═══ Mockups ═══ */
+  .mockup-push { background: #f8f8f8; border-radius: 14px; padding: 10px 14px; max-width: 320px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .push-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .push-icon { width: 20px; height: 20px; border-radius: var(--radius-sm); background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--surface); flex-shrink: 0; }
+  .push-app { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+  .push-time { font-size: 10px; color: var(--text-tertiary); margin-left: auto; }
+  .push-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .push-body { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+  .mockup-sms { max-width: 280px; }
+  .sms-sender { font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px; }
+  .sms-bubble { background: #e5e5ea; border-radius: 16px; padding: 8px 12px; font-size: 13px; line-height: 1.4; }
+  .mockup-email { border: 1px solid var(--border); border-radius: var(--radius-sm); max-width: 380px; overflow: hidden; background: var(--surface); }
+  .email-header { padding: 10px 12px; border-bottom: 1px solid var(--border-light); }
+  .email-from { font-size: 10px; color: var(--text-tertiary); margin-bottom: 2px; }
+  .email-subject { font-size: 13px; font-weight: 700; }
+  .email-body { padding: 14px 12px; }
+  .email-hero { background: linear-gradient(135deg, #312e81, #7c3aed); color: #fff; padding: 20px 16px; text-align: center; margin-bottom: 12px; border-radius: 4px; }
+  .email-hero-title { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+  .email-hero-sub { font-size: 12px; opacity: 0.8; }
+  .email-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px; }
+  .email-cta { display: block; padding: 8px 20px; background: #7c3aed; color: #fff; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; text-align: center; width: 100%; }
+
+  /* Share channel (step 2) */
+  .share-row { border-top: 1px solid var(--border-light); padding: 6px 12px; }
+  .share-label { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-bottom: 2px; }
+  .share-sub { font-size: 10px; color: var(--text-tertiary); font-style: italic; margin-bottom: 6px; }
+  .share-icons { display: flex; gap: 6px; }
+  .share-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #fff; }
+  .share-bubble { background: #dcf8c6; border-radius: 14px; padding: 8px 12px; font-size: 12px; line-height: 1.4; max-width: 100%; }
+  .share-bubble .link { color: #1e40af; text-decoration: underline; }
+
+  /* ═══ Milestone (step 4) ═══ */
+  .milestone-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .milestone-icon { width: 24px; height: 24px; border-radius: 50%; background: var(--both-bg); color: var(--both-text); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .milestone-icon svg { width: 12px; height: 12px; }
+  .milestone-body { flex: 1; }
+  .milestone-title { font-size: 13px; font-weight: 700; }
+  .milestone-detail { font-size: 11px; color: var(--text-secondary); }
+  .milestone-detail b { font-weight: 700; }
+
+  /* ═══ Device phone frame ═══ */
+  .device-phone {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    max-width: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+  }
+  .device-statusbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .device-statusbar-icons { display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 500; }
+  .device-screen { padding: 4px 10px 6px; }
+  .device-home-bar { display: flex; justify-content: center; padding: 4px 0 8px; }
+  .device-home-bar::after { content: ''; width: 36%; height: 4px; background: var(--border); border-radius: 100px; }
+  .device-screen .mockup-push,
+  .device-screen .mockup-sms { max-width: none; box-shadow: none; }
+  .device-screen .mockup-email { max-width: none; }
+  .sms-app-header { font-size: 11px; font-weight: 600; text-align: center; color: var(--text-primary); padding: 2px 0 6px; }
+  .sms-meta { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 4px; font-size: 10px; color: var(--text-tertiary); }
+  .sms-meta svg { width: 10px; height: 10px; }
+  .email-logo { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .email-logo-icon { width: 20px; height: 20px; background: var(--accent); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--surface); flex-shrink: 0; }
+  .email-logo-name { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+  .email-after-cta { font-size: 11px; color: var(--text-tertiary); margin-top: 10px; }
+  .email-footer { padding: 10px 12px; border-top: 1px solid var(--border-light); font-size: 11px; color: var(--text-tertiary); text-align: center; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="concept-label">Strategy Preview — Timeline Layout</div>
+  <h2 class="section-title">Referral Journey</h2>
+  <div class="section-meta">$75 per side · $150 total<span class="sep">·</span>14-day window<span class="sep">·</span>Pay on 1st transaction</div>
+
+  <div class="timeline">
+
+    <!-- ═══ STEP 1: Referral Ask — REFERRER (left) ═══ -->
+    <div class="tl-step tl-left">
+      <div class="tl-dot referrer">1</div>
+      <div class="card" id="step1">
+        <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
+        <div class="card-header">
+          <div class="step-icon referrer">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13 3v10l-5-2.5H4.5A1.5 1.5 0 013 9V7a1.5 1.5 0 011.5-1.5H8L13 3z"/></svg>
+          </div>
+          <div class="step-name">Referral Ask</div>
+          <span class="party-tag referrer">Referrer</span>
+        </div>
+
+        <div class="fields-grid">
+          <div class="field-label">Transactional trigger</div>
+          <span class="field-val">All Transactions</span>
+          <div class="field-label">Promotional trigger</div>
+          <span class="field-val">Scheduled <span class="or-sep">or</span> AI Recommendation</span>
+          <div class="field-label">Qualifying event</div>
+          <span class="field-val">1st Transaction</span>
+          <div class="field-label">Reward range</div>
+          <span class="field-val">$0 <span class="range-sep">—</span> $75</span>
+          <div class="field-label">Reward format</div>
+          <span class="field-val">Cashback, Account Credit, Coupon, Gift Card, Organic</span>
+        </div>
+
+        <div class="message-block">
+          <div class="msg-header">
+            <span class="msg-header-label">Message</span>
+            <div class="msg-dropdown-wrap" id="dd-s1">
+              <button class="msg-dropdown-trigger" onclick="toggleDropdown('dd-s1')">
+                <span class="dd-label">Ask · Push</span>
+                <svg class="chevron" viewBox="0 0 10 10" fill="currentColor"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="msg-dropdown-menu">
+                <button class="msg-dropdown-item active" onclick="selectCombo('s1','ask','push')">Ask · Push</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s1','ask','sms')">Ask · SMS</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s1','ask','email')">Ask · Email</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s1','reminder','push')">Reminder · Push</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s1','reminder','sms')">Reminder · SMS</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s1','reminder','email')">Reminder · Email</button>
+              </div>
+            </div>
+          </div>
+          <div class="msg-content">
+            <div class="preview-mock" data-step="s1" data-msg="ask" data-ch="push">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">$211 on streaming, Gina? 💸</div><div class="push-body">Gina, you spent $211 on streaming! 💸 Claim one free month of Netflix for you now. Tap to share! 🍿</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="sms">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Gina, you spent $211 on streaming! 💸 Claim one free month of Netflix for you now. Tap to share https://nflx.it/gina 🍿</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="email">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Gina, let's get that $211 back? 🍿</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Netflix for free, Gina</div><div class="email-hero-sub">One for you, one for a friend</div></div><div class="email-text">Hi Gina,<br><br>You spent $211 on streaming last month. Ready to claim a free month of Netflix now? 🍿<br><br>Send your link to a friend. Once they use the card for the first time, your next month of Netflix is on us (and theirs, too!)</div><span class="email-cta">Share</span><div class="email-after-cta">Your friend gets a free month, too!</div></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="push">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Still thinking about it, Gina? 🍿</div><div class="push-body">Your free Netflix month is still here. Share your link with a friend before it expires!</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="sms">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Gina, your free Netflix month is still up for grabs! 🍿 Share with a friend before it expires: neo.bnk/r/gina</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="email">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Gina, your Netflix reward is still here 🍿</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Don't let it expire, Gina</div><div class="email-hero-sub">Your free month is still waiting</div></div><div class="email-text">Remember those $211 on streaming? Your free Netflix month is still available. Share your link with a friend — when they make their first transaction, you both get rewarded.</div><span class="email-cta">Share Now</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ STEP 2: Invite — CONNECTION (center) ═══ -->
+    <div class="tl-step tl-center">
+      <div class="tl-dot connection">2</div>
+      <div class="card" id="step2">
+        <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
+        <div class="card-header">
+          <div class="step-icon connection">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 1.5L2 7.5l5 2L10.5 5 7.5 10l2 5z"/></svg>
+          </div>
+          <div class="step-name">Invite</div>
+          <span class="party-tag referee">Referee</span>
+        </div>
+
+        <div class="share-row">
+          <div class="share-label">Shared via</div>
+          <div class="share-sub">Referrer chooses how to share with their friend</div>
+          <div class="share-icons">
+            <div class="share-icon" style="background:#25D366;" title="WhatsApp">W</div>
+            <div class="share-icon" style="background:#007AFF;" title="iMessage">iM</div>
+            <div class="share-icon" style="background:#1DA1F2;" title="X">X</div>
+            <div class="share-icon" style="background:#E4405F;" title="Instagram">IG</div>
+            <div class="share-icon" style="background:#0A66C2;" title="LinkedIn">in</div>
+            <div class="share-icon" style="background:var(--text-tertiary);">···</div>
+          </div>
+        </div>
+
+        <div class="message-block">
+          <div class="msg-header">
+            <span class="msg-header-label">Message</span>
+          </div>
+          <div class="msg-content">
+            <div class="share-bubble">Hey! I've been using NeoBank and love it. Sign up with my link and we both get up to $75: <span class="link">neo.bnk/r/gina</span></div>
+          </div>
+        </div>
+
+        <div class="field-inline">
+          <div class="field-label">Tracking</div>
+          <span class="field-val">Referral Link</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ STEP 3: Redemption — REFEREE (right) ═══ -->
+    <div class="tl-step tl-right">
+      <div class="tl-dot referee">3</div>
+      <div class="card" id="step3">
+        <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
+        <div class="card-header">
+          <div class="step-icon referee">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 15A7 7 0 108 1a7 7 0 000 14zm3.4-8.8a.75.75 0 00-1.1-1L7 8.5 5.65 7.15a.75.75 0 10-1.1 1l2 2a.75.75 0 001.1 0l4.05-4z"/></svg>
+          </div>
+          <div class="step-name">Redemption</div>
+          <span class="party-tag referee">Referee</span>
+        </div>
+
+        <div class="fields-grid">
+          <div class="field-label">Qualifying event</div>
+          <span class="field-val">1st Transaction</span>
+          <div class="field-label">Reward range</div>
+          <span class="field-val">$0 <span class="range-sep">—</span> $75</span>
+          <div class="field-label">Reward format</div>
+          <span class="field-val">Cashback, Account Credit, Coupon, Gift Card, Organic</span>
+        </div>
+
+        <div class="message-block">
+          <div class="msg-header">
+            <span class="msg-header-label">Message</span>
+            <div class="msg-dropdown-wrap" id="dd-s3">
+              <button class="msg-dropdown-trigger" onclick="toggleDropdown('dd-s3')">
+                <span class="dd-label">Reminder · Push</span>
+                <svg class="chevron" viewBox="0 0 10 10" fill="currentColor"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="msg-dropdown-menu">
+                <button class="msg-dropdown-item active" onclick="selectCombo('s3','reminder','push')">Reminder · Push</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','reminder','sms')">Reminder · SMS</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','reminder','email')">Reminder · Email</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','success','push')">Success · Push</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','success','sms')">Success · SMS</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','success','email')">Success · Email</button>
+              </div>
+            </div>
+          </div>
+          <div class="msg-content">
+            <div class="preview-mock" data-step="s3" data-msg="reminder" data-ch="push">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Don't forget your $75</div><div class="push-body">Complete your first transaction to claim your reward. Your offer expires in 7 days.</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="sms">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Your $75 reward is waiting! Make your first transaction to claim it. Expires in 7 days.</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="email">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Your $75 reward is waiting</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 is waiting for you</div><div class="email-hero-sub">Make your first transaction</div></div><div class="email-text">Your friend referred you to NeoBank. Complete your first transaction within 7 days and you'll both earn up to $75.</div><span class="email-cta">Make My First Transaction</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="push">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">You earned $75!</div><div class="push-body">Your first transaction is complete. $75 has been credited to your account.</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="sms">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Congrats! Your $75 reward has been credited to your account. Welcome to NeoBank!</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="email">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">You earned $75!</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 credited</div><div class="email-hero-sub">Your referral reward is ready</div></div><div class="email-text">Congratulations! You completed your first transaction and earned $75. Welcome to NeoBank!</div><span class="email-cta">View My Balance</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ STEP 4: Reward Credited — BOTH (center) ═══ -->
+    <div class="tl-step tl-center tl-final">
+      <div class="tl-dot both" style="font-size: 14px;">✓</div>
+      <div class="milestone-wrap">
+        <div class="milestone-icon">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.6l1.7 3.5 3.8.6-2.7 2.7.6 3.8L8 10.5l-3.4 1.7.6-3.8L2.5 5.7l3.8-.6z"/></svg>
+        </div>
+        <div class="milestone-body">
+          <div class="milestone-title">Reward Credited</div>
+          <div class="milestone-detail"><b>$75</b> referrer + <b>$75</b> referee</div>
+        </div>
+        <span class="party-tag both" style="margin-left: auto;">Both</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const state = { s1: { msg: 'ask', ch: 'push' }, s3: { msg: 'reminder', ch: 'push' } };
+
+function toggleDropdown(ddId) {
+  const wrap = document.getElementById(ddId);
+  const wasOpen = wrap.classList.contains('open');
+  document.querySelectorAll('.msg-dropdown-wrap').forEach(w => w.classList.remove('open'));
+  if (!wasOpen) wrap.classList.add('open');
+}
+
+function selectCombo(stepId, msg, ch) {
+  state[stepId].msg = msg;
+  state[stepId].ch = ch;
+  updatePreview(stepId);
+  const ddId = 'dd-' + stepId;
+  const wrap = document.getElementById(ddId);
+  const label = msg.charAt(0).toUpperCase() + msg.slice(1) + ' · ' + ch.charAt(0).toUpperCase() + ch.slice(1).toLowerCase();
+  wrap.querySelector('.dd-label').textContent = label;
+  wrap.querySelectorAll('.msg-dropdown-item').forEach(item => {
+    item.classList.toggle('active', item.textContent === label);
+  });
+  wrap.classList.remove('open');
+}
+
+function updatePreview(stepId) {
+  const { msg, ch } = state[stepId];
+  document.querySelectorAll(`.preview-mock[data-step="${stepId}"]`).forEach(el => {
+    el.classList.toggle('hidden', !(el.dataset.msg === msg && el.dataset.ch === ch));
+  });
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.msg-dropdown-wrap')) {
+    document.querySelectorAll('.msg-dropdown-wrap').forEach(w => w.classList.remove('open'));
+  }
+});
+</script>
+</body>
+</html>
