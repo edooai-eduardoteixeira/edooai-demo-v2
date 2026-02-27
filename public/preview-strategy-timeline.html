@@ -26,8 +26,6 @@
 
   @media (min-width: 600px) {
     .page { max-width: 520px; padding: 32px 24px 48px; }
-    .tl-left > .card { margin-right: 56px; }
-    .tl-right > .card { margin-left: 56px; }
     .card-header { padding: 12px 16px; }
     .fields-grid { column-gap: 16px; padding: 0 16px; }
     .field-inline { padding: 6px 16px; }
@@ -44,74 +42,70 @@
   .section-meta { font-size: 12px; color: var(--text-tertiary); margin-bottom: 20px; }
   .section-meta .sep { margin: 0 4px; }
 
-  /* ═══ Timeline ═══ */
+  /* ═══ Timeline — vertical stepper ═══ */
   .timeline {
     position: relative;
   }
   .timeline::before {
     content: '';
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    top: 0;
-    bottom: 0;
+    left: 23px;
+    top: 16px;
+    bottom: 16px;
     width: 2px;
-    background: linear-gradient(
-      to bottom,
-      var(--referrer-text) 0%,
-      var(--connection-text) 30%,
-      var(--referee-text) 70%,
-      var(--both-text) 100%
-    );
-    opacity: 0.2;
+    background: var(--border);
     z-index: 0;
   }
 
   .tl-step {
+    display: flex;
+    gap: 16px;
     position: relative;
+    margin-bottom: 16px;
+  }
+  .tl-step:last-child { margin-bottom: 0; }
+
+  .tl-sidebar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 48px;
+    flex-shrink: 0;
   }
 
-  /* Timeline dot — always centered on the line */
-  .tl-dot {
+  .tl-number {
     width: 32px;
     height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
-    color: #fff;
-    margin: 0 auto 10px;
-    position: relative;
-    z-index: 3;
-    box-shadow: 0 0 0 4px var(--bg);
-  }
-  .tl-dot.referrer { background: var(--referrer-text); }
-  .tl-dot.connection { background: var(--connection-text); }
-  .tl-dot.referee { background: var(--referee-text); }
-  .tl-dot.both { background: var(--both-text); }
-
-  /* Card offset — the zigzag */
-  .tl-left > .card {
-    margin-right: 40px;
-    border-left: 4px solid var(--referrer-text);
-  }
-  .tl-right > .card {
-    margin-left: 40px;
-    border-right: 4px solid var(--referee-text);
-  }
-  .tl-center > .card,
-  .tl-center > .milestone-wrap {
-    margin: 0;
-  }
-
-  /* Gap between steps — let the center line breathe */
-  .tl-step .card,
-  .tl-step .milestone-wrap {
+    color: var(--surface);
+    background: var(--accent);
     position: relative;
     z-index: 1;
-    margin-bottom: 16px;
+    box-shadow: 0 0 0 4px var(--bg);
+  }
+
+  .tl-subtitle {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+    margin-top: 6px;
+    position: relative;
+    z-index: 1;
+    background: var(--bg);
+    padding: 0 4px;
+  }
+
+  .tl-step > .card,
+  .tl-step > .milestone-wrap {
+    flex: 1;
+    min-width: 0;
   }
 
   /* ═══ Card ═══ */
@@ -323,8 +317,11 @@
   <div class="timeline">
 
     <!-- ═══ STEP 1: Referral Ask — REFERRER (left) ═══ -->
-    <div class="tl-step tl-left">
-      <div class="tl-dot referrer">1</div>
+    <div class="tl-step">
+      <div class="tl-sidebar">
+        <div class="tl-number">1</div>
+        <div class="tl-subtitle">Ask</div>
+      </div>
       <div class="card" id="step1">
         <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
         <div class="card-header">
@@ -391,8 +388,11 @@
     </div>
 
     <!-- ═══ STEP 2: Invite — CONNECTION (center) ═══ -->
-    <div class="tl-step tl-center">
-      <div class="tl-dot connection">2</div>
+    <div class="tl-step">
+      <div class="tl-sidebar">
+        <div class="tl-number">2</div>
+        <div class="tl-subtitle">Share</div>
+      </div>
       <div class="card" id="step2">
         <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
         <div class="card-header">
@@ -433,8 +433,11 @@
     </div>
 
     <!-- ═══ STEP 3: Redemption — REFEREE (right) ═══ -->
-    <div class="tl-step tl-right">
-      <div class="tl-dot referee">3</div>
+    <div class="tl-step">
+      <div class="tl-sidebar">
+        <div class="tl-number">3</div>
+        <div class="tl-subtitle">Redeem</div>
+      </div>
       <div class="card" id="step3">
         <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
         <div class="card-header">
@@ -497,8 +500,10 @@
     </div>
 
     <!-- ═══ STEP 4: Reward Credited — BOTH (center) ═══ -->
-    <div class="tl-step tl-center tl-final">
-      <div class="tl-dot both" style="font-size: 14px;">✓</div>
+    <div class="tl-step tl-final">
+      <div class="tl-sidebar">
+        <div class="tl-number">✓</div>
+      </div>
       <div class="milestone-wrap">
         <div class="milestone-icon">
           <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.6l1.7 3.5 3.8.6-2.7 2.7.6 3.8L8 10.5l-3.4 1.7.6-3.8L2.5 5.7l3.8-.6z"/></svg>
