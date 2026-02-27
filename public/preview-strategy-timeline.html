@@ -62,12 +62,13 @@
   }
   .journey-step:last-child { margin-bottom: 0; }
 
-  /* Step header — the landmark */
+  /* Step header — inside card */
   .step-header {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-light);
   }
 
   .step-num {
@@ -249,7 +250,7 @@
 
   /* Share (step 2) */
   .share-row { padding: 6px 12px; }
-  .share-row:first-child { padding-top: 10px; }
+  .share-row { padding-top: 8px; }
   .share-label { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-bottom: 2px; }
   .share-sub { font-size: 10px; color: var(--text-tertiary); font-style: italic; margin-bottom: 6px; }
   .share-icons { display: flex; gap: 6px; }
@@ -259,6 +260,7 @@
 
   /* Milestone (step 4) */
   .milestone-wrap {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -289,12 +291,12 @@
 
     <!-- ═══ STEP 1 — REFERRER ═══ -->
     <div class="journey-step">
-      <div class="step-header">
-        <div class="step-num referrer">1</div>
-        <span class="step-title">Ask to Share</span>
-        <span class="party-tag referrer">Referrer</span>
-      </div>
       <div class="card referrer-card" id="step1">
+        <div class="step-header">
+          <div class="step-num referrer">1</div>
+          <span class="step-title">Ask to Share</span>
+          <span class="party-tag referrer">Referrer</span>
+        </div>
         <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
         <div class="fields-grid">
           <div class="field-label">Transactional trigger</div>
@@ -352,12 +354,12 @@
 
     <!-- ═══ STEP 2 — CONNECTION ═══ -->
     <div class="journey-step">
-      <div class="step-header">
-        <div class="step-num connection">2</div>
-        <span class="step-title">Invite</span>
-        <span class="party-tag referee">Referee</span>
-      </div>
       <div class="card connection-card" id="step2">
+        <div class="step-header">
+          <div class="step-num connection">2</div>
+          <span class="step-title">Invite</span>
+          <span class="party-tag referee">Referee</span>
+        </div>
         <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
         <div class="share-row">
           <div class="share-label">Shared via</div>
@@ -388,12 +390,12 @@
 
     <!-- ═══ STEP 3 — REFEREE ═══ -->
     <div class="journey-step">
-      <div class="step-header">
-        <div class="step-num referee">3</div>
-        <span class="step-title">Redemption</span>
-        <span class="party-tag referee">Referee</span>
-      </div>
       <div class="card referee-card" id="step3">
+        <div class="step-header">
+          <div class="step-num referee">3</div>
+          <span class="step-title">Redemption</span>
+          <span class="party-tag referee">Referee</span>
+        </div>
         <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
         <div class="fields-grid">
           <div class="field-label">Qualifying event</div>
@@ -447,12 +449,8 @@
 
     <!-- ═══ STEP 4 — BOTH ═══ -->
     <div class="journey-step">
-      <div class="step-header">
-        <div class="step-num both" style="font-size: 14px;">✓</div>
-        <span class="step-title">Reward Credited</span>
-        <span class="party-tag both">Both</span>
-      </div>
       <div class="milestone-wrap">
+        <div class="step-num both" style="font-size: 14px;">✓</div>
         <div class="milestone-icon">
           <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.6l1.7 3.5 3.8.6-2.7 2.7.6 3.8L8 10.5l-3.4 1.7.6-3.8L2.5 5.7l3.8-.6z"/></svg>
         </div>
@@ -460,6 +458,7 @@
           <div class="milestone-title">Reward Credited</div>
           <div class="milestone-detail"><b>$75</b> referrer + <b>$75</b> referee</div>
         </div>
+        <span class="party-tag both">Both</span>
       </div>
     </div>
 
