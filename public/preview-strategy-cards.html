@@ -91,51 +91,75 @@
 
   .field-val { font-size: 13px; font-weight: 400; color: var(--text-strong); line-height: 1.6; }
 
-  /* Trigger sub-categories */
-  .trigger-subs { display: flex; flex-direction: column; gap: 2px; }
-  .trigger-sub { display: flex; align-items: baseline; gap: 8px; }
-  .trigger-type { font-size: 11px; font-weight: 400; color: var(--text-tertiary); min-width: 80px; flex-shrink: 0; }
-
   .or-sep { font-size: 10px; color: var(--text-tertiary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 6px; }
   .val-sep { color: var(--text-tertiary); font-weight: 400; margin: 0 2px; }
   .range-sep { color: var(--text-tertiary); margin: 0 4px; font-weight: 400; }
 
-  /* ═══ CHANGE 4: Message block — unified selectors on one line ═══ */
+  /* ═══ Message block — ghost dropdown (Figma/Iterable pattern) ═══ */
   .message-block { border-top: 1px solid var(--border-light); }
   .msg-header {
     display: flex;
     align-items: center;
-    gap: 12px;
     padding: 8px 16px;
     background: var(--accent-light);
   }
   .msg-header-label { font-size: 12px; font-weight: 400; color: var(--text-muted); flex-shrink: 0; }
 
-  /* Segmented control */
-  .seg-control {
+  /* Ghost dropdown trigger — text + chevron, no border/background */
+  .msg-dropdown-wrap { position: relative; margin-left: auto; }
+  .msg-dropdown-trigger {
     display: inline-flex;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    background: var(--surface);
-  }
-  .seg-option {
-    padding: 4px 12px;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 0;
     font-size: 12px;
     font-weight: 400;
-    color: var(--text-tertiary);
-    border: none;
+    color: var(--text-muted);
     background: none;
-    border-right: 1px solid var(--border);
+    border: none;
     cursor: pointer;
     font-family: inherit;
-    transition: all var(--transition-fast);
+    transition: color var(--transition-fast);
   }
-  .seg-option:last-child { border-right: none; }
-  .seg-option:hover { background: var(--accent-subtle); }
-  .seg-option.active { background: var(--accent-light); color: var(--text-primary); font-weight: 600; }
+  .msg-dropdown-trigger:hover { color: var(--text-strong); }
+  .msg-dropdown-trigger .chevron {
+    width: 10px;
+    height: 10px;
+    transition: transform var(--transition-fast);
+  }
+  .msg-dropdown-wrap.open .chevron { transform: rotate(180deg); }
 
-  .seg-via { font-size: 12px; color: var(--text-tertiary); }
+  /* Dropdown menu */
+  .msg-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
+    min-width: 160px;
+    z-index: 10;
+    padding: 4px 0;
+  }
+  .msg-dropdown-wrap.open .msg-dropdown-menu { display: block; }
+  .msg-dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background var(--transition-fast);
+  }
+  .msg-dropdown-item:hover { background: var(--accent-light); }
+  .msg-dropdown-item.active { color: var(--text-primary); font-weight: 500; }
 
   .msg-content { padding: 12px 16px 14px; background: var(--accent-light); }
 
@@ -223,19 +247,22 @@
           <span class="field-val">Cashback <span class="val-sep">·</span> Account Credit <span class="val-sep">·</span> Coupon <span class="val-sep">·</span> Gift Card <span class="val-sep">·</span> Organic</span>
         </div>
 
-        <!-- CHANGE: Unified message selectors on one line -->
         <div class="message-block">
           <div class="msg-header">
             <span class="msg-header-label">Message</span>
-            <div class="seg-control">
-              <button class="seg-option active" onclick="selectMsgType('s1','ask')">Ask</button>
-              <button class="seg-option" onclick="selectMsgType('s1','reminder')">Reminder</button>
-            </div>
-            <span class="seg-via">via</span>
-            <div class="seg-control">
-              <button class="seg-option active" onclick="selectChannel('s1','push')">Push</button>
-              <button class="seg-option" onclick="selectChannel('s1','sms')">SMS</button>
-              <button class="seg-option" onclick="selectChannel('s1','email')">Email</button>
+            <div class="msg-dropdown-wrap" id="dd-s1">
+              <button class="msg-dropdown-trigger" onclick="toggleDropdown('dd-s1')">
+                <span class="dd-label">Ask · Push</span>
+                <svg class="chevron" viewBox="0 0 10 10" fill="currentColor"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="msg-dropdown-menu">
+                <button class="msg-dropdown-item active" onclick="selectCombo('s1','ask','push')">Ask · Push</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s1','ask','sms')">Ask · SMS</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s1','ask','email')">Ask · Email</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s1','reminder','push')">Reminder · Push</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s1','reminder','sms')">Reminder · SMS</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s1','reminder','email')">Reminder · Email</button>
+              </div>
             </div>
           </div>
           <div class="msg-content">
@@ -334,19 +361,22 @@
           <span class="field-val">Cashback <span class="val-sep">·</span> Account Credit <span class="val-sep">·</span> Coupon <span class="val-sep">·</span> Gift Card <span class="val-sep">·</span> Organic</span>
         </div>
 
-        <!-- CHANGE: Unified message selectors on one line -->
         <div class="message-block">
           <div class="msg-header">
             <span class="msg-header-label">Message</span>
-            <div class="seg-control">
-              <button class="seg-option active" onclick="selectMsgType('s3','reminder')">Reminder</button>
-              <button class="seg-option" onclick="selectMsgType('s3','success')">Success</button>
-            </div>
-            <span class="seg-via">via</span>
-            <div class="seg-control">
-              <button class="seg-option active" onclick="selectChannel('s3','push')">Push</button>
-              <button class="seg-option" onclick="selectChannel('s3','sms')">SMS</button>
-              <button class="seg-option" onclick="selectChannel('s3','email')">Email</button>
+            <div class="msg-dropdown-wrap" id="dd-s3">
+              <button class="msg-dropdown-trigger" onclick="toggleDropdown('dd-s3')">
+                <span class="dd-label">Reminder · Push</span>
+                <svg class="chevron" viewBox="0 0 10 10" fill="currentColor"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="msg-dropdown-menu">
+                <button class="msg-dropdown-item active" onclick="selectCombo('s3','reminder','push')">Reminder · Push</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','reminder','sms')">Reminder · SMS</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','reminder','email')">Reminder · Email</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','success','push')">Success · Push</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','success','sms')">Success · SMS</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','success','email')">Success · Email</button>
+              </div>
             </div>
           </div>
           <div class="msg-content">
@@ -400,22 +430,32 @@
 <script>
 const state = { s1: { msg: 'ask', ch: 'push' }, s3: { msg: 'reminder', ch: 'push' } };
 
-function selectMsgType(stepId, type) {
-  state[stepId].msg = type;
-  updatePreview(stepId);
-  const card = document.getElementById(stepId === 's1' ? 'step1' : 'step3');
-  card.querySelectorAll('.seg-control')[0].querySelectorAll('.seg-option').forEach(t =>
-    t.classList.toggle('active', t.textContent.toLowerCase() === type)
-  );
+function toggleDropdown(ddId) {
+  const wrap = document.getElementById(ddId);
+  const wasOpen = wrap.classList.contains('open');
+  // Close all dropdowns first
+  document.querySelectorAll('.msg-dropdown-wrap').forEach(w => w.classList.remove('open'));
+  if (!wasOpen) wrap.classList.add('open');
 }
 
-function selectChannel(stepId, ch) {
+function selectCombo(stepId, msg, ch) {
+  state[stepId].msg = msg;
   state[stepId].ch = ch;
   updatePreview(stepId);
-  const card = document.getElementById(stepId === 's1' ? 'step1' : 'step3');
-  card.querySelectorAll('.seg-control')[1].querySelectorAll('.seg-option').forEach(t =>
-    t.classList.toggle('active', t.textContent.toLowerCase() === ch)
-  );
+
+  // Update dropdown label
+  const ddId = 'dd-' + stepId;
+  const wrap = document.getElementById(ddId);
+  const label = msg.charAt(0).toUpperCase() + msg.slice(1) + ' · ' + ch.charAt(0).toUpperCase() + ch.slice(1).toLowerCase();
+  wrap.querySelector('.dd-label').textContent = label;
+
+  // Update active state in menu
+  wrap.querySelectorAll('.msg-dropdown-item').forEach(item => {
+    item.classList.toggle('active', item.textContent === label);
+  });
+
+  // Close dropdown
+  wrap.classList.remove('open');
 }
 
 function updatePreview(stepId) {
@@ -424,6 +464,13 @@ function updatePreview(stepId) {
     el.classList.toggle('hidden', !(el.dataset.msg === msg && el.dataset.ch === ch));
   });
 }
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.msg-dropdown-wrap')) {
+    document.querySelectorAll('.msg-dropdown-wrap').forEach(w => w.classList.remove('open'));
+  }
+});
 </script>
 </body>
 </html>
