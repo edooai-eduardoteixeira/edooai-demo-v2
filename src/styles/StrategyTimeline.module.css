@@ -1,0 +1,634 @@
+/* ═══════════════════════════════════════════
+   Strategy Timeline — User Journey section
+   ═══════════════════════════════════════════ */
+
+/* ── Section header ── */
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 2px;
+}
+
+/* ── Timeline vertical stepper ── */
+.timeline {
+  position: relative;
+}
+
+.timeline::before {
+  display: none;
+}
+
+@media (min-width: 600px) {
+  .timeline::before {
+    display: block;
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 50px;
+    bottom: 50px;
+    width: 2px;
+    background: var(--border);
+    z-index: 0;
+  }
+}
+
+.tlStep {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  position: relative;
+  margin-bottom: 48px;
+  align-items: flex-start;
+}
+
+.tlStep:last-child {
+  margin-bottom: 0;
+}
+
+.tlHeaderRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+@media (min-width: 600px) {
+  .timeline {
+    margin-left: 40px;
+    max-width: 840px;
+  }
+
+  .tlStep {
+    flex-wrap: nowrap;
+    gap: 48px;
+  }
+
+  .tlHeaderRow {
+    width: 150px;
+    flex-shrink: 0;
+    gap: 14px;
+    align-items: center;
+    padding-top: 10px;
+  }
+}
+
+.tlNumber {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+  background: var(--surface);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tlLabel {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+@media (min-width: 600px) {
+  .tlLabel {
+    font-size: 20px;
+    font-weight: 700;
+  }
+}
+
+/* ── Card ── */
+.card {
+  flex: 1;
+  min-width: 0;
+  max-width: 520px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Data fields ── */
+.fieldsGrid {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  column-gap: 12px;
+  padding: 0 12px;
+  align-items: baseline;
+}
+
+.fieldsGrid > .fieldLabel,
+.fieldsGrid > .fieldLabel + * {
+  border-top: 1px solid var(--border-light);
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.fieldInline {
+  border-top: 1px solid var(--border-light);
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+}
+
+.fieldInline .fieldLabel {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+
+.fieldVal {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-strong);
+  line-height: 1.5;
+}
+
+@media (min-width: 600px) {
+  .fieldsGrid {
+    column-gap: 16px;
+    padding: 0 16px;
+  }
+
+  .fieldInline {
+    padding: 6px 16px;
+  }
+
+  .fieldVal {
+    font-size: 13px;
+  }
+
+  .fieldLabel {
+    font-size: 12px;
+  }
+}
+
+/* ── Message block ── */
+.messageBlock {
+  border-top: 1px solid var(--border-light);
+  margin-top: 0;
+}
+
+.messageBlockTop {
+  border-top: none;
+}
+
+.messageBlockTop + .fieldsGrid {
+  border-top: 1px solid var(--border-light);
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.msgHeader {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 6px 12px;
+  min-height: 36px;
+  background: var(--accent-light);
+}
+
+.msgHeaderFloating {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 5;
+  background: transparent !important;
+  min-height: 0;
+  padding: 0;
+}
+
+.msgHeaderLabel {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.msgContent {
+  padding: 12px;
+  background: var(--accent-light);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+@media (min-width: 600px) {
+  .msgHeader {
+    padding: 6px 16px;
+  }
+
+  .msgContent {
+    padding: 16px;
+  }
+}
+
+/* ── Dropdown ── */
+.dropdownWrap {
+  position: relative;
+  margin-left: auto;
+}
+
+.dropdownTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 150ms ease;
+}
+
+.dropdownTrigger:hover {
+  color: var(--text-strong);
+}
+
+.chevron {
+  width: 10px;
+  height: 10px;
+  transition: transform 150ms ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.dropdownMenu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  min-width: 160px;
+  z-index: 10;
+  padding: 4px 0;
+}
+
+.dropdownMenuOpen {
+  display: block;
+}
+
+.dropdownItem {
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 150ms ease;
+}
+
+.dropdownItem:hover {
+  background: var(--accent-light);
+}
+
+.dropdownItemActive {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* ── Device phone frame ── */
+.devicePhone {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  max-width: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.deviceStatusbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.deviceScreen {
+  padding: 4px 10px 6px;
+}
+
+.deviceHomeBar {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 8px;
+}
+
+.deviceHomeBar::after {
+  content: '';
+  width: 36%;
+  height: 4px;
+  background: var(--border);
+  border-radius: 100px;
+}
+
+/* ── Push notification mockup ── */
+.mockupPush {
+  background: #f8f8f8;
+  border-radius: 14px;
+  padding: 10px 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.deviceScreen .mockupPush {
+  max-width: none;
+  box-shadow: none;
+}
+
+.pushHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.pushIcon {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--surface);
+  flex-shrink: 0;
+}
+
+.pushApp {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.pushTime {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  margin-left: auto;
+}
+
+.pushTitle {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.pushBody {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ── SMS mockup ── */
+.mockupSms {
+  max-width: 280px;
+}
+
+.deviceScreen .mockupSms {
+  max-width: none;
+}
+
+.smsAppHeader {
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-primary);
+  padding: 2px 0 6px;
+}
+
+.smsSender {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+
+.smsBubble {
+  background: #e5e5ea;
+  border-radius: 16px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.smsMeta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-tertiary);
+}
+
+.smsMeta svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* ── Email mockup ── */
+.mockupEmail {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.deviceScreen .mockupEmail {
+  max-width: none;
+}
+
+.emailHeader {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.emailLogo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.emailLogoIcon {
+  width: 20px;
+  height: 20px;
+  background: var(--accent);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--surface);
+  flex-shrink: 0;
+}
+
+.emailLogoName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.emailFrom {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  margin-bottom: 2px;
+}
+
+.emailSubject {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.emailBody {
+  padding: 14px 12px;
+}
+
+.emailHero {
+  background: linear-gradient(135deg, #312e81, #7c3aed);
+  color: #fff;
+  padding: 20px 16px;
+  text-align: center;
+  margin-bottom: 12px;
+  border-radius: 4px;
+}
+
+.emailHeroTitle {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.emailHeroSub {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.emailText {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.emailCta {
+  display: block;
+  padding: 8px 20px;
+  background: #7c3aed;
+  color: #fff;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+}
+
+.emailAfterCta {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 10px;
+}
+
+.emailFooter {
+  padding: 10px 12px;
+  border-top: 1px solid var(--border-light);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+/* ── Share row (step 2) ── */
+.shareRow {
+  border-top: 1px solid var(--border-light);
+  padding: 6px 12px;
+}
+
+.shareIcons {
+  display: flex;
+  gap: 6px;
+}
+
+.shareIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.shareIcon svg {
+  width: 15px;
+  height: 15px;
+  fill: #fff;
+}
+
+.shareBubble {
+  background: #dcf8c6;
+  border-radius: 14px;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+  max-width: 100%;
+}
+
+.shareBubbleLink {
+  color: #1e40af;
+  text-decoration: underline;
+}
+
+@media (min-width: 600px) {
+  .shareRow {
+    padding: 8px 16px;
+  }
+}
+
+/* ── Utility ── */
+.hidden {
+  display: none;
+}

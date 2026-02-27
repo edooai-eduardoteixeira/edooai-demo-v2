@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<!-- v8 - phone moved up, removed battery %, removed Edit hint -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>User Journey and Referral Execution — Timeline Layout</title>
+<style>
+  :root {
+    --text-primary: #0f172a; --text-strong: #334155; --text-secondary: #475569; --text-muted: #64748b; --text-tertiary: #94a3b8;
+    --border: #e2e8f0; --border-light: #f1f5f9;
+    --accent: #1a1a1a; --accent-subtle: #fafafa; --accent-light: #f5f5f5;
+    --surface: #ffffff; --bg: #f8f8f8;
+    --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+    --font-family: -apple-system, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', sans-serif;
+    --referrer-bg: #dbeafe; --referrer-text: #1e40af;
+    --referee-bg: #d1fae5; --referee-text: #065f46;
+    --both-bg: #fef3c7; --both-text: #92400e;
+    --connection-bg: #e0e7ff; --connection-text: #4338ca;
+    --transition-fast: 150ms ease;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-family); color: var(--text-primary); background: var(--bg); line-height: 1.5; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  .page { max-width: 1100px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  @media (min-width: 600px) {
+    .page { padding: 32px 48px 64px; }
+    .fields-grid { column-gap: 16px; padding: 0 16px; }
+    .field-inline { padding: 6px 16px; }
+    .msg-header { padding: 6px 16px; }
+    .msg-content { padding: 16px; }
+    .share-row { padding: 8px 16px; }
+    .step-name { font-size: 15px; }
+    .field-val { font-size: 13px; }
+    .field-label { font-size: 12px; }
+  }
+
+  .concept-label { display: inline-block; font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .section-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 2px; }
+  .section-meta { font-size: 12px; color: var(--text-tertiary); margin-bottom: 20px; }
+  .section-meta .sep { margin: 0 4px; }
+
+  /* ═══ Timeline — vertical stepper ═══ */
+  .timeline {
+    position: relative;
+  }
+  .timeline::before {
+    display: none;
+  }
+  @media (min-width: 600px) {
+    .timeline::before {
+      display: block;
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 50px;
+      bottom: 50px;
+      width: 2px;
+      background: var(--border);
+      z-index: 0;
+    }
+  }
+
+  .tl-step {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    position: relative;
+    margin-bottom: 48px;
+    align-items: flex-start;
+  }
+  .tl-step:last-child { margin-bottom: 0; }
+
+  /* Mobile: number + title on same row, card below */
+  .tl-header-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  @media (min-width: 600px) {
+    .timeline { margin-left: 40px; max-width: 840px; }
+    .tl-step { flex-wrap: nowrap; gap: 48px; }
+    .tl-header-row { width: 150px; flex-shrink: 0; gap: 14px; align-items: center; padding-top: 10px; }
+  }
+
+  .tl-number {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+    background: var(--surface);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .tl-label {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+
+  @media (min-width: 600px) {
+    .tl-label {
+      font-size: 20px;
+      font-weight: 700;
+    }
+  }
+
+  .tl-step > .card,
+  .tl-step > .milestone-wrap,
+  .tl-step > .card-column {
+    flex: 1;
+    min-width: 0;
+    max-width: 520px;
+  }
+
+  /* ═══ Card ═══ */
+  .card { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); overflow: hidden; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; position: relative; }
+  .card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
+
+  .party-tag { font-size: 9px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 6px; border-radius: 100px; }
+  .party-tag.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
+  .party-tag.referee { background: var(--referee-bg); color: var(--referee-text); }
+  .party-tag.both { background: var(--both-bg); color: var(--both-text); }
+  .party-tag.connection { background: var(--connection-bg); color: var(--connection-text); }
+
+  /* ═══ Data fields ═══ */
+  .field { border-top: 1px solid var(--border-light); padding: 6px 12px; }
+  .field-label { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-bottom: 1px; }
+  .fields-grid {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    column-gap: 12px;
+    padding: 0 12px;
+    align-items: baseline;
+  }
+  .fields-grid .field-label { margin-bottom: 0; }
+  .fields-grid > .field-label,
+  .fields-grid > .field-label + * {
+    border-top: 1px solid var(--border-light);
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .field-inline {
+    border-top: 1px solid var(--border-light);
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+  }
+  .field-inline .field-label { margin-bottom: 0; flex-shrink: 0; }
+  .field-val { font-size: 12px; font-weight: 400; color: var(--text-strong); line-height: 1.5; }
+  .or-sep { font-size: 10px; color: var(--text-tertiary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 6px; }
+  .val-sep { color: var(--text-tertiary); font-weight: 400; margin: 0 2px; }
+  .range-sep { color: var(--text-tertiary); margin: 0 4px; font-weight: 400; }
+
+  /* ═══ Message block ═══ */
+  .message-block { border-top: 1px solid var(--border-light); margin-top: 0; }
+  .message-block.message-top { border-top: none; }
+  .message-block.message-top + .fields-grid { border-top: 1px solid var(--border-light); padding-top: 6px; padding-bottom: 6px; }
+  .msg-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 6px 12px;
+    min-height: 36px;
+    background: var(--accent-light);
+  }
+  .message-block.message-top > .msg-header {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 5;
+    background: transparent !important;
+    min-height: 0;
+    padding: 0;
+  }
+  .msg-header-label { font-size: 11px; font-weight: 400; color: var(--text-muted); flex-shrink: 0; }
+  .msg-dropdown-wrap { position: relative; margin-left: auto; }
+  .msg-dropdown-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: color var(--transition-fast);
+  }
+  .msg-dropdown-trigger:hover { color: var(--text-strong); }
+  .msg-dropdown-trigger .chevron { width: 10px; height: 10px; transition: transform var(--transition-fast); }
+  .msg-dropdown-wrap.open .chevron { transform: rotate(180deg); }
+  .msg-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
+    min-width: 160px;
+    z-index: 10;
+    padding: 4px 0;
+  }
+  .msg-dropdown-wrap.open .msg-dropdown-menu { display: block; }
+  .msg-dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background var(--transition-fast);
+  }
+  .msg-dropdown-item:hover { background: var(--accent-light); }
+  .msg-dropdown-item.active { color: var(--text-primary); font-weight: 500; }
+  .msg-content { padding: 12px; background: var(--accent-light); display: flex; flex-wrap: wrap; justify-content: center; }
+
+  /* ═══ Mockups ═══ */
+  .mockup-push { background: #f8f8f8; border-radius: 14px; padding: 10px 14px; max-width: 320px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .push-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .push-icon { width: 20px; height: 20px; border-radius: var(--radius-sm); background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--surface); flex-shrink: 0; }
+  .push-app { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+  .push-time { font-size: 10px; color: var(--text-tertiary); margin-left: auto; }
+  .push-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .push-body { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+  .mockup-sms { max-width: 280px; }
+  .sms-sender { font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px; }
+  .sms-bubble { background: #e5e5ea; border-radius: 16px; padding: 8px 12px; font-size: 13px; line-height: 1.4; }
+  .mockup-email { border: 1px solid var(--border); border-radius: var(--radius-sm); max-width: 380px; overflow: hidden; background: var(--surface); }
+  .email-header { padding: 10px 12px; border-bottom: 1px solid var(--border-light); }
+  .email-from { font-size: 10px; color: var(--text-tertiary); margin-bottom: 2px; }
+  .email-subject { font-size: 13px; font-weight: 700; }
+  .email-body { padding: 14px 12px; }
+  .email-hero { background: linear-gradient(135deg, #312e81, #7c3aed); color: #fff; padding: 20px 16px; text-align: center; margin-bottom: 12px; border-radius: 4px; }
+  .email-hero-title { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+  .email-hero-sub { font-size: 12px; opacity: 0.8; }
+  .email-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px; }
+  .email-cta { display: block; padding: 8px 20px; background: #7c3aed; color: #fff; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; text-align: center; width: 100%; }
+
+  /* Share channel (step 2) */
+  .share-row { border-top: 1px solid var(--border-light); padding: 6px 12px; }
+  .share-icons { display: flex; gap: 6px; }
+  .share-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; }
+  .share-icon svg { width: 15px; height: 15px; fill: #fff; }
+  .share-bubble { background: #dcf8c6; border-radius: 14px; padding: 8px 12px; font-size: 12px; line-height: 1.4; max-width: 100%; }
+  .share-bubble .link { color: #1e40af; text-decoration: underline; }
+
+  /* ═══ Milestone (step 4) ═══ */
+  .milestone-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .milestone-icon { width: 24px; height: 24px; border-radius: 50%; background: var(--both-bg); color: var(--both-text); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .milestone-icon svg { width: 12px; height: 12px; }
+  .milestone-body { flex: 1; }
+  .milestone-title { font-size: 13px; font-weight: 700; }
+  .milestone-detail { font-size: 11px; color: var(--text-secondary); }
+  .milestone-detail b { font-weight: 700; }
+
+  /* ═══ Device phone frame ═══ */
+  .device-phone {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    max-width: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+  }
+  .device-statusbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .device-statusbar-icons { display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 500; }
+  .device-screen { padding: 4px 10px 6px; }
+  .device-home-bar { display: flex; justify-content: center; padding: 4px 0 8px; }
+  .device-home-bar::after { content: ''; width: 36%; height: 4px; background: var(--border); border-radius: 100px; }
+  .device-screen .mockup-push,
+  .device-screen .mockup-sms { max-width: none; box-shadow: none; }
+  .device-screen .mockup-email { max-width: none; }
+  .sms-app-header { font-size: 11px; font-weight: 600; text-align: center; color: var(--text-primary); padding: 2px 0 6px; }
+  .sms-meta { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 4px; font-size: 10px; color: var(--text-tertiary); }
+  .sms-meta svg { width: 10px; height: 10px; }
+  .email-logo { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .email-logo-icon { width: 20px; height: 20px; background: var(--accent); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--surface); flex-shrink: 0; }
+  .email-logo-name { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+  .email-after-cta { font-size: 11px; color: var(--text-tertiary); margin-top: 10px; }
+  .email-footer { padding: 10px 12px; border-top: 1px solid var(--border-light); font-size: 11px; color: var(--text-tertiary); text-align: center; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="concept-label">Strategy Preview — Timeline Layout</div>
+  <h2 class="section-title">User Journey and Referral Execution</h2>
+
+  <div class="timeline">
+
+    <!-- ═══ STEP 1: Invite ═══ -->
+    <div class="tl-step">
+      <div class="tl-header-row">
+        <div class="tl-number">1</div>
+        <span class="tl-label">Invite</span>
+      </div>
+      <div class="card" id="step1">
+
+
+        <div class="message-block message-top">
+          <div class="msg-header">
+            <div class="msg-dropdown-wrap" id="dd-s1">
+              <button class="msg-dropdown-trigger" onclick="toggleDropdown('dd-s1')">
+                <span class="dd-label">Ask · Push</span>
+                <svg class="chevron" viewBox="0 0 10 10" fill="currentColor"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="msg-dropdown-menu">
+                <button class="msg-dropdown-item active" onclick="selectCombo('s1','ask','push')">Ask · Push</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s1','ask','sms')">Ask · SMS</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s1','ask','email')">Ask · Email</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s1','reminder','push')">Reminder · Push</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s1','reminder','sms')">Reminder · SMS</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s1','reminder','email')">Reminder · Email</button>
+              </div>
+            </div>
+          </div>
+          <div class="msg-content">
+            <div class="preview-mock" data-step="s1" data-msg="ask" data-ch="push">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">$211 on streaming, Gina? 💸</div><div class="push-body">Gina, you spent $211 on streaming! 💸 Claim one free month of Netflix for you now. Tap to share! 🍿</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="sms">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Gina, you spent $211 on streaming! 💸 Claim one free month of Netflix for you now. Tap to share https://nflx.it/gina 🍿</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="email">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Gina, let's get that $211 back? 🍿</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Netflix for free, Gina</div><div class="email-hero-sub">One for you, one for a friend</div></div><div class="email-text">Hi Gina,<br><br>You spent $211 on streaming last month. Ready to claim a free month of Netflix now? 🍿<br><br>Send your link to a friend. Once they use the card for the first time, your next month of Netflix is on us (and theirs, too!)</div><span class="email-cta">Share</span><div class="email-after-cta">Your friend gets a free month, too!</div></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="push">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Still thinking about it, Gina? 🍿</div><div class="push-body">Your free Netflix month is still here. Share your link with a friend before it expires!</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="sms">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Gina, your free Netflix month is still up for grabs! 🍿 Share with a friend before it expires: neo.bnk/r/gina</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="email">
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Gina, your Netflix reward is still here 🍿</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Don't let it expire, Gina</div><div class="email-hero-sub">Your free month is still waiting</div></div><div class="email-text">Remember those $211 on streaming? Your free Netflix month is still available. Share your link with a friend — when they make their first transaction, you both get rewarded.</div><span class="email-cta">Share Now</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fields-grid">
+          <div class="field-label">Activated by</div>
+          <span class="field-val">All Transactions, Timing Insights</span>
+          <div class="field-label">Redemption upon</div>
+          <span class="field-val">1st Transaction</span>
+          <div class="field-label">Reward</div>
+          <span class="field-val">$0, $10, $30, $50, $75</span>
+          <div class="field-label">Paid as</div>
+          <span class="field-val">Cashback, Account Credit, Coupon, Gift Card, Organic</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ STEP 2: Refer ═══ -->
+    <div class="tl-step">
+      <div class="tl-header-row">
+        <div class="tl-number">2</div>
+        <span class="tl-label">Refer</span>
+      </div>
+      <div class="card" id="step2">
+
+        <div class="share-row">
+          <div class="share-icons">
+            <div class="share-icon" style="background:#25D366;" title="WhatsApp"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div>
+            <div class="share-icon" style="background:#007AFF;" title="iMessage"><svg viewBox="0 0 24 24"><path d="M5.457 18.185C3.358 16.677 2 14.4 2 11.908 2 7.323 6.477 3.6 12 3.6s10 3.723 10 8.308-4.477 8.308-10 8.308c-1.072 0-2.1-.145-3.064-.41-.225.2-2.236 1.928-3.382 2.58-.19.107-.265-.072-.215-.242.19-.66.703-2.364 1.012-3.248-.314-.22-.618-.455-.894-.711z"/></svg></div>
+            <div class="share-icon" style="background:#000000;" title="X"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
+            <div class="share-icon" style="background:#E4405F;" title="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></div>
+            <div class="share-icon" style="background:#0A66C2;" title="LinkedIn"><svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></div>
+            <div class="share-icon" style="background:var(--text-tertiary);" title="More"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.5"/><circle cx="12" cy="12" r="2.5"/><circle cx="19" cy="12" r="2.5"/></svg></div>
+          </div>
+        </div>
+
+        <div class="message-block">
+          <div class="msg-header">
+            <span class="msg-header-label">Message</span>
+          </div>
+          <div class="msg-content">
+            <div class="share-bubble">Hey! I use NeoBank and they're giving us both a free month of Netflix 🍿 Sign up with my link and make one purchase — we both get it: <span class="link">neo.bnk/r/gina</span></div>
+          </div>
+        </div>
+
+        <div class="field-inline">
+          <div class="field-label">Tracked via</div>
+          <span class="field-val">Referral Link</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ STEP 3: Redeem ═══ -->
+    <div class="tl-step">
+      <div class="tl-header-row">
+        <div class="tl-number">3</div>
+        <span class="tl-label">Redeem</span>
+      </div>
+      <div class="card" id="step3">
+
+
+        <div class="message-block message-top">
+          <div class="msg-header">
+            <div class="msg-dropdown-wrap" id="dd-s3">
+              <button class="msg-dropdown-trigger" onclick="toggleDropdown('dd-s3')">
+                <span class="dd-label">Success · Push</span>
+                <svg class="chevron" viewBox="0 0 10 10" fill="currentColor"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="msg-dropdown-menu">
+                <button class="msg-dropdown-item active" onclick="selectCombo('s3','success','push')">Success · Push</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','success','sms')">Success · SMS</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','success','email')">Success · Email</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','reminder','push')">Reminder · Push</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','reminder','sms')">Reminder · SMS</button>
+                <button class="msg-dropdown-item" onclick="selectCombo('s3','reminder','email')">Reminder · Email</button>
+              </div>
+            </div>
+          </div>
+          <div class="msg-content">
+            <!-- Success messages (default) — friend completed 1st transaction, both get Netflix -->
+            <div class="preview-mock" data-step="s3" data-msg="success" data-ch="push">
+              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Netflix is on us! 🍿</div><div class="push-body">First transaction done — enjoy a free month of Netflix! Gina gets one too. Welcome to NeoBank!</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="sms">
+              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">You're in! 🍿 First transaction done — a free month of Netflix is yours. Gina gets one too. Welcome to NeoBank!</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 10:18 AM</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="email">
+              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Your free Netflix month is here! 🍿</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Netflix on us</div><div class="email-hero-sub">One for you, one for Gina</div></div><div class="email-text">Your first transaction is complete — a free month of Netflix has been added to your account. And Gina gets one too, thanks to your sign-up. Welcome to NeoBank!</div><span class="email-cta">Enjoy My Reward</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <!-- Reminder messages — nudge friend to complete first transaction -->
+            <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="push">
+              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Your Netflix month is waiting 🍿</div><div class="push-body">Make your first transaction and unlock a free month of Netflix — for you and for Gina. Don't miss out!</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="sms">
+              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Your free Netflix month is waiting! 🍿 Make your first transaction to unlock it — Gina gets one too. Expires in 7 days.</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 10:18 AM</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+            <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="email">
+              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">A free Netflix month, one step away 🍿</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Almost there</div><div class="email-hero-sub">One transaction away from Netflix</div></div><div class="email-text">Gina invited you to NeoBank — and there's a free month of Netflix waiting for both of you. Just make your first transaction within 7 days to unlock it.</div><span class="email-cta">Make My First Transaction</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fields-grid">
+          <div class="field-label">Redemption upon</div>
+          <span class="field-val">1st Transaction</span>
+          <div class="field-label">Reward</div>
+          <span class="field-val">$0, $10, $30, $50, $75</span>
+          <div class="field-label">Paid as</div>
+          <span class="field-val">Cashback, Account Credit, Coupon, Gift Card, Organic</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const state = { s1: { msg: 'ask', ch: 'push' }, s3: { msg: 'success', ch: 'push' } };
+
+function toggleDropdown(ddId) {
+  const wrap = document.getElementById(ddId);
+  const wasOpen = wrap.classList.contains('open');
+  document.querySelectorAll('.msg-dropdown-wrap').forEach(w => w.classList.remove('open'));
+  if (!wasOpen) wrap.classList.add('open');
+}
+
+function selectCombo(stepId, msg, ch) {
+  state[stepId].msg = msg;
+  state[stepId].ch = ch;
+  updatePreview(stepId);
+  const ddId = 'dd-' + stepId;
+  const wrap = document.getElementById(ddId);
+  const label = msg.charAt(0).toUpperCase() + msg.slice(1) + ' · ' + ch.charAt(0).toUpperCase() + ch.slice(1).toLowerCase();
+  wrap.querySelector('.dd-label').textContent = label;
+  wrap.querySelectorAll('.msg-dropdown-item').forEach(item => {
+    item.classList.toggle('active', item.textContent === label);
+  });
+  wrap.classList.remove('open');
+}
+
+function updatePreview(stepId) {
+  const { msg, ch } = state[stepId];
+  document.querySelectorAll(`.preview-mock[data-step="${stepId}"]`).forEach(el => {
+    el.classList.toggle('hidden', !(el.dataset.msg === msg && el.dataset.ch === ch));
+  });
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.msg-dropdown-wrap')) {
+    document.querySelectorAll('.msg-dropdown-wrap').forEach(w => w.classList.remove('open'));
+  }
+});
+</script>
+</body>
+</html>
