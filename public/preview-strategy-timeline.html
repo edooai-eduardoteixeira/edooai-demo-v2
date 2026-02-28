@@ -38,7 +38,7 @@
   }
 
   .concept-label { display: inline-block; font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
-  .section-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 2px; }
+  .section-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 20px; }
   .section-meta { font-size: 12px; color: var(--text-tertiary); margin-bottom: 20px; }
   .section-meta .sep { margin: 0 4px; }
 
@@ -240,15 +240,17 @@
   .msg-dropdown-item:hover { background: var(--accent-light); }
   .msg-dropdown-item.active { color: var(--text-primary); font-weight: 500; }
   .msg-content { padding: 12px; background: var(--accent-light); display: flex; flex-wrap: wrap; justify-content: center; }
+  .msg-content > * { width: 100%; }
 
   /* ═══ Mockups ═══ */
   .mockup-push { background: #f8f8f8; border-radius: 14px; padding: 10px 14px; max-width: 320px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
   .push-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-  .push-icon { width: 20px; height: 20px; border-radius: var(--radius-sm); background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--surface); flex-shrink: 0; }
-  .push-app { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
-  .push-time { font-size: 10px; color: var(--text-tertiary); margin-left: auto; }
-  .push-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
-  .push-body { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+  .push-icon { width: 20px; height: 20px; border-radius: var(--radius-sm); background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .push-icon svg { width: 12px; height: 12px; fill: #fff; }
+  .push-app { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+  .push-time { font-size: 11px; color: var(--text-tertiary); margin-left: auto; }
+  .push-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .push-body { font-size: 13px; color: var(--text-secondary); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
   .mockup-sms { max-width: 280px; }
   .sms-sender { font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px; }
   .sms-bubble { background: #e5e5ea; border-radius: 16px; padding: 8px 12px; font-size: 13px; line-height: 1.4; }
@@ -264,12 +266,39 @@
   .email-cta { display: block; padding: 8px 20px; background: #7c3aed; color: #fff; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; text-align: center; width: 100%; }
 
   /* Share channel (step 2) */
-  .share-row { border-top: 1px solid var(--border-light); padding: 6px 12px; }
-  .share-icons { display: flex; gap: 6px; }
-  .share-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; }
-  .share-icon svg { width: 15px; height: 15px; fill: #fff; }
-  .share-bubble { background: #dcf8c6; border-radius: 14px; padding: 8px 12px; font-size: 12px; line-height: 1.4; max-width: 100%; }
-  .share-bubble .link { color: #1e40af; text-decoration: underline; }
+  .share-row { padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); }
+  .share-icons { display: flex; justify-content: space-evenly; }
+  .share-icon-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .share-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; }
+  .share-icon svg { width: 22px; height: 22px; fill: #fff; }
+  .share-label { font-size: 10px; color: var(--text-tertiary); text-align: center; line-height: 1.2; }
+  /* WhatsApp iOS mockup */
+  .device-screen-flush { padding: 0; }
+  .wa-header { display: flex; align-items: center; gap: 6px; background: #fff; padding: 6px 10px 6px 4px; color: #111; border-bottom: 1px solid #e5e5e5; }
+  .wa-back-chevron { width: 20px; height: 20px; flex-shrink: 0; }
+  .wa-back-chevron svg { width: 20px; height: 20px; fill: none; stroke: #25D366; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .wa-avatar { width: 28px; height: 28px; border-radius: 50%; background: #25D366; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #fff; flex-shrink: 0; }
+  .wa-contact-info { display: flex; flex-direction: column; line-height: 1.2; flex: 1; min-width: 0; }
+  .wa-name { font-size: 13px; font-weight: 600; color: #111; }
+  .wa-status { font-size: 10px; color: #667781; }
+  .wa-header-icons { display: flex; gap: 14px; margin-left: auto; flex-shrink: 0; }
+  .wa-header-icons svg { width: 18px; height: 18px; fill: #25D366; }
+  .wa-chat { background: #ECE5DD; padding: 12px 10px; min-height: 64px; display: flex; flex-direction: column; gap: 6px; position: relative; }
+  .wa-chat::before { content: ''; position: absolute; inset: 0; opacity: 0.06; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Ctext x='10' y='20' font-size='14' fill='%23000' opacity='0.8' font-family='sans-serif'%3E%F0%9F%93%B1%3C/text%3E%3Ctext x='60' y='50' font-size='14' fill='%23000' opacity='0.8' font-family='sans-serif'%3E%E2%8F%B0%3C/text%3E%3Ctext x='120' y='30' font-size='14' fill='%23000' opacity='0.8' font-family='sans-serif'%3E%F0%9F%93%B7%3C/text%3E%3Ctext x='160' y='70' font-size='14' fill='%23000' opacity='0.8' font-family='sans-serif'%3E%F0%9F%8E%B5%3C/text%3E%3Ctext x='30' y='80' font-size='14' fill='%23000' opacity='0.8' font-family='sans-serif'%3E%F0%9F%94%92%3C/text%3E%3Ctext x='90' y='100' font-size='14' fill='%23000' opacity='0.8' font-family='sans-serif'%3E%E2%9C%89%3C/text%3E%3Ctext x='150' y='120' font-size='14' fill='%23000' opacity='0.8' font-family='sans-serif'%3E%F0%9F%93%8D%3C/text%3E%3Ctext x='20' y='140' font-size='14' fill='%23000' opacity='0.8' font-family='sans-serif'%3E%F0%9F%8E%AE%3C/text%3E%3Ctext x='80' y='160' font-size='14' fill='%23000' opacity='0.8' font-family='sans-serif'%3E%F0%9F%93%9E%3C/text%3E%3Ctext x='140' y='180' font-size='14' fill='%23000' opacity='0.8' font-family='sans-serif'%3E%F0%9F%92%AC%3C/text%3E%3Ctext x='40' y='190' font-size='14' fill='%23000' opacity='0.8' font-family='sans-serif'%3E%F0%9F%98%80%3C/text%3E%3Ctext x='100' y='55' font-size='14' fill='%23000' opacity='0.8' font-family='sans-serif'%3E%F0%9F%93%8B%3C/text%3E%3C/svg%3E"); background-size: 200px 200px; pointer-events: none; }
+  .wa-bubble-out { background: #dcf8c6; border-radius: 8px 0 8px 8px; padding: 6px 8px 2px; font-size: 12px; line-height: 1.4; max-width: 85%; position: relative; color: #111; align-self: flex-end; z-index: 1; }
+  .wa-bubble-out::after { content: ''; position: absolute; top: 0; right: -6px; width: 0; height: 0; border-left: 6px solid #dcf8c6; border-bottom: 6px solid transparent; }
+  .wa-bubble-in { background: #fff; border-radius: 0 8px 8px 8px; padding: 6px 8px 2px; font-size: 12px; line-height: 1.4; max-width: 85%; position: relative; color: #111; align-self: flex-start; z-index: 1; }
+  .wa-bubble-in::after { content: ''; position: absolute; top: 0; left: -6px; width: 0; height: 0; border-right: 6px solid #fff; border-bottom: 6px solid transparent; }
+  .wa-bubble-link { color: #1e40af; text-decoration: underline; }
+  .wa-bubble-meta { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 2px; padding-bottom: 2px; }
+  .wa-bubble-time { font-size: 9px; color: #667781; }
+  .wa-check { width: 14px; height: 10px; fill: none; stroke: #53bdeb; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .wa-input-bar { display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 8px; border-top: 1px solid #e5e5e5; }
+  .wa-input-icons { display: flex; gap: 6px; flex-shrink: 0; }
+  .wa-input-icons svg { width: 18px; height: 18px; fill: #667781; }
+  .wa-input-field { flex: 1; background: #f0f2f5; border-radius: 18px; padding: 6px 12px; font-size: 12px; color: #667781; }
+  .wa-input-mic { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .wa-input-mic svg { width: 18px; height: 18px; fill: #667781; }
 
   /* ═══ Milestone (step 4) ═══ */
   .milestone-wrap {
@@ -293,7 +322,6 @@
   .device-phone {
     border: 1px solid var(--border);
     border-radius: 16px;
-    max-width: 100%;
     width: 100%;
     overflow: hidden;
     background: var(--surface);
@@ -314,6 +342,7 @@
   .device-home-bar::after { content: ''; width: 36%; height: 4px; background: var(--border); border-radius: 100px; }
   .device-screen .mockup-push,
   .device-screen .mockup-sms { max-width: none; box-shadow: none; }
+  .device-screen .mockup-push + .mockup-push { margin-top: 8px; }
   .device-screen .mockup-email { max-width: none; }
   .sms-app-header { font-size: 11px; font-weight: 600; text-align: center; color: var(--text-primary); padding: 2px 0 6px; }
   .sms-meta { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 4px; font-size: 10px; color: var(--text-tertiary); }
@@ -342,9 +371,23 @@
       </div>
       <div class="card" id="step1">
 
+        <div class="fields-grid">
+          <div class="field-label">Activated by</div>
+          <span class="field-val">All Transactions, Timing Insights</span>
+          <div class="field-label">Redemption upon</div>
+          <span class="field-val">1st Transaction</span>
+          <div class="field-label">Redemption journey</div>
+          <span class="field-val">Sign Up, KYC</span>
+          <div class="field-label">Reward</div>
+          <span class="field-val">$0, $20, $50, $75</span>
+          <div class="field-label">Paid as</div>
+          <span class="field-val">Organic, Gift Card, Coupon, Account Credit, Cashback</span>
+          <div class="field-label">Tracked via</div>
+          <span class="field-val">Referral Link</span>
+        </div>
 
-        <div class="message-block message-top">
-          <div class="msg-header">
+        <div class="message-block" style="position:relative;">
+          <div class="msg-header" style="position:absolute;top:20px;right:20px;z-index:5;background:transparent!important;min-height:0;padding:0;">
             <div class="msg-dropdown-wrap" id="dd-s1">
               <button class="msg-dropdown-trigger" onclick="toggleDropdown('dd-s1')">
                 <span class="dd-label">Ask · Push</span>
@@ -365,32 +408,21 @@
               <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">$211 on streaming, Gina? 💸</div><div class="push-body">Gina, you spent $211 on streaming! 💸 Claim one free month of Netflix for you now. Tap to share! 🍿</div></div></div><div class="device-home-bar"></div></div>
             </div>
             <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="sms">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Gina, you spent $211 on streaming! 💸 Claim one free month of Netflix for you now. Tap to share https://nflx.it/gina 🍿</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="push-app">Messages</span><span class="push-time">now</span></div><div class="push-title">NeoBank · 72589</div><div class="push-body">Gina, you spent $211 on streaming! 💸 Claim one free month of Netflix for you now. Tap to share https://nflx.it/gina 🍿</div></div></div><div class="device-home-bar"></div></div>
             </div>
             <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="email">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Gina, let's get that $211 back? 🍿</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Netflix for free, Gina</div><div class="email-hero-sub">One for you, one for a friend</div></div><div class="email-text">Hi Gina,<br><br>You spent $211 on streaming last month. Ready to claim a free month of Netflix now? 🍿<br><br>Send your link to a friend. Once they use the card for the first time, your next month of Netflix is on us (and theirs, too!)</div><span class="email-cta">Share</span><div class="email-after-cta">Your friend gets a free month, too!</div></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="push-app">Mail</span><span class="push-time">now</span></div><div class="push-title">Gina, let's get that $211 back? 🍿</div><div class="push-body">Netflix for free, Gina. One for you, one for a friend. You spent $211 on streaming — let's get that back! Share with a friend and you both win 🍿</div></div></div><div class="device-home-bar"></div></div>
             </div>
             <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="push">
               <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Still thinking about it, Gina? 🍿</div><div class="push-body">Your free Netflix month is still here. Share your link with a friend before it expires!</div></div></div><div class="device-home-bar"></div></div>
             </div>
             <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="sms">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Gina, your free Netflix month is still up for grabs! 🍿 Share with a friend before it expires: neo.bnk/r/gina</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="push-app">Messages</span><span class="push-time">now</span></div><div class="push-title">NeoBank · 72589</div><div class="push-body">Gina, your free Netflix month is still up for grabs! 🍿 Share with a friend before it expires: neo.bnk/r/gina</div></div></div><div class="device-home-bar"></div></div>
             </div>
             <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="email">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Gina, your Netflix reward is still here 🍿</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Don't let it expire, Gina</div><div class="email-hero-sub">Your free month is still waiting</div></div><div class="email-text">Remember those $211 on streaming? Your free Netflix month is still available. Share your link with a friend — when they make their first transaction, you both get rewarded.</div><span class="email-cta">Share Now</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="push-app">Mail</span><span class="push-time">now</span></div><div class="push-title">Gina, your Netflix reward is still here 🍿</div><div class="push-body">Don't let it expire, Gina. Your free month of Netflix is still waiting — share with a friend before it's gone. One for you, one for them!</div></div></div><div class="device-home-bar"></div></div>
             </div>
           </div>
-        </div>
-
-        <div class="fields-grid">
-          <div class="field-label">Activated by</div>
-          <span class="field-val">All Transactions, Timing Insights</span>
-          <div class="field-label">Redemption upon</div>
-          <span class="field-val">1st Transaction</span>
-          <div class="field-label">Reward</div>
-          <span class="field-val">$0, $10, $30, $50, $75</span>
-          <div class="field-label">Paid as</div>
-          <span class="field-val">Cashback, Account Credit, Coupon, Gift Card, Organic</span>
         </div>
       </div>
     </div>
@@ -403,30 +435,54 @@
       </div>
       <div class="card" id="step2">
 
+        <!-- Share sheet -->
         <div class="share-row">
           <div class="share-icons">
-            <div class="share-icon" style="background:#25D366;" title="WhatsApp"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div>
-            <div class="share-icon" style="background:#007AFF;" title="iMessage"><svg viewBox="0 0 24 24"><path d="M5.457 18.185C3.358 16.677 2 14.4 2 11.908 2 7.323 6.477 3.6 12 3.6s10 3.723 10 8.308-4.477 8.308-10 8.308c-1.072 0-2.1-.145-3.064-.41-.225.2-2.236 1.928-3.382 2.58-.19.107-.265-.072-.215-.242.19-.66.703-2.364 1.012-3.248-.314-.22-.618-.455-.894-.711z"/></svg></div>
-            <div class="share-icon" style="background:#000000;" title="X"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
-            <div class="share-icon" style="background:#E4405F;" title="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></div>
-            <div class="share-icon" style="background:#0A66C2;" title="LinkedIn"><svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></div>
-            <div class="share-icon" style="background:var(--text-tertiary);" title="More"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.5"/><circle cx="12" cy="12" r="2.5"/><circle cx="19" cy="12" r="2.5"/></svg></div>
+            <div class="share-icon-wrap">
+              <div class="share-icon" style="background:#25D366;"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div>
+              <span class="share-label">WhatsApp</span>
+            </div>
+            <div class="share-icon-wrap">
+              <div class="share-icon" style="background:#007AFF;"><svg viewBox="0 0 24 24"><path d="M5.457 18.185C3.358 16.677 2 14.4 2 11.908 2 7.323 6.477 3.6 12 3.6s10 3.723 10 8.308-4.477 8.308-10 8.308c-1.072 0-2.1-.145-3.064-.41-.225.2-2.236 1.928-3.382 2.58-.19.107-.265-.072-.215-.242.19-.66.703-2.364 1.012-3.248-.314-.22-.618-.455-.894-.711z"/></svg></div>
+              <span class="share-label">Messages</span>
+            </div>
+            <div class="share-icon-wrap">
+              <div class="share-icon" style="background:#000000;"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
+              <span class="share-label">X</span>
+            </div>
+            <div class="share-icon-wrap">
+              <div class="share-icon" style="background:#E4405F;"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></div>
+              <span class="share-label">Instagram</span>
+            </div>
+            <div class="share-icon-wrap">
+              <div class="share-icon" style="background:#0A66C2;"><svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></div>
+              <span class="share-label">LinkedIn</span>
+            </div>
+            <div class="share-icon-wrap">
+              <div class="share-icon" style="background:var(--text-tertiary);"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.5"/><circle cx="12" cy="12" r="2.5"/><circle cx="19" cy="12" r="2.5"/></svg></div>
+              <span class="share-label">More</span>
+            </div>
           </div>
         </div>
 
-        <div class="message-block">
-          <div class="msg-header">
-            <span class="msg-header-label">Message</span>
-          </div>
-          <div class="msg-content">
-            <div class="share-bubble">Hey! I use NeoBank and they're giving us both a free month of Netflix 🍿 Sign up with my link and make one purchase — we both get it: <span class="link">neo.bnk/r/gina</span></div>
+        <!-- Gina → Paul: referral message -->
+        <div class="msg-content">
+          <div class="device-phone">
+            <div class="device-statusbar"><span>9:53</span><span></span></div>
+            <div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon" style="background:#25D366"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div><span class="push-app">WhatsApp</span><span class="push-time">now</span></div><div class="push-title">Gina Miller</div><div class="push-body">Hey, you should check out NeoBank. I'm a big fan so far. Plus, if you sign up with my link, you get a month of 🍿 Netflix for free. Not a bad deal! neo.bnk/r/gina</div></div></div>
+            <div class="device-home-bar"></div>
           </div>
         </div>
 
-        <div class="field-inline">
-          <div class="field-label">Tracked via</div>
-          <span class="field-val">Referral Link</span>
+        <!-- Paul → Gina: response -->
+        <div class="msg-content">
+          <div class="device-phone">
+            <div class="device-statusbar"><span>9:57</span><span></span></div>
+            <div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon" style="background:#25D366"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div><span class="push-app">WhatsApp</span><span class="push-time">now</span></div><div class="push-title">Paul Davis</div><div class="push-body">Love this! Thanks for keeping me in mind, Gina 🍿</div></div></div>
+            <div class="device-home-bar"></div>
+          </div>
         </div>
+
       </div>
     </div>
 
@@ -457,37 +513,33 @@
             </div>
           </div>
           <div class="msg-content">
-            <!-- Success messages (default) — friend completed 1st transaction, both get Netflix -->
+            <!-- Success · Push -->
             <div class="preview-mock" data-step="s3" data-msg="success" data-ch="push">
-              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Netflix is on us! 🍿</div><div class="push-body">First transaction done — enjoy a free month of Netflix! Gina gets one too. Welcome to NeoBank!</div></div></div><div class="device-home-bar"></div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Netflix is officially unlocked! 📺</div><div class="push-body">Nice move. Since you've joined NeoBank, you and Gina both get a free month of Netflix. Head to the app to claim your reward and start streaming!</div></div><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Your Netflix is on us! 🍿</div><div class="push-body">Huge win—you and Paul both just scored a free month of Netflix. Your reward is officially unlocked and ready to use in the app. Enjoy!</div></div></div><div class="device-home-bar"></div></div>
             </div>
+            <!-- Success · SMS -->
             <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="sms">
-              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">You're in! 🍿 First transaction done — a free month of Netflix is yours. Gina gets one too. Welcome to NeoBank!</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 10:18 AM</div></div></div><div class="device-home-bar"></div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="push-app">Messages</span><span class="push-time">now</span></div><div class="push-title">NeoBank · 72589</div><div class="push-body">Nice move. Since you've joined NeoBank, you and Gina both get a free month of Netflix. Head to the app to claim your reward and start streaming!</div></div><div class="mockup-push"><div class="push-header"><div class="push-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="push-app">Messages</span><span class="push-time">now</span></div><div class="push-title">NeoBank · 72589</div><div class="push-body">Huge win—you and Paul both just scored a free month of Netflix. Your reward is officially unlocked and ready to use in the app. Enjoy!</div></div></div><div class="device-home-bar"></div></div>
             </div>
+            <!-- Success · Email -->
             <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="email">
-              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Your free Netflix month is here! 🍿</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Netflix on us</div><div class="email-hero-sub">One for you, one for Gina</div></div><div class="email-text">Your first transaction is complete — a free month of Netflix has been added to your account. And Gina gets one too, thanks to your sign-up. Welcome to NeoBank!</div><span class="email-cta">Enjoy My Reward</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="push-app">Mail</span><span class="push-time">now</span></div><div class="push-title">Netflix is officially unlocked! 📺</div><div class="push-body">Nice move. Since you've joined NeoBank, you and Gina both get a free month of Netflix. Head to the app to claim your reward and start streaming!</div></div><div class="mockup-push"><div class="push-header"><div class="push-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="push-app">Mail</span><span class="push-time">now</span></div><div class="push-title">Your Netflix is on us! 🍿</div><div class="push-body">Huge win—you and Paul both just scored a free month of Netflix. Your reward is officially unlocked and ready to use in the app. Enjoy!</div></div></div><div class="device-home-bar"></div></div>
             </div>
-            <!-- Reminder messages — nudge friend to complete first transaction -->
+            <!-- Reminder · Push -->
             <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="push">
-              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Your Netflix month is waiting 🍿</div><div class="push-body">Make your first transaction and unlock a free month of Netflix — for you and for Gina. Don't miss out!</div></div></div><div class="device-home-bar"></div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Your Netflix month is waiting 🍿</div><div class="push-body">Make your first transaction and unlock a free month of Netflix — for you and for Gina. Don't miss out!</div></div><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Almost there, Gina! 🍿</div><div class="push-body">Paul hasn't completed their first transaction yet. Once they do, you both unlock a free month of Netflix. Hang tight!</div></div></div><div class="device-home-bar"></div></div>
             </div>
+            <!-- Reminder · SMS -->
             <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="sms">
-              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Your free Netflix month is waiting! 🍿 Make your first transaction to unlock it — Gina gets one too. Expires in 7 days.</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 10:18 AM</div></div></div><div class="device-home-bar"></div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="push-app">Messages</span><span class="push-time">now</span></div><div class="push-title">NeoBank · 72589</div><div class="push-body">Your free Netflix month is waiting! 🍿 Make your first transaction to unlock it — Gina gets one too. Expires in 7 days.</div></div><div class="mockup-push"><div class="push-header"><div class="push-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="push-app">Messages</span><span class="push-time">now</span></div><div class="push-title">NeoBank · 72589</div><div class="push-body">Almost there! Paul hasn't completed their first transaction yet. Once they do, you both unlock a free month of Netflix. Hang tight!</div></div></div><div class="device-home-bar"></div></div>
             </div>
+            <!-- Reminder · Email -->
             <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="email">
-              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">A free Netflix month, one step away 🍿</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Almost there</div><div class="email-hero-sub">One transaction away from Netflix</div></div><div class="email-text">Gina invited you to NeoBank — and there's a free month of Netflix waiting for both of you. Just make your first transaction within 7 days to unlock it.</div><span class="email-cta">Make My First Transaction</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
+              <div class="device-phone"><div class="device-statusbar"><span>10:18</span><span class="device-statusbar-icons"></span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="push-app">Mail</span><span class="push-time">now</span></div><div class="push-title">A free Netflix month, one step away 🍿</div><div class="push-body">Almost there — one transaction is all it takes to unlock a free month of Netflix for you and Gina. Don't miss out, it expires in 7 days!</div></div><div class="mockup-push"><div class="push-header"><div class="push-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="push-app">Mail</span><span class="push-time">now</span></div><div class="push-title">Almost there, Gina! 🍿</div><div class="push-body">Paul hasn't completed their first transaction yet. Once they do, you both unlock a free month of Netflix. We'll let you know!</div></div></div><div class="device-home-bar"></div></div>
             </div>
           </div>
         </div>
 
-        <div class="fields-grid">
-          <div class="field-label">Redemption upon</div>
-          <span class="field-val">1st Transaction</span>
-          <div class="field-label">Reward</div>
-          <span class="field-val">$0, $10, $30, $50, $75</span>
-          <div class="field-label">Paid as</div>
-          <span class="field-val">Cashback, Account Credit, Coupon, Gift Card, Organic</span>
-        </div>
       </div>
     </div>
 
