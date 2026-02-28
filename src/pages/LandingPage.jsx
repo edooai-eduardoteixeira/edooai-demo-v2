@@ -10,14 +10,14 @@ export default function LandingPage({ config, onNext }) {
       {/* Header */}
       <header
         style={{
-          padding: '1.5rem 3rem',
+          padding: '24px 48px',
           borderBottom: '1px solid var(--color-gray-100)',
         }}
       >
         <Logo />
       </header>
 
-      {/* Hero — Above Fold */}
+      {/* Hero */}
       <main
         style={{
           flex: 1,
@@ -25,30 +25,31 @@ export default function LandingPage({ config, onNext }) {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          padding: '6rem 3rem',
-          maxWidth: '800px',
+          padding: '58px 48px 80px',
+          maxWidth: '792px',
           margin: '0 auto',
           textAlign: 'center',
         }}
       >
         <h1
           style={{
-            fontSize: 'var(--font-size-5xl)',
+            fontSize: '48px',
             fontWeight: 700,
-            color: 'var(--color-black)',
-            lineHeight: 1.1,
+            color: 'var(--text-primary)',
+            lineHeight: 1.08,
             letterSpacing: '-0.03em',
-            marginBottom: '1.5rem',
+            marginBottom: '40px',
           }}
         >
           {landing.headline}
         </h1>
         <p
           style={{
-            fontSize: 'var(--font-size-xl)',
-            color: 'var(--color-gray-600)',
-            lineHeight: 1.6,
-            marginBottom: '2.5rem',
+            fontSize: '22px',
+            fontWeight: 400,
+            color: 'var(--text-secondary)',
+            lineHeight: 1.45,
+            marginBottom: '48px',
             maxWidth: '600px',
           }}
         >
@@ -57,50 +58,24 @@ export default function LandingPage({ config, onNext }) {
         <CTAButton onClick={onNext}>{landing.ctaText}</CTAButton>
       </main>
 
-      {/* Below Fold — Value Props */}
-      <section
+      {/* Footer */}
+      <footer
         style={{
-          padding: '4rem 3rem',
-          borderTop: '1px solid var(--color-gray-100)',
-          backgroundColor: 'var(--color-gray-50)',
+          padding: '32px 48px',
+          textAlign: 'center',
         }}
       >
-        <div
+        <p
           style={{
-            maxWidth: '800px',
-            margin: '0 auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1.25rem',
+            fontSize: '15px',
+            fontWeight: 400,
+            color: 'var(--text-tertiary)',
+            lineHeight: 1.5,
           }}
         >
-          {landing.valueProps.map((prop, i) => (
-            <p
-              key={i}
-              style={{
-                fontSize: 'var(--font-size-lg)',
-                color: 'var(--color-gray-700)',
-                fontWeight: 500,
-                paddingLeft: '1.25rem',
-                borderLeft: '3px solid var(--color-gray-900)',
-                lineHeight: 1.5,
-              }}
-            >
-              {prop}
-            </p>
-          ))}
-          <p
-            style={{
-              fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-gray-500)',
-              marginTop: '1.5rem',
-              fontWeight: 500,
-            }}
-          >
-            {landing.credibilityLine}
-          </p>
-        </div>
-      </section>
+          {landing.missionLine}
+        </p>
+      </footer>
     </div>
   );
 }
