@@ -330,7 +330,7 @@
 .devicePhone {
   border: 1px solid var(--border);
   border-radius: 16px;
-  max-width: 300px;
+  max-width: 400px;
   width: 100%;
   overflow: hidden;
   background: var(--surface);
@@ -526,7 +526,6 @@
 
 .emailBody {
   padding: 14px 12px;
-  min-height: 200px;
 }
 
 .emailHero {
@@ -690,7 +689,7 @@
 .waChat {
   background: #ECE5DD;
   padding: 12px 10px;
-  min-height: 200px;
+  min-height: 64px;
   display: flex;
   flex-direction: column;
   gap: 6px;

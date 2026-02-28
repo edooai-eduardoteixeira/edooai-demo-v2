@@ -451,11 +451,11 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       </div>
                       {/* Ask · SMS */}
                       <div className={s1Combo.msg === 'ask' && s1Combo.ch === 'sms' ? '' : tl.hidden}>
-                        <div className={tl.devicePhone}><div className={tl.deviceStatusbar}><span>9:41</span><span></span></div><div className={tl.deviceScreen}><div className={tl.smsAppHeader}>Messages</div><div className={tl.mockupSms}><div className={tl.smsSender}>NeoBank · Short Code</div><div className={tl.smsBubble}>Gina, you spent $211 on streaming! 💸 Claim one free month of Netflix for you now. Tap to share https://nflx.it/gina 🍿</div><div className={tl.smsMeta}><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg> Delivered · 9:41 AM</div></div></div><div className={tl.deviceHomeBar}></div></div>
+                        <div className={tl.devicePhone}><div className={tl.deviceStatusbar}><span>9:41</span><span></span></div><div className={tl.deviceScreen}><div className={tl.mockupPush}><div className={tl.pushHeader}><div className={tl.pushIcon} style={{ background: '#34C759' }}>M</div><span className={tl.pushApp}>Messages</span><span className={tl.pushTime}>now</span></div><div className={tl.pushTitle}>NeoBank · Short Code</div><div className={tl.pushBody}>Gina, you spent $211 on streaming! 💸 Claim one free month of Netflix for you now. Tap to share https://nflx.it/gina 🍿</div></div></div><div className={tl.deviceHomeBar}></div></div>
                       </div>
                       {/* Ask · Email */}
                       <div className={s1Combo.msg === 'ask' && s1Combo.ch === 'email' ? '' : tl.hidden}>
-                        <div className={tl.devicePhone}><div className={tl.deviceStatusbar}><span>9:41</span><span></span></div><div className={tl.deviceScreen}><div className={tl.smsAppHeader}>Mail</div><div className={tl.mockupEmail}><div className={tl.emailHeader}><div className={tl.emailLogo}><div className={tl.emailLogoIcon}>N</div><span className={tl.emailLogoName}>NeoBank</span></div><div className={tl.emailFrom}>From: NeoBank &lt;rewards@neobank.com&gt;</div><div className={tl.emailSubject}>Gina, let&apos;s get that $211 back? 🍿</div></div><div className={tl.emailBody}><div className={tl.emailHero}><div className={tl.emailHeroTitle}>Netflix for free, Gina</div><div className={tl.emailHeroSub}>One for you, one for a friend</div></div><div className={tl.emailText}>Hi Gina,<br /><br />You spent $211 on streaming last month. Ready to claim a free month of Netflix now? 🍿<br /><br />Send your link to a friend. Once they use the card for the first time, your next month of Netflix is on us (and theirs, too!)</div><span className={tl.emailCta}>Share</span><div className={tl.emailAfterCta}>Your friend gets a free month, too!</div></div><div className={tl.emailFooter}>Unsubscribe · Privacy Policy</div></div></div><div className={tl.deviceHomeBar}></div></div>
+                        <div className={tl.devicePhone}><div className={tl.deviceStatusbar}><span>9:41</span><span></span></div><div className={tl.deviceScreen}><div className={tl.mockupPush}><div className={tl.pushHeader}><div className={tl.pushIcon} style={{ background: '#007AFF' }}>M</div><span className={tl.pushApp}>Mail</span><span className={tl.pushTime}>now</span></div><div className={tl.pushTitle}>Gina, let&apos;s get that $211 back? 🍿</div><div className={tl.pushBody}>Netflix for free, Gina. One for you, one for a friend</div></div></div><div className={tl.deviceHomeBar}></div></div>
                       </div>
                       {/* Reminder · Push */}
                       <div className={s1Combo.msg === 'reminder' && s1Combo.ch === 'push' ? '' : tl.hidden}>
@@ -463,11 +463,11 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       </div>
                       {/* Reminder · SMS */}
                       <div className={s1Combo.msg === 'reminder' && s1Combo.ch === 'sms' ? '' : tl.hidden}>
-                        <div className={tl.devicePhone}><div className={tl.deviceStatusbar}><span>9:41</span><span></span></div><div className={tl.deviceScreen}><div className={tl.smsAppHeader}>Messages</div><div className={tl.mockupSms}><div className={tl.smsSender}>NeoBank · Short Code</div><div className={tl.smsBubble}>Gina, your free Netflix month is still up for grabs! 🍿 Share with a friend before it expires: neo.bnk/r/gina</div><div className={tl.smsMeta}><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg> Delivered · 9:41 AM</div></div></div><div className={tl.deviceHomeBar}></div></div>
+                        <div className={tl.devicePhone}><div className={tl.deviceStatusbar}><span>9:41</span><span></span></div><div className={tl.deviceScreen}><div className={tl.mockupPush}><div className={tl.pushHeader}><div className={tl.pushIcon} style={{ background: '#34C759' }}>M</div><span className={tl.pushApp}>Messages</span><span className={tl.pushTime}>now</span></div><div className={tl.pushTitle}>NeoBank · Short Code</div><div className={tl.pushBody}>Gina, your free Netflix month is still up for grabs! 🍿 Share with a friend before it expires: neo.bnk/r/gina</div></div></div><div className={tl.deviceHomeBar}></div></div>
                       </div>
                       {/* Reminder · Email */}
                       <div className={s1Combo.msg === 'reminder' && s1Combo.ch === 'email' ? '' : tl.hidden}>
-                        <div className={tl.devicePhone}><div className={tl.deviceStatusbar}><span>9:41</span><span></span></div><div className={tl.deviceScreen}><div className={tl.smsAppHeader}>Mail</div><div className={tl.mockupEmail}><div className={tl.emailHeader}><div className={tl.emailLogo}><div className={tl.emailLogoIcon}>N</div><span className={tl.emailLogoName}>NeoBank</span></div><div className={tl.emailFrom}>From: NeoBank &lt;rewards@neobank.com&gt;</div><div className={tl.emailSubject}>Gina, your Netflix reward is still here 🍿</div></div><div className={tl.emailBody}><div className={tl.emailHero}><div className={tl.emailHeroTitle}>Don&apos;t let it expire, Gina</div><div className={tl.emailHeroSub}>Your free month is still waiting</div></div><div className={tl.emailText}>Remember those $211 on streaming? Your free Netflix month is still available. Share your link with a friend — when they make their first transaction, you both get rewarded.</div><span className={tl.emailCta}>Share Now</span></div><div className={tl.emailFooter}>Unsubscribe · Privacy Policy</div></div></div><div className={tl.deviceHomeBar}></div></div>
+                        <div className={tl.devicePhone}><div className={tl.deviceStatusbar}><span>9:41</span><span></span></div><div className={tl.deviceScreen}><div className={tl.mockupPush}><div className={tl.pushHeader}><div className={tl.pushIcon} style={{ background: '#007AFF' }}>M</div><span className={tl.pushApp}>Mail</span><span className={tl.pushTime}>now</span></div><div className={tl.pushTitle}>Gina, your Netflix reward is still here 🍿</div><div className={tl.pushBody}>Don&apos;t let it expire, Gina. Your free month is still waiting</div></div></div><div className={tl.deviceHomeBar}></div></div>
                       </div>
                     </div>
                   </div>
@@ -511,42 +511,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   <div className={tl.msgContent}>
                     <div className={tl.devicePhone}>
                       <div className={tl.deviceStatusbar}><span>9:57</span><span></span></div>
-                      <div className={tl.deviceScreenFlush}>
-                        <div className={tl.waHeader}>
-                          <div className={tl.waBackChevron}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg></div>
-                          <div className={tl.waAvatar}>P</div>
-                          <div className={tl.waContactInfo}>
-                            <span className={tl.waName}>Paul Davis</span>
-                            <span className={tl.waStatus}>online</span>
-                          </div>
-                          <div className={tl.waHeaderIcons}>
-                            <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" /></svg>
-                            <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" /></svg>
-                          </div>
-                        </div>
-                        <div className={tl.waChat}>
-                          <div className={tl.waBubbleOut}>
-                            Hey! I use NeoBank and they&apos;re giving us both a free month of Netflix 🍿 Sign up with my link and make one purchase — we both get it: <span className={tl.waBubbleLink}>neo.bnk/r/gina</span>
-                            <div className={tl.waBubbleMeta}>
-                              <span className={tl.waBubbleTime}>9:47</span>
-                              <svg className={tl.waCheck} viewBox="0 0 16 11"><path d="M1 5.5l3.5 4L11 1" /><path d="M5 5.5l3.5 4L15 1" /></svg>
-                            </div>
-                          </div>
-                          <div className={tl.waBubbleIn}>
-                            Nice! Thanks for sharing
-                            <div className={tl.waBubbleMeta}>
-                              <span className={tl.waBubbleTime}>9:55</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className={tl.waInputBar}>
-                          <div className={tl.waInputIcons}>
-                            <svg viewBox="0 0 24 24"><path d="M12 15.2l-3.2-3.2H5v-2h3.8L12 6.8l3.2 3.2H19v2h-3.8L12 15.2zM4 4h16v16H4V4zm0-2c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2H4z" /></svg>
-                          </div>
-                          <div className={tl.waInputField}>Message</div>
-                          <div className={tl.waInputMic}><svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" /></svg></div>
-                        </div>
-                      </div>
+                      <div className={tl.deviceScreen}><div className={tl.mockupPush}><div className={tl.pushHeader}><div className={tl.pushIcon} style={{ background: '#25D366' }}>W</div><span className={tl.pushApp}>WhatsApp</span><span className={tl.pushTime}>now</span></div><div className={tl.pushTitle}>Paul Davis</div><div className={tl.pushBody}>Nice! Thanks for sharing the link with the Netflix offer</div></div></div>
                       <div className={tl.deviceHomeBar}></div>
                     </div>
                   </div>
@@ -584,11 +549,11 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       </div>
                       {/* Success · SMS */}
                       <div className={s3Combo.msg === 'success' && s3Combo.ch === 'sms' ? '' : tl.hidden}>
-                        <div className={tl.devicePhone}><div className={tl.deviceStatusbar}><span>10:18</span><span></span></div><div className={tl.deviceScreen}><div className={tl.smsAppHeader}>Messages</div><div className={tl.mockupSms}><div className={tl.smsSender}>NeoBank · Short Code</div><div className={tl.smsBubble}>You&apos;re in! 🍿 First transaction done — a free month of Netflix is yours. Gina gets one too. Welcome to NeoBank!</div><div className={tl.smsMeta}><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg> Delivered · 10:18 AM</div></div></div><div className={tl.deviceHomeBar}></div></div>
+                        <div className={tl.devicePhone}><div className={tl.deviceStatusbar}><span>10:18</span><span></span></div><div className={tl.deviceScreen}><div className={tl.mockupPush}><div className={tl.pushHeader}><div className={tl.pushIcon} style={{ background: '#34C759' }}>M</div><span className={tl.pushApp}>Messages</span><span className={tl.pushTime}>now</span></div><div className={tl.pushTitle}>NeoBank · Short Code</div><div className={tl.pushBody}>You&apos;re in! 🍿 First transaction done — a free month of Netflix is yours. Gina gets one too. Welcome to NeoBank!</div></div></div><div className={tl.deviceHomeBar}></div></div>
                       </div>
                       {/* Success · Email */}
                       <div className={s3Combo.msg === 'success' && s3Combo.ch === 'email' ? '' : tl.hidden}>
-                        <div className={tl.devicePhone}><div className={tl.deviceStatusbar}><span>10:18</span><span></span></div><div className={tl.deviceScreen}><div className={tl.smsAppHeader}>Mail</div><div className={tl.mockupEmail}><div className={tl.emailHeader}><div className={tl.emailLogo}><div className={tl.emailLogoIcon}>N</div><span className={tl.emailLogoName}>NeoBank</span></div><div className={tl.emailFrom}>From: NeoBank &lt;rewards@neobank.com&gt;</div><div className={tl.emailSubject}>Your free Netflix month is here! 🍿</div></div><div className={tl.emailBody}><div className={tl.emailHero}><div className={tl.emailHeroTitle}>Netflix on us</div><div className={tl.emailHeroSub}>One for you, one for Gina</div></div><div className={tl.emailText}>Your first transaction is complete — a free month of Netflix has been added to your account. And Gina gets one too, thanks to your sign-up. Welcome to NeoBank!</div><span className={tl.emailCta}>Enjoy My Reward</span></div><div className={tl.emailFooter}>Unsubscribe · Privacy Policy</div></div></div><div className={tl.deviceHomeBar}></div></div>
+                        <div className={tl.devicePhone}><div className={tl.deviceStatusbar}><span>10:18</span><span></span></div><div className={tl.deviceScreen}><div className={tl.mockupPush}><div className={tl.pushHeader}><div className={tl.pushIcon} style={{ background: '#007AFF' }}>M</div><span className={tl.pushApp}>Mail</span><span className={tl.pushTime}>now</span></div><div className={tl.pushTitle}>Your free Netflix month is here! 🍿</div><div className={tl.pushBody}>Netflix on us. One for you, one for Gina</div></div></div><div className={tl.deviceHomeBar}></div></div>
                       </div>
                       {/* Reminder · Push */}
                       <div className={s3Combo.msg === 'reminder' && s3Combo.ch === 'push' ? '' : tl.hidden}>
@@ -596,11 +561,11 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       </div>
                       {/* Reminder · SMS */}
                       <div className={s3Combo.msg === 'reminder' && s3Combo.ch === 'sms' ? '' : tl.hidden}>
-                        <div className={tl.devicePhone}><div className={tl.deviceStatusbar}><span>10:18</span><span></span></div><div className={tl.deviceScreen}><div className={tl.smsAppHeader}>Messages</div><div className={tl.mockupSms}><div className={tl.smsSender}>NeoBank · Short Code</div><div className={tl.smsBubble}>Your free Netflix month is waiting! 🍿 Make your first transaction to unlock it — Gina gets one too. Expires in 7 days.</div><div className={tl.smsMeta}><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg> Delivered · 10:18 AM</div></div></div><div className={tl.deviceHomeBar}></div></div>
+                        <div className={tl.devicePhone}><div className={tl.deviceStatusbar}><span>10:18</span><span></span></div><div className={tl.deviceScreen}><div className={tl.mockupPush}><div className={tl.pushHeader}><div className={tl.pushIcon} style={{ background: '#34C759' }}>M</div><span className={tl.pushApp}>Messages</span><span className={tl.pushTime}>now</span></div><div className={tl.pushTitle}>NeoBank · Short Code</div><div className={tl.pushBody}>Your free Netflix month is waiting! 🍿 Make your first transaction to unlock it — Gina gets one too. Expires in 7 days.</div></div></div><div className={tl.deviceHomeBar}></div></div>
                       </div>
                       {/* Reminder · Email */}
                       <div className={s3Combo.msg === 'reminder' && s3Combo.ch === 'email' ? '' : tl.hidden}>
-                        <div className={tl.devicePhone}><div className={tl.deviceStatusbar}><span>10:18</span><span></span></div><div className={tl.deviceScreen}><div className={tl.smsAppHeader}>Mail</div><div className={tl.mockupEmail}><div className={tl.emailHeader}><div className={tl.emailLogo}><div className={tl.emailLogoIcon}>N</div><span className={tl.emailLogoName}>NeoBank</span></div><div className={tl.emailFrom}>From: NeoBank &lt;rewards@neobank.com&gt;</div><div className={tl.emailSubject}>A free Netflix month, one step away 🍿</div></div><div className={tl.emailBody}><div className={tl.emailHero}><div className={tl.emailHeroTitle}>Almost there</div><div className={tl.emailHeroSub}>One transaction away from Netflix</div></div><div className={tl.emailText}>Gina invited you to NeoBank — and there&apos;s a free month of Netflix waiting for both of you. Just make your first transaction within 7 days to unlock it.</div><span className={tl.emailCta}>Make My First Transaction</span></div><div className={tl.emailFooter}>Unsubscribe · Privacy Policy</div></div></div><div className={tl.deviceHomeBar}></div></div>
+                        <div className={tl.devicePhone}><div className={tl.deviceStatusbar}><span>10:18</span><span></span></div><div className={tl.deviceScreen}><div className={tl.mockupPush}><div className={tl.pushHeader}><div className={tl.pushIcon} style={{ background: '#007AFF' }}>M</div><span className={tl.pushApp}>Mail</span><span className={tl.pushTime}>now</span></div><div className={tl.pushTitle}>A free Netflix month, one step away 🍿</div><div className={tl.pushBody}>Almost there. One transaction away from Netflix</div></div></div><div className={tl.deviceHomeBar}></div></div>
                       </div>
                     </div>
                   </div>
