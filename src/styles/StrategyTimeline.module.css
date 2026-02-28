@@ -610,12 +610,27 @@
 }
 
 /* ── WhatsApp mockup (step 2) ── */
+.deviceStatusbarWa {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: #075E54;
+}
+
+.deviceScreenWa {
+  padding: 0;
+}
+
 .waHeader {
   display: flex;
   align-items: center;
   gap: 8px;
   background: #075E54;
-  padding: 8px 10px;
+  padding: 4px 10px 8px;
   color: #fff;
 }
 
@@ -678,7 +693,7 @@
   min-height: 64px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  gap: 6px;
 }
 
 .waBubbleOut {
@@ -687,9 +702,10 @@
   padding: 6px 8px 2px;
   font-size: 12px;
   line-height: 1.4;
-  max-width: 88%;
+  max-width: 85%;
   position: relative;
   color: #111;
+  align-self: flex-end;
 }
 
 .waBubbleOut::after {
@@ -700,6 +716,29 @@
   width: 0;
   height: 0;
   border-left: 6px solid #dcf8c6;
+  border-bottom: 6px solid transparent;
+}
+
+.waBubbleIn {
+  background: #fff;
+  border-radius: 0 8px 8px 8px;
+  padding: 6px 8px 2px;
+  font-size: 12px;
+  line-height: 1.4;
+  max-width: 85%;
+  position: relative;
+  color: #111;
+  align-self: flex-start;
+}
+
+.waBubbleIn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -6px;
+  width: 0;
+  height: 0;
+  border-right: 6px solid #fff;
   border-bottom: 6px solid transparent;
 }
 
