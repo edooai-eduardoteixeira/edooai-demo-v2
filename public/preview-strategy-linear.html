@@ -70,8 +70,8 @@
   /* ═══ Fields Grid (context card) ═══ */
   .fields-grid {
     display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0;
+    grid-template-columns: 170px 1fr;
+    gap: 0 32px;
   }
   .fields-grid .field-label,
   .fields-grid .field-val {
@@ -85,8 +85,8 @@
   .field-label {
     font-size: 13px; font-weight: 500;
     color: var(--text-tertiary);
-    padding-right: 12px;
     white-space: nowrap;
+    min-width: 170px;
   }
   .field-val {
     font-size: 14px; font-weight: 400;
@@ -114,33 +114,35 @@
     text-align: center;
     position: relative;
     z-index: 5;
-    margin-bottom: 12px; /* TUNE */
+    padding-bottom: 20px; /* TUNE */
   }
   .tl-step-header-inner {
     display: inline-block;
     background: var(--bg);
-    padding: 4px 16px;
+    padding: 8px 20px;
     border-radius: 8px;
   }
   .tl-step-num {
     font-family: var(--font-mono);
-    font-weight: 400; font-size: 14px;
-    color: var(--text-tertiary);
-    letter-spacing: 0.02em;
+    font-weight: 400; font-size: 28px;
+    color: var(--text-secondary);
+    letter-spacing: -0.01em;
   }
   .tl-step-name {
-    font-weight: 500; font-size: 15px;
+    font-weight: 600; font-size: 28px;
     color: var(--text-primary);
-    margin-left: 6px;
+    margin-left: 8px;
   }
   .tl-step-arrow {
-    color: var(--text-tertiary);
-    margin-left: 4px;
+    color: var(--text-secondary);
+    font-size: 24px;
+    margin-left: 8px;
   }
   .tl-step-sub {
     display: block;
-    font-size: 13px; color: var(--text-tertiary);
-    margin-top: 2px;
+    font-size: 15px; color: var(--text-secondary);
+    margin-top: 4px;
+    font-weight: 400;
   }
 
   /* ═══ Cards — margin-based positioning ═══ */
@@ -157,15 +159,15 @@
   }
 
   /* ═══ Z-index stacking ═══ */
-  .tl-step:first-of-type  { z-index: 1; }
-  .tl-bridge              { z-index: 2; }
-  .tl-step:nth-of-type(2) { z-index: 3; }
-  .tl-step:last-of-type   { z-index: 4; }
+  .tl-step:first-of-type  { position: relative; z-index: 1; }
+  .tl-bridge              { position: relative; z-index: 2; }
+  .tl-step:nth-of-type(2) { position: relative; z-index: 3; }
+  .tl-step:last-of-type   { position: relative; z-index: 4; }
 
   /* ═══ Overlap ═══ */
-  .tl-step + .tl-bridge { margin-top: -8px; /* TUNE */ }
-  .tl-bridge + .tl-step { margin-top: -8px; /* TUNE */ }
-  .tl-step:last-of-type { margin-top: -60px; /* TUNE */ }
+  .tl-step:first-of-type + .tl-bridge { margin-top: -20px; /* TUNE */ }
+  .tl-bridge + .tl-step { margin-top: -16px; /* TUNE */ }
+  .tl-step:nth-of-type(2) + .tl-step:last-of-type { margin-top: -80px; /* TUNE */ }
 
   /* ═══ Card ═══ */
   .tl-card {
@@ -318,9 +320,9 @@
       margin-right: calc(50% + 16px);
       max-width: calc(50% - 16px);
     }
-    .tl-step + .tl-bridge { margin-top: -4px; /* TUNE */ }
-    .tl-bridge + .tl-step { margin-top: -4px; /* TUNE */ }
-    .tl-step:last-of-type { margin-top: -32px; /* TUNE */ }
+    .tl-step:first-of-type + .tl-bridge { margin-top: -12px; /* TUNE */ }
+    .tl-bridge + .tl-step { margin-top: -8px; /* TUNE */ }
+    .tl-step:nth-of-type(2) + .tl-step:last-of-type { margin-top: -40px; /* TUNE */ }
     .context-card { max-width: 100%; }
   }
 
@@ -341,9 +343,9 @@
     }
 
     /* No overlap on mobile */
-    .tl-step + .tl-bridge,
-    .tl-bridge + .tl-step { margin-top: 24px; }
-    .tl-step:last-of-type { margin-top: 24px; }
+    .tl-step:first-of-type + .tl-bridge,
+    .tl-bridge + .tl-step,
+    .tl-step:nth-of-type(2) + .tl-step:last-of-type { margin-top: 24px; }
 
     .tl-bridge-pill { gap: 10px; padding: 8px 14px; }
     .share-icon { width: 28px; height: 28px; }
@@ -356,7 +358,7 @@
 <body>
 <div class="page">
   <span class="section-label">Strategy Preview — Timeline Layout</span>
-  <h2 class="section-title">User Journey and Referral Execution</h2>
+  <h2 class="section-title">Referral Strategy and User Journey</h2>
 
   <!-- ═══ CONTEXT CARD (above timeline) ═══ -->
   <div class="context-card">
@@ -383,7 +385,7 @@
     <div class="tl-step">
       <div class="tl-step-header">
         <div class="tl-step-header-inner">
-          <span class="tl-step-num">1.0</span>
+          <span class="tl-step-num">1</span>
           <span class="tl-step-name">Invite</span>
           <span class="tl-step-arrow">&rarr;</span>
           <span class="tl-step-sub">Trigger the referral offer</span>
@@ -477,7 +479,7 @@
     <div class="tl-step">
       <div class="tl-step-header">
         <div class="tl-step-header-inner">
-          <span class="tl-step-num">2.0</span>
+          <span class="tl-step-num">2</span>
           <span class="tl-step-name">Refer</span>
           <span class="tl-step-arrow">&rarr;</span>
           <span class="tl-step-sub">Share with friends</span>
@@ -512,7 +514,7 @@
     <div class="tl-step">
       <div class="tl-step-header">
         <div class="tl-step-header-inner">
-          <span class="tl-step-num">3.0</span>
+          <span class="tl-step-num">3</span>
           <span class="tl-step-name">Redeem</span>
           <span class="tl-step-arrow">&rarr;</span>
           <span class="tl-step-sub">Both sides get rewarded</span>
