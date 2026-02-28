@@ -10,7 +10,7 @@ export default function LandingPage({ config, onNext }) {
       {/* Header */}
       <header
         style={{
-          padding: '24px 48px',
+          padding: '20px 48px',
           borderBottom: '1px solid var(--color-gray-100)',
         }}
       >
@@ -18,50 +18,55 @@ export default function LandingPage({ config, onNext }) {
       </header>
 
       {/* Hero */}
-      <main
+      <section
         style={{
           flex: 1,
           display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
           alignItems: 'center',
-          padding: '58px 48px 80px',
-          maxWidth: '792px',
-          margin: '0 auto',
-          textAlign: 'center',
+          justifyContent: 'center',
+          padding: '0 48px',
         }}
       >
-        <h1
+        <main
           style={{
-            fontSize: '48px',
-            fontWeight: 700,
-            color: 'var(--text-primary)',
-            lineHeight: 1.08,
-            letterSpacing: '-0.03em',
-            marginBottom: '40px',
+            textAlign: 'center',
+            maxWidth: '830px',
+            width: '100%',
           }}
         >
-          {landing.headline}
-        </h1>
-        <p
-          style={{
-            fontSize: '22px',
-            fontWeight: 400,
-            color: 'var(--text-secondary)',
-            lineHeight: 1.45,
-            marginBottom: '48px',
-            maxWidth: '600px',
-          }}
-        >
-          {landing.subheadline}
-        </p>
-        <CTAButton onClick={onNext}>{landing.ctaText}</CTAButton>
-      </main>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: 700,
+              color: 'var(--text-primary)',
+              lineHeight: 1.08,
+              letterSpacing: '-0.03em',
+              maxWidth: '792px',
+              margin: '0 auto 48px',
+            }}
+            dangerouslySetInnerHTML={{
+              __html: landing.headline.replace('customers ', 'customers<br>'),
+            }}
+          />
+          <p
+            style={{
+              fontSize: '22px',
+              fontWeight: 500,
+              color: 'var(--text-secondary)',
+              lineHeight: 1.5,
+              marginBottom: '56px',
+            }}
+          >
+            {landing.subheadline}
+          </p>
+          <CTAButton onClick={onNext}>{landing.ctaText}</CTAButton>
+        </main>
+      </section>
 
       {/* Footer */}
       <footer
         style={{
-          padding: '32px 48px',
+          padding: '24px 48px',
           textAlign: 'center',
         }}
       >
