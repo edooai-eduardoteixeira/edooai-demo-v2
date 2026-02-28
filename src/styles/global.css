@@ -225,8 +225,16 @@ input[type="range"]::-moz-range-progress {
   animation: monitoringPulse 3s ease-in-out infinite;
 }
 
+/* Desktop-only line break (hidden on mobile) */
+.br-desktop {
+  display: block;
+}
+
 /* Mobile responsive breakpoints */
 @media (max-width: 768px) {
+  .br-desktop {
+    display: none;
+  }
   header {
     padding-left: 1.5rem !important;
     padding-right: 1.5rem !important;
