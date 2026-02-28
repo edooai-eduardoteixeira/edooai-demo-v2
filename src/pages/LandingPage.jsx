@@ -44,10 +44,17 @@ export default function LandingPage({ config, onNext }) {
               maxWidth: '792px',
               margin: '0 auto 48px',
             }}
-            dangerouslySetInnerHTML={{
-              __html: landing.headline.replace('customers ', 'customers<br>'),
-            }}
-          />
+          >
+            {landing.headline.split('customers ').length > 1 ? (
+              <>
+                {landing.headline.split('customers ')[0]}customers
+                <br className="br-desktop" />{' '}
+                {landing.headline.split('customers ')[1]}
+              </>
+            ) : (
+              landing.headline
+            )}
+          </h1>
           <p
             style={{
               fontSize: '22px',
