@@ -50,17 +50,20 @@
       letter-spacing: -0.02em;
     }
 
-    /* ── Hero ── */
-    .hero {
+    /* ── Hero wrapper: fills remaining space, centers content ── */
+    .hero-wrapper {
       flex: 1;
       display: flex;
-      flex-direction: column;
-      justify-content: center;
       align-items: center;
-      padding: 0 48px 56px;
-      max-width: 830px;
-      margin: 0 auto;
+      justify-content: center;
+      padding: 0 48px;
+    }
+
+    /* ── Hero content: constrained width ── */
+    .hero {
       text-align: center;
+      max-width: 830px;
+      width: 100%;
     }
 
     .hero h1 {
@@ -70,7 +73,7 @@
       line-height: 1.08;
       letter-spacing: -0.03em;
       max-width: 792px;
-      margin-bottom: 48px;
+      margin: 0 auto 48px;
     }
 
     .hero .subtitle {
@@ -106,7 +109,7 @@
 
     /* ── Footer ── */
     .footer {
-      padding: 8px 48px;
+      padding: 24px 48px;
       text-align: center;
     }
 
@@ -120,11 +123,9 @@
     /* ── Mobile ── */
     @media (max-width: 600px) {
       .header { padding: 16px 20px; }
-      .hero {
-        padding: 0 20px 32px;
-      }
-      .hero h1 { font-size: 39px; }
-      .hero .subtitle { font-size: 18px; }
+      .hero-wrapper { padding: 0 20px; }
+      .hero h1 { font-size: 39px; margin-bottom: 40px; }
+      .hero .subtitle { font-size: 18px; margin-bottom: 48px; }
       .cta-button {
         font-size: 14px;
         padding: 12px 28px;
@@ -147,11 +148,13 @@
       </div>
     </header>
 
-    <main class="hero">
-      <h1>Turn your best customers<br>into your growth engine.</h1>
-      <p class="subtitle">Stop competing for expensive ads while your most powerful channel is untapped. We operate your referrals end-to-end to deliver active customers at a fraction of your CAC.</p>
-      <button class="cta-button">Start Now</button>
-    </main>
+    <section class="hero-wrapper">
+      <main class="hero">
+        <h1>Turn your best customers<br>into your growth engine.</h1>
+        <p class="subtitle">Stop competing for expensive ads while your most powerful channel is untapped. We operate your referrals end-to-end to deliver active customers at a fraction of your CAC.</p>
+        <button class="cta-button">Start Now</button>
+      </main>
+    </section>
 
     <footer class="footer">
       <p>On a mission to scale distribution for the best products on earth.</p>
