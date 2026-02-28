@@ -477,11 +477,11 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     <div className={tl.fieldLabel}>Activated by</div>
                     <span className={tl.fieldVal}>All Transactions, Timing Insights</span>
                     <div className={tl.fieldLabel}>Redemption upon</div>
-                    <span className={tl.fieldVal}>Sign Up, KYC, 1st Transaction</span>
+                    <span className={tl.fieldVal}>1st Transaction</span>
                     <div className={tl.fieldLabel}>Reward</div>
-                    <span className={tl.fieldVal}>$0, $10, $30, $50, $75</span>
+                    <span className={tl.fieldVal}>$0, $20, $50, $75</span>
                     <div className={tl.fieldLabel}>Paid as</div>
-                    <span className={tl.fieldVal}>Cashback, Account Credit, Coupon, Gift Card, Organic</span>
+                    <span className={tl.fieldVal}>Organic, Gift Card, Cashback</span>
                   </div>
                 </div>
               </div>
@@ -569,12 +569,14 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   </div>
 
                   <div className={tl.fieldsGrid}>
+                    <div className={tl.fieldLabel}>Redemption journey</div>
+                    <span className={tl.fieldVal}>Sign Up, KYC</span>
                     <div className={tl.fieldLabel}>Redemption upon</div>
-                    <span className={tl.fieldVal}>Sign Up, KYC, 1st Transaction</span>
+                    <span className={tl.fieldVal}>1st Transaction</span>
                     <div className={tl.fieldLabel}>Reward</div>
-                    <span className={tl.fieldVal}>$0, $10, $30, $50, $75</span>
+                    <span className={tl.fieldVal}>$0, $20, $50, $75</span>
                     <div className={tl.fieldLabel}>Paid as</div>
-                    <span className={tl.fieldVal}>Cashback, Account Credit, Coupon, Gift Card, Organic</span>
+                    <span className={tl.fieldVal}>Organic, Gift Card, Account Credit, Cashback</span>
                   </div>
                 </div>
               </div>
