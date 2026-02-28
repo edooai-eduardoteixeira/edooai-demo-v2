@@ -381,6 +381,10 @@
   box-shadow: none;
 }
 
+.deviceScreen .mockupPush + .mockupPush {
+  margin-top: 8px;
+}
+
 .pushHeader {
   display: flex;
   align-items: center;
@@ -600,6 +604,9 @@
 /* ── Share row (step 2) ── */
 .shareRow {
   padding: 12px 16px;
+  background: var(--surface);
+  border-top: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .shareIcons {
