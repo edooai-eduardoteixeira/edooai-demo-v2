@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Screen 1 — Landing Page</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap" rel="stylesheet" />
   <style>
     :root {
       --color-black: #000000;
@@ -74,28 +74,27 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 58px 48px 80px;
+      padding: clamp(40px, 6vw, 58px) clamp(20px, 5vw, 48px) clamp(48px, 8vw, 80px);
       max-width: 792px;
       margin: 0 auto;
       text-align: center;
     }
 
     .hero h1 {
-      font-size: 48px;
+      font-size: clamp(28px, 5vw, 48px);
       font-weight: 700;
       color: var(--text-primary);
       line-height: 1.08;
       letter-spacing: -0.03em;
-      margin-bottom: 40px;
+      margin-bottom: clamp(24px, 4vw, 40px);
     }
 
     .hero .subtitle {
-      font-size: 22px;
-      font-weight: 400;
+      font-size: clamp(17px, 2.2vw, 22px);
+      font-weight: 450;
       color: var(--text-secondary);
-      line-height: 1.45;
-      margin-bottom: 48px;
-      max-width: 600px;
+      line-height: 1.5;
+      margin-bottom: clamp(32px, 5vw, 48px);
     }
 
     /* ── CTA Button ── */
@@ -136,21 +135,13 @@
       line-height: 1.5;
     }
 
-    /* ── Responsive ── */
+    /* ── Responsive — padding only, typography scales via clamp() ── */
     @media (max-width: 768px) {
       .header {
         padding: 20px 32px;
       }
       .hero {
         padding: 48px 32px;
-      }
-      .hero h1 {
-        font-size: 36px;
-        margin-bottom: 32px;
-      }
-      .hero .subtitle {
-        font-size: 18px;
-        margin-bottom: 40px;
       }
       .footer {
         padding: 24px 32px;
@@ -163,14 +154,6 @@
       }
       .hero {
         padding: 40px 20px;
-      }
-      .hero h1 {
-        font-size: 28px;
-        margin-bottom: 24px;
-      }
-      .hero .subtitle {
-        font-size: 16px;
-        margin-bottom: 32px;
       }
       .cta-button {
         font-size: 15px;
