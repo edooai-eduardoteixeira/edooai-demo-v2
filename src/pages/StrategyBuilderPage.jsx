@@ -478,10 +478,14 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     <span className={tl.fieldVal}>All Transactions, Timing Insights</span>
                     <div className={tl.fieldLabel}>Redemption upon</div>
                     <span className={tl.fieldVal}>1st Transaction</span>
+                    <div className={tl.fieldLabel}>Redemption journey</div>
+                    <span className={tl.fieldVal}>Sign Up, KYC</span>
                     <div className={tl.fieldLabel}>Reward</div>
                     <span className={tl.fieldVal}>$0, $20, $50, $75</span>
                     <div className={tl.fieldLabel}>Paid as</div>
-                    <span className={tl.fieldVal}>Organic, Gift Card, Cashback</span>
+                    <span className={tl.fieldVal}>Organic, Gift Card, Coupon, Account Credit, Cashback</span>
+                    <div className={tl.fieldLabel}>Tracked via</div>
+                    <span className={tl.fieldVal}>Referral Link</span>
                   </div>
                 </div>
               </div>
@@ -510,10 +514,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     </div>
                   </div>
 
-                  <div className={tl.fieldInline}>
-                    <div className={tl.fieldLabel}>Tracked via</div>
-                    <span className={tl.fieldVal}>Referral Link</span>
-                  </div>
                 </div>
               </div>
 
@@ -568,16 +568,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     </div>
                   </div>
 
-                  <div className={tl.fieldsGrid}>
-                    <div className={tl.fieldLabel}>Redemption journey</div>
-                    <span className={tl.fieldVal}>Sign Up, KYC</span>
-                    <div className={tl.fieldLabel}>Redemption upon</div>
-                    <span className={tl.fieldVal}>1st Transaction</span>
-                    <div className={tl.fieldLabel}>Reward</div>
-                    <span className={tl.fieldVal}>$0, $20, $50, $75</span>
-                    <div className={tl.fieldLabel}>Paid as</div>
-                    <span className={tl.fieldVal}>Organic, Gift Card, Account Credit, Cashback</span>
-                  </div>
                 </div>
               </div>
 
