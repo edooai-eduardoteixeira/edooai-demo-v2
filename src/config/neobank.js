@@ -7,16 +7,11 @@ const neobank = {
 
   // Screen 1 — Landing Page
   landing: {
-    headline: 'Turn your best customers into your best acquisition channel.',
+    headline: 'Turn your best customers into your distribution leverage.',
     subheadline:
-      'Edoo AI is an autonomous agent that runs your referral program \u2014 from data analysis to campaign execution.',
-    ctaText: 'Connect Your Data',
-    valueProps: [
-      'Analyzes your customer data to find the right referrers.',
-      'Designs and runs campaigns autonomously.',
-      'Optimizes daily based on real performance.',
-    ],
-    credibilityLine: 'Built for growth teams at high-growth fintechs.',
+      'Stop overpaying for ads. Edoo AI runs your referral strategy autonomously to deliver new active customers at a fraction of the cost. Zero manual effort.',
+    ctaText: 'Start Now',
+    missionLine: 'On a mission to scale distribution for the best products on earth.',
   },
 
   // Screen 2 — Data Connection
