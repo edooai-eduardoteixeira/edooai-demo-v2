@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Strategy Preview — Linear Timeline V2</title>
+<title>Strategy Preview — Linear Timeline V3</title>
 <style>
   :root {
     --text-primary: #1a1a1a;
@@ -18,7 +18,7 @@
     --shadow-card: 0 2px 4px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02);
     --shadow-card-hover: 0 4px 8px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
     --shadow-dropdown: 0 4px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
-    --spine-color: rgba(0,0,0,0.10);
+    --spine-color: rgba(0,0,0,0.08);
     --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
     --font-family: -apple-system, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', sans-serif;
     --transition-fast: 150ms ease;
@@ -46,7 +46,7 @@
   /* ═══ Context Card (above timeline) ═══ */
   .context-card {
     max-width: 600px;
-    margin: 0 auto 48px auto; /* TUNE */
+    margin: 0 auto 48px auto;
     padding: 24px 28px;
     border-radius: var(--radius-card);
     border: 1px solid var(--border);
@@ -94,80 +94,88 @@
     line-height: 1.5;
   }
 
-  /* ═══ Timeline Container + Dashed Spine ═══ */
-  .timeline { position: relative; }
+  /* ═══ Timeline — Two-Column Grid ═══ */
+  .timeline {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 48px;
+  }
   .timeline::before {
     content: '';
     position: absolute;
-    left: 50%; top: 0; bottom: 0;
+    left: calc(50%);
+    top: 0; bottom: 0;
+    width: 0;
     border-left: 1px dashed var(--spine-color);
-    transform: translateX(-0.5px);
+    z-index: 0;
   }
 
-  /* ═══ Timeline Step ═══ */
-  .tl-step {
-    position: relative;
+  /* ═══ Grid Placement ═══ */
+  .tl-row-1 { grid-row: 1; }
+  .tl-row-2 { grid-row: 2; }
+  .tl-row-3 { grid-row: 3; }
+  .tl-row-4 { grid-row: 4; }
+  .tl-col-left  { grid-column: 1; }
+  .tl-col-right { grid-column: 2; }
+  .tl-col-full  { grid-column: 1 / -1; }
+
+  /* ═══ Z-index — later rows on top ═══ */
+  .tl-row-1 { position: relative; z-index: 1; }
+  .tl-row-2 { position: relative; z-index: 2; }
+  .tl-row-3 { position: relative; z-index: 3; }
+  .tl-row-4 { position: relative; z-index: 4; }
+
+  /* ═══ Vertical Overlap ═══ */
+  .tl-bridge {
+    margin-top: -20px;  /* TUNE */
+    margin-bottom: -20px; /* TUNE */
+  }
+  .tl-row-3 {
+    margin-top: -40px; /* TUNE — Step 2 overlaps into Step 1's vertical zone */
+  }
+  .tl-row-4 {
+    margin-top: -60px; /* TUNE — Step 3 overlaps Step 2 (opposite columns = safe) */
   }
 
-  /* ═══ Step Header — CENTERED on spine ═══ */
-  .tl-step-header {
-    text-align: center;
-    position: relative;
-    z-index: 5;
-    padding-bottom: 20px; /* TUNE */
+  /* ═══ Text Block ═══ */
+  .tl-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 24px 0;
   }
-  .tl-step-header-inner {
-    display: inline-block;
-    background: var(--bg);
-    padding: 8px 20px;
-    border-radius: 8px;
+  .tl-col-left.tl-text {
+    text-align: right;
+    padding-right: 0;
   }
-  .tl-step-num {
-    font-family: var(--font-mono);
-    font-weight: 400; font-size: 28px;
-    color: var(--text-secondary);
-    letter-spacing: -0.01em;
+  .tl-col-right.tl-text {
+    text-align: left;
+    padding-left: 0;
   }
-  .tl-step-name {
-    font-weight: 600; font-size: 28px;
+  .tl-title {
+    font-size: 26px;
+    font-weight: 600;
     color: var(--text-primary);
-    margin-left: 8px;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 0 0 6px 0;
   }
-  .tl-step-arrow {
-    color: var(--text-secondary);
-    font-size: 24px;
-    margin-left: 8px;
-  }
-  .tl-step-sub {
-    display: block;
-    font-size: 15px; color: var(--text-secondary);
-    margin-top: 4px;
+  .tl-desc {
+    font-size: 16px;
     font-weight: 400;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
   }
 
-  /* ═══ Cards — margin-based positioning ═══ */
-  .tl-cards {
-    position: relative;
+  /* ═══ Card Wrap ═══ */
+  .tl-card-wrap {
+    padding: 0;
   }
-  .tl-cards.side-right {
-    margin-left: calc(50% + 24px); /* TUNE */
-    max-width: calc(50% - 24px);
-  }
-  .tl-cards.side-left {
-    margin-right: calc(50% + 24px); /* TUNE */
-    max-width: calc(50% - 24px);
-  }
-
-  /* ═══ Z-index stacking ═══ */
-  .tl-step:first-of-type  { position: relative; z-index: 1; }
-  .tl-bridge              { position: relative; z-index: 2; }
-  .tl-step:nth-of-type(2) { position: relative; z-index: 3; }
-  .tl-step:last-of-type   { position: relative; z-index: 4; }
-
-  /* ═══ Overlap ═══ */
-  .tl-step:first-of-type + .tl-bridge { margin-top: -20px; /* TUNE */ }
-  .tl-bridge + .tl-step { margin-top: -16px; /* TUNE */ }
-  .tl-step:nth-of-type(2) + .tl-step:last-of-type { margin-top: -80px; /* TUNE */ }
 
   /* ═══ Card ═══ */
   .tl-card {
@@ -287,7 +295,7 @@
   /* ═══ Share Bridge ═══ */
   .tl-bridge {
     display: flex; justify-content: center;
-    padding: 12px 0;
+    padding: 8px 0;
     position: relative;
   }
   .tl-bridge-pill {
@@ -311,18 +319,12 @@
   .hidden { display: none; }
 
   /* ═══ Responsive — Tablet ═══ */
-  @media (max-width: 1024px) {
-    .tl-cards.side-right {
-      margin-left: calc(50% + 16px);
-      max-width: calc(50% - 16px);
-    }
-    .tl-cards.side-left {
-      margin-right: calc(50% + 16px);
-      max-width: calc(50% - 16px);
-    }
-    .tl-step:first-of-type + .tl-bridge { margin-top: -12px; /* TUNE */ }
-    .tl-bridge + .tl-step { margin-top: -8px; /* TUNE */ }
-    .tl-step:nth-of-type(2) + .tl-step:last-of-type { margin-top: -40px; /* TUNE */ }
+  @media (max-width: 1024px) and (min-width: 769px) {
+    .timeline { gap: 0 32px; }
+    .tl-row-3 { margin-top: -20px; /* TUNE */ }
+    .tl-row-4 { margin-top: -30px; /* TUNE */ }
+    .tl-title { font-size: 22px; }
+    .tl-desc { font-size: 14px; }
     .context-card { max-width: 100%; }
   }
 
@@ -330,22 +332,40 @@
   @media (max-width: 768px) {
     .section-title { font-size: 22px; margin-bottom: 32px; }
 
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding: 0;
+    }
     .timeline::before { left: 20px; }
 
-    .tl-step-header { text-align: left; padding-left: 40px; }
-    .tl-step-header-inner { background: var(--bg); }
+    .tl-text {
+      padding: 0 0 8px 40px;
+    }
+    .tl-text .tl-title,
+    .tl-text .tl-desc {
+      text-align: left;
+    }
+    .tl-title { font-size: 20px; }
+    .tl-desc { font-size: 14px; }
 
-    .tl-cards.side-right,
-    .tl-cards.side-left {
-      margin-left: 40px;
-      margin-right: 0;
-      max-width: calc(100% - 40px);
+    .tl-card-wrap {
+      padding-left: 40px;
     }
 
     /* No overlap on mobile */
-    .tl-step:first-of-type + .tl-bridge,
-    .tl-bridge + .tl-step,
-    .tl-step:nth-of-type(2) + .tl-step:last-of-type { margin-top: 24px; }
+    .tl-row-3, .tl-row-4 {
+      margin-top: 0;
+    }
+    .tl-bridge {
+      margin: 0;
+      padding-left: 40px;
+      justify-content: flex-start;
+    }
+
+    /* Reorder: text always before card on mobile */
+    .tl-text { order: -1; }
 
     .tl-bridge-pill { gap: 10px; padding: 8px 14px; }
     .share-icon { width: 28px; height: 28px; }
@@ -381,90 +401,84 @@
 
   <div class="timeline">
 
-    <!-- ═══ STEP 1: Invite (cards RIGHT) ═══ -->
-    <div class="tl-step">
-      <div class="tl-step-header">
-        <div class="tl-step-header-inner">
-          <span class="tl-step-num">1</span>
-          <span class="tl-step-name">Invite</span>
-          <span class="tl-step-arrow">&rarr;</span>
-          <span class="tl-step-sub">Trigger the referral offer</span>
-        </div>
-      </div>
-      <div class="tl-cards side-right">
-        <div class="tl-card">
-          <div class="tl-card-header">
-            <div class="dd-wrap" id="dd-s1">
-              <button class="dd-trigger" onclick="toggleDropdown('dd-s1')">
-                <span class="dd-label">Ask &middot; Push</span>
-                <svg class="dd-chevron" viewBox="0 0 10 10"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <div class="dd-menu">
-                <button class="dd-item active" onclick="selectCombo('s1','ask','push')">Ask &middot; Push</button>
-                <button class="dd-item" onclick="selectCombo('s1','ask','sms')">Ask &middot; SMS</button>
-                <button class="dd-item" onclick="selectCombo('s1','ask','email')">Ask &middot; Email</button>
-                <button class="dd-item" onclick="selectCombo('s1','reminder','push')">Reminder &middot; Push</button>
-                <button class="dd-item" onclick="selectCombo('s1','reminder','sms')">Reminder &middot; SMS</button>
-                <button class="dd-item" onclick="selectCombo('s1','reminder','email')">Reminder &middot; Email</button>
-              </div>
+    <!-- ═══ ROW 1: Invite — text LEFT, card RIGHT ═══ -->
+    <div class="tl-text tl-col-left tl-row-1">
+      <h3 class="tl-title">Invite</h3>
+      <p class="tl-desc">Trigger the referral offer</p>
+    </div>
+    <div class="tl-card-wrap tl-col-right tl-row-1">
+      <div class="tl-card">
+        <div class="tl-card-header">
+          <div class="dd-wrap" id="dd-s1">
+            <button class="dd-trigger" onclick="toggleDropdown('dd-s1')">
+              <span class="dd-label">Ask &middot; Push</span>
+              <svg class="dd-chevron" viewBox="0 0 10 10"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="dd-menu">
+              <button class="dd-item active" onclick="selectCombo('s1','ask','push')">Ask &middot; Push</button>
+              <button class="dd-item" onclick="selectCombo('s1','ask','sms')">Ask &middot; SMS</button>
+              <button class="dd-item" onclick="selectCombo('s1','ask','email')">Ask &middot; Email</button>
+              <button class="dd-item" onclick="selectCombo('s1','reminder','push')">Reminder &middot; Push</button>
+              <button class="dd-item" onclick="selectCombo('s1','reminder','sms')">Reminder &middot; SMS</button>
+              <button class="dd-item" onclick="selectCombo('s1','reminder','email')">Reminder &middot; Email</button>
             </div>
           </div>
-          <div class="tl-card-body">
-            <!-- Ask · Push -->
-            <div class="preview-mock" data-step="s1" data-msg="ask" data-ch="push">
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon">N</div><span class="notif-app">NeoBank</span><span class="notif-time">now</span></div>
-                <div class="notif-title">$211 on streaming, Gina? &#x1F4B8;</div>
-                <div class="notif-body">Gina, you spent $211 on streaming! &#x1F4B8; Claim one free month of Netflix for you now. Tap to share! &#x1F37F;</div>
-              </div>
+        </div>
+        <div class="tl-card-body">
+          <!-- Ask · Push -->
+          <div class="preview-mock" data-step="s1" data-msg="ask" data-ch="push">
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon">N</div><span class="notif-app">NeoBank</span><span class="notif-time">now</span></div>
+              <div class="notif-title">$211 on streaming, Gina? &#x1F4B8;</div>
+              <div class="notif-body">Gina, you spent $211 on streaming! &#x1F4B8; Claim one free month of Netflix for you now. Tap to share! &#x1F37F;</div>
             </div>
-            <!-- Ask · SMS -->
-            <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="sms">
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="notif-app">Messages</span><span class="notif-time">now</span></div>
-                <div class="notif-title">NeoBank &middot; 72589</div>
-                <div class="notif-body">Gina, you spent $211 on streaming! &#x1F4B8; Claim one free month of Netflix for you now. Tap to share https://nflx.it/gina &#x1F37F;</div>
-              </div>
+          </div>
+          <!-- Ask · SMS -->
+          <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="sms">
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="notif-app">Messages</span><span class="notif-time">now</span></div>
+              <div class="notif-title">NeoBank &middot; 72589</div>
+              <div class="notif-body">Gina, you spent $211 on streaming! &#x1F4B8; Claim one free month of Netflix for you now. Tap to share https://nflx.it/gina &#x1F37F;</div>
             </div>
-            <!-- Ask · Email -->
-            <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="email">
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="notif-app">Mail</span><span class="notif-time">now</span></div>
-                <div class="notif-title">Gina, let's get that $211 back? &#x1F37F;</div>
-                <div class="notif-body">Netflix for free, Gina. One for you, one for a friend. You spent $211 on streaming &mdash; let's get that back! Share with a friend and you both win &#x1F37F;</div>
-              </div>
+          </div>
+          <!-- Ask · Email -->
+          <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="email">
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="notif-app">Mail</span><span class="notif-time">now</span></div>
+              <div class="notif-title">Gina, let's get that $211 back? &#x1F37F;</div>
+              <div class="notif-body">Netflix for free, Gina. One for you, one for a friend. You spent $211 on streaming &mdash; let's get that back! Share with a friend and you both win &#x1F37F;</div>
             </div>
-            <!-- Reminder · Push -->
-            <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="push">
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon">N</div><span class="notif-app">NeoBank</span><span class="notif-time">now</span></div>
-                <div class="notif-title">Still thinking about it, Gina? &#x1F37F;</div>
-                <div class="notif-body">Your free Netflix month is still here. Share your link with a friend before it expires!</div>
-              </div>
+          </div>
+          <!-- Reminder · Push -->
+          <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="push">
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon">N</div><span class="notif-app">NeoBank</span><span class="notif-time">now</span></div>
+              <div class="notif-title">Still thinking about it, Gina? &#x1F37F;</div>
+              <div class="notif-body">Your free Netflix month is still here. Share your link with a friend before it expires!</div>
             </div>
-            <!-- Reminder · SMS -->
-            <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="sms">
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="notif-app">Messages</span><span class="notif-time">now</span></div>
-                <div class="notif-title">NeoBank &middot; 72589</div>
-                <div class="notif-body">Gina, your free Netflix month is still up for grabs! &#x1F37F; Share with a friend before it expires: neo.bnk/r/gina</div>
-              </div>
+          </div>
+          <!-- Reminder · SMS -->
+          <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="sms">
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="notif-app">Messages</span><span class="notif-time">now</span></div>
+              <div class="notif-title">NeoBank &middot; 72589</div>
+              <div class="notif-body">Gina, your free Netflix month is still up for grabs! &#x1F37F; Share with a friend before it expires: neo.bnk/r/gina</div>
             </div>
-            <!-- Reminder · Email -->
-            <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="email">
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="notif-app">Mail</span><span class="notif-time">now</span></div>
-                <div class="notif-title">Gina, your Netflix reward is still here &#x1F37F;</div>
-                <div class="notif-body">Don't let it expire, Gina. Your free month of Netflix is still waiting &mdash; share with a friend before it's gone. One for you, one for them!</div>
-              </div>
+          </div>
+          <!-- Reminder · Email -->
+          <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="email">
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="notif-app">Mail</span><span class="notif-time">now</span></div>
+              <div class="notif-title">Gina, your Netflix reward is still here &#x1F37F;</div>
+              <div class="notif-body">Don't let it expire, Gina. Your free month of Netflix is still waiting &mdash; share with a friend before it's gone. One for you, one for them!</div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ═══ SHARE BRIDGE (centered pill, icons only) ═══ -->
-    <div class="tl-bridge">
+    <!-- ═══ ROW 2: Share Bridge (spans both columns) ═══ -->
+    <div class="tl-bridge tl-col-full tl-row-2">
       <div class="tl-bridge-pill">
         <div class="share-icon" style="background:#25D366"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div>
         <div class="share-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M5.457 18.185C3.358 16.677 2 14.4 2 11.908 2 7.323 6.477 3.6 12 3.6s10 3.723 10 8.308-4.477 8.308-10 8.308c-1.072 0-2.1-.145-3.064-.41-.225.2-2.236 1.928-3.382 2.58-.19.107-.265-.072-.215-.242.19-.66.703-2.364 1.012-3.248-.314-.22-.618-.455-.894-.711z"/></svg></div>
@@ -475,197 +489,185 @@
       </div>
     </div>
 
-    <!-- ═══ STEP 2: Refer (cards LEFT, conversation card) ═══ -->
-    <div class="tl-step">
-      <div class="tl-step-header">
-        <div class="tl-step-header-inner">
-          <span class="tl-step-num">2</span>
-          <span class="tl-step-name">Refer</span>
-          <span class="tl-step-arrow">&rarr;</span>
-          <span class="tl-step-sub">Share with friends</span>
-        </div>
-      </div>
-      <div class="tl-cards side-left">
-        <div class="tl-card conversation-card">
-          <!-- Gina → Paul -->
-          <div class="convo-message convo-sender">
-            <div class="convo-sender-label">Gina &rarr; Paul</div>
-            <div class="notif">
-              <div class="notif-header"><div class="notif-icon" style="background:#25D366"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div><span class="notif-app">WhatsApp</span><span class="notif-time">now</span></div>
-              <div class="notif-title">Gina Miller</div>
-              <div class="notif-body">Hey, you should check out NeoBank. I'm a big fan so far. Plus, if you sign up with my link, you get a month of &#x1F37F; Netflix for free. Not a bad deal! neo.bnk/r/gina</div>
-            </div>
+    <!-- ═══ ROW 3: Refer — card LEFT, text RIGHT ═══ -->
+    <div class="tl-card-wrap tl-col-left tl-row-3">
+      <div class="tl-card conversation-card">
+        <!-- Gina → Paul -->
+        <div class="convo-message convo-sender">
+          <div class="convo-sender-label">Gina &rarr; Paul</div>
+          <div class="notif">
+            <div class="notif-header"><div class="notif-icon" style="background:#25D366"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div><span class="notif-app">WhatsApp</span><span class="notif-time">now</span></div>
+            <div class="notif-title">Gina Miller</div>
+            <div class="notif-body">Hey, you should check out NeoBank. I'm a big fan so far. Plus, if you sign up with my link, you get a month of &#x1F37F; Netflix for free. Not a bad deal! neo.bnk/r/gina</div>
           </div>
-          <div class="convo-divider"></div>
-          <!-- Paul → Gina -->
-          <div class="convo-message convo-reply">
-            <div class="convo-reply-label">Paul &rarr; Gina</div>
-            <div class="notif">
-              <div class="notif-header"><div class="notif-icon" style="background:#25D366"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div><span class="notif-app">WhatsApp</span><span class="notif-time">now</span></div>
-              <div class="notif-title">Paul Davis</div>
-              <div class="notif-body">Love this! Thanks for keeping me in mind, Gina &#x1F37F;</div>
-            </div>
+        </div>
+        <div class="convo-divider"></div>
+        <!-- Paul → Gina -->
+        <div class="convo-message convo-reply">
+          <div class="convo-reply-label">Paul &rarr; Gina</div>
+          <div class="notif">
+            <div class="notif-header"><div class="notif-icon" style="background:#25D366"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div><span class="notif-app">WhatsApp</span><span class="notif-time">now</span></div>
+            <div class="notif-title">Paul Davis</div>
+            <div class="notif-body">Love this! Thanks for keeping me in mind, Gina &#x1F37F;</div>
           </div>
         </div>
       </div>
     </div>
+    <div class="tl-text tl-col-right tl-row-3">
+      <h3 class="tl-title">Refer</h3>
+      <p class="tl-desc">Share with friends</p>
+    </div>
 
-    <!-- ═══ STEP 3: Redeem (cards RIGHT) ═══ -->
-    <div class="tl-step">
-      <div class="tl-step-header">
-        <div class="tl-step-header-inner">
-          <span class="tl-step-num">3</span>
-          <span class="tl-step-name">Redeem</span>
-          <span class="tl-step-arrow">&rarr;</span>
-          <span class="tl-step-sub">Both sides get rewarded</span>
+    <!-- ═══ ROW 4: Redeem — text LEFT, card RIGHT ═══ -->
+    <div class="tl-text tl-col-left tl-row-4">
+      <h3 class="tl-title">Redeem</h3>
+      <p class="tl-desc">Both sides get rewarded</p>
+    </div>
+    <div class="tl-card-wrap tl-col-right tl-row-4">
+      <div class="tl-card">
+        <div class="tl-card-header">
+          <div class="dd-wrap" id="dd-s3">
+            <button class="dd-trigger" onclick="toggleDropdown('dd-s3')">
+              <span class="dd-label">Success &middot; Push</span>
+              <svg class="dd-chevron" viewBox="0 0 10 10"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="dd-menu">
+              <button class="dd-item active" onclick="selectCombo('s3','success','push')">Success &middot; Push</button>
+              <button class="dd-item" onclick="selectCombo('s3','success','sms')">Success &middot; SMS</button>
+              <button class="dd-item" onclick="selectCombo('s3','success','email')">Success &middot; Email</button>
+              <button class="dd-item" onclick="selectCombo('s3','reminder','push')">Reminder &middot; Push</button>
+              <button class="dd-item" onclick="selectCombo('s3','reminder','sms')">Reminder &middot; SMS</button>
+              <button class="dd-item" onclick="selectCombo('s3','reminder','email')">Reminder &middot; Email</button>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="tl-cards side-right">
-        <div class="tl-card">
-          <div class="tl-card-header">
-            <div class="dd-wrap" id="dd-s3">
-              <button class="dd-trigger" onclick="toggleDropdown('dd-s3')">
-                <span class="dd-label">Success &middot; Push</span>
-                <svg class="dd-chevron" viewBox="0 0 10 10"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <div class="dd-menu">
-                <button class="dd-item active" onclick="selectCombo('s3','success','push')">Success &middot; Push</button>
-                <button class="dd-item" onclick="selectCombo('s3','success','sms')">Success &middot; SMS</button>
-                <button class="dd-item" onclick="selectCombo('s3','success','email')">Success &middot; Email</button>
-                <button class="dd-item" onclick="selectCombo('s3','reminder','push')">Reminder &middot; Push</button>
-                <button class="dd-item" onclick="selectCombo('s3','reminder','sms')">Reminder &middot; SMS</button>
-                <button class="dd-item" onclick="selectCombo('s3','reminder','email')">Reminder &middot; Email</button>
-              </div>
+
+        <!-- Success · Push -->
+        <div class="preview-mock" data-step="s3" data-msg="success" data-ch="push">
+          <div class="notif-section">
+            <div class="notif-section-label">Referee (Paul)</div>
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon">N</div><span class="notif-app">NeoBank</span><span class="notif-time">now</span></div>
+              <div class="notif-title">Netflix is officially unlocked! &#x1F4FA;</div>
+              <div class="notif-body">Nice move. Since you've joined NeoBank, you and Gina both get a free month of Netflix. Head to the app to claim your reward and start streaming!</div>
             </div>
           </div>
-
-          <!-- Success · Push -->
-          <div class="preview-mock" data-step="s3" data-msg="success" data-ch="push">
-            <div class="notif-section">
-              <div class="notif-section-label">Referee (Paul)</div>
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon">N</div><span class="notif-app">NeoBank</span><span class="notif-time">now</span></div>
-                <div class="notif-title">Netflix is officially unlocked! &#x1F4FA;</div>
-                <div class="notif-body">Nice move. Since you've joined NeoBank, you and Gina both get a free month of Netflix. Head to the app to claim your reward and start streaming!</div>
-              </div>
-            </div>
-            <div class="notif-divider"></div>
-            <div class="notif-section">
-              <div class="notif-section-label">Referrer (Gina)</div>
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon">N</div><span class="notif-app">NeoBank</span><span class="notif-time">now</span></div>
-                <div class="notif-title">Your Netflix is on us! &#x1F37F;</div>
-                <div class="notif-body">Huge win&mdash;you and Paul both just scored a free month of Netflix. Your reward is officially unlocked and ready to use in the app. Enjoy!</div>
-              </div>
+          <div class="notif-divider"></div>
+          <div class="notif-section">
+            <div class="notif-section-label">Referrer (Gina)</div>
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon">N</div><span class="notif-app">NeoBank</span><span class="notif-time">now</span></div>
+              <div class="notif-title">Your Netflix is on us! &#x1F37F;</div>
+              <div class="notif-body">Huge win&mdash;you and Paul both just scored a free month of Netflix. Your reward is officially unlocked and ready to use in the app. Enjoy!</div>
             </div>
           </div>
-
-          <!-- Success · SMS -->
-          <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="sms">
-            <div class="notif-section">
-              <div class="notif-section-label">Referee (Paul)</div>
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="notif-app">Messages</span><span class="notif-time">now</span></div>
-                <div class="notif-title">NeoBank &middot; 72589</div>
-                <div class="notif-body">Nice move. Since you've joined NeoBank, you and Gina both get a free month of Netflix. Head to the app to claim your reward and start streaming!</div>
-              </div>
-            </div>
-            <div class="notif-divider"></div>
-            <div class="notif-section">
-              <div class="notif-section-label">Referrer (Gina)</div>
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="notif-app">Messages</span><span class="notif-time">now</span></div>
-                <div class="notif-title">NeoBank &middot; 72589</div>
-                <div class="notif-body">Huge win&mdash;you and Paul both just scored a free month of Netflix. Your reward is officially unlocked and ready to use in the app. Enjoy!</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Success · Email -->
-          <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="email">
-            <div class="notif-section">
-              <div class="notif-section-label">Referee (Paul)</div>
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="notif-app">Mail</span><span class="notif-time">now</span></div>
-                <div class="notif-title">Netflix is officially unlocked! &#x1F4FA;</div>
-                <div class="notif-body">Nice move. Since you've joined NeoBank, you and Gina both get a free month of Netflix. Head to the app to claim your reward and start streaming!</div>
-              </div>
-            </div>
-            <div class="notif-divider"></div>
-            <div class="notif-section">
-              <div class="notif-section-label">Referrer (Gina)</div>
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="notif-app">Mail</span><span class="notif-time">now</span></div>
-                <div class="notif-title">Your Netflix is on us! &#x1F37F;</div>
-                <div class="notif-body">Huge win&mdash;you and Paul both just scored a free month of Netflix. Your reward is officially unlocked and ready to use in the app. Enjoy!</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Reminder · Push -->
-          <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="push">
-            <div class="notif-section">
-              <div class="notif-section-label">Referee (Paul)</div>
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon">N</div><span class="notif-app">NeoBank</span><span class="notif-time">now</span></div>
-                <div class="notif-title">Your Netflix month is waiting &#x1F37F;</div>
-                <div class="notif-body">Make your first transaction and unlock a free month of Netflix &mdash; for you and for Gina. Don't miss out!</div>
-              </div>
-            </div>
-            <div class="notif-divider"></div>
-            <div class="notif-section">
-              <div class="notif-section-label">Referrer (Gina)</div>
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon">N</div><span class="notif-app">NeoBank</span><span class="notif-time">now</span></div>
-                <div class="notif-title">Almost there, Gina! &#x1F37F;</div>
-                <div class="notif-body">Paul hasn't completed their first transaction yet. Once they do, you both unlock a free month of Netflix. Hang tight!</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Reminder · SMS -->
-          <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="sms">
-            <div class="notif-section">
-              <div class="notif-section-label">Referee (Paul)</div>
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="notif-app">Messages</span><span class="notif-time">now</span></div>
-                <div class="notif-title">NeoBank &middot; 72589</div>
-                <div class="notif-body">Your free Netflix month is waiting! &#x1F37F; Make your first transaction to unlock it &mdash; Gina gets one too. Expires in 7 days.</div>
-              </div>
-            </div>
-            <div class="notif-divider"></div>
-            <div class="notif-section">
-              <div class="notif-section-label">Referrer (Gina)</div>
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="notif-app">Messages</span><span class="notif-time">now</span></div>
-                <div class="notif-title">NeoBank &middot; 72589</div>
-                <div class="notif-body">Almost there! Paul hasn't completed their first transaction yet. Once they do, you both unlock a free month of Netflix. Hang tight!</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Reminder · Email -->
-          <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="email">
-            <div class="notif-section">
-              <div class="notif-section-label">Referee (Paul)</div>
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="notif-app">Mail</span><span class="notif-time">now</span></div>
-                <div class="notif-title">A free Netflix month, one step away &#x1F37F;</div>
-                <div class="notif-body">Almost there &mdash; one transaction is all it takes to unlock a free month of Netflix for you and Gina. Don't miss out, it expires in 7 days!</div>
-              </div>
-            </div>
-            <div class="notif-divider"></div>
-            <div class="notif-section">
-              <div class="notif-section-label">Referrer (Gina)</div>
-              <div class="notif">
-                <div class="notif-header"><div class="notif-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="notif-app">Mail</span><span class="notif-time">now</span></div>
-                <div class="notif-title">Almost there, Gina! &#x1F37F;</div>
-                <div class="notif-body">Paul hasn't completed their first transaction yet. Once they do, you both unlock a free month of Netflix. We'll let you know!</div>
-              </div>
-            </div>
-          </div>
-
         </div>
+
+        <!-- Success · SMS -->
+        <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="sms">
+          <div class="notif-section">
+            <div class="notif-section-label">Referee (Paul)</div>
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="notif-app">Messages</span><span class="notif-time">now</span></div>
+              <div class="notif-title">NeoBank &middot; 72589</div>
+              <div class="notif-body">Nice move. Since you've joined NeoBank, you and Gina both get a free month of Netflix. Head to the app to claim your reward and start streaming!</div>
+            </div>
+          </div>
+          <div class="notif-divider"></div>
+          <div class="notif-section">
+            <div class="notif-section-label">Referrer (Gina)</div>
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="notif-app">Messages</span><span class="notif-time">now</span></div>
+              <div class="notif-title">NeoBank &middot; 72589</div>
+              <div class="notif-body">Huge win&mdash;you and Paul both just scored a free month of Netflix. Your reward is officially unlocked and ready to use in the app. Enjoy!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Success · Email -->
+        <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="email">
+          <div class="notif-section">
+            <div class="notif-section-label">Referee (Paul)</div>
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="notif-app">Mail</span><span class="notif-time">now</span></div>
+              <div class="notif-title">Netflix is officially unlocked! &#x1F4FA;</div>
+              <div class="notif-body">Nice move. Since you've joined NeoBank, you and Gina both get a free month of Netflix. Head to the app to claim your reward and start streaming!</div>
+            </div>
+          </div>
+          <div class="notif-divider"></div>
+          <div class="notif-section">
+            <div class="notif-section-label">Referrer (Gina)</div>
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="notif-app">Mail</span><span class="notif-time">now</span></div>
+              <div class="notif-title">Your Netflix is on us! &#x1F37F;</div>
+              <div class="notif-body">Huge win&mdash;you and Paul both just scored a free month of Netflix. Your reward is officially unlocked and ready to use in the app. Enjoy!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reminder · Push -->
+        <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="push">
+          <div class="notif-section">
+            <div class="notif-section-label">Referee (Paul)</div>
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon">N</div><span class="notif-app">NeoBank</span><span class="notif-time">now</span></div>
+              <div class="notif-title">Your Netflix month is waiting &#x1F37F;</div>
+              <div class="notif-body">Make your first transaction and unlock a free month of Netflix &mdash; for you and for Gina. Don't miss out!</div>
+            </div>
+          </div>
+          <div class="notif-divider"></div>
+          <div class="notif-section">
+            <div class="notif-section-label">Referrer (Gina)</div>
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon">N</div><span class="notif-app">NeoBank</span><span class="notif-time">now</span></div>
+              <div class="notif-title">Almost there, Gina! &#x1F37F;</div>
+              <div class="notif-body">Paul hasn't completed their first transaction yet. Once they do, you both unlock a free month of Netflix. Hang tight!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reminder · SMS -->
+        <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="sms">
+          <div class="notif-section">
+            <div class="notif-section-label">Referee (Paul)</div>
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="notif-app">Messages</span><span class="notif-time">now</span></div>
+              <div class="notif-title">NeoBank &middot; 72589</div>
+              <div class="notif-body">Your free Netflix month is waiting! &#x1F37F; Make your first transaction to unlock it &mdash; Gina gets one too. Expires in 7 days.</div>
+            </div>
+          </div>
+          <div class="notif-divider"></div>
+          <div class="notif-section">
+            <div class="notif-section-label">Referrer (Gina)</div>
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon" style="background:#34C759"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span class="notif-app">Messages</span><span class="notif-time">now</span></div>
+              <div class="notif-title">NeoBank &middot; 72589</div>
+              <div class="notif-body">Almost there! Paul hasn't completed their first transaction yet. Once they do, you both unlock a free month of Netflix. Hang tight!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reminder · Email -->
+        <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="email">
+          <div class="notif-section">
+            <div class="notif-section-label">Referee (Paul)</div>
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="notif-app">Mail</span><span class="notif-time">now</span></div>
+              <div class="notif-title">A free Netflix month, one step away &#x1F37F;</div>
+              <div class="notif-body">Almost there &mdash; one transaction is all it takes to unlock a free month of Netflix for you and Gina. Don't miss out, it expires in 7 days!</div>
+            </div>
+          </div>
+          <div class="notif-divider"></div>
+          <div class="notif-section">
+            <div class="notif-section-label">Referrer (Gina)</div>
+            <div class="notif">
+              <div class="notif-header"><div class="notif-icon" style="background:#007AFF"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div><span class="notif-app">Mail</span><span class="notif-time">now</span></div>
+              <div class="notif-title">Almost there, Gina! &#x1F37F;</div>
+              <div class="notif-body">Paul hasn't completed their first transaction yet. Once they do, you both unlock a free month of Netflix. We'll let you know!</div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
