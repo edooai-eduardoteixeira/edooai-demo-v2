@@ -9,7 +9,7 @@ const neobank = {
   landing: {
     headline: 'Turn your best customers into your growth engine.',
     subheadline:
-      'Stop competing for expensive ads while your most powerful channel is untapped. We operate your referrals end-to-end to deliver customers at a fraction of your CAC.',
+      'Stop competing for expensive ads while your most powerful channel is untapped. We operate your referrals end-to-end to deliver active customers at a fraction of your CAC.',
     ctaText: 'Start Now',
     missionLine: 'On a mission to scale distribution for the best products on earth.',
   },
