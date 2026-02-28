@@ -239,6 +239,10 @@
   justify-content: center;
 }
 
+.msgContent > * {
+  width: 100%;
+}
+
 @media (min-width: 600px) {
   .msgHeader {
     padding: 6px 16px;
@@ -405,19 +409,19 @@
 }
 
 .pushApp {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
 }
 
 .pushTime {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text-tertiary);
   margin-left: auto;
 }
 
 .pushTitle {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   margin-bottom: 2px;
   overflow: hidden;
@@ -426,7 +430,7 @@
 }
 
 .pushBody {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-secondary);
   line-height: 1.4;
   display: -webkit-box;
@@ -595,19 +599,24 @@
 
 /* ── Share row (step 2) ── */
 .shareRow {
-  border-top: 1px solid var(--border-light);
-  padding: 6px 12px;
+  padding: 12px 16px;
 }
 
 .shareIcons {
   display: flex;
-  gap: 6px;
-  justify-content: flex-end;
+  justify-content: space-evenly;
+}
+
+.shareIconWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 .shareIcon {
-  width: 28px;
-  height: 28px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -616,9 +625,16 @@
 }
 
 .shareIcon svg {
-  width: 15px;
-  height: 15px;
+  width: 22px;
+  height: 22px;
   fill: #fff;
+}
+
+.shareLabel {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  text-align: center;
+  line-height: 1.2;
 }
 
 /* ── WhatsApp iOS mockup (step 2) ── */
@@ -842,7 +858,7 @@
 
 @media (min-width: 600px) {
   .shareRow {
-    padding: 8px 16px;
+    padding: 14px 20px;
   }
 }
 
