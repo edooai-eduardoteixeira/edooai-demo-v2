@@ -389,7 +389,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         lineHeight: 1,
                         cursor: 'pointer',
                         borderBottom: '1.5px dashed var(--border)',
-                        background: 'var(--accent-subtle)',
+                        background: 'var(--color-gray-200)',
                         padding: '4px 8px 4px 6px',
                         borderRadius: 6,
                       }}>
@@ -401,7 +401,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 </div>
 
                 {/* Slider with recommended zone */}
-                <div style={{ marginTop: 'auto', position: 'relative' }}>
+                <div style={{ marginTop: 'auto' }}>
                   {/* Recommended zone label — positioned relative to track */}
                   <div style={{
                     marginBottom: 8,
@@ -419,36 +419,42 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     </div>
                   </div>
 
-                  {/* Track container */}
-                  <div style={{
-                    position: 'relative',
-                    height: 6,
-                    background: 'var(--border-light)',
-                    borderRadius: 3,
-                  }}>
-                    {/* Recommended zone band — bold, visible */}
+                  {/* Track + input wrapper */}
+                  <div style={{ position: 'relative', height: 20 }}>
+                    {/* Track */}
                     <div style={{
                       position: 'absolute',
-                      left: `${recZoneLeft}%`,
-                      width: `${recZoneWidth}%`,
-                      top: -4,
-                      height: 14,
-                      background: 'var(--color-gray-300)',
-                      borderRadius: 8,
-                      zIndex: 0,
-                    }} />
-
-                    {/* Fill */}
-                    <div style={{
-                      position: 'absolute',
+                      top: 7,
                       left: 0,
-                      top: 0,
-                      width: `${sliderPercent}%`,
-                      height: '100%',
-                      background: 'var(--accent)',
+                      right: 0,
+                      height: 6,
+                      background: 'var(--border-light)',
                       borderRadius: 3,
-                      zIndex: 1,
-                    }} />
+                    }}>
+                      {/* Recommended zone band */}
+                      <div style={{
+                        position: 'absolute',
+                        left: `${recZoneLeft}%`,
+                        width: `${recZoneWidth}%`,
+                        top: -4,
+                        height: 14,
+                        background: 'var(--color-gray-400)',
+                        borderRadius: 8,
+                        zIndex: 0,
+                      }} />
+
+                      {/* Fill */}
+                      <div style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        width: `${sliderPercent}%`,
+                        height: '100%',
+                        background: 'var(--accent)',
+                        borderRadius: 3,
+                        zIndex: 1,
+                      }} />
+                    </div>
 
                     {/* Thumb */}
                     <div style={{
@@ -465,38 +471,38 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       zIndex: 3,
                       boxShadow: 'var(--shadow-md)',
                     }} />
-                  </div>
 
-                  {/* Invisible range input on top for interaction */}
-                  <input
-                    type="range"
-                    min={budgetSlider.min}
-                    max={budgetSlider.max}
-                    step={budgetSlider.step}
-                    value={budget}
-                    onChange={(e) => setBudget(Number(e.target.value))}
-                    style={{
-                      position: 'absolute',
-                      top: -6,
-                      left: 0,
-                      width: '100%',
-                      height: 20,
-                      opacity: 0,
-                      cursor: 'pointer',
-                      zIndex: 4,
-                    }}
-                  />
+                    {/* Invisible range input — covers full track area */}
+                    <input
+                      type="range"
+                      min={budgetSlider.min}
+                      max={budgetSlider.max}
+                      step={budgetSlider.step}
+                      value={budget}
+                      onChange={(e) => setBudget(Number(e.target.value))}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        opacity: 0,
+                        cursor: 'pointer',
+                        zIndex: 4,
+                      }}
+                    />
+                  </div>
 
                   {/* Bounds */}
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    marginTop: 10,
+                    marginTop: 8,
                     fontSize: 11,
                     color: 'var(--text-tertiary)',
                   }}>
-                    <span>{formatCurrency(budgetSlider.min)}</span>
-                    <span>{formatCurrency(budgetSlider.max)}</span>
+                    <span>${Math.round(budgetSlider.min / 1000)}K</span>
+                    <span>${Math.round(budgetSlider.max / 1000)}K</span>
                   </div>
                 </div>
 
