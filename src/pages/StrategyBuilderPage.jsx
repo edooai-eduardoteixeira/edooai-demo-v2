@@ -389,7 +389,9 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         lineHeight: 1,
                         cursor: 'pointer',
                         borderBottom: '1.5px dashed var(--border)',
-                        paddingBottom: 2,
+                        background: 'var(--accent-subtle)',
+                        padding: '4px 8px 4px 6px',
+                        borderRadius: 6,
                       }}>
                         ${Math.round(budget / 1000)}K
                       </span>
@@ -399,20 +401,22 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 </div>
 
                 {/* Slider with recommended zone */}
-                <div style={{ marginTop: 24, position: 'relative' }}>
-                  {/* Recommended zone label */}
+                <div style={{ marginTop: 'auto', position: 'relative' }}>
+                  {/* Recommended zone label — positioned relative to track */}
                   <div style={{
-                    position: 'absolute',
-                    left: `${recZoneLeft}%`,
-                    width: `${recZoneWidth}%`,
-                    top: -18,
-                    textAlign: 'center',
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: 'var(--text-tertiary)',
-                    letterSpacing: '0.04em',
+                    marginBottom: 8,
+                    paddingLeft: `${recZoneLeft}%`,
                   }}>
-                    Recommended
+                    <div style={{
+                      width: `${recZoneWidth}%`,
+                      textAlign: 'center',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: 'var(--text-tertiary)',
+                      letterSpacing: '0.04em',
+                    }}>
+                      Recommended
+                    </div>
                   </div>
 
                   {/* Track container */}
@@ -498,7 +502,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
                 {/* Guidance note — dynamic */}
                 <div style={{
-                  marginTop: 16,
+                  marginTop: 20,
                   fontSize: 12,
                   color: 'var(--text-secondary)',
                   lineHeight: 1.55,
