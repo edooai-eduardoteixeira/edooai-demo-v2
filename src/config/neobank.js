@@ -92,18 +92,47 @@ const neobank = {
   // Budget
   budgetSlider: {
     min: 50000,
-    max: 1000000,
-    step: 10000,
+    max: 500000,
+    step: 5000,
     default: 150000,
   },
 
+  // Recommended budget range — personalized per customer base
+  // Computed from: audience_size × saturation_curve × frequency guardrails
   recommendedBudget: {
+    min: 100000,
+    max: 200000,
     amount: 150000,
     rationale: 'Based on your 847K customers, we recommend $150K/month',
   },
 
-  budgetAnnotation:
-    'Edoo AI prioritizes highest-ROI customers first \u2014 CAC expected to increase with budget',
+  // Guidance messages — Head of Growth language, dynamic per budget level
+  budgetGuidance: {
+    belowFloor: 'Below minimum delivery threshold. Not enough signal to optimize — CPA stays flat.',
+    belowRec: 'Lean delivery. System optimizes slower — expect 2x the ramp time to peak CPA.',
+    atRec: 'Strong signal volume for 847K eligible users. Expect full CPA optimization within this period.',
+    aboveRec: 'Audience saturates above $200K/mo for this base. Incremental spend raises CPA.',
+  },
+
+  // Budget thresholds for guidance states
+  budgetThresholds: {
+    floor: 75000,      // below this = belowFloor guidance
+    recMin: 100000,    // below recMin = belowRec guidance
+    recMax: 200000,    // above recMax = aboveRec guidance
+  },
+
+  // Minimum threshold day — when system has enough signal to start optimizing
+  // Moves left with higher budget (more signal/day), right with lower
+  // At $150K → Day 8, at $75K → Day 14, at $300K → Day 5
+  thresholdDayByBudget: [
+    { budget: 50000, day: 18 },
+    { budget: 75000, day: 14 },
+    { budget: 100000, day: 10 },
+    { budget: 150000, day: 8 },
+    { budget: 200000, day: 6 },
+    { budget: 300000, day: 5 },
+    { budget: 500000, day: 4 },
+  ],
 
   // Projections — single strategy, diminishing returns
   // CAC monotonically increases, ROI monotonically decreases, conv rate decreases
@@ -113,7 +142,36 @@ const neobank = {
     { budget: 150000,  activeUsers: 260,  cac: 577,  convRate: 4.0, roi: 1.5, fraudSaved: 42000 },
     { budget: 250000,  activeUsers: 400,  cac: 625,  convRate: 3.6, roi: 1.3, fraudSaved: 68000 },
     { budget: 500000,  activeUsers: 680,  cac: 735,  convRate: 3.2, roi: 1.2, fraudSaved: 125000 },
-    { budget: 1000000, activeUsers: 1050, cac: 952,  convRate: 2.8, roi: 1.1, fraudSaved: 220000 },
+  ],
+
+  // Daily curve data per budget — 30 data points showing daily new users
+  // Used to render the forecast chart. Generated from confidence function.
+  dailyCurveByBudget: [
+    {
+      budget: 150000,
+      // Sum ≈ 260. Starts ~4/day (pre-threshold), ramps to ~12/day
+      daily: [4,4,4,5,5,5,5,5,6,6,7,7,7,8,8,8,9,9,9,10,10,10,11,11,11,11,12,12,12,12],
+    },
+    {
+      budget: 50000,
+      // Sum ≈ 95. Very slow ramp, threshold much later
+      daily: [1,1,1,1,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,4,4,4,4,4,4,4,5,5],
+    },
+    {
+      budget: 100000,
+      // Sum ≈ 180
+      daily: [3,3,3,3,3,4,4,4,5,5,5,5,6,6,6,6,7,7,7,7,7,8,8,8,8,8,8,8,8,8],
+    },
+    {
+      budget: 250000,
+      // Sum ≈ 400
+      daily: [7,7,8,8,9,9,10,10,11,11,12,12,13,13,13,14,14,14,15,15,15,15,16,16,16,16,16,16,16,16],
+    },
+    {
+      budget: 500000,
+      // Sum ≈ 680
+      daily: [14,14,15,16,17,18,19,20,21,21,22,22,23,23,24,24,24,25,25,25,25,25,26,26,26,26,26,26,26,26],
+    },
   ],
 
   // Execution — daily operations cycle
