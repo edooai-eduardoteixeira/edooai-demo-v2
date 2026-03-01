@@ -399,7 +399,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         color: 'var(--text-primary)',
                         lineHeight: 1,
                         cursor: 'pointer',
-                        borderBottom: '1.5px dashed var(--border)',
+                        borderBottom: '2px dashed var(--border)',
                         background: '#ececec',
                         padding: '2px 4px 3px 2px',
                         borderRadius: '4px 4px 0 0',
