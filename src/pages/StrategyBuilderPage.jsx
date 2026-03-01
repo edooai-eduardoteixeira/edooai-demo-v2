@@ -164,6 +164,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
   const [s1Combo, setS1Combo] = useState({ msg: 'ask', ch: 'push' });
   const [s3Combo, setS3Combo] = useState({ msg: 'success', ch: 'push' });
   const [openDD, setOpenDD] = useState(null);
+  const [hoveredDay, setHoveredDay] = useState(null);
   const timelineRef = useRef(null);
 
   useEffect(() => {
@@ -326,12 +327,12 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
               {/* LEFT — Budget input */}
               <div style={{
-                flex: '0 0 350px',
+                flex: '0 0 380px',
                 padding: '32px 28px',
                 borderRight: '1px solid var(--border-light)',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'center',
+                justifyContent: 'flex-start',
               }}>
                 <div style={{
                   fontSize: 11,
@@ -356,7 +357,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 >
                   {editingBudget ? (
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
-                      <span style={{ fontSize: 32, fontWeight: 700, color: 'var(--text-primary)' }}>$</span>
+                      <span style={{ fontSize: 40, fontWeight: 700, color: 'var(--text-primary)' }}>$</span>
                       <input
                         ref={budgetInputRef}
                         type="number"
@@ -365,23 +366,23 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         onBlur={commitBudget}
                         onKeyDown={(e) => e.key === 'Enter' && commitBudget()}
                         style={{
-                          fontSize: 32,
+                          fontSize: 40,
                           fontWeight: 700,
                           color: 'var(--text-primary)',
                           border: 'none',
                           borderBottom: '2px solid var(--accent)',
                           outline: 'none',
                           background: 'transparent',
-                          width: 80,
+                          width: 100,
                           fontFamily: 'inherit',
                         }}
                       />
-                      <span style={{ fontSize: 13, color: 'var(--text-tertiary)', fontWeight: 500 }}>K /mo</span>
+                      <span style={{ fontSize: 15, color: 'var(--text-tertiary)', fontWeight: 500 }}>K /mo</span>
                     </div>
                   ) : (
                     <>
                       <span style={{
-                        fontSize: 32,
+                        fontSize: 40,
                         fontWeight: 700,
                         letterSpacing: '-0.02em',
                         color: 'var(--text-primary)',
@@ -389,7 +390,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       }}>
                         ${Math.round(budget / 1000)}K
                       </span>
-                      <span style={{ fontSize: 13, color: 'var(--text-tertiary)', fontWeight: 500 }}>/mo</span>
+                      <span style={{ fontSize: 15, color: 'var(--text-tertiary)', fontWeight: 500 }}>/mo</span>
                     </>
                   )}
                 </div>
@@ -506,10 +507,10 @@ export default function StrategyBuilderPage({ config, onNext }) {
               {/* RIGHT — Outcome */}
               <div style={{
                 flex: 1,
-                padding: '28px 28px',
+                padding: '32px 28px',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'center',
+                justifyContent: 'flex-start',
               }}>
                 <div style={{
                   fontSize: 11,
@@ -523,7 +524,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{
-                    fontSize: 48,
+                    fontSize: 64,
                     fontWeight: 800,
                     letterSpacing: '-0.03em',
                     color: 'var(--text-primary)',
@@ -613,13 +614,14 @@ export default function StrategyBuilderPage({ config, onNext }) {
             {/* ── Daily new users chart ── */}
             {dailyCurve && (
               <div style={{
-                padding: '24px 28px 28px',
+                padding: '20px 16px 16px',
                 borderTop: '1px solid var(--border-light)',
               }}>
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'baseline',
+                  padding: '0 12px',
                 }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>
                     Daily new active users
@@ -629,33 +631,33 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   </span>
                 </div>
 
-                <div style={{ marginTop: 14, height: 200, position: 'relative' }}>
+                <div style={{ marginTop: 14, height: 260, position: 'relative' }}>
                   <svg
-                    viewBox="0 0 780 200"
+                    viewBox="0 0 780 240"
                     preserveAspectRatio="xMidYMid meet"
                     style={{ width: '100%', height: '100%', display: 'block' }}
                   >
                     <defs>
                       {(() => {
                         // Threshold X position
-                        const threshX = 50 + ((thresholdDay - 1) / 29) * 700;
+                        const threshX = 30 + ((thresholdDay - 1) / 29) * 730;
                         return (
                           <>
-                            <linearGradient id="curveGrad" x1={threshX} y1="0" x2="750" y2="0" gradientUnits="userSpaceOnUse">
+                            <linearGradient id="curveGrad" x1={threshX} y1="0" x2="760" y2="0" gradientUnits="userSpaceOnUse">
                               <stop offset="0%" stopColor="var(--color-gray-400)" />
                               <stop offset="25%" stopColor="var(--color-gray-500)" />
                               <stop offset="55%" stopColor="var(--color-gray-700)" />
                               <stop offset="100%" stopColor="var(--text-primary)" />
                             </linearGradient>
-                            <linearGradient id="areaGradPost" x1={threshX} y1="0" x2="750" y2="0" gradientUnits="userSpaceOnUse">
+                            <linearGradient id="areaGradPost" x1={threshX} y1="0" x2="760" y2="0" gradientUnits="userSpaceOnUse">
                               <stop offset="0%" stopColor="var(--color-gray-300)" stopOpacity="0.04" />
                               <stop offset="100%" stopColor="var(--text-primary)" stopOpacity="0.07" />
                             </linearGradient>
                             <clipPath id="clipPost">
-                              <rect x={threshX} y="0" width={750 - threshX} height="200" />
+                              <rect x={threshX} y="0" width={760 - threshX} height="240" />
                             </clipPath>
                             <clipPath id="clipPre">
-                              <rect x="0" y="0" width={threshX} height="200" />
+                              <rect x="0" y="0" width={threshX} height="240" />
                             </clipPath>
                           </>
                         );
@@ -664,13 +666,13 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
                     {/* Pre-threshold background wash */}
                     {(() => {
-                      const threshX = 50 + ((thresholdDay - 1) / 29) * 700;
-                      return <rect x="50" y="20" width={threshX - 50} height="148" fill="var(--accent-subtle)" />;
+                      const threshX = 30 + ((thresholdDay - 1) / 29) * 730;
+                      return <rect x="30" y="10" width={threshX - 30} height="190" fill="var(--accent-subtle)" />;
                     })()}
 
                     {/* Grid lines */}
-                    {[25, 60, 95, 130, 165].map((y) => (
-                      <line key={y} x1="50" y1={y} x2="750" y2={y} stroke="var(--border-light)" strokeWidth="1" />
+                    {[30, 70, 110, 150, 195].map((y) => (
+                      <line key={y} x1="30" y1={y} x2="760" y2={y} stroke="var(--border-light)" strokeWidth="1" />
                     ))}
 
                     {/* Y-axis labels */}
@@ -680,8 +682,8 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       return [0, step, step * 2, step * 3, step * 4].map((v, i) => (
                         <text
                           key={i}
-                          x="44"
-                          y={169 - i * 35}
+                          x="24"
+                          y={199 - i * 41}
                           fontSize="11"
                           fill="var(--text-tertiary)"
                           textAnchor="end"
@@ -693,14 +695,14 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     })()}
 
                     {/* X-axis */}
-                    <line x1="50" y1="165" x2="750" y2="165" stroke="var(--border)" strokeWidth="1" />
+                    <line x1="30" y1="195" x2="760" y2="195" stroke="var(--border)" strokeWidth="1" />
                     {[1, 5, 10, 15, 20, 25, 30].map((d) => {
-                      const x = 50 + ((d - 1) / 29) * 700;
+                      const x = 30 + ((d - 1) / 29) * 730;
                       return (
                         <text
                           key={d}
                           x={x}
-                          y="182"
+                          y="214"
                           fontSize="11"
                           fill="var(--text-tertiary)"
                           textAnchor="middle"
@@ -710,18 +712,20 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         </text>
                       );
                     })}
-                    <text x="400" y="196" fontSize="11" fill="var(--text-tertiary)" textAnchor="middle" fontFamily="var(--font-family)">Day</text>
+                    <text x="395" y="232" fontSize="11" fill="var(--text-tertiary)" textAnchor="middle" fontFamily="var(--font-family)">Day</text>
 
                     {/* Build SVG path from daily data */}
                     {(() => {
                       const maxVal = Math.max(...dailyCurve) + 2;
+                      const chartLeft = 30, chartRight = 760, chartBottom = 195, chartTop = 15;
+                      const chartW = chartRight - chartLeft, chartH = chartBottom - chartTop;
                       const points = dailyCurve.map((v, i) => {
-                        const x = 50 + (i / 29) * 700;
-                        const y = 165 - (v / (maxVal)) * 140;
+                        const x = chartLeft + (i / 29) * chartW;
+                        const y = chartBottom - (v / maxVal) * chartH;
                         return `${x},${y}`;
                       });
                       const pathD = `M${points[0]} ${points.slice(1).map((p) => `L${p}`).join(' ')}`;
-                      const areaD = `${pathD} L750,165 L50,165 Z`;
+                      const areaD = `${pathD} L${chartRight},${chartBottom} L${chartLeft},${chartBottom} Z`;
                       const lastPoint = points[points.length - 1].split(',');
                       const lastVal = dailyCurve[dailyCurve.length - 1];
 
@@ -739,11 +743,49 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           {/* Curve post-threshold (gradient) */}
                           <path d={pathD} fill="none" stroke="url(#curveGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#clipPost)" />
 
+                          {/* Hover overlay for tooltip */}
+                          <rect
+                            x={chartLeft} y={chartTop}
+                            width={chartW} height={chartH}
+                            fill="transparent"
+                            style={{ cursor: 'crosshair' }}
+                            onMouseMove={(e) => {
+                              const svg = e.currentTarget.closest('svg');
+                              const pt = svg.createSVGPoint();
+                              pt.x = e.clientX; pt.y = e.clientY;
+                              const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+                              const dayIdx = Math.round(((svgP.x - chartLeft) / chartW) * 29);
+                              const clamped = Math.max(0, Math.min(29, dayIdx));
+                              setHoveredDay({ day: clamped + 1, value: dailyCurve[clamped], x: chartLeft + (clamped / 29) * chartW, y: chartBottom - (dailyCurve[clamped] / maxVal) * chartH });
+                            }}
+                            onMouseLeave={() => setHoveredDay(null)}
+                          />
+
+                          {/* Tooltip */}
+                          {hoveredDay && (
+                            <>
+                              <line x1={hoveredDay.x} y1={chartTop} x2={hoveredDay.x} y2={chartBottom} stroke="var(--text-tertiary)" strokeWidth="1" strokeDasharray="3,3" opacity="0.5" />
+                              <circle cx={hoveredDay.x} cy={hoveredDay.y} r="4" fill="var(--text-primary)" stroke="white" strokeWidth="2" />
+                              <rect
+                                x={hoveredDay.x - 36} y={hoveredDay.y - 32}
+                                width="72" height="22" rx="4"
+                                fill="var(--text-primary)"
+                              />
+                              <text
+                                x={hoveredDay.x} y={hoveredDay.y - 17}
+                                fontSize="11" fontWeight="600" fill="white"
+                                textAnchor="middle" fontFamily="var(--font-family)"
+                              >
+                                Day {hoveredDay.day}: {hoveredDay.value}
+                              </text>
+                            </>
+                          )}
+
                           {/* Endpoint */}
                           <circle cx={lastPoint[0]} cy={lastPoint[1]} r="3.5" fill="var(--text-primary)" />
                           <text
                             x={Number(lastPoint[0])}
-                            y={Number(lastPoint[1]) - 8}
+                            y={Number(lastPoint[1]) - 10}
                             fontSize="11"
                             fill="var(--text-primary)"
                             fontWeight="600"

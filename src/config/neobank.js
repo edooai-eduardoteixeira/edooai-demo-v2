@@ -124,7 +124,7 @@ const neobank = {
     fraudRate: 0.07,               // Fraction of spend saved by fraud detection
     avgRevenuePerUser: 500,        // Revenue per activated user (for ROI calc)
     baseConvRate: 4.8,            // Base conversion rate (%)
-    minSignalVolume: 325,         // Cumulative conversions for statistical significance (calibrated: floor≈$75K at D21)
+    minSignalVolume: 40,          // Cumulative conversions for statistical significance
     diminishing: {
       // difficulty = 1 + scale * (dailyBudget/audience)^curve
       // Produces U-shaped CAC: minimum in recommended range, rises above recMax
