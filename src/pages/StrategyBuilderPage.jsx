@@ -382,10 +382,11 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         border: 'none',
                         borderBottom: '2px solid var(--accent)',
                         outline: 'none',
-                        background: 'transparent',
+                        background: '#ececec',
+                        padding: '2px 4px 3px 2px',
+                        borderRadius: 4,
                         width: `${Math.max(2, String(budgetInput).length) * 0.6}em`,
                         fontFamily: 'inherit',
-                        padding: 0,
                         margin: 0,
                       }}
                     />
@@ -398,6 +399,9 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       lineHeight: 1,
                       cursor: 'pointer',
                       borderBottom: '1.5px dashed var(--border)',
+                      background: '#ececec',
+                      padding: '2px 4px 3px 2px',
+                      borderRadius: 4,
                     }}>
                       {Math.round(budget / 1000)}
                     </span>
