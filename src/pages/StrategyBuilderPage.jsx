@@ -322,213 +322,267 @@ export default function StrategyBuilderPage({ config, onNext }) {
               overflow: 'hidden',
             }}
           >
-            {/* ── Forecast panel: budget (left) + result (right) ── */}
-            <div style={{ display: 'flex', alignItems: 'stretch' }}>
+            {/* ── Forecast panel: 2×2 grid — shared row boundary aligns separator lines ── */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '380px 1fr',
+              gridTemplateRows: 'auto auto',
+            }}>
 
-              {/* LEFT — Budget input */}
+              {/* Cell 1: Top-left — budget label + number */}
               <div style={{
-                flex: '0 0 380px',
-                padding: '32px 28px',
+                padding: '32px 28px 16px',
                 borderRight: '1px solid var(--border-light)',
-                display: 'flex',
-                flexDirection: 'column',
               }}>
-                {/* Top section — flex:1 to align with right column's top */}
-                <div style={{ flex: 1 }}>
-                  <div style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
-                    color: 'var(--text-tertiary)',
-                  }}>
-                    Monthly budget
-                  </div>
+                <div style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase',
+                  color: 'var(--text-tertiary)',
+                }}>
+                  Monthly budget
+                </div>
 
-                  {/* Budget number — inline editable, $ and K are always visible as mask */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'baseline',
-                      gap: 0,
-                      marginTop: 8,
-                      cursor: 'text',
-                    }}
-                    onClick={!editingBudget ? startEditBudget : undefined}
-                  >
-                    <span style={{
-                      fontSize: 40,
-                      fontWeight: 500,
-                      color: 'var(--text-primary)',
-                      lineHeight: 1,
-                    }}>$</span>
-                    {editingBudget ? (
-                      <input
-                        ref={budgetInputRef}
-                        type="text"
-                        inputMode="numeric"
-                        value={budgetInput}
-                        onChange={(e) => {
-                          const v = e.target.value.replace(/[^0-9]/g, '');
-                          setBudgetInput(v);
-                        }}
-                        onBlur={commitBudget}
-                        onKeyDown={(e) => e.key === 'Enter' && commitBudget()}
-                        style={{
-                          fontSize: 40,
-                          fontWeight: 500,
-                          letterSpacing: '-0.02em',
-                          color: 'var(--text-primary)',
-                          lineHeight: 1,
-                          border: 'none',
-                          borderBottom: '2px solid var(--accent)',
-                          outline: 'none',
-                          background: '#ececec',
-                          padding: '2px 4px 3px 2px',
-                          borderRadius: '4px 4px 0 0',
-                          width: `${Math.max(2, String(budgetInput).length) * 0.6}em`,
-                          fontFamily: 'inherit',
-                          margin: 0,
-                        }}
-                      />
-                    ) : (
-                      <span style={{
+                {/* Budget number — inline editable, $ and K are always visible as mask */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: 0,
+                    marginTop: 8,
+                    cursor: 'text',
+                  }}
+                  onClick={!editingBudget ? startEditBudget : undefined}
+                >
+                  <span style={{
+                    fontSize: 40,
+                    fontWeight: 500,
+                    color: 'var(--text-primary)',
+                    lineHeight: 1,
+                  }}>$</span>
+                  {editingBudget ? (
+                    <input
+                      ref={budgetInputRef}
+                      type="text"
+                      inputMode="numeric"
+                      value={budgetInput}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/[^0-9]/g, '');
+                        setBudgetInput(v);
+                      }}
+                      onBlur={commitBudget}
+                      onKeyDown={(e) => e.key === 'Enter' && commitBudget()}
+                      style={{
                         fontSize: 40,
                         fontWeight: 500,
                         letterSpacing: '-0.02em',
                         color: 'var(--text-primary)',
                         lineHeight: 1,
-                        cursor: 'pointer',
-                        borderBottom: '2px dashed var(--border)',
+                        border: 'none',
+                        outline: 'none',
                         background: '#ececec',
                         padding: '2px 4px 3px 2px',
-                        borderRadius: '4px 4px 0 0',
-                      }}>
-                        {Math.round(budget / 1000)}
-                      </span>
-                    )}
+                        borderRadius: 4,
+                        width: `${Math.max(2, String(budgetInput).length) * 0.6}em`,
+                        fontFamily: 'inherit',
+                        margin: 0,
+                        textDecoration: 'underline',
+                        textDecorationStyle: 'solid',
+                        textDecorationColor: 'var(--accent)',
+                        textDecorationThickness: '2px',
+                        textUnderlineOffset: '4px',
+                      }}
+                    />
+                  ) : (
                     <span style={{
                       fontSize: 40,
                       fontWeight: 500,
+                      letterSpacing: '-0.02em',
                       color: 'var(--text-primary)',
                       lineHeight: 1,
-                    }}>K</span>
-                    <span style={{
-                      fontSize: 15,
-                      color: 'var(--text-tertiary)',
-                      fontWeight: 500,
-                      marginLeft: 6,
-                    }}>/mo</span>
-                  </div>
-                </div>
-
-                {/* Slider with recommended zone — aligned with right column's borderTop */}
-                <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--border-light)' }}>
-                  {/* Recommended zone label — positioned relative to track */}
-                  <div style={{
-                    marginBottom: 8,
-                    paddingLeft: `${recZoneLeft}%`,
-                  }}>
-                    <div style={{
-                      width: `${recZoneWidth}%`,
-                      textAlign: 'center',
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: 'var(--text-tertiary)',
-                      letterSpacing: '0.04em',
+                      cursor: 'pointer',
+                      background: '#ececec',
+                      padding: '2px 4px 3px 2px',
+                      borderRadius: 4,
+                      textDecoration: 'underline',
+                      textDecorationStyle: 'dashed',
+                      textDecorationColor: 'var(--border)',
+                      textDecorationThickness: '2px',
+                      textUnderlineOffset: '4px',
                     }}>
-                      Recommended
-                    </div>
-                  </div>
-
-                  {/* Track + input wrapper */}
-                  <div style={{ position: 'relative', height: 20 }}>
-                    {/* Track background */}
-                    <div style={{
-                      position: 'absolute',
-                      top: 7,
-                      left: 0,
-                      right: 0,
-                      height: 6,
-                      background: 'var(--border-light)',
-                      borderRadius: 3,
-                    }} />
-
-                    {/* Recommended zone band — behind the fill */}
-                    <div style={{
-                      position: 'absolute',
-                      left: `${recZoneLeft}%`,
-                      width: `${recZoneWidth}%`,
-                      top: 3,
-                      height: 14,
-                      background: 'var(--color-gray-300)',
-                      borderRadius: 7,
-                      zIndex: 0,
-                    }} />
-
-                    {/* Fill — on top of everything except thumb */}
-                    <div style={{
-                      position: 'absolute',
-                      left: 0,
-                      top: 7,
-                      width: `${sliderPercent}%`,
-                      height: 6,
-                      background: 'var(--accent)',
-                      borderRadius: 3,
-                      zIndex: 1,
-                    }} />
-
-                    {/* Thumb */}
-                    <div style={{
-                      position: 'absolute',
-                      left: `${sliderPercent}%`,
-                      top: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      width: 20,
-                      height: 20,
-                      background: 'var(--accent)',
-                      border: '3px solid var(--surface)',
-                      borderRadius: '50%',
-                      cursor: 'grab',
-                      zIndex: 3,
-                      boxShadow: 'var(--shadow-md)',
-                    }} />
-
-                    {/* Invisible range input — covers full track area */}
-                    <input
-                      type="range"
-                      min={budgetSlider.min}
-                      max={budgetSlider.max}
-                      step={budgetSlider.step}
-                      value={budget}
-                      onChange={(e) => setBudget(Number(e.target.value))}
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        opacity: 0,
-                        cursor: 'pointer',
-                        zIndex: 4,
-                      }}
-                    />
-                  </div>
-
-                  {/* Bounds */}
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    marginTop: 8,
-                    fontSize: 11,
+                      {Math.round(budget / 1000)}
+                    </span>
+                  )}
+                  <span style={{
+                    fontSize: 40,
+                    fontWeight: 500,
+                    color: 'var(--text-primary)',
+                    lineHeight: 1,
+                  }}>K</span>
+                  <span style={{
+                    fontSize: 15,
                     color: 'var(--text-tertiary)',
+                    fontWeight: 500,
+                    marginLeft: 6,
+                  }}>/mo</span>
+                </div>
+              </div>
+
+              {/* Cell 2: Top-right — headline number */}
+              <div style={{ padding: '32px 28px 16px' }}>
+                <div style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase',
+                  color: 'var(--text-tertiary)',
+                }}>
+                  First 30 days
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{
+                    fontSize: 64,
+                    fontWeight: 800,
+                    letterSpacing: '-0.03em',
+                    color: 'var(--text-primary)',
+                    lineHeight: 1,
+                    marginTop: 6,
                   }}>
-                    <span>${Math.round(budgetSlider.min / 1000)}K</span>
-                    <span>${Math.round(budgetSlider.max / 1000)}K</span>
+                    <AnimatedNumber value={activeUsers} duration={300} />
+                  </div>
+                  {/* Sparkline trend for headline */}
+                  <svg width="48" height="20" viewBox="0 0 48 20" style={{ marginTop: 8 }}>
+                    <polyline
+                      points="2,18 10,16 20,13 30,9 38,5 46,2"
+                      fill="none"
+                      stroke="var(--success)"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+
+                <div style={{
+                  fontSize: 14,
+                  color: 'var(--text-secondary)',
+                  marginTop: 4,
+                }}>
+                  new active users
+                </div>
+              </div>
+
+              {/* Cell 3: Bottom-left — slider + guidance */}
+              <div style={{
+                padding: '0 28px 32px',
+                borderRight: '1px solid var(--border-light)',
+              }}>
+                {/* Recommended zone label */}
+                <div style={{
+                  marginBottom: 8,
+                  paddingLeft: `${recZoneLeft}%`,
+                }}>
+                  <div style={{
+                    width: `${recZoneWidth}%`,
+                    textAlign: 'center',
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: 'var(--text-tertiary)',
+                    letterSpacing: '0.04em',
+                  }}>
+                    Recommended
                   </div>
                 </div>
 
-                {/* Guidance note — dynamic */}
+                {/* Track + input wrapper */}
+                <div style={{ position: 'relative', height: 20 }}>
+                  {/* Track background */}
+                  <div style={{
+                    position: 'absolute',
+                    top: 7,
+                    left: 0,
+                    right: 0,
+                    height: 6,
+                    background: 'var(--border-light)',
+                    borderRadius: 3,
+                  }} />
+
+                  {/* Recommended zone band */}
+                  <div style={{
+                    position: 'absolute',
+                    left: `${recZoneLeft}%`,
+                    width: `${recZoneWidth}%`,
+                    top: 3,
+                    height: 14,
+                    background: 'var(--color-gray-300)',
+                    borderRadius: 7,
+                    zIndex: 0,
+                  }} />
+
+                  {/* Fill */}
+                  <div style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 7,
+                    width: `${sliderPercent}%`,
+                    height: 6,
+                    background: 'var(--accent)',
+                    borderRadius: 3,
+                    zIndex: 1,
+                  }} />
+
+                  {/* Thumb */}
+                  <div style={{
+                    position: 'absolute',
+                    left: `${sliderPercent}%`,
+                    top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 20,
+                    height: 20,
+                    background: 'var(--accent)',
+                    border: '3px solid var(--surface)',
+                    borderRadius: '50%',
+                    cursor: 'grab',
+                    zIndex: 3,
+                    boxShadow: 'var(--shadow-md)',
+                  }} />
+
+                  {/* Invisible range input */}
+                  <input
+                    type="range"
+                    min={budgetSlider.min}
+                    max={budgetSlider.max}
+                    step={budgetSlider.step}
+                    value={budget}
+                    onChange={(e) => setBudget(Number(e.target.value))}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      opacity: 0,
+                      cursor: 'pointer',
+                      zIndex: 4,
+                    }}
+                  />
+                </div>
+
+                {/* Bounds */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginTop: 8,
+                  fontSize: 11,
+                  color: 'var(--text-tertiary)',
+                }}>
+                  <span>${Math.round(budgetSlider.min / 1000)}K</span>
+                  <span>${Math.round(budgetSlider.max / 1000)}K</span>
+                </div>
+
+                {/* Guidance note */}
                 <div style={{
                   marginTop: 20,
                   fontSize: 12,
@@ -539,67 +593,14 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 </div>
               </div>
 
-              {/* RIGHT — Outcome */}
+              {/* Cell 4: Bottom-right — KPI grid */}
               <div style={{
-                flex: 1,
-                padding: '32px 28px',
-                display: 'flex',
-                flexDirection: 'column',
+                padding: '14px 28px 32px',
+                borderTop: '1px solid var(--border-light)',
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '10px 20px',
               }}>
-                {/* Top section — flex:1 to align with left column's top */}
-                <div style={{ flex: 1 }}>
-                  <div style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
-                    color: 'var(--text-tertiary)',
-                  }}>
-                    First 30 days
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{
-                      fontSize: 64,
-                      fontWeight: 800,
-                      letterSpacing: '-0.03em',
-                      color: 'var(--text-primary)',
-                      lineHeight: 1,
-                      marginTop: 6,
-                    }}>
-                      <AnimatedNumber value={activeUsers} duration={300} />
-                    </div>
-                    {/* Sparkline trend for headline */}
-                    <svg width="48" height="20" viewBox="0 0 48 20" style={{ marginTop: 8 }}>
-                      <polyline
-                        points="2,18 10,16 20,13 30,9 38,5 46,2"
-                        fill="none"
-                        stroke="var(--success)"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-
-                  <div style={{
-                    fontSize: 14,
-                    color: 'var(--text-secondary)',
-                    marginTop: 4,
-                  }}>
-                    new active users
-                  </div>
-                </div>
-
-                {/* 4 KPIs with sparklines — 2×2 grid, aligned with left column's slider */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '10px 20px',
-                  marginTop: 16,
-                  paddingTop: 14,
-                  borderTop: '1px solid var(--border-light)',
-                }}>
                   {[
                     { label: 'Avg CAC', value: `$${cac}`, sparkDir: 'down', tip: sparkData?.cac },
                     { label: 'ROI', value: `${typeof roi === 'number' ? roi.toFixed(1) : roi}x`, sparkDir: 'up', tip: sparkData?.roi },
@@ -644,7 +645,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       </div>
                     </div>
                   ))}
-                </div>
               </div>
             </div>
 
