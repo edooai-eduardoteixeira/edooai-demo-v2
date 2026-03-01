@@ -421,7 +421,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
                   {/* Track + input wrapper */}
                   <div style={{ position: 'relative', height: 20 }}>
-                    {/* Track */}
+                    {/* Track background */}
                     <div style={{
                       position: 'absolute',
                       top: 7,
@@ -430,31 +430,31 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       height: 6,
                       background: 'var(--border-light)',
                       borderRadius: 3,
-                    }}>
-                      {/* Recommended zone band */}
-                      <div style={{
-                        position: 'absolute',
-                        left: `${recZoneLeft}%`,
-                        width: `${recZoneWidth}%`,
-                        top: -4,
-                        height: 14,
-                        background: 'var(--color-gray-400)',
-                        borderRadius: 8,
-                        zIndex: 0,
-                      }} />
+                    }} />
 
-                      {/* Fill */}
-                      <div style={{
-                        position: 'absolute',
-                        left: 0,
-                        top: 0,
-                        width: `${sliderPercent}%`,
-                        height: '100%',
-                        background: 'var(--accent)',
-                        borderRadius: 3,
-                        zIndex: 1,
-                      }} />
-                    </div>
+                    {/* Recommended zone band — always visible above track */}
+                    <div style={{
+                      position: 'absolute',
+                      left: `${recZoneLeft}%`,
+                      width: `${recZoneWidth}%`,
+                      top: 3,
+                      height: 14,
+                      background: 'var(--color-gray-300)',
+                      borderRadius: 7,
+                      zIndex: 1,
+                    }} />
+
+                    {/* Fill — clipped to track height, below the band */}
+                    <div style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 7,
+                      width: `${sliderPercent}%`,
+                      height: 6,
+                      background: 'var(--accent)',
+                      borderRadius: 3,
+                      zIndex: 0,
+                    }} />
 
                     {/* Thumb */}
                     <div style={{
