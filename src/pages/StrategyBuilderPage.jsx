@@ -88,16 +88,70 @@ export default function StrategyBuilderPage({ config, onNext }) {
     strategy,
     budgetSlider,
     recommendedBudget,
-    budgetAnnotation,
-    projections: projData,
+    budgetGuidance,
+    engineParams,
     operationsCycle,
     riskManagement,
     approvalScope,
+    totalCustomers,
   } = config;
 
-  /* ── Budget + projections ── */
+  /* ── Budget + engine projections ── */
   const [budget, setBudget] = useState(budgetSlider.default);
-  const proj = useProjections(projData, budget);
+  const proj = useProjections(engineParams, budget);
+
+  // Destructure engine outputs
+  const {
+    dailyCurve,
+    thresholdDay,
+    activeUsers,
+    cac,
+    roi,
+    convRate,
+    fraudSaved,
+    guidanceState,
+  } = proj || {};
+
+  /* ── Editable budget number ── */
+  const [editingBudget, setEditingBudget] = useState(false);
+  const [budgetInput, setBudgetInput] = useState('');
+  const budgetInputRef = useRef(null);
+
+  const startEditBudget = () => {
+    setBudgetInput(String(budget / 1000));
+    setEditingBudget(true);
+    setTimeout(() => budgetInputRef.current?.select(), 0);
+  };
+
+  const commitBudget = () => {
+    const val = Math.round(Number(budgetInput) * 1000);
+    if (!isNaN(val) && val >= budgetSlider.min && val <= budgetSlider.max) {
+      setBudget(Math.round(val / budgetSlider.step) * budgetSlider.step);
+    }
+    setEditingBudget(false);
+  };
+
+  /* ── Guidance message from engine state ── */
+  const guidanceMessage = budgetGuidance && guidanceState
+    ? budgetGuidance[guidanceState] || ''
+    : '';
+
+  /* ── Recommended zone position on slider (%) ── */
+  const recZoneLeft = recommendedBudget?.min
+    ? ((recommendedBudget.min - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100
+    : 60;
+  const recZoneWidth = recommendedBudget?.max
+    ? ((recommendedBudget.max - recommendedBudget.min) / (budgetSlider.max - budgetSlider.min)) * 100
+    : 20;
+  const sliderPercent = ((budget - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100;
+
+  /* ── Sparkline data (start/end values for hover) ── */
+  const sparkData = dailyCurve ? {
+    cac: { start: `$${engineParams.learningCAC}`, end: `$${cac}` },
+    roi: { start: '0.8x', end: `${roi}x` },
+    conv: { start: `${(convRate * 0.5).toFixed(1)}%`, end: `${convRate}%` },
+    fraud: { start: '$2K', end: `$${Math.round(fraudSaved / 1000)}K` },
+  } : null;
 
   /* ── Progressive reveal ── */
   const [showResult, setShowResult] = useState(false);
@@ -253,155 +307,458 @@ export default function StrategyBuilderPage({ config, onNext }) {
         </div>
 
         {/* ════════════════════════════════════════════
-            SECTION 1 — Result + Budget (one unit)
+            SECTION 1 — Forecast Panel (Budget + Result + Chart)
+            Redesigned: v12 wireframe with real logic
             ════════════════════════════════════════════ */}
         {showResult && (
           <section
             style={{
-              marginBottom: '3rem',
+              marginBottom: 48,
               animation: 'fadeIn 0.4s ease forwards',
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-lg)',
+              overflow: 'hidden',
             }}
           >
-            {/* Primary result */}
-            <div
-              style={{
-                textAlign: 'center',
-                padding: '2rem 0 1.5rem',
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '3.5rem',
-                  fontWeight: 700,
-                  color: 'var(--text-primary)',
-                  lineHeight: 1,
-                  marginBottom: '0.5rem',
-                }}
-              >
-                <AnimatedNumber value={proj.activeUsers} duration={300} />
-              </div>
-              <div
-                style={{
-                  fontSize: 'var(--font-size-lg)',
-                  color: 'var(--text-secondary)',
-                  fontWeight: 500,
-                }}
-              >
-                projected new active users in 30 days
-              </div>
-            </div>
+            {/* ── Forecast panel: budget (left) + result (right) ── */}
+            <div style={{ display: 'flex', alignItems: 'stretch' }}>
 
-            {/* KPI row */}
-            <div
-              style={{
+              {/* LEFT — Budget input */}
+              <div style={{
+                flex: '0 0 350px',
+                padding: '32px 28px',
+                borderRight: '1px solid var(--border-light)',
                 display: 'flex',
-                gap: '0.75rem',
-                marginBottom: '2rem',
-              }}
-            >
-              <KPICard label="CAC">
-                <AnimatedNumber value={proj.cac} prefix="$" duration={300} />
-              </KPICard>
-              <KPICard label="ROI">
-                <span>{typeof proj.roi === 'number' ? proj.roi.toFixed(1) : proj.roi}x</span>
-              </KPICard>
-              <KPICard label="Conv Rate">
-                <span>{typeof proj.convRate === 'number' ? proj.convRate.toFixed(1) : proj.convRate}%</span>
-              </KPICard>
-              <KPICard label="Fraud Saved">
-                <AnimatedNumber value={proj.fraudSaved} prefix="$" duration={300} />
-              </KPICard>
-            </div>
-
-            {/* Budget slider */}
-            <div
-              style={{
-                padding: '1.5rem',
-                backgroundColor: 'var(--accent-subtle)',
-                borderRadius: 'var(--radius-lg)',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: '0.5rem',
-                }}
-              >
-                <h3
-                  style={{
-                    fontSize: 'var(--font-size-base)',
-                    fontWeight: 700,
-                    margin: 0,
-                  }}
-                >
-                  Monthly Budget
-                </h3>
-                <span
-                  style={{
-                    fontSize: 'var(--font-size-2xl)',
-                    fontWeight: 700,
-                    color: 'var(--text-primary)',
-                  }}
-                >
-                  <AnimatedNumber value={budget} prefix="$" duration={200} />
-                </span>
-              </div>
-              <p
-                style={{
-                  fontSize: 'var(--font-size-sm)',
+                flexDirection: 'column',
+                justifyContent: 'center',
+              }}>
+                <div style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase',
                   color: 'var(--text-tertiary)',
-                  margin: 0,
-                  marginBottom: '1rem',
-                }}
-              >
-                {recommendedBudget.rationale}
-              </p>
-              <div style={{ marginBottom: '0.75rem' }}>
+                }}>
+                  Monthly budget
+                </div>
+
+                {/* Budget number — editable on click */}
                 <div
                   style={{
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    marginBottom: '0.5rem',
+                    alignItems: 'baseline',
+                    gap: 4,
+                    marginTop: 8,
+                    cursor: 'text',
                   }}
+                  onClick={!editingBudget ? startEditBudget : undefined}
                 >
-                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>
-                    {formatCurrency(budgetSlider.min)}
+                  {editingBudget ? (
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
+                      <span style={{ fontSize: 32, fontWeight: 700, color: 'var(--text-primary)' }}>$</span>
+                      <input
+                        ref={budgetInputRef}
+                        type="number"
+                        value={budgetInput}
+                        onChange={(e) => setBudgetInput(e.target.value)}
+                        onBlur={commitBudget}
+                        onKeyDown={(e) => e.key === 'Enter' && commitBudget()}
+                        style={{
+                          fontSize: 32,
+                          fontWeight: 700,
+                          color: 'var(--text-primary)',
+                          border: 'none',
+                          borderBottom: '2px solid var(--accent)',
+                          outline: 'none',
+                          background: 'transparent',
+                          width: 80,
+                          fontFamily: 'inherit',
+                        }}
+                      />
+                      <span style={{ fontSize: 13, color: 'var(--text-tertiary)', fontWeight: 500 }}>K /mo</span>
+                    </div>
+                  ) : (
+                    <>
+                      <span style={{
+                        fontSize: 32,
+                        fontWeight: 700,
+                        letterSpacing: '-0.02em',
+                        color: 'var(--text-primary)',
+                        lineHeight: 1,
+                      }}>
+                        ${Math.round(budget / 1000)}K
+                      </span>
+                      <span style={{ fontSize: 13, color: 'var(--text-tertiary)', fontWeight: 500 }}>/mo</span>
+                    </>
+                  )}
+                </div>
+
+                {/* Slider with recommended zone */}
+                <div style={{ marginTop: 24, position: 'relative' }}>
+                  {/* Recommended zone label */}
+                  <div style={{
+                    position: 'absolute',
+                    left: `${recZoneLeft}%`,
+                    width: `${recZoneWidth}%`,
+                    top: -18,
+                    textAlign: 'center',
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: 'var(--text-tertiary)',
+                    letterSpacing: '0.04em',
+                  }}>
+                    Recommended
+                  </div>
+
+                  {/* Track container */}
+                  <div style={{
+                    position: 'relative',
+                    height: 6,
+                    background: 'var(--border-light)',
+                    borderRadius: 3,
+                  }}>
+                    {/* Recommended zone band — bold, visible */}
+                    <div style={{
+                      position: 'absolute',
+                      left: `${recZoneLeft}%`,
+                      width: `${recZoneWidth}%`,
+                      top: -4,
+                      height: 14,
+                      background: 'var(--color-gray-300)',
+                      borderRadius: 8,
+                      zIndex: 0,
+                    }} />
+
+                    {/* Fill */}
+                    <div style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      width: `${sliderPercent}%`,
+                      height: '100%',
+                      background: 'var(--accent)',
+                      borderRadius: 3,
+                      zIndex: 1,
+                    }} />
+
+                    {/* Thumb */}
+                    <div style={{
+                      position: 'absolute',
+                      left: `${sliderPercent}%`,
+                      top: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: 20,
+                      height: 20,
+                      background: 'var(--accent)',
+                      border: '3px solid var(--surface)',
+                      borderRadius: '50%',
+                      cursor: 'grab',
+                      zIndex: 3,
+                      boxShadow: 'var(--shadow-md)',
+                    }} />
+                  </div>
+
+                  {/* Invisible range input on top for interaction */}
+                  <input
+                    type="range"
+                    min={budgetSlider.min}
+                    max={budgetSlider.max}
+                    step={budgetSlider.step}
+                    value={budget}
+                    onChange={(e) => setBudget(Number(e.target.value))}
+                    style={{
+                      position: 'absolute',
+                      top: -6,
+                      left: 0,
+                      width: '100%',
+                      height: 20,
+                      opacity: 0,
+                      cursor: 'pointer',
+                      zIndex: 4,
+                    }}
+                  />
+
+                  {/* Bounds */}
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 10,
+                    fontSize: 11,
+                    color: 'var(--text-tertiary)',
+                  }}>
+                    <span>{formatCurrency(budgetSlider.min)}</span>
+                    <span>{formatCurrency(budgetSlider.max)}</span>
+                  </div>
+                </div>
+
+                {/* Guidance note — dynamic */}
+                <div style={{
+                  marginTop: 16,
+                  fontSize: 12,
+                  color: 'var(--text-secondary)',
+                  lineHeight: 1.55,
+                }}>
+                  {guidanceMessage}
+                </div>
+              </div>
+
+              {/* RIGHT — Outcome */}
+              <div style={{
+                flex: 1,
+                padding: '28px 28px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+              }}>
+                <div style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase',
+                  color: 'var(--text-tertiary)',
+                }}>
+                  First 30 days
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{
+                    fontSize: 48,
+                    fontWeight: 800,
+                    letterSpacing: '-0.03em',
+                    color: 'var(--text-primary)',
+                    lineHeight: 1,
+                    marginTop: 6,
+                  }}>
+                    <AnimatedNumber value={activeUsers} duration={300} />
+                  </div>
+                  {/* Sparkline trend for headline */}
+                  <svg width="48" height="20" viewBox="0 0 48 20" style={{ marginTop: 8 }}>
+                    <polyline
+                      points="2,18 10,16 20,13 30,9 38,5 46,2"
+                      fill="none"
+                      stroke="var(--success)"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+
+                <div style={{
+                  fontSize: 14,
+                  color: 'var(--text-secondary)',
+                  marginTop: 4,
+                }}>
+                  new active users
+                </div>
+
+                {/* 4 KPIs with sparklines — 2×2 grid */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '10px 20px',
+                  marginTop: 16,
+                  paddingTop: 14,
+                  borderTop: '1px solid var(--border-light)',
+                }}>
+                  {[
+                    { label: 'Avg CAC', value: `$${cac}`, sparkDir: 'down', tip: sparkData?.cac },
+                    { label: 'ROI', value: `${typeof roi === 'number' ? roi.toFixed(1) : roi}x`, sparkDir: 'up', tip: sparkData?.roi },
+                    { label: 'Conv rate', value: `${typeof convRate === 'number' ? convRate.toFixed(1) : convRate}%`, sparkDir: 'up', tip: sparkData?.conv },
+                    { label: 'Fraud saved', value: `$${Math.round((fraudSaved || 0) / 1000)}K`, sparkDir: 'up', tip: sparkData?.fraud },
+                  ].map((kpi) => (
+                    <div key={kpi.label} style={{ position: 'relative' }} title={kpi.tip ? `Day 1: ${kpi.tip.start} → Day 30: ${kpi.tip.end}` : ''}>
+                      <div style={{
+                        fontSize: 11,
+                        fontWeight: 500,
+                        letterSpacing: '0.04em',
+                        textTransform: 'uppercase',
+                        color: 'var(--text-tertiary)',
+                      }}>
+                        {kpi.label}
+                      </div>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        marginTop: 2,
+                      }}>
+                        <span style={{
+                          fontSize: 16,
+                          fontWeight: 600,
+                          color: 'var(--text-primary)',
+                        }}>
+                          {kpi.value}
+                        </span>
+                        <svg width="40" height="16" viewBox="0 0 40 16">
+                          <polyline
+                            points={kpi.sparkDir === 'up'
+                              ? '2,14 9,12 16,9 23,6 30,4 38,2'
+                              : '2,2 9,4 16,6 23,9 30,12 38,14'}
+                            fill="none"
+                            stroke="var(--success)"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* ── Daily new users chart ── */}
+            {dailyCurve && (
+              <div style={{
+                padding: '24px 28px 28px',
+                borderTop: '1px solid var(--border-light)',
+              }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'baseline',
+                }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                    Daily new active users
                   </span>
-                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>
-                    {formatCurrency(budgetSlider.max)}
+                  <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
+                    Projected · 30 days
                   </span>
                 </div>
-                <input
-                  type="range"
-                  min={budgetSlider.min}
-                  max={budgetSlider.max}
-                  step={budgetSlider.step}
-                  value={budget}
-                  onChange={(e) => setBudget(Number(e.target.value))}
-                  style={{
-                    width: '100%',
-                    height: '8px',
-                    appearance: 'none',
-                    background: `linear-gradient(to right, var(--accent) ${((budget - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100}%, var(--border) ${((budget - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100}%)`,
-                    borderRadius: '4px',
-                    outline: 'none',
-                    cursor: 'pointer',
-                  }}
-                />
+
+                <div style={{ marginTop: 14, height: 200, position: 'relative' }}>
+                  <svg
+                    viewBox="0 0 780 200"
+                    preserveAspectRatio="xMidYMid meet"
+                    style={{ width: '100%', height: '100%', display: 'block' }}
+                  >
+                    <defs>
+                      {(() => {
+                        // Threshold X position
+                        const threshX = 50 + ((thresholdDay - 1) / 29) * 700;
+                        return (
+                          <>
+                            <linearGradient id="curveGrad" x1={threshX} y1="0" x2="750" y2="0" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stopColor="var(--color-gray-400)" />
+                              <stop offset="25%" stopColor="var(--color-gray-500)" />
+                              <stop offset="55%" stopColor="var(--color-gray-700)" />
+                              <stop offset="100%" stopColor="var(--text-primary)" />
+                            </linearGradient>
+                            <linearGradient id="areaGradPost" x1={threshX} y1="0" x2="750" y2="0" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stopColor="var(--color-gray-300)" stopOpacity="0.04" />
+                              <stop offset="100%" stopColor="var(--text-primary)" stopOpacity="0.07" />
+                            </linearGradient>
+                            <clipPath id="clipPost">
+                              <rect x={threshX} y="0" width={750 - threshX} height="200" />
+                            </clipPath>
+                            <clipPath id="clipPre">
+                              <rect x="0" y="0" width={threshX} height="200" />
+                            </clipPath>
+                          </>
+                        );
+                      })()}
+                    </defs>
+
+                    {/* Pre-threshold background wash */}
+                    {(() => {
+                      const threshX = 50 + ((thresholdDay - 1) / 29) * 700;
+                      return <rect x="50" y="20" width={threshX - 50} height="148" fill="var(--accent-subtle)" />;
+                    })()}
+
+                    {/* Grid lines */}
+                    {[25, 60, 95, 130, 165].map((y) => (
+                      <line key={y} x1="50" y1={y} x2="750" y2={y} stroke="var(--border-light)" strokeWidth="1" />
+                    ))}
+
+                    {/* Y-axis labels */}
+                    {(() => {
+                      const maxVal = Math.max(...dailyCurve) + 2;
+                      const step = Math.ceil(maxVal / 4);
+                      return [0, step, step * 2, step * 3, step * 4].map((v, i) => (
+                        <text
+                          key={i}
+                          x="44"
+                          y={169 - i * 35}
+                          fontSize="11"
+                          fill="var(--text-tertiary)"
+                          textAnchor="end"
+                          fontFamily="var(--font-family)"
+                        >
+                          {v}
+                        </text>
+                      ));
+                    })()}
+
+                    {/* X-axis */}
+                    <line x1="50" y1="165" x2="750" y2="165" stroke="var(--border)" strokeWidth="1" />
+                    {[1, 5, 10, 15, 20, 25, 30].map((d) => {
+                      const x = 50 + ((d - 1) / 29) * 700;
+                      return (
+                        <text
+                          key={d}
+                          x={x}
+                          y="182"
+                          fontSize="11"
+                          fill="var(--text-tertiary)"
+                          textAnchor="middle"
+                          fontFamily="var(--font-family)"
+                        >
+                          {d}
+                        </text>
+                      );
+                    })}
+                    <text x="400" y="196" fontSize="11" fill="var(--text-tertiary)" textAnchor="middle" fontFamily="var(--font-family)">Day</text>
+
+                    {/* Build SVG path from daily data */}
+                    {(() => {
+                      const maxVal = Math.max(...dailyCurve) + 2;
+                      const points = dailyCurve.map((v, i) => {
+                        const x = 50 + (i / 29) * 700;
+                        const y = 165 - (v / (maxVal)) * 140;
+                        return `${x},${y}`;
+                      });
+                      const pathD = `M${points[0]} ${points.slice(1).map((p) => `L${p}`).join(' ')}`;
+                      const areaD = `${pathD} L750,165 L50,165 Z`;
+                      const lastPoint = points[points.length - 1].split(',');
+                      const lastVal = dailyCurve[dailyCurve.length - 1];
+
+                      return (
+                        <>
+                          {/* Area fill pre-threshold */}
+                          <path d={areaD} fill="var(--accent-subtle)" clipPath="url(#clipPre)" opacity="0.5" />
+
+                          {/* Area fill post-threshold */}
+                          <path d={areaD} fill="url(#areaGradPost)" clipPath="url(#clipPost)" />
+
+                          {/* Curve pre-threshold (flat light) */}
+                          <path d={pathD} fill="none" stroke="var(--color-gray-200)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#clipPre)" />
+
+                          {/* Curve post-threshold (gradient) */}
+                          <path d={pathD} fill="none" stroke="url(#curveGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#clipPost)" />
+
+                          {/* Endpoint */}
+                          <circle cx={lastPoint[0]} cy={lastPoint[1]} r="3.5" fill="var(--text-primary)" />
+                          <text
+                            x={Number(lastPoint[0])}
+                            y={Number(lastPoint[1]) - 8}
+                            fontSize="11"
+                            fill="var(--text-primary)"
+                            fontWeight="600"
+                            textAnchor="end"
+                            fontFamily="var(--font-family)"
+                          >
+                            {lastVal}/day
+                          </text>
+                        </>
+                      );
+                    })()}
+                  </svg>
+                </div>
               </div>
-              <p
-                style={{
-                  fontSize: 'var(--font-size-xs)',
-                  color: 'var(--text-tertiary)',
-                  margin: 0,
-                  fontStyle: 'italic',
-                }}
-              >
-                {budgetAnnotation}
-              </p>
-            </div>
+            )}
           </section>
         )}
 

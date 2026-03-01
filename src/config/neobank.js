@@ -92,29 +92,57 @@ const neobank = {
   // Budget
   budgetSlider: {
     min: 50000,
-    max: 1000000,
-    step: 10000,
+    max: 500000,
+    step: 5000,
     default: 150000,
   },
 
+  // Recommended budget range — personalized per customer base
+  // Computed from: audience_size × saturation_curve × frequency guardrails
   recommendedBudget: {
+    min: 100000,
+    max: 200000,
     amount: 150000,
     rationale: 'Based on your 847K customers, we recommend $150K/month',
   },
 
-  budgetAnnotation:
-    'Edoo AI prioritizes highest-ROI customers first \u2014 CAC expected to increase with budget',
+  // Guidance messages — Head of Growth language, dynamic per budget level
+  budgetGuidance: {
+    belowFloor: 'Below minimum delivery threshold. Not enough signal to optimize — CPA stays flat.',
+    belowRec: 'Lean delivery. System optimizes slower — expect 2x the ramp time to peak CPA.',
+    atRec: 'Strong signal volume for 847K eligible users. Expect full CPA optimization within this period.',
+    aboveRec: 'Audience saturates above $200K/mo for this base. Incremental spend raises CPA.',
+  },
 
-  // Projections — single strategy, diminishing returns
-  // CAC monotonically increases, ROI monotonically decreases, conv rate decreases
-  projections: [
-    { budget: 50000,   activeUsers: 95,   cac: 526,  convRate: 4.8, roi: 1.8, fraudSaved: 14000 },
-    { budget: 100000,  activeUsers: 180,  cac: 556,  convRate: 4.4, roi: 1.6, fraudSaved: 28000 },
-    { budget: 150000,  activeUsers: 260,  cac: 577,  convRate: 4.0, roi: 1.5, fraudSaved: 42000 },
-    { budget: 250000,  activeUsers: 400,  cac: 625,  convRate: 3.6, roi: 1.3, fraudSaved: 68000 },
-    { budget: 500000,  activeUsers: 680,  cac: 735,  convRate: 3.2, roi: 1.2, fraudSaved: 125000 },
-    { budget: 1000000, activeUsers: 1050, cac: 952,  convRate: 2.8, roi: 1.1, fraudSaved: 220000 },
-  ],
+  // ─── Projection Engine Parameters ───
+  // All projections (daily curve, KPIs, threshold day) are computed dynamically
+  // by src/engine/projectionEngine.js using these parameters.
+  engineParams: {
+    learningCAC: 890,             // Starting CAC before any optimization ($)
+    optimizedCAC: 380,            // Best achievable CAC at full confidence ($)
+    audienceSize: 50000,          // Total reachable users for referral program
+    fraudRate: 0.07,              // Fraction of spend saved by fraud detection
+    avgRevenuePerUser: 1200,      // Revenue per activated user (for ROI calc)
+    baseConvRate: 4.8,            // Base conversion rate (%)
+    minSignalVolume: 40,          // Cumulative conversions for statistical significance
+    diminishing: {
+      // difficulty = 1 + scale * (dailyBudget/audience)^curve
+      // Produces monotonically increasing CAC with budget
+      scale: 3.5,
+      curve: 1.52,
+    },
+    confidence: {
+      volumeHalfPoint: 12,        // Cumulative conversions for 50% volume confidence
+      timeHalfPoint: 3,           // Days for 50% time confidence
+      volumeWeight: 0.6,          // Relative weight of volume vs time
+      timeWeight: 0.4,
+    },
+    budget: {
+      floor: 75000,               // Below = belowFloor guidance
+      recMin: 100000,             // Below recMin = belowRec guidance
+      recMax: 200000,             // Above recMax = aboveRec guidance
+    },
+  },
 
   // Execution — daily operations cycle
   operationsCycle: {
