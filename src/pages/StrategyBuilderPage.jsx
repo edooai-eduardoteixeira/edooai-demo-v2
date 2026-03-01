@@ -344,64 +344,80 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   Monthly budget
                 </div>
 
-                {/* Budget number — editable on click */}
+                {/* Budget number — inline editable, $ and K are always visible as mask */}
                 <div
                   style={{
                     display: 'flex',
                     alignItems: 'baseline',
-                    gap: 4,
+                    gap: 0,
                     marginTop: 8,
                     cursor: 'text',
                   }}
                   onClick={!editingBudget ? startEditBudget : undefined}
                 >
+                  <span style={{
+                    fontSize: 40,
+                    fontWeight: 500,
+                    color: 'var(--text-primary)',
+                    lineHeight: 1,
+                  }}>$</span>
                   {editingBudget ? (
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
-                      <span style={{ fontSize: 40, fontWeight: 500, color: 'var(--text-primary)' }}>$</span>
-                      <input
-                        ref={budgetInputRef}
-                        type="number"
-                        value={budgetInput}
-                        onChange={(e) => setBudgetInput(e.target.value)}
-                        onBlur={commitBudget}
-                        onKeyDown={(e) => e.key === 'Enter' && commitBudget()}
-                        style={{
-                          fontSize: 40,
-                          fontWeight: 500,
-                          color: 'var(--text-primary)',
-                          border: 'none',
-                          borderBottom: '2px solid var(--accent)',
-                          outline: 'none',
-                          background: 'transparent',
-                          width: 100,
-                          fontFamily: 'inherit',
-                        }}
-                      />
-                      <span style={{ fontSize: 15, color: 'var(--text-tertiary)', fontWeight: 500 }}>K /mo</span>
-                    </div>
-                  ) : (
-                    <>
-                      <span style={{
+                    <input
+                      ref={budgetInputRef}
+                      type="text"
+                      inputMode="numeric"
+                      value={budgetInput}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/[^0-9]/g, '');
+                        setBudgetInput(v);
+                      }}
+                      onBlur={commitBudget}
+                      onKeyDown={(e) => e.key === 'Enter' && commitBudget()}
+                      style={{
                         fontSize: 40,
                         fontWeight: 500,
                         letterSpacing: '-0.02em',
                         color: 'var(--text-primary)',
                         lineHeight: 1,
-                        cursor: 'pointer',
-                        borderBottom: '1.5px dashed var(--border)',
-                        background: 'var(--color-gray-200)',
-                        padding: '4px 8px 4px 6px',
-                        borderRadius: 6,
-                      }}>
-                        ${Math.round(budget / 1000)}K
-                      </span>
-                      <span style={{ fontSize: 15, color: 'var(--text-tertiary)', fontWeight: 500 }}>/mo</span>
-                    </>
+                        border: 'none',
+                        borderBottom: '2px solid var(--accent)',
+                        outline: 'none',
+                        background: 'transparent',
+                        width: `${Math.max(2, String(budgetInput).length) * 0.6}em`,
+                        fontFamily: 'inherit',
+                        padding: 0,
+                        margin: 0,
+                      }}
+                    />
+                  ) : (
+                    <span style={{
+                      fontSize: 40,
+                      fontWeight: 500,
+                      letterSpacing: '-0.02em',
+                      color: 'var(--text-primary)',
+                      lineHeight: 1,
+                      cursor: 'pointer',
+                      borderBottom: '1.5px dashed var(--border)',
+                    }}>
+                      {Math.round(budget / 1000)}
+                    </span>
                   )}
+                  <span style={{
+                    fontSize: 40,
+                    fontWeight: 500,
+                    color: 'var(--text-primary)',
+                    lineHeight: 1,
+                  }}>K</span>
+                  <span style={{
+                    fontSize: 15,
+                    color: 'var(--text-tertiary)',
+                    fontWeight: 500,
+                    marginLeft: 6,
+                  }}>/mo</span>
                 </div>
 
                 {/* Slider with recommended zone */}
-                <div style={{ marginTop: 'auto' }}>
+                <div style={{ marginTop: 32 }}>
                   {/* Recommended zone label — positioned relative to track */}
                   <div style={{
                     marginBottom: 8,
@@ -432,7 +448,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       borderRadius: 3,
                     }} />
 
-                    {/* Recommended zone band — always visible above track */}
+                    {/* Recommended zone band — behind the fill */}
                     <div style={{
                       position: 'absolute',
                       left: `${recZoneLeft}%`,
@@ -441,10 +457,10 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       height: 14,
                       background: 'var(--color-gray-300)',
                       borderRadius: 7,
-                      zIndex: 1,
+                      zIndex: 0,
                     }} />
 
-                    {/* Fill — clipped to track height, below the band */}
+                    {/* Fill — on top of everything except thumb */}
                     <div style={{
                       position: 'absolute',
                       left: 0,
@@ -453,7 +469,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       height: 6,
                       background: 'var(--accent)',
                       borderRadius: 3,
-                      zIndex: 0,
+                      zIndex: 1,
                     }} />
 
                     {/* Thumb */}
