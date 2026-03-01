@@ -118,18 +118,19 @@ const neobank = {
   // All projections (daily curve, KPIs, threshold day) are computed dynamically
   // by src/engine/projectionEngine.js using these parameters.
   engineParams: {
-    learningCAC: 890,             // Starting CAC before any optimization ($)
-    optimizedCAC: 380,            // Best achievable CAC at full confidence ($)
-    audienceSize: 50000,          // Total reachable users for referral program
-    fraudRate: 0.07,              // Fraction of spend saved by fraud detection
-    avgRevenuePerUser: 1200,      // Revenue per activated user (for ROI calc)
+    learningCAC: 400,              // Starting CAC before any optimization ($)
+    optimizedCAC: 100,             // Best achievable CAC at full confidence ($)
+    audienceSize: 250000,          // Total reachable users for referral program
+    fraudRate: 0.07,               // Fraction of spend saved by fraud detection
+    avgRevenuePerUser: 500,        // Revenue per activated user (for ROI calc)
     baseConvRate: 4.8,            // Base conversion rate (%)
     minSignalVolume: 40,          // Cumulative conversions for statistical significance
     diminishing: {
       // difficulty = 1 + scale * (dailyBudget/audience)^curve
-      // Produces monotonically increasing CAC with budget
-      scale: 3.5,
-      curve: 1.52,
+      // Produces U-shaped CAC: minimum in recommended range, rises above recMax
+      // Calibrated for audienceSize=250K: difficulty($75K)=1.03, difficulty($150K)=1.09, difficulty($500K)=1.44
+      scale: 16.5,
+      curve: 1.34,
     },
     confidence: {
       volumeHalfPoint: 12,        // Cumulative conversions for 50% volume confidence
