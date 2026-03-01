@@ -357,7 +357,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 >
                   {editingBudget ? (
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
-                      <span style={{ fontSize: 40, fontWeight: 700, color: 'var(--text-primary)' }}>$</span>
+                      <span style={{ fontSize: 40, fontWeight: 500, color: 'var(--text-primary)' }}>$</span>
                       <input
                         ref={budgetInputRef}
                         type="number"
@@ -367,7 +367,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         onKeyDown={(e) => e.key === 'Enter' && commitBudget()}
                         style={{
                           fontSize: 40,
-                          fontWeight: 700,
+                          fontWeight: 500,
                           color: 'var(--text-primary)',
                           border: 'none',
                           borderBottom: '2px solid var(--accent)',
@@ -383,10 +383,13 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     <>
                       <span style={{
                         fontSize: 40,
-                        fontWeight: 700,
+                        fontWeight: 500,
                         letterSpacing: '-0.02em',
                         color: 'var(--text-primary)',
                         lineHeight: 1,
+                        cursor: 'pointer',
+                        borderBottom: '1.5px dashed var(--border)',
+                        paddingBottom: 2,
                       }}>
                         ${Math.round(budget / 1000)}K
                       </span>
