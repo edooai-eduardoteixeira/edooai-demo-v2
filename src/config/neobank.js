@@ -114,65 +114,35 @@ const neobank = {
     aboveRec: 'Audience saturates above $200K/mo for this base. Incremental spend raises CPA.',
   },
 
-  // Budget thresholds for guidance states
-  budgetThresholds: {
-    floor: 75000,      // below this = belowFloor guidance
-    recMin: 100000,    // below recMin = belowRec guidance
-    recMax: 200000,    // above recMax = aboveRec guidance
+  // ─── Projection Engine Parameters ───
+  // All projections (daily curve, KPIs, threshold day) are computed dynamically
+  // by src/engine/projectionEngine.js using these parameters.
+  engineParams: {
+    learningCAC: 890,             // Starting CAC before any optimization ($)
+    optimizedCAC: 380,            // Best achievable CAC at full confidence ($)
+    audienceSize: 50000,          // Total reachable users for referral program
+    fraudRate: 0.07,              // Fraction of spend saved by fraud detection
+    avgRevenuePerUser: 1200,      // Revenue per activated user (for ROI calc)
+    baseConvRate: 4.8,            // Base conversion rate (%)
+    minSignalVolume: 40,          // Cumulative conversions for statistical significance
+    diminishing: {
+      // difficulty = 1 + scale * (dailyBudget/audience)^curve
+      // Produces monotonically increasing CAC with budget
+      scale: 3.5,
+      curve: 1.52,
+    },
+    confidence: {
+      volumeHalfPoint: 12,        // Cumulative conversions for 50% volume confidence
+      timeHalfPoint: 3,           // Days for 50% time confidence
+      volumeWeight: 0.6,          // Relative weight of volume vs time
+      timeWeight: 0.4,
+    },
+    budget: {
+      floor: 75000,               // Below = belowFloor guidance
+      recMin: 100000,             // Below recMin = belowRec guidance
+      recMax: 200000,             // Above recMax = aboveRec guidance
+    },
   },
-
-  // Minimum threshold day — when system has enough signal to start optimizing
-  // Moves left with higher budget (more signal/day), right with lower
-  // At $150K → Day 8, at $75K → Day 14, at $300K → Day 5
-  thresholdDayByBudget: [
-    { budget: 50000, day: 18 },
-    { budget: 75000, day: 14 },
-    { budget: 100000, day: 10 },
-    { budget: 150000, day: 8 },
-    { budget: 200000, day: 6 },
-    { budget: 300000, day: 5 },
-    { budget: 500000, day: 4 },
-  ],
-
-  // Projections — single strategy, diminishing returns
-  // CAC monotonically increases, ROI monotonically decreases, conv rate decreases
-  projections: [
-    { budget: 50000,   activeUsers: 95,   cac: 526,  convRate: 4.8, roi: 1.8, fraudSaved: 14000 },
-    { budget: 100000,  activeUsers: 180,  cac: 556,  convRate: 4.4, roi: 1.6, fraudSaved: 28000 },
-    { budget: 150000,  activeUsers: 260,  cac: 577,  convRate: 4.0, roi: 1.5, fraudSaved: 42000 },
-    { budget: 250000,  activeUsers: 400,  cac: 625,  convRate: 3.6, roi: 1.3, fraudSaved: 68000 },
-    { budget: 500000,  activeUsers: 680,  cac: 735,  convRate: 3.2, roi: 1.2, fraudSaved: 125000 },
-  ],
-
-  // Daily curve data per budget — 30 data points showing daily new users
-  // Used to render the forecast chart. Generated from confidence function.
-  dailyCurveByBudget: [
-    {
-      budget: 50000,
-      // Sum = 95
-      daily: [1,1,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,5,5,5,5,5],
-    },
-    {
-      budget: 100000,
-      // Sum = 180
-      daily: [3,3,3,4,4,4,4,5,5,5,6,6,6,6,6,7,7,7,7,7,7,7,8,8,8,8,8,8,8,8],
-    },
-    {
-      budget: 150000,
-      // Sum = 260. Starts ~4/day (pre-threshold), ramps to ~12/day
-      daily: [4,5,5,5,6,6,6,7,7,7,8,8,8,8,9,9,9,10,10,10,10,11,11,11,11,11,12,12,12,12],
-    },
-    {
-      budget: 250000,
-      // Sum = 400
-      daily: [8,8,8,9,9,10,11,11,12,12,13,13,13,14,14,14,15,15,15,16,16,16,16,16,16,16,16,16,16,16],
-    },
-    {
-      budget: 500000,
-      // Sum = 680
-      daily: [14,14,16,16,18,18,20,21,22,22,22,23,24,24,24,24,25,25,25,25,25,25,26,26,26,26,26,26,26,26],
-    },
-  ],
 
   // Execution — daily operations cycle
   operationsCycle: {

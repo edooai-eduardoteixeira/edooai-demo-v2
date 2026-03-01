@@ -89,19 +89,28 @@ export default function StrategyBuilderPage({ config, onNext }) {
     budgetSlider,
     recommendedBudget,
     budgetGuidance,
-    budgetThresholds,
-    thresholdDayByBudget,
-    dailyCurveByBudget,
-    projections: projData,
+    engineParams,
     operationsCycle,
     riskManagement,
     approvalScope,
     totalCustomers,
   } = config;
 
-  /* ── Budget + projections ── */
+  /* ── Budget + engine projections ── */
   const [budget, setBudget] = useState(budgetSlider.default);
-  const proj = useProjections(projData, budget);
+  const proj = useProjections(engineParams, budget);
+
+  // Destructure engine outputs
+  const {
+    dailyCurve,
+    thresholdDay,
+    activeUsers,
+    cac,
+    roi,
+    convRate,
+    fraudSaved,
+    guidanceState,
+  } = proj || {};
 
   /* ── Editable budget number ── */
   const [editingBudget, setEditingBudget] = useState(false);
@@ -122,14 +131,10 @@ export default function StrategyBuilderPage({ config, onNext }) {
     setEditingBudget(false);
   };
 
-  /* ── Guidance message based on budget ── */
-  const guidanceMessage = (() => {
-    if (!budgetThresholds || !budgetGuidance) return '';
-    if (budget < budgetThresholds.floor) return budgetGuidance.belowFloor;
-    if (budget < budgetThresholds.recMin) return budgetGuidance.belowRec;
-    if (budget <= budgetThresholds.recMax) return budgetGuidance.atRec;
-    return budgetGuidance.aboveRec;
-  })();
+  /* ── Guidance message from engine state ── */
+  const guidanceMessage = budgetGuidance && guidanceState
+    ? budgetGuidance[guidanceState] || ''
+    : '';
 
   /* ── Recommended zone position on slider (%) ── */
   const recZoneLeft = recommendedBudget?.min
@@ -140,47 +145,12 @@ export default function StrategyBuilderPage({ config, onNext }) {
     : 20;
   const sliderPercent = ((budget - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100;
 
-  /* ── Threshold day interpolation ── */
-  const thresholdDay = (() => {
-    if (!thresholdDayByBudget) return 8;
-    const sorted = [...thresholdDayByBudget].sort((a, b) => a.budget - b.budget);
-    if (budget <= sorted[0].budget) return sorted[0].day;
-    if (budget >= sorted[sorted.length - 1].budget) return sorted[sorted.length - 1].day;
-    for (let i = 0; i < sorted.length - 1; i++) {
-      if (budget >= sorted[i].budget && budget <= sorted[i + 1].budget) {
-        const t = (budget - sorted[i].budget) / (sorted[i + 1].budget - sorted[i].budget);
-        return Math.round(sorted[i].day + (sorted[i + 1].day - sorted[i].day) * t);
-      }
-    }
-    return 8;
-  })();
-
-  /* ── Daily curve interpolation ── */
-  const dailyCurve = (() => {
-    if (!dailyCurveByBudget || dailyCurveByBudget.length === 0) return null;
-    const sorted = [...dailyCurveByBudget].sort((a, b) => a.budget - b.budget);
-    const exact = sorted.find((d) => d.budget === budget);
-    if (exact) return exact.daily;
-    // Find surrounding
-    if (budget <= sorted[0].budget) return sorted[0].daily;
-    if (budget >= sorted[sorted.length - 1].budget) return sorted[sorted.length - 1].daily;
-    for (let i = 0; i < sorted.length - 1; i++) {
-      if (budget >= sorted[i].budget && budget <= sorted[i + 1].budget) {
-        const t = (budget - sorted[i].budget) / (sorted[i + 1].budget - sorted[i].budget);
-        return sorted[i].daily.map((v, j) =>
-          Math.round(v + (sorted[i + 1].daily[j] - v) * t)
-        );
-      }
-    }
-    return sorted[0].daily;
-  })();
-
   /* ── Sparkline data (start/end values for hover) ── */
   const sparkData = dailyCurve ? {
-    cac: { start: '$890', end: `$${proj.cac > 500 ? Math.round(proj.cac * 0.7) : proj.cac}` },
-    roi: { start: '0.8x', end: `${(proj.roi / 10 || proj.roi).toFixed ? (proj.roi * 1.6).toFixed(1) : proj.roi}x` },
-    conv: { start: `${(proj.convRate * 0.5).toFixed(1)}%`, end: `${(proj.convRate * 1.4).toFixed(1)}%` },
-    fraud: { start: '$2K', end: `$${Math.round(proj.fraudSaved / 1000)}K` },
+    cac: { start: `$${engineParams.learningCAC}`, end: `$${cac}` },
+    roi: { start: '0.8x', end: `${roi}x` },
+    conv: { start: `${(convRate * 0.5).toFixed(1)}%`, end: `${convRate}%` },
+    fraud: { start: '$2K', end: `$${Math.round(fraudSaved / 1000)}K` },
   } : null;
 
   /* ── Progressive reveal ── */
@@ -560,7 +530,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     lineHeight: 1,
                     marginTop: 6,
                   }}>
-                    <AnimatedNumber value={proj.activeUsers} duration={300} />
+                    <AnimatedNumber value={activeUsers} duration={300} />
                   </div>
                   {/* Sparkline trend for headline */}
                   <svg width="48" height="20" viewBox="0 0 48 20" style={{ marginTop: 8 }}>
@@ -593,10 +563,10 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   borderTop: '1px solid var(--border-light)',
                 }}>
                   {[
-                    { label: 'Avg CAC', value: `$${proj.cac}`, sparkDir: 'down', tip: sparkData?.cac },
-                    { label: 'ROI', value: `${typeof proj.roi === 'number' ? proj.roi.toFixed(1) : proj.roi}x`, sparkDir: 'up', tip: sparkData?.roi },
-                    { label: 'Conv rate', value: `${typeof proj.convRate === 'number' ? proj.convRate.toFixed(1) : proj.convRate}%`, sparkDir: 'up', tip: sparkData?.conv },
-                    { label: 'Fraud saved', value: `$${Math.round(proj.fraudSaved / 1000)}K`, sparkDir: 'up', tip: sparkData?.fraud },
+                    { label: 'Avg CAC', value: `$${cac}`, sparkDir: 'down', tip: sparkData?.cac },
+                    { label: 'ROI', value: `${typeof roi === 'number' ? roi.toFixed(1) : roi}x`, sparkDir: 'up', tip: sparkData?.roi },
+                    { label: 'Conv rate', value: `${typeof convRate === 'number' ? convRate.toFixed(1) : convRate}%`, sparkDir: 'up', tip: sparkData?.conv },
+                    { label: 'Fraud saved', value: `$${Math.round((fraudSaved || 0) / 1000)}K`, sparkDir: 'up', tip: sparkData?.fraud },
                   ].map((kpi) => (
                     <div key={kpi.label} style={{ position: 'relative' }} title={kpi.tip ? `Day 1: ${kpi.tip.start} → Day 30: ${kpi.tip.end}` : ''}>
                       <div style={{
