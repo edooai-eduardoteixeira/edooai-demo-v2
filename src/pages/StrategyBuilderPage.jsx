@@ -9,14 +9,24 @@ import tl from '../styles/StrategyTimeline.module.css';
 /* ───────── Sparkline helper: maps 30-element array → SVG polyline points ───────── */
 function sparkPoints(arr, invert = false) {
   if (!arr || arr.length === 0) return '2,8 38,8';
-  const min = Math.min(...arr);
-  const max = Math.max(...arr);
-  const range = max - min || 1;
-  return arr
-    .filter((_, i) => i % 5 === 0 || i === arr.length - 1)
+
+  // Skip leading zeros (before first conversions resolve)
+  let start = 0;
+  while (start < arr.length && arr[start] === 0) start++;
+  const data = arr.slice(start);
+  if (data.length < 2) return '2,8 38,8';
+
+  // Log-scale normalization: spreads hyperbolic curves (e.g. CAC) evenly
+  const logs = data.map((v) => Math.log(v + 1));
+  const logMin = Math.min(...logs);
+  const logMax = Math.max(...logs);
+  const logRange = logMax - logMin || 1;
+
+  return data
+    .filter((_, i) => i % 5 === 0 || i === data.length - 1)
     .map((v, i, sampled) => {
       const x = 2 + (i / (sampled.length - 1)) * 36;
-      const norm = (v - min) / range;
+      const norm = (Math.log(v + 1) - logMin) / logRange;
       const y = invert ? 2 + norm * 12 : 14 - norm * 12;
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     })
