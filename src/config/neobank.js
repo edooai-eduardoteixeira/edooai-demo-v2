@@ -117,31 +117,52 @@ const neobank = {
   // ─── Projection Engine Parameters ───
   // All projections (daily curve, KPIs, threshold day) are computed dynamically
   // by src/engine/projectionEngine.js using these parameters.
+  //
+  // Model: Journey-based Allocation Calculator with Resolution Delay
+  //   Supply curve: N_frontier(B) = N_max × (B / (B + B_half))^alpha  [conversion units]
+  //   Journey target: totalJourneys = N_frontier / baseConvRate        [journey units]
+  //   Efficiency:   eff(day, cumN) = floor + (1−floor) × timeLearning × volumeConfidence
+  //   Journeys convert after journeyResolutionDays delay (pending queue)
+  //   Pool: journeys deplete remaining pool; resolved conversions replenish it
+  //
+  // Calibrated via scripts/calibrate-engine.mjs to hit:
+  //   $50K  → ~200 users, CAC ~$250, ROI ~2.0x
+  //   $150K → ~500 users, CAC ~$300, ROI ~1.7x
+  //   $500K → ~900 users, CAC ~$560, ROI ~0.9x
   engineParams: {
-    learningCAC: 400,              // Starting CAC before any optimization ($)
-    optimizedCAC: 100,             // Best achievable CAC at full confidence ($)
-    audienceSize: 250000,          // Total reachable users for referral program
-    fraudRate: 0.07,               // Fraction of spend saved by fraud detection
-    avgRevenuePerUser: 500,        // Revenue per activated user (for ROI calc)
-    baseConvRate: 4.8,            // Base conversion rate (%)
-    minSignalVolume: 40,          // Cumulative conversions for statistical significance
-    diminishing: {
-      // difficulty = 1 + scale * (dailyBudget/audience)^curve
-      // Produces U-shaped CAC: minimum in recommended range, rises above recMax
-      // Calibrated for audienceSize=250K: difficulty($75K)=1.03, difficulty($150K)=1.09, difficulty($500K)=1.44
-      scale: 16.5,
-      curve: 1.34,
-    },
-    confidence: {
-      volumeHalfPoint: 12,        // Cumulative conversions for 50% volume confidence
-      timeHalfPoint: 3,           // Days for 50% time confidence
-      volumeWeight: 0.6,          // Relative weight of volume vs time
-      timeWeight: 0.4,
-    },
+    // Audience — derived: audienceSize = totalCustomers × eligibilityRate
+    totalCustomers: 847000,            // Total customer base (from data ingestion)
+    eligibilityRate: 0.295,            // Fraction eligible for referral program → ~250K
+
+    // Supply curve — theoretical max CONVERSIONS at given budget
+    N_max: 3000,                       // Ceiling: max conversions at infinite budget (NOT audience size)
+    B_half: 200000,                    // Budget for 50% of N_max ($)
+    alpha: 0.9,                        // Concavity exponent (<1 = slightly more concave)
+
+    // Allocation efficiency — learning dynamics
+    effFloor: 0.10,                    // Min efficiency (random allocation success rate)
+    timeLearnRate: 0.14,               // Speed of time-based learning (exp decay rate)
+    confHalfPoint: 20,                 // Resolved conversions for 50% volume confidence
+
+    // Conversion probabilities per journey
+    baseConvRate: 0.03,                // P(conversion | well-targeted journey)
+    accidentalConvRate: 0.0005,        // P(conversion | poorly-targeted journey)
+
+    // Journey pacing & resolution
+    maxDailyReachRate: 0.03,           // Max fraction of pool contacted per day
+    journeyResolutionDays: 7,          // Days from journey start to conversion resolution
+    referrerEligibilityRate: 0.4,      // Fraction of new converts who become eligible referrers
+
+    // Economics
+    avgRevenuePerUser: 500,            // Revenue per activated user (for ROI calc)
+    fraudRate: 0.07,                   // Fraction of spend saved by fraud detection
+    minSignalVolume: 40,               // Resolved conversions for statistical significance
+
+    // Budget guidance thresholds
     budget: {
-      floor: 75000,               // Below = belowFloor guidance
-      recMin: 100000,             // Below recMin = belowRec guidance
-      recMax: 200000,             // Above recMax = aboveRec guidance
+      floor: 15000,                // Below = belowFloor guidance
+      recMin: 100000,              // Below recMin = belowRec guidance
+      recMax: 200000,              // Above recMax = aboveRec guidance
     },
   },
 

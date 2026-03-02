@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Forecast Panel — Engine Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #94a3b8;
+    --border: #e2e8f0;
+    --border-light: #f1f5f9;
+    --surface: #ffffff;
+    --accent: #1a1a1a;
+    --accent-subtle: #fafafa;
+    --success: #22c55e;
+    --color-gray-50: #fafafa;
+    --color-gray-200: #e5e5e5;
+    --color-gray-300: #d4d4d4;
+    --color-gray-400: #a3a3a3;
+    --color-gray-500: #737373;
+    --color-gray-700: #404040;
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  body { font-family: var(--font-family); background: #f8fafc; padding: 32px; color: var(--text-primary); }
+  .card { background: var(--surface); border-radius: 14px; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); max-width: 820px; margin: 0 auto; }
+  input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); border: 3px solid white; box-shadow: var(--shadow-md); cursor: grab; }
+</style>
+</head>
+<body>
+
+<div style="max-width:820px;margin:0 auto 16px;font-size:12px;color:var(--text-tertiary);letter-spacing:0.03em;">
+  ENGINE PREVIEW — Allocation Calculator Model
+</div>
+
+<div class="card">
+  <!-- Top row: budget slider (left) + outcome (right) -->
+  <div style="display:flex;min-height:260px;">
+
+    <!-- LEFT: Budget slider -->
+    <div id="budget-panel" style="width:340px;padding:32px 28px;border-right:1px solid var(--border-light);display:flex;flex-direction:column;justify-content:center;">
+      <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-tertiary);">Monthly budget</div>
+
+      <div style="display:flex;align-items:baseline;gap:4px;margin-top:8px;">
+        <span id="budget-display" style="font-size:40px;font-weight:500;letter-spacing:-0.02em;color:var(--text-primary);line-height:1;border-bottom:1.5px dashed var(--border);padding-bottom:2px;">$150K</span>
+        <span style="font-size:15px;color:var(--text-tertiary);font-weight:500;">/mo</span>
+      </div>
+
+      <!-- Slider -->
+      <div style="margin-top:24px;position:relative;">
+        <div id="rec-label" style="position:absolute;top:-18px;text-align:center;font-size:11px;font-weight:600;color:var(--text-tertiary);letter-spacing:0.04em;">Recommended</div>
+
+        <div style="position:relative;height:6px;background:var(--border-light);border-radius:3px;">
+          <div id="rec-zone" style="position:absolute;top:-4px;height:14px;background:var(--color-gray-300);border-radius:8px;z-index:0;"></div>
+          <div id="slider-fill" style="position:absolute;left:0;top:0;height:100%;background:var(--accent);border-radius:3px;z-index:1;"></div>
+          <div id="slider-thumb" style="position:absolute;top:50%;transform:translate(-50%,-50%);width:20px;height:20px;background:var(--accent);border:3px solid var(--surface);border-radius:50%;cursor:grab;z-index:3;box-shadow:var(--shadow-md);"></div>
+        </div>
+
+        <input type="range" id="budget-slider" min="50000" max="500000" step="5000" value="150000"
+          style="position:absolute;top:-6px;left:0;width:100%;height:20px;opacity:0;cursor:pointer;z-index:4;" />
+
+        <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--text-tertiary);">
+          <span>$50K</span><span>$500K</span>
+        </div>
+      </div>
+
+      <div id="guidance" style="margin-top:16px;font-size:12px;color:var(--text-secondary);line-height:1.55;"></div>
+    </div>
+
+    <!-- RIGHT: Outcome KPIs -->
+    <div style="flex:1;padding:32px 28px;display:flex;flex-direction:column;justify-content:flex-start;">
+      <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-tertiary);">First 30 days</div>
+
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div id="hero-number" style="font-size:64px;font-weight:800;letter-spacing:-0.03em;color:var(--text-primary);line-height:1;margin-top:6px;">507</div>
+        <svg width="48" height="20" viewBox="0 0 48 20" style="margin-top:8px;">
+          <polyline points="2,18 10,16 20,13 30,9 38,5 46,2" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div style="font-size:14px;color:var(--text-secondary);margin-top:4px;">new active users</div>
+
+      <!-- KPI grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border-light);">
+        <div>
+          <div style="font-size:11px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-tertiary);">Avg CAC</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+            <span id="kpi-cac" style="font-size:16px;font-weight:600;color:var(--text-primary);">$296</span>
+            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2,2 9,4 16,6 23,9 30,12 38,14" fill="none" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-tertiary);">ROI</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+            <span id="kpi-roi" style="font-size:16px;font-weight:600;color:var(--text-primary);">1.7x</span>
+            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2,14 9,12 16,9 23,6 30,4 38,2" fill="none" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-tertiary);">Conv rate</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+            <span id="kpi-conv" style="font-size:16px;font-weight:600;color:var(--text-primary);">4.4%</span>
+            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2,14 9,12 16,9 23,6 30,4 38,2" fill="none" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-tertiary);">Fraud saved</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+            <span id="kpi-fraud" style="font-size:16px;font-weight:600;color:var(--text-primary);">$11K</span>
+            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2,14 9,12 16,9 23,6 30,4 38,2" fill="none" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div style="padding:20px 16px 16px;border-top:1px solid var(--border-light);">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 12px;">
+      <span style="font-size:12px;font-weight:600;color:var(--text-secondary);">Daily new active users</span>
+      <span style="font-size:11px;color:var(--text-tertiary);">Projected &middot; 30 days</span>
+    </div>
+    <div style="margin-top:14px;height:260px;position:relative;">
+      <svg id="chart" viewBox="0 0 780 240" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block;"></svg>
+    </div>
+  </div>
+
+  <!-- Raw data table -->
+  <div style="padding:16px 28px 20px;border-top:1px solid var(--border-light);">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:8px;">Engine Output</div>
+    <div id="raw-data" style="font-size:12px;color:var(--text-secondary);line-height:1.8;font-family:'SF Mono',SFMono-Regular,Menlo,monospace;"></div>
+  </div>
+</div>
+
+<script>
+// ─── Engine (inline copy) ──────────────────────────────────────────
+
+const PARAMS = {
+  N_max: 2000,
+  B_half: 200000,
+  alpha: 1,
+  effFloor: 0.15,
+  timeLearnRate: 0.1,
+  confHalfPoint: 70,
+  accidentalFraction: 0.10,
+  baseConvRate: 0.03,
+  referrerEligibilityRate: 0.4,
+  audienceSize: 250000,
+  avgRevenuePerUser: 500,
+  fraudRate: 0.07,
+  minSignalVolume: 40,
+  displayBaseConvRate: 4.8,
+  learningCAC: 400,
+  budget: { floor: 15000, recMin: 100000, recMax: 200000 },
+};
+
+const GUIDANCE = {
+  belowFloor: 'Below minimum delivery threshold. Not enough signal to optimize \u2014 CPA stays flat.',
+  belowRec: 'Lean delivery. System optimizes slower \u2014 expect 2x the ramp time to peak CPA.',
+  atRec: 'Strong signal volume for 847K eligible users. Expect full CPA optimization within this period.',
+  aboveRec: 'Audience saturates above $200K/mo for this base. Incremental spend raises CPA.',
+};
+
+function computeProjection(budget, p) {
+  const N_frontier = p.N_max * Math.pow(budget / (budget + p.B_half), p.alpha);
+  const dailyFrontier = N_frontier / 30;
+  const contactIntensity = dailyFrontier / (p.baseConvRate * p.audienceSize);
+
+  let cumulativeN = 0;
+  let poolHealth = 1.0;
+  const dailyCurve = [];
+  const effCurve = [];
+  let thresholdDay = 30;
+  let thresholdFound = false;
+
+  for (let day = 1; day <= 30; day++) {
+    const timeFactor = 1 - Math.exp(-p.timeLearnRate * day);
+    const volumeFactor = cumulativeN / (cumulativeN + p.confHalfPoint);
+    const eff = p.effFloor + (1 - p.effFloor) * timeFactor * volumeFactor;
+    effCurve.push(eff);
+
+    const rawConversions = dailyFrontier * (eff + (1 - eff) * p.accidentalFraction);
+    const dailyConversions = rawConversions * poolHealth;
+
+    const dailyWaste = contactIntensity * (1 - eff);
+    poolHealth -= dailyWaste;
+    poolHealth += (dailyConversions * p.referrerEligibilityRate) / p.audienceSize;
+    poolHealth = Math.max(0, Math.min(1.0, poolHealth));
+
+    cumulativeN += dailyConversions;
+    if (!thresholdFound && cumulativeN >= p.minSignalVolume) {
+      thresholdDay = day;
+      thresholdFound = true;
+    }
+    dailyCurve.push(Math.max(1, Math.round(dailyConversions)));
+  }
+
+  const activeUsers = dailyCurve.reduce((s, v) => s + v, 0);
+  const cac = activeUsers > 0 ? Math.round(budget / activeUsers) : 999;
+  const roi = activeUsers > 0 && budget > 0
+    ? Math.round(((activeUsers * p.avgRevenuePerUser) / budget) * 10) / 10
+    : 0;
+  const finalEff = effCurve[effCurve.length - 1] || 0;
+  const convRate = Math.round((p.displayBaseConvRate) * (0.4 + 0.6 * finalEff) * 10) / 10;
+  const fraudSaved = Math.round(budget * p.fraudRate);
+
+  let guidanceState;
+  if (budget < p.budget.floor) guidanceState = 'belowFloor';
+  else if (budget < p.budget.recMin) guidanceState = 'belowRec';
+  else if (budget <= p.budget.recMax) guidanceState = 'atRec';
+  else guidanceState = 'aboveRec';
+
+  return { dailyCurve, thresholdDay, activeUsers, cac, roi, convRate, fraudSaved, guidanceState, effCurve };
+}
+
+// ─── Rendering ─────────────────────────────────────────────────────
+
+const slider = document.getElementById('budget-slider');
+const sliderMin = 50000, sliderMax = 500000;
+const recMin = 100000, recMax = 200000;
+const recLeft = ((recMin - sliderMin) / (sliderMax - sliderMin)) * 100;
+const recWidth = ((recMax - recMin) / (sliderMax - sliderMin)) * 100;
+
+document.getElementById('rec-label').style.left = recLeft + '%';
+document.getElementById('rec-label').style.width = recWidth + '%';
+document.getElementById('rec-zone').style.left = recLeft + '%';
+document.getElementById('rec-zone').style.width = recWidth + '%';
+
+function update() {
+  const budget = Number(slider.value);
+  const pct = ((budget - sliderMin) / (sliderMax - sliderMin)) * 100;
+
+  // Slider visuals
+  document.getElementById('budget-display').textContent = '$' + Math.round(budget / 1000) + 'K';
+  document.getElementById('slider-fill').style.width = pct + '%';
+  document.getElementById('slider-thumb').style.left = pct + '%';
+
+  // Compute
+  const r = computeProjection(budget, PARAMS);
+
+  // KPIs
+  document.getElementById('hero-number').textContent = r.activeUsers;
+  document.getElementById('kpi-cac').textContent = '$' + r.cac;
+  document.getElementById('kpi-roi').textContent = r.roi.toFixed(1) + 'x';
+  document.getElementById('kpi-conv').textContent = r.convRate.toFixed(1) + '%';
+  document.getElementById('kpi-fraud').textContent = '$' + Math.round(r.fraudSaved / 1000) + 'K';
+  document.getElementById('guidance').textContent = GUIDANCE[r.guidanceState] || '';
+
+  // Chart
+  renderChart(r.dailyCurve, r.thresholdDay);
+
+  // Raw data
+  document.getElementById('raw-data').innerHTML =
+    `activeUsers: <b>${r.activeUsers}</b> &nbsp;|&nbsp; ` +
+    `cac: <b>$${r.cac}</b> &nbsp;|&nbsp; ` +
+    `roi: <b>${r.roi.toFixed(1)}x</b> &nbsp;|&nbsp; ` +
+    `convRate: <b>${r.convRate.toFixed(1)}%</b> &nbsp;|&nbsp; ` +
+    `fraudSaved: <b>$${Math.round(r.fraudSaved/1000)}K</b> &nbsp;|&nbsp; ` +
+    `thresholdDay: <b>${r.thresholdDay}</b> &nbsp;|&nbsp; ` +
+    `guidanceState: <b>${r.guidanceState}</b><br>` +
+    `dailyCurve: [${r.dailyCurve.join(', ')}]`;
+}
+
+function renderChart(dailyCurve, thresholdDay) {
+  const svg = document.getElementById('chart');
+  const maxVal = Math.max(...dailyCurve) + 2;
+  const cL = 30, cR = 760, cB = 195, cT = 15;
+  const cW = cR - cL, cH = cB - cT;
+  const threshX = cL + ((thresholdDay - 1) / 29) * cW;
+
+  // Y-axis step
+  const step = Math.ceil(maxVal / 4);
+  const yLabels = [0, step, step*2, step*3, step*4];
+
+  // Build points
+  const points = dailyCurve.map((v, i) => {
+    const x = cL + (i / 29) * cW;
+    const y = cB - (v / maxVal) * cH;
+    return { x, y, v };
+  });
+  const pathD = 'M' + points.map(p => p.x + ',' + p.y).join(' L');
+  const areaD = pathD + ` L${cR},${cB} L${cL},${cB} Z`;
+  const last = points[points.length - 1];
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="curveGrad" x1="${threshX}" y1="0" x2="760" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#a3a3a3"/>
+        <stop offset="25%" stop-color="#737373"/>
+        <stop offset="55%" stop-color="#404040"/>
+        <stop offset="100%" stop-color="#0f172a"/>
+      </linearGradient>
+      <linearGradient id="areaGradPost" x1="${threshX}" y1="0" x2="760" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#d4d4d4" stop-opacity="0.04"/>
+        <stop offset="100%" stop-color="#0f172a" stop-opacity="0.07"/>
+      </linearGradient>
+      <clipPath id="clipPost"><rect x="${threshX}" y="0" width="${760-threshX}" height="240"/></clipPath>
+      <clipPath id="clipPre"><rect x="0" y="0" width="${threshX}" height="240"/></clipPath>
+    </defs>
+
+    <!-- Pre-threshold wash -->
+    <rect x="${cL}" y="10" width="${threshX - cL}" height="190" fill="#fafafa"/>
+
+    <!-- Grid lines -->
+    ${[30,70,110,150,195].map(y => `<line x1="${cL}" y1="${y}" x2="${cR}" y2="${y}" stroke="#f1f5f9" stroke-width="1"/>`).join('')}
+
+    <!-- Y-axis labels -->
+    ${yLabels.map((v,i) => `<text x="24" y="${199-i*41}" font-size="11" fill="#94a3b8" text-anchor="end" font-family="Inter,sans-serif">${v}</text>`).join('')}
+
+    <!-- X-axis -->
+    <line x1="${cL}" y1="${cB}" x2="${cR}" y2="${cB}" stroke="#e2e8f0" stroke-width="1"/>
+    ${[1,5,10,15,20,25,30].map(d => {
+      const x = cL + ((d-1)/29) * cW;
+      return `<text x="${x}" y="214" font-size="11" fill="#94a3b8" text-anchor="middle" font-family="Inter,sans-serif">${d}</text>`;
+    }).join('')}
+    <text x="395" y="232" font-size="11" fill="#94a3b8" text-anchor="middle" font-family="Inter,sans-serif">Day</text>
+
+    <!-- Area pre -->
+    <path d="${areaD}" fill="#fafafa" clip-path="url(#clipPre)" opacity="0.5"/>
+    <!-- Area post -->
+    <path d="${areaD}" fill="url(#areaGradPost)" clip-path="url(#clipPost)"/>
+    <!-- Curve pre -->
+    <path d="${pathD}" fill="none" stroke="#e5e5e5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#clipPre)"/>
+    <!-- Curve post -->
+    <path d="${pathD}" fill="none" stroke="url(#curveGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#clipPost)"/>
+
+    <!-- Endpoint -->
+    <circle cx="${last.x}" cy="${last.y}" r="3.5" fill="#0f172a"/>
+    <text x="${last.x}" y="${last.y - 10}" font-size="11" fill="#0f172a" font-weight="600" text-anchor="end" font-family="Inter,sans-serif">${last.v}/day</text>
+  `;
+}
+
+// ─── Init ──────────────────────────────────────────────────────────
+slider.addEventListener('input', update);
+update();
+</script>
+</body>
+</html>

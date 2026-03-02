@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "server": "node server/index.js",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "verify-engine": "node scripts/verify-engine.mjs",
+    "calibrate": "node scripts/calibrate-engine.mjs"
   },
   "keywords": [],
   "author": "",
