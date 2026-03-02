@@ -227,6 +227,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
   const [s3Combo, setS3Combo] = useState({ msg: 'success', ch: 'push' });
   const [openDD, setOpenDD] = useState(null);
   const [hoveredDay, setHoveredDay] = useState(null);
+  const [hoveredSparkline, setHoveredSparkline] = useState(null);
   const timelineRef = useRef(null);
 
   useEffect(() => {
@@ -537,17 +538,23 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     const pts = sparkPointsData(dailyCurve, td);
                     const last = pts[pts.length - 1];
                     return (
-                      <svg width="64" height="24" viewBox="0 0 60 16" style={{ marginTop: 8 }}>
-                        <polyline
-                          points={pts.map(p => `${p.x},${p.y}`).join(' ')}
-                          fill="none"
-                          stroke="var(--success)"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <circle cx={last.x} cy={last.y} r="2.5" fill="var(--success)" />
-                      </svg>
+                      <span
+                        onMouseEnter={() => setHoveredSparkline('headline')}
+                        onMouseLeave={() => setHoveredSparkline(null)}
+                        style={{ display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
+                      >
+                        <svg width="64" height="24" viewBox="0 0 60 16" style={{ marginTop: 8 }}>
+                          <polyline
+                            points={pts.map(p => `${p.x},${p.y}`).join(' ')}
+                            fill="none"
+                            stroke="var(--success)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <circle cx={last.x} cy={last.y} r="2.5" fill="var(--success)" />
+                        </svg>
+                      </span>
                     );
                   })()}
                 </div>
@@ -560,8 +567,8 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   new active users
                 </div>
 
-                {/* Trending-to: last-day run rate projected to 30 days */}
-                {dailyCurve && dailyCurve.length > 0 && (() => {
+                {/* Trending-to: last-day run rate projected to 30 days — visible on sparkline hover */}
+                {hoveredSparkline === 'headline' && dailyCurve && dailyCurve.length > 0 && (() => {
                   const lastDay = dailyCurve[dailyCurve.length - 1];
                   const trendTo = Math.round(lastDay * 30);
                   return (
@@ -740,19 +747,25 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           {kpi.value}
                         </span>
                         {pts && last && (
-                          <svg width="60" height="16" viewBox="0 0 60 16">
-                            <polyline
-                              points={pts.map(p => `${p.x},${p.y}`).join(' ')}
-                              fill="none"
-                              stroke={color}
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <circle cx={last.x} cy={last.y} r="2" fill={color} />
-                          </svg>
+                          <span
+                            onMouseEnter={() => setHoveredSparkline(kpi.key)}
+                            onMouseLeave={() => setHoveredSparkline(null)}
+                            style={{ display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
+                          >
+                            <svg width="60" height="16" viewBox="0 0 60 16">
+                              <polyline
+                                points={pts.map(p => `${p.x},${p.y}`).join(' ')}
+                                fill="none"
+                                stroke={color}
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <circle cx={last.x} cy={last.y} r="2" fill={color} />
+                            </svg>
+                          </span>
                         )}
-                        {trendLabel && (
+                        {hoveredSparkline === kpi.key && trendLabel && (
                           <span style={{
                             fontSize: 11,
                             fontWeight: 500,
