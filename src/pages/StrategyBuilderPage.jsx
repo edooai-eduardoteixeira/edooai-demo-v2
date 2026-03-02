@@ -701,23 +701,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     const last = pts ? pts[pts.length - 1] : null;
                     const color = kpi.curve ? sparkColor(kpi.curve, kpi.invertGood, td) : 'var(--text-tertiary)';
 
-                    /* Delta: % change from trust-period start to end */
-                    let deltaLabel = null;
-                    let deltaIsGood = false;
-                    if (kpi.curve && kpi.curve.length > 0) {
-                      const trustSlice = td > 0 ? kpi.curve.slice(td - 1) : kpi.curve;
-                      const startVal = trustSlice[0];
-                      const endVal = trustSlice[trustSlice.length - 1];
-                      if (startVal !== 0) {
-                        const pct = ((endVal - startVal) / Math.abs(startVal)) * 100;
-                        if (Math.abs(pct) >= 1) {
-                          deltaIsGood = kpi.invertGood ? pct < 0 : pct > 0;
-                          const arrow = pct < 0 ? '↓' : '↑';
-                          deltaLabel = `${arrow}${Math.abs(Math.round(pct))}%`;
-                        }
-                      }
-                    }
-
                     /* Trending-to: rates use last daily value, accumulations use × 30 */
                     let trendLabel = null;
                     if (kpi.curve && kpi.curve.length > 0) {
@@ -730,11 +713,8 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
                     return (
                     <div key={kpi.key} style={{ position: 'relative' }}>
-                      {/* Label (hover-underline tooltip) + delta badge */}
+                      {/* Label (hover-underline tooltip) */}
                       <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
                         fontSize: 11,
                         fontWeight: 600,
                         letterSpacing: '0.04em',
@@ -744,21 +724,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         <Tooltip text={kpi.desc} underline>
                           <span>{kpi.label}</span>
                         </Tooltip>
-                        {deltaLabel && (
-                          <span style={{
-                            fontSize: 11,
-                            fontWeight: 600,
-                            padding: '2px 6px',
-                            borderRadius: 'var(--radius-full)',
-                            background: deltaIsGood ? '#d1fae5' : '#fee2e2',
-                            color: deltaIsGood ? '#065f46' : '#991b1b',
-                            lineHeight: 1.2,
-                            letterSpacing: 0,
-                            textTransform: 'none',
-                          }}>
-                            {deltaLabel}
-                          </span>
-                        )}
                       </div>
                       {/* Value + sparkline + trending-to (all inline) */}
                       <div style={{
