@@ -122,8 +122,9 @@ const neobank = {
   //   Supply curve: N_frontier(B) = N_max × (B / (B + B_half))^alpha  [conversion units]
   //   Journey target: totalJourneys = N_frontier / baseConvRate        [journey units]
   //   Efficiency:   eff(day, cumN) = floor + (1−floor) × timeLearning × volumeConfidence
-  //   Journeys convert after journeyResolutionDays delay (pending queue)
-  //   Pool: journeys deplete remaining pool; resolved conversions replenish it
+  //   Pool quality decay: best prospects targeted first → remaining harder to convert
+  //   Distributed resolution: truncated normal distribution (no staircase)
+  //   Value learning: engine finds super referrers → higher-value customers over time
   //
   // Calibrated via scripts/calibrate-engine.mjs to hit:
   //   $50K  → ~200 users, CAC ~$250, ROI ~2.0x
@@ -135,32 +136,37 @@ const neobank = {
     eligibilityRate: 0.295,            // Fraction eligible for referral program → ~250K
 
     // Supply curve — theoretical max CONVERSIONS at given budget
-    N_max: 3000,                       // Ceiling: max conversions at infinite budget (NOT audience size)
-    B_half: 200000,                    // Budget for 50% of N_max ($)
-    alpha: 0.9,                        // Concavity exponent (<1 = slightly more concave)
+    N_max: 5000,                       // Ceiling: max conversions at infinite budget (NOT audience size)
+    B_half: 400000,                    // Budget for 50% of N_max ($)
+    alpha: 1,                          // Concavity exponent (1 = Michaelis-Menten)
 
     // Allocation efficiency — learning dynamics
-    effFloor: 0.10,                    // Min efficiency (random allocation success rate)
-    timeLearnRate: 0.14,               // Speed of time-based learning (exp decay rate)
-    confHalfPoint: 20,                 // Resolved conversions for 50% volume confidence
+    effFloor: 0.30,                    // Min efficiency (random allocation success rate)
+    timeLearnRate: 0.10,               // Speed of time-based learning (exp decay rate)
+    confHalfPoint: 70,                 // Resolved conversions for 50% volume confidence
 
     // Conversion probabilities per journey
-    baseConvRate: 0.03,                // P(conversion | well-targeted journey)
-    accidentalConvRate: 0.0005,        // P(conversion | poorly-targeted journey)
+    baseConvRate: 0.03,                // P(conversion | well-targeted journey) for best prospects
+    accidentalConvRate: 0.001,         // P(conversion | poorly-targeted journey)
 
-    // Journey pacing & resolution
+    // Pool quality decay — conv rate decreases as pool is consumed
+    poolDecayExponent: 3,              // How fast prospect quality degrades (higher = stronger decay)
+
+    // Journey pacing & distributed resolution
     maxDailyReachRate: 0.03,           // Max fraction of pool contacted per day
-    journeyResolutionDays: 7,          // Days from journey start to conversion resolution
+    avgResolutionDays: 3,              // Mean of normal distribution for resolution timing
+    offerExpirationDays: 14,           // Max days before offer expires (right bound of distribution)
     referrerEligibilityRate: 0.4,      // Fraction of new converts who become eligible referrers
 
-    // Economics
-    avgRevenuePerUser: 500,            // Revenue per activated user (for ROI calc)
+    // Economics — value varies with engine learning (80/20 dynamic)
+    baseRevenuePerUser: 250,           // Revenue per user when engine is untrained (random targeting)
+    premiumRevenuePerUser: 700,        // Revenue per user when engine is fully optimized (super referrers)
     fraudRate: 0.07,                   // Fraction of spend saved by fraud detection
     minSignalVolume: 40,               // Resolved conversions for statistical significance
 
     // Budget guidance thresholds
     budget: {
-      floor: 15000,                // Below = belowFloor guidance
+      floor: 10000,                // Below = belowFloor guidance
       recMin: 100000,              // Below recMin = belowRec guidance
       recMax: 200000,              // Above recMax = aboveRec guidance
     },

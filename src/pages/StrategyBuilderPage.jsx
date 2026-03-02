@@ -111,6 +111,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
     fraudSaved,
     guidanceState,
     totalJourneysStarted,
+    avgValuePerUser,
   } = proj || {};
 
   /* ── Editable budget number ── */

@@ -1,9 +1,9 @@
 /**
- * Projection Engine v2 — Journey Model with Resolution Delay
+ * Projection Engine v3 — Journey Model with Distributed Resolution & Value Learning
  *
  * Pure functions, zero React dependencies. Takes budget + params → computes all projections.
  *
- * Three interlocking components:
+ * Five interlocking components:
  *
  *   1. Supply curve (N_frontier): concave function of budget.
  *      Returns max possible CONVERSIONS with perfect allocation.
@@ -11,16 +11,19 @@
  *
  *   2. Allocation efficiency: f(time, resolved conversions).
  *      Models the learning period. Starts at effFloor, rises as resolved
- *      conversions accumulate. Two drivers — time (algorithms improve) and
- *      volume (conversion outcomes confirm targeting patterns).
+ *      conversions accumulate.
  *
- *   3. Journey resolution delay:
- *      Journeys started on day D produce conversions on day D + journeyResolutionDays.
- *      The pending queue means cumulativeN stays at 0 early, keeping efficiency
- *      near floor and shifting the S-curve right.
+ *   3. Pool quality decay: as the engine consumes the best prospects first,
+ *      remaining prospects are harder to convert. effectiveBaseConvRate drops
+ *      as the pool shrinks. This makes conversion rate DECREASE with budget.
  *
- *   Pool dynamics: journeys deplete the remaining pool; resolved conversions
- *   replenish it (new referrers). Pool capped at audienceSize.
+ *   4. Distributed resolution: conversions are spread across a truncated
+ *      normal distribution from day+1 to day+offerExpirationDays, peaking
+ *      at day+avgResolutionDays. No staircase jumps.
+ *
+ *   5. Value learning: as the engine gets better at targeting, it finds
+ *      super referrers who bring high-value customers. effectiveRevenuePerUser
+ *      rises with efficiency, from baseRevenuePerUser to premiumRevenuePerUser.
  *
  * Unit semantics:
  *   - N_frontier, N_max: conversion units
@@ -37,13 +40,27 @@ function supplyFrontier(budget, N_max, B_half, alpha) {
 
 // ─── Allocation Efficiency ──────────────────────────────────────────
 // eff(day, cumN) = floor + (1 - floor) × timeFactor × volumeFactor
-//   timeFactor  = 1 - exp(-timeLearnRate × day)
-//   volumeFactor = cumN / (cumN + confHalfPoint)
 // cumN counts only RESOLVED conversions, not pending ones.
 function allocationEfficiency(day, cumulativeN, p) {
   const timeFactor = 1 - Math.exp(-p.timeLearnRate * day);
   const volumeFactor = cumulativeN / (cumulativeN + p.confHalfPoint);
   return p.effFloor + (1 - p.effFloor) * timeFactor * volumeFactor;
+}
+
+// ─── Truncated Normal Distribution Weights ───────────────────────────
+// Pre-computed once at init. Weights for delays 1..offerExpirationDays,
+// centered on avgResolutionDays. Normalized to sum to 1.
+function computeResolutionWeights(avgResolutionDays, offerExpirationDays) {
+  const sigma = (offerExpirationDays - 1) / 3;
+  const weights = [];
+
+  for (let delay = 1; delay <= offerExpirationDays; delay++) {
+    const z = (delay - avgResolutionDays) / sigma;
+    weights.push(Math.exp(-0.5 * z * z));
+  }
+
+  const sum = weights.reduce((s, w) => s + w, 0);
+  return weights.map(w => w / sum);
 }
 
 // ─── Guardrail Assertions ────────────────────────────────────────────
@@ -61,12 +78,16 @@ function assertParams(p) {
   if (!(p.B_half > 0)) fail('B_half must be > 0');
   if (!(p.baseConvRate > 0 && p.baseConvRate < 1)) fail('baseConvRate must be in (0, 1)');
   if (!(p.accidentalConvRate > 0 && p.accidentalConvRate < p.baseConvRate)) fail('accidentalConvRate must be in (0, baseConvRate)');
+  if (!(p.poolDecayExponent > 0 && p.poolDecayExponent <= 5)) fail('poolDecayExponent must be in (0, 5]');
   if (!(p.effFloor > 0 && p.effFloor < 1)) fail('effFloor must be in (0, 1)');
   if (!(p.confHalfPoint > 0)) fail('confHalfPoint must be > 0');
   if (!(p.timeLearnRate > 0 && p.timeLearnRate <= 1)) fail('timeLearnRate must be in (0, 1]');
   if (!(p.maxDailyReachRate > 0 && p.maxDailyReachRate < 1)) fail('maxDailyReachRate must be in (0, 1)');
   if (!(p.referrerEligibilityRate >= 0 && p.referrerEligibilityRate < 1)) fail('referrerEligibilityRate must be in [0, 1)');
-  if (!(p.journeyResolutionDays >= 1 && p.journeyResolutionDays <= 14)) fail('journeyResolutionDays must be in [1, 14]');
+  if (!(p.avgResolutionDays >= 1 && p.avgResolutionDays <= p.offerExpirationDays)) fail('avgResolutionDays must be in [1, offerExpirationDays]');
+  if (!(p.offerExpirationDays > 0 && p.offerExpirationDays <= 30)) fail('offerExpirationDays must be in (0, 30]');
+  if (!(p.baseRevenuePerUser > 0)) fail('baseRevenuePerUser must be > 0');
+  if (!(p.premiumRevenuePerUser >= p.baseRevenuePerUser)) fail('premiumRevenuePerUser must be >= baseRevenuePerUser');
   if (!(p.effFloor > 0 || p.accidentalConvRate > 0)) fail('effFloor or accidentalConvRate must be > 0 (bootstrap safety)');
 }
 
@@ -88,10 +109,13 @@ export function computeProjection({ budget, params }) {
     alpha,
     baseConvRate,
     accidentalConvRate,
+    poolDecayExponent,
     referrerEligibilityRate,
     maxDailyReachRate,
-    journeyResolutionDays,
-    avgRevenuePerUser,
+    avgResolutionDays,
+    offerExpirationDays,
+    baseRevenuePerUser,
+    premiumRevenuePerUser,
     fraudRate,
     minSignalVolume,
     budget: budgetThresholds,
@@ -107,10 +131,14 @@ export function computeProjection({ budget, params }) {
   const totalJourneys = N_frontier / baseConvRate;
   const dailyJourneyTarget = totalJourneys / 30;
 
+  // Pre-compute resolution distribution weights (once)
+  const resolutionWeights = computeResolutionWeights(avgResolutionDays, offerExpirationDays);
+
   let remainingPool = audienceSize;
   let cumulativeN = 0;
+  let cumulativeValue = 0;
   let totalJourneysStarted = 0;
-  const pendingConversions = []; // {day: resolveDay, count: conversions}
+  const pendingConversions = []; // {resolveDay, count, value}
 
   const dailyCurve = [];
   const confidenceCurve = [];
@@ -126,29 +154,50 @@ export function computeProjection({ budget, params }) {
     // Pace journeys: don't exhaust pool before learning
     const journeysToday = Math.min(dailyJourneyTarget, remainingPool * maxDailyReachRate);
 
+    // Pool quality decay: best prospects are targeted first,
+    // remaining ones are progressively harder to convert
+    const poolQuality = Math.pow(remainingPool / audienceSize, poolDecayExponent);
+    const effectiveBaseConvRate = baseConvRate * poolQuality;
+
     // Targeting split
     const wellTargeted = journeysToday * eff;
-    const goodConversions = wellTargeted * baseConvRate;
+    const goodConversions = wellTargeted * effectiveBaseConvRate;
 
     const poorlyTargeted = journeysToday * (1 - eff);
     const accidentalConversions = poorlyTargeted * accidentalConvRate;
 
     const dailyConversionsGenerated = goodConversions + accidentalConversions;
 
-    // Queue conversions for resolution after delay
-    pendingConversions.push({
-      day: day + journeyResolutionDays,
-      count: dailyConversionsGenerated,
-    });
+    // Value learning: engine finds super referrers who bring high-value customers
+    const effectiveRevenuePerUser = baseRevenuePerUser +
+      (premiumRevenuePerUser - baseRevenuePerUser) * eff;
+    const dailyValueGenerated = dailyConversionsGenerated * effectiveRevenuePerUser;
+
+    // Distribute conversions across future days using normal distribution
+    for (let delayIdx = 0; delayIdx < offerExpirationDays; delayIdx++) {
+      const delay = delayIdx + 1; // delays are 1..offerExpirationDays
+      const resolveDay = day + delay;
+      if (resolveDay <= 30) {
+        pendingConversions.push({
+          resolveDay,
+          count: dailyConversionsGenerated * resolutionWeights[delayIdx],
+          value: dailyValueGenerated * resolutionWeights[delayIdx],
+        });
+      }
+      // Conversions resolving after day 30 are lost (conservative)
+    }
 
     // Resolve any conversions scheduled for today
     let resolvedToday = 0;
+    let resolvedValueToday = 0;
     for (const entry of pendingConversions) {
-      if (entry.day === day) {
+      if (entry.resolveDay === day) {
         resolvedToday += entry.count;
+        resolvedValueToday += entry.value;
       }
     }
     cumulativeN += resolvedToday;
+    cumulativeValue += resolvedValueToday;
 
     // Pool dynamics
     remainingPool -= journeysToday;                                // journeys deplete pool
@@ -172,11 +221,17 @@ export function computeProjection({ budget, params }) {
   const activeUsers = dailyCurve.reduce((sum, v) => sum + v, 0);
   const cac = activeUsers > 0 ? Math.round(budget / activeUsers) : 999;
 
-  const roi = activeUsers > 0 && budget > 0
-    ? Math.round(((activeUsers * avgRevenuePerUser) / budget) * 10) / 10
+  // ROI uses actual cumulative value generated (not fixed average)
+  const roi = cumulativeValue > 0 && budget > 0
+    ? Math.round((cumulativeValue / budget) * 10) / 10
     : 0;
 
-  // Conversion rate: derived from simulation (THE FIX)
+  // Average value per user: shows engine finds better customers over time
+  const avgValuePerUser = activeUsers > 0
+    ? Math.round(cumulativeValue / activeUsers)
+    : 0;
+
+  // Conversion rate: derived from simulation
   // 2 decimal places — needed for coherence at low rates (~1%)
   const convRate = totalJourneysStarted > 0
     ? Math.round((activeUsers / totalJourneysStarted) * 10000) / 100
@@ -207,5 +262,6 @@ export function computeProjection({ budget, params }) {
     guidanceState,
     confidenceCurve,
     totalJourneysStarted: Math.round(totalJourneysStarted),
+    avgValuePerUser,
   };
 }

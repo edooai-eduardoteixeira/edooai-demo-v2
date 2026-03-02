@@ -1,5 +1,8 @@
 /**
- * Verification script for the projection engine v2 (Journey Model).
+ * Verification script for the projection engine v3.
+ *
+ * v3 checks: pool quality decay (conv rate decreasing), distributed resolution
+ * (smooth curve from day 2), value learning (avgValuePerUser bounds).
  *
  * Imports the real engine + config and checks behavioral invariants.
  * Fails loudly if any invariant is violated.
@@ -28,7 +31,7 @@ function check(name, condition, detail) {
 
 console.log('\n═══ 1. Return Shape ═══');
 const r = computeProjection({ budget: 150_000, params });
-const REQUIRED_KEYS = ['dailyCurve', 'thresholdDay', 'activeUsers', 'cac', 'roi', 'convRate', 'fraudSaved', 'guidanceState', 'confidenceCurve', 'totalJourneysStarted'];
+const REQUIRED_KEYS = ['dailyCurve', 'thresholdDay', 'activeUsers', 'cac', 'roi', 'convRate', 'fraudSaved', 'guidanceState', 'confidenceCurve', 'totalJourneysStarted', 'avgValuePerUser'];
 for (const key of REQUIRED_KEYS) {
   check(`has '${key}'`, key in r, `missing from return object`);
 }
@@ -38,6 +41,7 @@ check('activeUsers is number', typeof r.activeUsers === 'number', typeof r.activ
 check('cac is number', typeof r.cac === 'number', typeof r.cac);
 check('roi is number', typeof r.roi === 'number', typeof r.roi);
 check('totalJourneysStarted is number', typeof r.totalJourneysStarted === 'number', typeof r.totalJourneysStarted);
+check('avgValuePerUser is number', typeof r.avgValuePerUser === 'number', typeof r.avgValuePerUser);
 
 // ─── 2. KPI Coherence (THE KEY CHECK) ──────────────────────────────
 
@@ -53,24 +57,71 @@ for (const b of [50_000, 150_000, 500_000]) {
   );
 }
 
-// ─── 3. Journey resolution delay ────────────────────────────────────
+// ─── 3. Conv rate DECREASES with budget (v3 pool decay) ─────────────
 
-console.log('\n═══ 3. Journey Resolution Delay ═══');
-const delay = params.journeyResolutionDays;
+console.log('\n═══ 3. Conv Rate Direction ═══');
+const cr50 = computeProjection({ budget: 50_000, params }).convRate;
+const cr150 = computeProjection({ budget: 150_000, params }).convRate;
+const cr500 = computeProjection({ budget: 500_000, params }).convRate;
+check(
+  `Conv rate decreasing: $50K (${cr50.toFixed(2)}%) > $150K (${cr150.toFixed(2)}%) > $500K (${cr500.toFixed(2)}%)`,
+  cr50 > cr150 && cr150 > cr500,
+  `$50K=${cr50.toFixed(2)}%, $150K=${cr150.toFixed(2)}%, $500K=${cr500.toFixed(2)}%`
+);
+
+// ─── 4. Smooth curve — no staircase (v3 distributed resolution) ─────
+
+console.log('\n═══ 4. Smooth Curve ═══');
 for (const b of [50_000, 150_000, 500_000]) {
   const res = computeProjection({ budget: b, params });
-  const earlyDays = res.dailyCurve.slice(0, delay);
-  const allZero = earlyDays.every(v => v === 0);
+  // Conversions should appear from day 2 (fast resolutions)
+  const day2 = res.dailyCurve[1];
   check(
-    `$${b / 1000}K: first ${delay} days have 0 resolved conversions`,
-    allZero,
-    `got [${earlyDays.join(', ')}]`
+    `$${b / 1000}K: day 2 has conversions (${day2})`,
+    day2 > 0,
+    `day 2 = ${day2}`
+  );
+
+  // No staircase: check that no single day jumps more than 3× the running avg
+  // (skip first 5 days where ramp is still building from distributed resolution)
+  let hasStaircase = false;
+  for (let d = 5; d < 30; d++) {
+    const runningAvg = res.dailyCurve.slice(0, d).reduce((s, v) => s + v, 0) / d;
+    if (runningAvg > 0 && res.dailyCurve[d] > runningAvg * 3) {
+      hasStaircase = true;
+    }
+  }
+  check(
+    `$${b / 1000}K: no staircase jumps`,
+    !hasStaircase,
+    'detected day-to-day jump > 3× running average'
   );
 }
 
-// ─── 4. Audience derivation ─────────────────────────────────────────
+// ─── 5. Value learning (v3) ──────────────────────────────────────────
 
-console.log('\n═══ 4. Audience Derivation ═══');
+console.log('\n═══ 5. Value Learning ═══');
+for (const b of [50_000, 150_000, 500_000]) {
+  const res = computeProjection({ budget: b, params });
+  check(
+    `$${b / 1000}K: avgValuePerUser ($${res.avgValuePerUser}) in [${params.baseRevenuePerUser}, ${params.premiumRevenuePerUser}]`,
+    res.avgValuePerUser >= params.baseRevenuePerUser && res.avgValuePerUser <= params.premiumRevenuePerUser,
+    `got $${res.avgValuePerUser}`
+  );
+}
+
+// Higher budget → higher avgValuePerUser (engine learns faster with more data)
+const v50 = computeProjection({ budget: 50_000, params }).avgValuePerUser;
+const v500 = computeProjection({ budget: 500_000, params }).avgValuePerUser;
+check(
+  `$500K avgValuePerUser ($${v500}) >= $50K ($${v50})`,
+  v500 >= v50,
+  `$50K=$${v50}, $500K=$${v500}`
+);
+
+// ─── 6. Audience derivation ─────────────────────────────────────────
+
+console.log('\n═══ 6. Audience Derivation ═══');
 const expectedAudience = Math.round(params.totalCustomers * params.eligibilityRate);
 check(
   `audienceSize = ${params.totalCustomers} × ${params.eligibilityRate} = ${expectedAudience}`,
@@ -83,26 +134,25 @@ check(
   `N_max=${params.N_max}, audienceSize=${expectedAudience}`
 );
 
-// ─── 5. Daily curve shape ───────────────────────────────────────────
+// ─── 7. Daily curve shape ───────────────────────────────────────────
 
-console.log('\n═══ 5. Daily Curve Shape ═══');
+console.log('\n═══ 7. Daily Curve Shape ═══');
 const budgets = [50_000, 150_000, 500_000];
 for (const b of budgets) {
   const res = computeProjection({ budget: b, params });
-  // Compare resolved days only (skip initial delay)
-  const resolvedDays = res.dailyCurve.slice(delay);
-  const firstResolvedAvg = resolvedDays.slice(0, 5).reduce((s, v) => s + v, 0) / 5;
-  const lastResolvedAvg = resolvedDays.slice(-5).reduce((s, v) => s + v, 0) / 5;
+  // Last 5 days avg should be > first 5 days avg (S-curve ramp)
+  const first5avg = res.dailyCurve.slice(0, 5).reduce((s, v) => s + v, 0) / 5;
+  const last5avg = res.dailyCurve.slice(25).reduce((s, v) => s + v, 0) / 5;
   check(
-    `$${b / 1000}K: last 5 resolved days avg > first 5 resolved days avg`,
-    lastResolvedAvg > firstResolvedAvg,
-    `first5=${firstResolvedAvg.toFixed(1)}, last5=${lastResolvedAvg.toFixed(1)}`
+    `$${b / 1000}K: last 5 days avg > first 5 days avg`,
+    last5avg > first5avg,
+    `first5=${first5avg.toFixed(1)}, last5=${last5avg.toFixed(1)}`
   );
 }
 
-// ─── 6. Users increase with budget (sublinearly) ────────────────────
+// ─── 8. Users increase with budget (sublinearly) ────────────────────
 
-console.log('\n═══ 6. Users vs Budget ═══');
+console.log('\n═══ 8. Users vs Budget ═══');
 const sweep = [50_000, 100_000, 150_000, 200_000, 300_000, 500_000];
 const results = sweep.map(b => ({ budget: b, ...computeProjection({ budget: b, params }) }));
 
@@ -119,9 +169,9 @@ const ratio = users500 / users50;
 check(`Sublinear: 10x budget gives ${ratio.toFixed(1)}x users (should be <10)`, ratio < 10,
   `ratio=${ratio.toFixed(1)}`);
 
-// ─── 7. CAC increases with budget (above recommended range) ─────────
+// ─── 9. CAC increases with budget (above recommended range) ─────────
 
-console.log('\n═══ 7. CAC vs Budget ═══');
+console.log('\n═══ 9. CAC vs Budget ═══');
 const aboveRec = results.filter(r => r.budget >= params.budget.recMin);
 let cacMonotone = true;
 for (let i = 1; i < aboveRec.length; i++) {
@@ -130,9 +180,9 @@ for (let i = 1; i < aboveRec.length; i++) {
 check('CAC increases with budget (above recMin)', cacMonotone,
   aboveRec.map(r => `$${r.budget / 1000}K→$${r.cac}`).join(', '));
 
-// ─── 8. ROI decreases with budget (above recommended range) ────────
+// ─── 10. ROI decreases with budget (above recommended range) ────────
 
-console.log('\n═══ 8. ROI vs Budget ═══');
+console.log('\n═══ 10. ROI vs Budget ═══');
 let roiMonotone = true;
 for (let i = 1; i < aboveRec.length; i++) {
   if (aboveRec[i].roi > aboveRec[i - 1].roi) roiMonotone = false;
@@ -140,26 +190,26 @@ for (let i = 1; i < aboveRec.length; i++) {
 check('ROI decreases with budget (above recMin)', roiMonotone,
   aboveRec.map(r => `$${r.budget / 1000}K→${r.roi}x`).join(', '));
 
-// ─── 9. ThresholdDay moves with budget ──────────────────────────────
+// ─── 11. ThresholdDay moves with budget ──────────────────────────────
 
-console.log('\n═══ 9. Threshold Day ═══');
+console.log('\n═══ 11. Threshold Day ═══');
 const td50 = computeProjection({ budget: 50_000, params }).thresholdDay;
 const td150 = computeProjection({ budget: 150_000, params }).thresholdDay;
 const td500 = computeProjection({ budget: 500_000, params }).thresholdDay;
 check(`$50K thresholdDay (${td50}) >= $150K (${td150})`, td50 >= td150, '');
 check(`$150K thresholdDay (${td150}) >= $500K (${td500})`, td150 >= td500, '');
 
-// ─── 10. Guidance states ────────────────────────────────────────────
+// ─── 12. Guidance states ────────────────────────────────────────────
 
-console.log('\n═══ 10. Guidance States ═══');
-check('Below floor → belowFloor', computeProjection({ budget: 10_000, params }).guidanceState === 'belowFloor', '');
+console.log('\n═══ 12. Guidance States ═══');
+check('Below floor → belowFloor', computeProjection({ budget: 5_000, params }).guidanceState === 'belowFloor', '');
 check('Below recMin → belowRec', computeProjection({ budget: 80_000, params }).guidanceState === 'belowRec', '');
 check('In range → atRec', computeProjection({ budget: 150_000, params }).guidanceState === 'atRec', '');
 check('Above recMax → aboveRec', computeProjection({ budget: 300_000, params }).guidanceState === 'aboveRec', '');
 
-// ─── 11. Calibration targets ───────────────────────────────────────
+// ─── 13. Calibration targets ───────────────────────────────────────
 
-console.log('\n═══ 11. Calibration Targets ═══');
+console.log('\n═══ 13. Calibration Targets ═══');
 const TARGETS = [
   { budget: 50_000,  cac: [200, 250],  users: [200, 250],   roi: [1.8, 2.2] },
   { budget: 150_000, cac: [250, 350],  users: [430, 600],   roi: [1.4, 2.0] },
@@ -176,9 +226,9 @@ for (const t of TARGETS) {
     res.roi >= t.roi[0] && res.roi <= t.roi[1], `got ${res.roi}x`);
 }
 
-// ─── 12. Edge cases ─────────────────────────────────────────────────
+// ─── 14. Edge cases ─────────────────────────────────────────────────
 
-console.log('\n═══ 12. Edge Cases ═══');
+console.log('\n═══ 14. Edge Cases ═══');
 const zero = computeProjection({ budget: 0, params });
 check('$0 budget → 0 ROI', zero.roi === 0, `got ${zero.roi}`);
 check('$0 budget → belowFloor', zero.guidanceState === 'belowFloor', zero.guidanceState);
@@ -190,9 +240,9 @@ const huge = computeProjection({ budget: 5_000_000, params });
 check('$5M budget → runs without error', typeof huge.activeUsers === 'number', '');
 check('$5M budget → activeUsers > $500K users', huge.activeUsers > users500, `got ${huge.activeUsers}`);
 
-// ─── 13. Parameter assertions ───────────────────────────────────────
+// ─── 15. Parameter assertions ───────────────────────────────────────
 
-console.log('\n═══ 13. Parameter Assertions ═══');
+console.log('\n═══ 15. Parameter Assertions ═══');
 check('totalCustomers > 0', params.totalCustomers > 0, params.totalCustomers);
 check('eligibilityRate in (0, 1]', params.eligibilityRate > 0 && params.eligibilityRate <= 1, params.eligibilityRate);
 check('N_max > 0', params.N_max > 0, params.N_max);
@@ -201,12 +251,16 @@ check('alpha in (0, 2]', params.alpha > 0 && params.alpha <= 2, params.alpha);
 check('B_half > 0', params.B_half > 0, params.B_half);
 check('baseConvRate in (0, 1)', params.baseConvRate > 0 && params.baseConvRate < 1, params.baseConvRate);
 check('accidentalConvRate in (0, baseConvRate)', params.accidentalConvRate > 0 && params.accidentalConvRate < params.baseConvRate, params.accidentalConvRate);
+check('poolDecayExponent in (0, 5]', params.poolDecayExponent > 0 && params.poolDecayExponent <= 5, params.poolDecayExponent);
 check('effFloor in (0, 1)', params.effFloor > 0 && params.effFloor < 1, params.effFloor);
 check('confHalfPoint > 0', params.confHalfPoint > 0, params.confHalfPoint);
 check('timeLearnRate in (0, 1]', params.timeLearnRate > 0 && params.timeLearnRate <= 1, params.timeLearnRate);
 check('maxDailyReachRate in (0, 1)', params.maxDailyReachRate > 0 && params.maxDailyReachRate < 1, params.maxDailyReachRate);
 check('referrerEligibilityRate in [0, 1)', params.referrerEligibilityRate >= 0 && params.referrerEligibilityRate < 1, params.referrerEligibilityRate);
-check('journeyResolutionDays in [1, 14]', params.journeyResolutionDays >= 1 && params.journeyResolutionDays <= 14, params.journeyResolutionDays);
+check('avgResolutionDays in [1, offerExpirationDays]', params.avgResolutionDays >= 1 && params.avgResolutionDays <= params.offerExpirationDays, params.avgResolutionDays);
+check('offerExpirationDays in (0, 30]', params.offerExpirationDays > 0 && params.offerExpirationDays <= 30, params.offerExpirationDays);
+check('baseRevenuePerUser > 0', params.baseRevenuePerUser > 0, params.baseRevenuePerUser);
+check('premiumRevenuePerUser >= baseRevenuePerUser', params.premiumRevenuePerUser >= params.baseRevenuePerUser, `base=${params.baseRevenuePerUser}, premium=${params.premiumRevenuePerUser}`);
 check('bootstrap safety', params.effFloor > 0 || params.accidentalConvRate > 0, '');
 
 // ─── Summary ────────────────────────────────────────────────────────
