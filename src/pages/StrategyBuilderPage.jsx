@@ -6,6 +6,23 @@ import Tooltip from '../components/Tooltip.jsx';
 import { useProjections } from '../hooks/useProjections.js';
 import tl from '../styles/StrategyTimeline.module.css';
 
+/* ───────── Sparkline helper: maps 30-element array → SVG polyline points ───────── */
+function sparkPoints(arr, invert = false) {
+  if (!arr || arr.length === 0) return '2,8 38,8';
+  const min = Math.min(...arr);
+  const max = Math.max(...arr);
+  const range = max - min || 1;
+  return arr
+    .filter((_, i) => i % 5 === 0 || i === arr.length - 1)
+    .map((v, i, sampled) => {
+      const x = 2 + (i / (sampled.length - 1)) * 36;
+      const norm = (v - min) / range;
+      const y = invert ? 2 + norm * 12 : 14 - norm * 12;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(' ');
+}
+
 /* ───────── KPI Card ───────── */
 function KPICard({ label, children }) {
   return (
@@ -112,6 +129,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
     guidanceState,
     totalJourneysStarted,
     avgValuePerUser,
+    kpiCurves,
   } = proj || {};
 
   /* ── Editable budget number ── */
@@ -147,12 +165,12 @@ export default function StrategyBuilderPage({ config, onNext }) {
     : 20;
   const sliderPercent = ((budget - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100;
 
-  /* ── Sparkline data (start/end values for hover) ── */
-  const sparkData = dailyCurve ? {
-    cac: { start: `$${cac ? cac * 2 : 0}`, end: `$${cac}` },
-    roi: { start: '0.8x', end: `${roi}x` },
-    conv: { start: `${(convRate * 0.5).toFixed(1)}%`, end: `${convRate}%` },
-    fraud: { start: '$2K', end: `$${Math.round(fraudSaved / 1000)}K` },
+  /* ── Sparkline data (real day 1 → day 30 from engine) ── */
+  const sparkData = kpiCurves ? {
+    cac: { start: `$${kpiCurves.cac[0]}`, end: `$${kpiCurves.cac[29]}` },
+    roi: { start: `${kpiCurves.roi[0]}x`, end: `${kpiCurves.roi[29]}x` },
+    conv: { start: `${kpiCurves.convRate[0]}%`, end: `${kpiCurves.convRate[29]}%` },
+    fraud: { start: `$${Math.round(kpiCurves.fraudSaved[0] / 1000)}K`, end: `$${Math.round(kpiCurves.fraudSaved[29] / 1000)}K` },
   } : null;
 
   /* ── Progressive reveal ── */
@@ -538,17 +556,22 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   }}>
                     <AnimatedNumber value={activeUsers} duration={300} />
                   </div>
-                  {/* Sparkline trend for headline */}
-                  <svg width="48" height="20" viewBox="0 0 48 20" style={{ marginTop: 8 }}>
-                    <polyline
-                      points="2,18 10,16 20,13 30,9 38,5 46,2"
-                      fill="none"
-                      stroke="var(--success)"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  {/* Sparkline trend for headline — cumulative users from engine */}
+                  {dailyCurve && (
+                    <svg width="48" height="20" viewBox="0 0 40 16" style={{ marginTop: 8 }}>
+                      <polyline
+                        points={(() => {
+                          const cum = dailyCurve.reduce((acc, v) => { acc.push((acc.length ? acc[acc.length - 1] : 0) + v); return acc; }, []);
+                          return sparkPoints(cum);
+                        })()}
+                        fill="none"
+                        stroke="var(--success)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
                 </div>
 
                 <div style={{
@@ -569,10 +592,10 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   borderTop: '1px solid var(--border-light)',
                 }}>
                   {[
-                    { label: 'Avg CAC', value: `$${cac}`, sparkDir: 'down', tip: sparkData?.cac },
-                    { label: 'ROI', value: `${typeof roi === 'number' ? roi.toFixed(1) : roi}x`, sparkDir: 'up', tip: sparkData?.roi },
-                    { label: 'Conv rate', value: `${typeof convRate === 'number' ? convRate.toFixed(1) : convRate}%`, sparkDir: 'up', tip: sparkData?.conv },
-                    { label: 'Fraud saved', value: `$${Math.round((fraudSaved || 0) / 1000)}K`, sparkDir: 'up', tip: sparkData?.fraud },
+                    { label: 'Avg CAC', value: `$${cac}`, curve: kpiCurves?.cac, invert: true, tip: sparkData?.cac },
+                    { label: 'ROI', value: `${typeof roi === 'number' ? roi.toFixed(1) : roi}x`, curve: kpiCurves?.roi, invert: false, tip: sparkData?.roi },
+                    { label: 'Conv rate', value: `${typeof convRate === 'number' ? convRate.toFixed(1) : convRate}%`, curve: kpiCurves?.convRate, invert: false, tip: sparkData?.conv },
+                    { label: 'Fraud saved', value: `$${Math.round((fraudSaved || 0) / 1000)}K`, curve: kpiCurves?.fraudSaved, invert: false, tip: sparkData?.fraud },
                   ].map((kpi) => (
                     <div key={kpi.label} style={{ position: 'relative' }} title={kpi.tip ? `Day 1: ${kpi.tip.start} → Day 30: ${kpi.tip.end}` : ''}>
                       <div style={{
@@ -599,9 +622,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         </span>
                         <svg width="40" height="16" viewBox="0 0 40 16">
                           <polyline
-                            points={kpi.sparkDir === 'up'
-                              ? '2,14 9,12 16,9 23,6 30,4 38,2'
-                              : '2,2 9,4 16,6 23,9 30,12 38,14'}
+                            points={sparkPoints(kpi.curve, kpi.invert)}
                             fill="none"
                             stroke="var(--success)"
                             strokeWidth="1.5"
