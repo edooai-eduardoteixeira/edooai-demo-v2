@@ -1,51 +1,73 @@
 /**
- * Projection Engine — Allocation Calculator Model
+ * Projection Engine v2 — Journey Model with Resolution Delay
  *
  * Pure functions, zero React dependencies. Takes budget + params → computes all projections.
  *
  * Three interlocking components:
  *
  *   1. Supply curve (N_frontier): concave function of budget.
- *      Represents max possible conversions with perfect allocation.
- *      Higher budget → more conversions, but diminishing returns → CAC rises.
+ *      Returns max possible CONVERSIONS with perfect allocation.
+ *      N_frontier is in conversion units — divide by baseConvRate to get journeys.
  *
- *   2. Allocation efficiency: f(time, cumulative conversions).
- *      Models the learning period. Starts low (engine is guessing), rises as
- *      data accumulates. Two drivers — time (algorithms improve) and volume
- *      (conversion outcomes confirm targeting patterns). Positive feedback:
- *      more conversions → higher confidence → better allocation → more conversions.
+ *   2. Allocation efficiency: f(time, resolved conversions).
+ *      Models the learning period. Starts at effFloor, rises as resolved
+ *      conversions accumulate. Two drivers — time (algorithms improve) and
+ *      volume (conversion outcomes confirm targeting patterns).
  *
- *   3. Two-type waste during low confidence:
- *      - Well-targeted contacts → convert at baseConvRate (right customer, right offer)
- *      - Poorly-targeted contacts → mostly wasted, small fraction converts accidentally
- *        (overpaying). All contacted customers are "used up" for this month
- *        (contactFrequency = 1), depleting the pool.
+ *   3. Journey resolution delay:
+ *      Journeys started on day D produce conversions on day D + journeyResolutionDays.
+ *      The pending queue means cumulativeN stays at 0 early, keeping efficiency
+ *      near floor and shifting the S-curve right.
  *
- *   Pool replenishment: successful conversions create new eligible referrers
- *   (the referral program grows its own audience).
+ *   Pool dynamics: journeys deplete the remaining pool; resolved conversions
+ *   replenish it (new referrers). Pool capped at audienceSize.
  *
- * Within a month: efficiency drives the curve upward (more conversions per day).
- * Across budgets: supply curve concavity produces diminishing returns (CAC rises).
+ * Unit semantics:
+ *   - N_frontier, N_max: conversion units
+ *   - dailyJourneyTarget, journeysToday, totalJourneysStarted: journey units
+ *   - baseConvRate bridges the two: journeys = conversions / baseConvRate
  */
 
 // ─── Supply Curve ────────────────────────────────────────────────────
 // N_frontier(B) = N_max × (B / (B + B_half))^alpha
-// Concave in budget. Encodes the aggregate result of optimal allocation
-// across a heterogeneous customer population — we don't model individual
-// rewards, only the resulting conversion count.
+// Returns CONVERSIONS (not journeys). Concave in budget.
 function supplyFrontier(budget, N_max, B_half, alpha) {
   return N_max * Math.pow(budget / (budget + B_half), alpha);
 }
 
 // ─── Allocation Efficiency ──────────────────────────────────────────
 // eff(day, cumN) = floor + (1 - floor) × timeFactor × volumeFactor
-//   timeFactor  = 1 - exp(-timeLearnRate × day)     — algorithms improve over time
-//   volumeFactor = cumN / (cumN + confHalfPoint)     — results confirm patterns
-// Returns 0→1 (guessing → fully optimized).
+//   timeFactor  = 1 - exp(-timeLearnRate × day)
+//   volumeFactor = cumN / (cumN + confHalfPoint)
+// cumN counts only RESOLVED conversions, not pending ones.
 function allocationEfficiency(day, cumulativeN, p) {
   const timeFactor = 1 - Math.exp(-p.timeLearnRate * day);
   const volumeFactor = cumulativeN / (cumulativeN + p.confHalfPoint);
   return p.effFloor + (1 - p.effFloor) * timeFactor * volumeFactor;
+}
+
+// ─── Guardrail Assertions ────────────────────────────────────────────
+function assertParams(p) {
+  const fail = (msg) => { throw new Error(`Engine assertion failed: ${msg}`); };
+
+  if (!(p.totalCustomers > 0)) fail('totalCustomers must be > 0');
+  if (!(p.eligibilityRate > 0 && p.eligibilityRate <= 1)) fail('eligibilityRate must be in (0, 1]');
+  if (!(p.N_max > 0)) fail('N_max must be > 0');
+
+  const audienceSize = Math.round(p.totalCustomers * p.eligibilityRate);
+  if (!(p.N_max <= audienceSize)) fail(`N_max (${p.N_max}) must be <= audienceSize (${audienceSize})`);
+
+  if (!(p.alpha > 0 && p.alpha <= 2)) fail('alpha must be in (0, 2]');
+  if (!(p.B_half > 0)) fail('B_half must be > 0');
+  if (!(p.baseConvRate > 0 && p.baseConvRate < 1)) fail('baseConvRate must be in (0, 1)');
+  if (!(p.accidentalConvRate > 0 && p.accidentalConvRate < p.baseConvRate)) fail('accidentalConvRate must be in (0, baseConvRate)');
+  if (!(p.effFloor > 0 && p.effFloor < 1)) fail('effFloor must be in (0, 1)');
+  if (!(p.confHalfPoint > 0)) fail('confHalfPoint must be > 0');
+  if (!(p.timeLearnRate > 0 && p.timeLearnRate <= 1)) fail('timeLearnRate must be in (0, 1]');
+  if (!(p.maxDailyReachRate > 0 && p.maxDailyReachRate < 1)) fail('maxDailyReachRate must be in (0, 1)');
+  if (!(p.referrerEligibilityRate >= 0 && p.referrerEligibilityRate < 1)) fail('referrerEligibilityRate must be in [0, 1)');
+  if (!(p.journeyResolutionDays >= 1 && p.journeyResolutionDays <= 14)) fail('journeyResolutionDays must be in [1, 14]');
+  if (!(p.effFloor > 0 || p.accidentalConvRate > 0)) fail('effFloor or accidentalConvRate must be > 0 (bootstrap safety)');
 }
 
 // ─── Main Computation ───────────────────────────────────────────────
@@ -53,73 +75,100 @@ function allocationEfficiency(day, cumulativeN, p) {
  * @param {Object} options
  * @param {number} options.budget - Monthly budget in dollars
  * @param {Object} options.params - Engine parameters (from config per vertical)
- * @returns {Object} Projection results (same shape as before — 9 keys)
+ * @returns {Object} Projection results
  */
 export function computeProjection({ budget, params }) {
+  assertParams(params);
+
   const {
+    totalCustomers,
+    eligibilityRate,
     N_max,
     B_half,
     alpha,
-    effFloor,
-    timeLearnRate,
-    confHalfPoint,
-    accidentalFraction,
     baseConvRate,
+    accidentalConvRate,
     referrerEligibilityRate,
-    audienceSize,
+    maxDailyReachRate,
+    journeyResolutionDays,
     avgRevenuePerUser,
     fraudRate,
     minSignalVolume,
     budget: budgetThresholds,
   } = params;
 
-  // Supply curve: theoretical max conversions at this budget
+  // ─── Setup ─────────────────────────────────────────────────────────
+  const audienceSize = Math.round(totalCustomers * eligibilityRate);
+
+  // Supply curve: theoretical max CONVERSIONS at this budget
   const N_frontier = supplyFrontier(budget, N_max, B_half, alpha);
-  const dailyFrontier = N_frontier / 30;
 
-  // Contact intensity for pool depletion (fraction of audience processed daily)
-  const contactIntensity = dailyFrontier / (baseConvRate * audienceSize);
+  // Convert from conversion units to journey units
+  const totalJourneys = N_frontier / baseConvRate;
+  const dailyJourneyTarget = totalJourneys / 30;
 
+  let remainingPool = audienceSize;
   let cumulativeN = 0;
-  let poolHealth = 1.0;
+  let totalJourneysStarted = 0;
+  const pendingConversions = []; // {day: resolveDay, count: conversions}
 
   const dailyCurve = [];
   const confidenceCurve = [];
   let thresholdDay = 30;
   let thresholdFound = false;
 
+  // ─── Daily Loop ────────────────────────────────────────────────────
   for (let day = 1; day <= 30; day++) {
-    // Allocation efficiency
+    // Efficiency uses only RESOLVED conversions
     const eff = allocationEfficiency(day, cumulativeN, params);
     confidenceCurve.push(eff);
 
-    // Realized conversions:
-    //   well-targeted portion (eff) converts at full rate
-    //   poorly-targeted portion (1-eff) converts at accidentalFraction rate
-    const rawConversions = dailyFrontier * (eff + (1 - eff) * accidentalFraction);
-    const dailyConversions = rawConversions * poolHealth;
+    // Pace journeys: don't exhaust pool before learning
+    const journeysToday = Math.min(dailyJourneyTarget, remainingPool * maxDailyReachRate);
 
-    // Pool dynamics:
-    //   Waste depletes pool (contacts burned by poor allocation)
-    //   Replenishment from new converts becoming eligible referrers
-    const dailyWaste = contactIntensity * (1 - eff);
-    poolHealth -= dailyWaste;
-    poolHealth += (dailyConversions * referrerEligibilityRate) / audienceSize;
-    poolHealth = Math.max(0, Math.min(1.0, poolHealth));
+    // Targeting split
+    const wellTargeted = journeysToday * eff;
+    const goodConversions = wellTargeted * baseConvRate;
 
-    cumulativeN += dailyConversions;
+    const poorlyTargeted = journeysToday * (1 - eff);
+    const accidentalConversions = poorlyTargeted * accidentalConvRate;
 
-    // Threshold: cumulative volume reaches statistical significance
+    const dailyConversionsGenerated = goodConversions + accidentalConversions;
+
+    // Queue conversions for resolution after delay
+    pendingConversions.push({
+      day: day + journeyResolutionDays,
+      count: dailyConversionsGenerated,
+    });
+
+    // Resolve any conversions scheduled for today
+    let resolvedToday = 0;
+    for (const entry of pendingConversions) {
+      if (entry.day === day) {
+        resolvedToday += entry.count;
+      }
+    }
+    cumulativeN += resolvedToday;
+
+    // Pool dynamics
+    remainingPool -= journeysToday;                                // journeys deplete pool
+    remainingPool += resolvedToday * referrerEligibilityRate;      // new referrers enter pool
+    remainingPool = Math.min(remainingPool, audienceSize);         // cap at audience size
+    remainingPool = Math.max(0, remainingPool);                    // floor at 0
+
+    totalJourneysStarted += journeysToday;
+
+    // Threshold: cumulative resolved conversions reach statistical significance
     if (!thresholdFound && cumulativeN >= (minSignalVolume || 40)) {
       thresholdDay = day;
       thresholdFound = true;
     }
 
-    // Record daily new users (rounded for display, minimum 1)
-    dailyCurve.push(Math.max(1, Math.round(dailyConversions)));
+    // Daily output: resolved conversions (rounded for display, minimum 0)
+    dailyCurve.push(Math.max(0, Math.round(resolvedToday)));
   }
 
-  // ─── Aggregate metrics ──────────────────────────────────────────
+  // ─── Aggregate Metrics ─────────────────────────────────────────────
   const activeUsers = dailyCurve.reduce((sum, v) => sum + v, 0);
   const cac = activeUsers > 0 ? Math.round(budget / activeUsers) : 999;
 
@@ -127,16 +176,15 @@ export function computeProjection({ budget, params }) {
     ? Math.round(((activeUsers * avgRevenuePerUser) / budget) * 10) / 10
     : 0;
 
-  // Conversion rate: effective rate achieved (scales with final efficiency)
-  const finalEff = confidenceCurve[confidenceCurve.length - 1] || 0;
-  const displayConvRate = params.displayBaseConvRate || 4.8;
-  const convRate = Math.round(
-    displayConvRate * (0.4 + 0.6 * finalEff) * 10
-  ) / 10;
+  // Conversion rate: derived from simulation (THE FIX)
+  // 2 decimal places — needed for coherence at low rates (~1%)
+  const convRate = totalJourneysStarted > 0
+    ? Math.round((activeUsers / totalJourneysStarted) * 10000) / 100
+    : 0;
 
   const fraudSaved = Math.round(budget * fraudRate);
 
-  // ─── Guidance state ─────────────────────────────────────────────
+  // ─── Guidance State ────────────────────────────────────────────────
   let guidanceState;
   if (budget < budgetThresholds.floor) {
     guidanceState = 'belowFloor';
@@ -158,5 +206,6 @@ export function computeProjection({ budget, params }) {
     fraudSaved,
     guidanceState,
     confidenceCurve,
+    totalJourneysStarted: Math.round(totalJourneysStarted),
   };
 }

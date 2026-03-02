@@ -110,6 +110,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
     convRate,
     fraudSaved,
     guidanceState,
+    totalJourneysStarted,
   } = proj || {};
 
   /* ── Editable budget number ── */
@@ -147,7 +148,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
   /* ── Sparkline data (start/end values for hover) ── */
   const sparkData = dailyCurve ? {
-    cac: { start: `$${engineParams.learningCAC}`, end: `$${cac}` },
+    cac: { start: `$${cac ? cac * 2 : 0}`, end: `$${cac}` },
     roi: { start: '0.8x', end: `${roi}x` },
     conv: { start: `${(convRate * 0.5).toFixed(1)}%`, end: `${convRate}%` },
     fraud: { start: '$2K', end: `$${Math.round(fraudSaved / 1000)}K` },

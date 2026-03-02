@@ -1,25 +1,30 @@
 /**
- * Calibration script for the projection engine.
+ * Calibration script for the projection engine v2 (Journey Model).
  *
- * Two-stage sweep:
- *   1. Supply curve (N_max, B_half, alpha) — controls budget-to-frontier mapping
- *   2. Efficiency dynamics (effFloor, timeLearnRate, confHalfPoint) — controls learning shape
+ * Sweeps parameter combinations to find values that hit calibration targets.
+ * Implements the engine inline (no app imports) so it can run standalone.
  *
  * Usage: node scripts/calibrate-engine.mjs
  */
 
-// ─── Model ──────────────────────────────────────────────────────────
+// ─── Model (matches src/engine/projectionEngine.js) ──────────────────
+
+function supplyFrontier(budget, N_max, B_half, alpha) {
+  return N_max * Math.pow(budget / (budget + B_half), alpha);
+}
 
 function computeProjection(budget, p) {
-  // Supply curve: theoretical max conversions at this budget with perfect allocation
-  const N_frontier = p.N_max * Math.pow(budget / (budget + p.B_half), p.alpha);
-  const dailyFrontier = N_frontier / 30;
+  const audienceSize = Math.round(p.totalCustomers * p.eligibilityRate);
 
-  // Pool depletion: contact intensity (fraction of audience processed daily)
-  const contactIntensity = dailyFrontier / (p.baseConvRate * p.audienceSize);
+  // Supply curve: conversions. Divide by baseConvRate → journeys.
+  const N_frontier = supplyFrontier(budget, p.N_max, p.B_half, p.alpha);
+  const totalJourneys = N_frontier / p.baseConvRate;
+  const dailyJourneyTarget = totalJourneys / 30;
 
+  let remainingPool = audienceSize;
   let cumulativeN = 0;
-  let poolHealth = 1.0;
+  let totalJourneysStarted = 0;
+  const pendingConversions = [];
 
   const dailyCurve = [];
   const effCurve = [];
@@ -27,30 +32,51 @@ function computeProjection(budget, p) {
   let thresholdFound = false;
 
   for (let day = 1; day <= 30; day++) {
-    // Allocation efficiency: time × volume
+    // Efficiency uses only RESOLVED conversions
     const timeFactor = 1 - Math.exp(-p.timeLearnRate * day);
     const volumeFactor = cumulativeN / (cumulativeN + p.confHalfPoint);
     const eff = p.effFloor + (1 - p.effFloor) * timeFactor * volumeFactor;
     effCurve.push(eff);
 
-    // Realized conversions: well-targeted + accidental from waste
-    const rawConversions = dailyFrontier * (eff + (1 - eff) * p.accidentalFraction);
-    const dailyConversions = rawConversions * poolHealth;
+    // Pace journeys
+    const journeysToday = Math.min(dailyJourneyTarget, remainingPool * p.maxDailyReachRate);
+
+    // Targeting split
+    const wellTargeted = journeysToday * eff;
+    const goodConversions = wellTargeted * p.baseConvRate;
+
+    const poorlyTargeted = journeysToday * (1 - eff);
+    const accidentalConversions = poorlyTargeted * p.accidentalConvRate;
+
+    const dailyConversionsGenerated = goodConversions + accidentalConversions;
+
+    // Queue for resolution
+    pendingConversions.push({
+      day: day + p.journeyResolutionDays,
+      count: dailyConversionsGenerated,
+    });
+
+    // Resolve pending
+    let resolvedToday = 0;
+    for (const entry of pendingConversions) {
+      if (entry.day === day) resolvedToday += entry.count;
+    }
+    cumulativeN += resolvedToday;
 
     // Pool dynamics
-    const dailyWaste = contactIntensity * (1 - eff);
-    poolHealth -= dailyWaste;
-    poolHealth += (dailyConversions * p.referrerEligibilityRate) / p.audienceSize;
-    poolHealth = Math.max(0, Math.min(1.0, poolHealth));
+    remainingPool -= journeysToday;
+    remainingPool += resolvedToday * p.referrerEligibilityRate;
+    remainingPool = Math.min(remainingPool, audienceSize);
+    remainingPool = Math.max(0, remainingPool);
 
-    cumulativeN += dailyConversions;
+    totalJourneysStarted += journeysToday;
 
     if (!thresholdFound && cumulativeN >= p.minSignalVolume) {
       thresholdDay = day;
       thresholdFound = true;
     }
 
-    dailyCurve.push(dailyConversions);
+    dailyCurve.push(Math.max(0, resolvedToday));
   }
 
   const activeUsers = Math.round(dailyCurve.reduce((s, v) => s + v, 0));
@@ -58,16 +84,22 @@ function computeProjection(budget, p) {
   const roi = activeUsers > 0
     ? Math.round(((activeUsers * p.avgRevenuePerUser) / budget) * 10) / 10
     : 0;
+  const convRate = totalJourneysStarted > 0
+    ? Math.round((activeUsers / totalJourneysStarted) * 10000) / 100
+    : 0;
 
   return {
     dailyCurve,
     activeUsers,
     cac,
     roi,
+    convRate,
     thresholdDay,
     effCurve,
+    totalJourneysStarted: Math.round(totalJourneysStarted),
     N_frontier: Math.round(N_frontier),
-    poolHealth: Math.round(poolHealth * 1000) / 1000,
+    remainingPool: Math.round(remainingPool),
+    audienceSize,
   };
 }
 
@@ -84,23 +116,26 @@ const ALL_BUDGETS = [25_000, 50_000, 75_000, 100_000, 150_000, 200_000, 300_000,
 // ─── Fixed parameters ───────────────────────────────────────────────
 
 const FIXED = {
-  audienceSize: 250_000,
+  totalCustomers: 847_000,
+  eligibilityRate: 0.295,
   avgRevenuePerUser: 500,
   fraudRate: 0.07,
   minSignalVolume: 40,
-  baseConvRate: 0.03,           // for pool depletion calc only
-  accidentalFraction: 0.10,     // 10% of wasted frontier converts accidentally
+  baseConvRate: 0.03,
   referrerEligibilityRate: 0.4,
 };
 
 // ─── Sweep ranges ───────────────────────────────────────────────────
 
-const N_MAX_VALUES       = [2000, 3000, 4000, 5000, 7000];
-const B_HALF_VALUES      = [200_000, 400_000, 700_000, 1_000_000, 1_500_000, 2_500_000];
-const ALPHA_VALUES       = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
-const EFF_FLOOR_VALUES   = [0.15, 0.20, 0.25, 0.30];
-const TIME_LEARN_VALUES  = [0.06, 0.10, 0.14, 0.18];
-const CONF_HALF_VALUES   = [20, 35, 50, 70];
+const N_MAX_VALUES               = [1500, 2000, 3000, 4000, 5000];
+const B_HALF_VALUES              = [100_000, 200_000, 400_000, 700_000, 1_000_000];
+const ALPHA_VALUES               = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
+const EFF_FLOOR_VALUES           = [0.10, 0.15, 0.20, 0.25, 0.30];
+const TIME_LEARN_VALUES          = [0.06, 0.10, 0.14, 0.18];
+const CONF_HALF_VALUES           = [20, 35, 50, 70];
+const MAX_DAILY_REACH_VALUES     = [0.03, 0.05, 0.08, 0.10];
+const JOURNEY_RESOLUTION_VALUES  = [3, 5, 7, 10];
+const ACCIDENTAL_CONV_VALUES     = [0.0005, 0.001, 0.002];
 
 // ─── Scoring ────────────────────────────────────────────────────────
 
@@ -134,9 +169,10 @@ function score(params) {
 
 // ─── Sweep ──────────────────────────────────────────────────────────
 
-console.log('Calibrating projection engine...');
+console.log('Calibrating projection engine v2 (Journey Model)...');
 const totalCombos = N_MAX_VALUES.length * B_HALF_VALUES.length * ALPHA_VALUES.length *
-  EFF_FLOOR_VALUES.length * TIME_LEARN_VALUES.length * CONF_HALF_VALUES.length;
+  EFF_FLOOR_VALUES.length * TIME_LEARN_VALUES.length * CONF_HALF_VALUES.length *
+  MAX_DAILY_REACH_VALUES.length * JOURNEY_RESOLUTION_VALUES.length * ACCIDENTAL_CONV_VALUES.length;
 console.log(`Sweeping ${totalCombos.toLocaleString()} combinations...\n`);
 
 let bestScore = Infinity;
@@ -149,13 +185,24 @@ for (const N_max of N_MAX_VALUES) {
       for (const effFloor of EFF_FLOOR_VALUES) {
         for (const timeLearnRate of TIME_LEARN_VALUES) {
           for (const confHalfPoint of CONF_HALF_VALUES) {
-            const params = { ...FIXED, N_max, B_half, alpha, effFloor, timeLearnRate, confHalfPoint };
-            const s = score(params);
-            tested++;
+            for (const maxDailyReachRate of MAX_DAILY_REACH_VALUES) {
+              for (const journeyResolutionDays of JOURNEY_RESOLUTION_VALUES) {
+                for (const accidentalConvRate of ACCIDENTAL_CONV_VALUES) {
+                  const params = {
+                    ...FIXED,
+                    N_max, B_half, alpha,
+                    effFloor, timeLearnRate, confHalfPoint,
+                    maxDailyReachRate, journeyResolutionDays, accidentalConvRate,
+                  };
+                  const s = score(params);
+                  tested++;
 
-            if (s < bestScore) {
-              bestScore = s;
-              bestParams = params;
+                  if (s < bestScore) {
+                    bestScore = s;
+                    bestParams = params;
+                  }
+                }
+              }
             }
           }
         }
@@ -170,26 +217,29 @@ console.log(`Best score: ${bestScore.toFixed(4)}\n`);
 // ─── Best parameters ────────────────────────────────────────────────
 
 console.log('═══ Best Parameters ═══');
-console.log(`  N_max:             ${bestParams.N_max}`);
-console.log(`  B_half:            ${bestParams.B_half.toLocaleString()}`);
-console.log(`  alpha:             ${bestParams.alpha}`);
-console.log(`  effFloor:          ${bestParams.effFloor}`);
-console.log(`  timeLearnRate:     ${bestParams.timeLearnRate}`);
-console.log(`  confHalfPoint:     ${bestParams.confHalfPoint}`);
-console.log(`  accidentalFrac:    ${bestParams.accidentalFraction}`);
-console.log(`  referrerEligRate:  ${bestParams.referrerEligibilityRate}`);
+console.log(`  N_max:                ${bestParams.N_max}`);
+console.log(`  B_half:               ${bestParams.B_half.toLocaleString()}`);
+console.log(`  alpha:                ${bestParams.alpha}`);
+console.log(`  effFloor:             ${bestParams.effFloor}`);
+console.log(`  timeLearnRate:        ${bestParams.timeLearnRate}`);
+console.log(`  confHalfPoint:        ${bestParams.confHalfPoint}`);
+console.log(`  maxDailyReachRate:    ${bestParams.maxDailyReachRate}`);
+console.log(`  journeyResolutionDays:${bestParams.journeyResolutionDays}`);
+console.log(`  accidentalConvRate:   ${bestParams.accidentalConvRate}`);
+console.log(`  baseConvRate:         ${bestParams.baseConvRate}`);
+console.log(`  referrerEligRate:     ${bestParams.referrerEligibilityRate}`);
 
 // ─── Results table ──────────────────────────────────────────────────
 
 console.log('\n═══ Results across budgets ═══');
-console.log('Budget     │ Users  │ CAC    │ ROI  │ ThDay │ Frontier │ Pool Health');
-console.log('───────────┼────────┼────────┼──────┼───────┼──────────┼────────────');
+console.log('Budget     │ Users  │ CAC    │ ROI  │ Conv%  │ Journeys │ ThDay │ Pool Left');
+console.log('───────────┼────────┼────────┼──────┼────────┼──────────┼───────┼──────────');
 
 for (const b of ALL_BUDGETS) {
   const r = computeProjection(b, bestParams);
   const marker = TARGETS.find(t => t.budget === b) ? ' ◄' : '';
   console.log(
-    `$${(b / 1000).toString().padStart(4)}K    │ ${r.activeUsers.toString().padStart(6)} │ $${r.cac.toString().padStart(5)} │ ${r.roi.toFixed(1).padStart(4)}x │ ${r.thresholdDay.toString().padStart(5)} │ ${r.N_frontier.toString().padStart(8)} │ ${r.poolHealth.toFixed(3).padStart(11)}${marker}`
+    `$${(b / 1000).toString().padStart(4)}K    │ ${r.activeUsers.toString().padStart(6)} │ $${r.cac.toString().padStart(5)} │ ${r.roi.toFixed(1).padStart(4)}x │ ${r.convRate.toFixed(1).padStart(5)}% │ ${r.totalJourneysStarted.toString().padStart(8)} │ ${r.thresholdDay.toString().padStart(5)} │ ${r.remainingPool.toString().padStart(9)}${marker}`
   );
 }
 
@@ -206,6 +256,17 @@ for (const t of TARGETS) {
   console.log(`  CAC:   $${r.cac} (target $${t.cac[0]}-${t.cac[1]}) ${cacOk ? '✓' : '✗'}`);
   console.log(`  Users: ${r.activeUsers} (target ${t.users[0]}-${t.users[1]}) ${usersOk ? '✓' : '✗'}`);
   console.log(`  ROI:   ${r.roi}x (target ${t.roi[0]}-${t.roi[1]}x) ${roiOk ? '✓' : '✗'}`);
+  console.log(`  Conv:  ${r.convRate}% (from ${r.totalJourneysStarted} journeys)`);
+}
+
+// ─── KPI coherence check ────────────────────────────────────────────
+
+console.log('\n═══ KPI Coherence Check ═══');
+for (const b of [50_000, 150_000, 500_000]) {
+  const r = computeProjection(b, bestParams);
+  const derived = Math.round(r.totalJourneysStarted * (r.convRate / 100));
+  const match = Math.abs(derived - r.activeUsers) <= 1;
+  console.log(`$${b / 1000}K: journeys(${r.totalJourneysStarted}) × conv(${r.convRate}%) = ${derived} ≈ ${r.activeUsers} users ${match ? '✓' : '✗'}`);
 }
 
 // ─── Daily curve at $150K ───────────────────────────────────────────
@@ -215,7 +276,7 @@ const mid = computeProjection(150_000, bestParams);
 const maxVal = Math.max(...mid.dailyCurve);
 for (let d = 0; d < 30; d++) {
   const val = mid.dailyCurve[d];
-  const barLen = Math.round((val / maxVal) * 40);
+  const barLen = maxVal > 0 ? Math.round((val / maxVal) * 40) : 0;
   const bar = '█'.repeat(barLen);
   const eff = (mid.effCurve[d] * 100).toFixed(0);
   console.log(`Day ${(d + 1).toString().padStart(2)}: ${bar.padEnd(40)} ${val.toFixed(1).padStart(6)} (eff ${eff}%)`);
@@ -257,16 +318,19 @@ console.log(`  Floor budget: $${floorBudget.toLocaleString()} (thresholdDay=${fl
 
 console.log('\n═══ Config Snippet ═══');
 console.log(`engineParams: {
+  totalCustomers: ${bestParams.totalCustomers},
+  eligibilityRate: ${bestParams.eligibilityRate},
   N_max: ${bestParams.N_max},
   B_half: ${bestParams.B_half},
   alpha: ${bestParams.alpha},
   effFloor: ${bestParams.effFloor},
   timeLearnRate: ${bestParams.timeLearnRate},
   confHalfPoint: ${bestParams.confHalfPoint},
-  accidentalFraction: ${bestParams.accidentalFraction},
   baseConvRate: ${bestParams.baseConvRate},
+  accidentalConvRate: ${bestParams.accidentalConvRate},
+  maxDailyReachRate: ${bestParams.maxDailyReachRate},
+  journeyResolutionDays: ${bestParams.journeyResolutionDays},
   referrerEligibilityRate: ${bestParams.referrerEligibilityRate},
-  audienceSize: ${bestParams.audienceSize},
   avgRevenuePerUser: ${bestParams.avgRevenuePerUser},
   fraudRate: ${bestParams.fraudRate},
   minSignalVolume: ${bestParams.minSignalVolume},

@@ -118,41 +118,45 @@ const neobank = {
   // All projections (daily curve, KPIs, threshold day) are computed dynamically
   // by src/engine/projectionEngine.js using these parameters.
   //
-  // Model: Allocation Calculator
-  //   Supply curve: N_frontier(B) = N_max × (B / (B + B_half))^alpha
+  // Model: Journey-based Allocation Calculator with Resolution Delay
+  //   Supply curve: N_frontier(B) = N_max × (B / (B + B_half))^alpha  [conversion units]
+  //   Journey target: totalJourneys = N_frontier / baseConvRate        [journey units]
   //   Efficiency:   eff(day, cumN) = floor + (1−floor) × timeLearning × volumeConfidence
-  //   Waste:        poorly-targeted contacts convert at accidentalFraction rate;
-  //                 all contacts deplete the pool; conversions replenish it.
+  //   Journeys convert after journeyResolutionDays delay (pending queue)
+  //   Pool: journeys deplete remaining pool; resolved conversions replenish it
   //
   // Calibrated via scripts/calibrate-engine.mjs to hit:
   //   $50K  → ~200 users, CAC ~$250, ROI ~2.0x
   //   $150K → ~500 users, CAC ~$300, ROI ~1.7x
   //   $500K → ~900 users, CAC ~$560, ROI ~0.9x
   engineParams: {
-    // Supply curve — theoretical max conversions at given budget
-    N_max: 2000,                   // Ceiling: max conversions at infinite budget
-    B_half: 200000,                // Budget for 50% of N_max ($)
-    alpha: 1,                      // Concavity exponent (1 = Michaelis-Menten)
+    // Audience — derived: audienceSize = totalCustomers × eligibilityRate
+    totalCustomers: 847000,            // Total customer base (from data ingestion)
+    eligibilityRate: 0.295,            // Fraction eligible for referral program → ~250K
+
+    // Supply curve — theoretical max CONVERSIONS at given budget
+    N_max: 3000,                       // Ceiling: max conversions at infinite budget (NOT audience size)
+    B_half: 200000,                    // Budget for 50% of N_max ($)
+    alpha: 0.9,                        // Concavity exponent (<1 = slightly more concave)
 
     // Allocation efficiency — learning dynamics
-    effFloor: 0.15,                // Min efficiency (random allocation success rate)
-    timeLearnRate: 0.1,            // Speed of time-based learning (exp decay rate)
-    confHalfPoint: 70,             // Cumulative conversions for 50% volume confidence
+    effFloor: 0.10,                    // Min efficiency (random allocation success rate)
+    timeLearnRate: 0.14,               // Speed of time-based learning (exp decay rate)
+    confHalfPoint: 20,                 // Resolved conversions for 50% volume confidence
 
-    // Waste model
-    accidentalFraction: 0.10,      // Fraction of wasted frontier that converts anyway
-    baseConvRate: 0.03,            // Conversion probability per well-targeted contact
-    referrerEligibilityRate: 0.4,  // Fraction of new converts who become eligible referrers
+    // Conversion probabilities per journey
+    baseConvRate: 0.03,                // P(conversion | well-targeted journey)
+    accidentalConvRate: 0.0005,        // P(conversion | poorly-targeted journey)
 
-    // Audience & economics
-    audienceSize: 250000,          // Total reachable users for referral program
-    avgRevenuePerUser: 500,        // Revenue per activated user (for ROI calc)
-    fraudRate: 0.07,               // Fraction of spend saved by fraud detection
-    minSignalVolume: 40,           // Cumulative conversions for statistical significance
-    displayBaseConvRate: 4.8,      // Base conversion rate for display (%)
+    // Journey pacing & resolution
+    maxDailyReachRate: 0.03,           // Max fraction of pool contacted per day
+    journeyResolutionDays: 7,          // Days from journey start to conversion resolution
+    referrerEligibilityRate: 0.4,      // Fraction of new converts who become eligible referrers
 
-    // Display: starting CAC shown in sparkline tooltip (Day 1 → Day 30)
-    learningCAC: 400,
+    // Economics
+    avgRevenuePerUser: 500,            // Revenue per activated user (for ROI calc)
+    fraudRate: 0.07,                   // Fraction of spend saved by fraud detection
+    minSignalVolume: 40,               // Resolved conversions for statistical significance
 
     // Budget guidance thresholds
     budget: {
