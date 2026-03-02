@@ -333,6 +333,8 @@ export default function StrategyBuilderPage({ config, onNext }) {
               <div style={{
                 padding: '32px 28px 16px',
                 borderRight: '1px solid var(--border-light)',
+                display: 'flex',
+                flexDirection: 'column',
               }}>
                 <div style={{
                   fontSize: 11,
@@ -407,7 +409,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       borderRadius: 4,
                       textDecoration: 'underline',
                       textDecorationStyle: 'dashed',
-                      textDecorationColor: 'var(--border)',
+                      textDecorationColor: 'var(--color-gray-400)',
                       textDecorationThickness: '2px',
                       textUnderlineOffset: '4px',
                     }}>
@@ -426,6 +428,23 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     fontWeight: 500,
                     marginLeft: 6,
                   }}>/mo</span>
+                </div>
+
+                {/* Recommended zone label — pushed to bottom via marginTop auto */}
+                <div style={{
+                  marginTop: 'auto',
+                  paddingLeft: `${recZoneLeft}%`,
+                }}>
+                  <div style={{
+                    width: `${recZoneWidth}%`,
+                    textAlign: 'center',
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: 'var(--text-tertiary)',
+                    letterSpacing: '0.04em',
+                  }}>
+                    Recommended
+                  </div>
                 </div>
               </div>
 
@@ -479,25 +498,8 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 padding: '0 28px 32px',
                 borderRight: '1px solid var(--border-light)',
               }}>
-                {/* Recommended zone label */}
-                <div style={{
-                  marginBottom: 8,
-                  paddingLeft: `${recZoneLeft}%`,
-                }}>
-                  <div style={{
-                    width: `${recZoneWidth}%`,
-                    textAlign: 'center',
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: 'var(--text-tertiary)',
-                    letterSpacing: '0.04em',
-                  }}>
-                    Recommended
-                  </div>
-                </div>
-
-                {/* Track + input wrapper */}
-                <div style={{ position: 'relative', height: 20 }}>
+                {/* Track + input wrapper — marginTop: -7 aligns track (at top:7) with Cell 4 borderTop */}
+                <div style={{ position: 'relative', height: 20, marginTop: -7 }}>
                   {/* Track background */}
                   <div style={{
                     position: 'absolute',
