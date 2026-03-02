@@ -3,327 +3,328 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>KPI Panel — Design Improvements Preview</title>
+<title>KPI Panel Preview — EdooAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #94a3b8;
+    --border: #e2e8f0;
+    --border-light: #f1f5f9;
+    --surface: #ffffff;
+    --success: #10b981;
+    --danger: #ef4444;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-full: 9999px;
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.08), 0 4px 6px -4px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,.07), 0 2px 4px -2px rgba(0,0,0,.05);
+    --transition-fast: 150ms ease;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #f8fafc;
-    color: #0f172a;
-    padding: 32px 24px;
-  }
-  h1 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-  .subtitle { font-size: 13px; color: #475569; margin-bottom: 32px; line-height: 1.6; }
-
-  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 900px; }
-  .column-label {
-    font-size: 12px; font-weight: 600; color: #475569; letter-spacing: 0.04em;
-    text-transform: uppercase; margin-bottom: 12px; padding-bottom: 8px;
-    border-bottom: 1px solid #e2e8f0;
+    padding: 48px 32px;
+    display: flex;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
   }
 
   .panel {
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    max-width: 440px;
+    width: 100%;
     overflow: hidden;
   }
 
-  /* ── Headline (upper part) ── */
+  /* ── Headline KPI ── */
   .headline {
-    padding: 32px 28px 16px;
+    padding: 32px 28px 20px;
   }
-  .headline-period {
-    font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
-    text-transform: uppercase; color: #94a3b8;
-  }
-  .headline-row {
-    display: flex; align-items: center; gap: 12px; margin-top: 6px;
+  .headline-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
   }
   .headline-number {
-    font-size: 64px; font-weight: 800; letter-spacing: -0.03em;
-    color: #0f172a; line-height: 1;
+    font-size: 64px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-top: 6px;
   }
-  .headline-caption {
-    font-size: 14px; color: #475569; margin-top: 4px;
+  .headline-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  .headline-spark { margin-top: 14px; }
+  .edge-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
   }
 
-  /* ── KPI grid (lower part) ── */
+  /* ── KPI Grid ── */
   .kpi-grid {
-    padding: 14px 28px 32px;
-    border-top: 1px solid #f1f5f9;
+    padding: 16px 28px 28px;
+    border-top: 1px solid var(--border-light);
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px 20px;
+    gap: 16px 24px;
   }
   .kpi-card {
-    position: relative;
+    display: flex;
+    flex-direction: column;
   }
   .kpi-label-row {
-    display: flex; align-items: center; gap: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
-  .kpi-name {
-    font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
-    text-transform: uppercase; color: #94a3b8;
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    cursor: help;
+    text-decoration: none;
+    transition: text-decoration-color var(--transition-fast);
+    position: relative;
   }
-  .kpi-value-row {
-    display: flex; align-items: center; gap: 6px; margin-top: 2px;
+  .kpi-label:hover {
+    text-decoration: underline dashed;
+    text-decoration-color: var(--text-tertiary);
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
   }
   .kpi-value {
-    font-size: 16px; font-weight: 600; color: #0f172a;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+    margin-top: 4px;
+    line-height: 1;
   }
-  .kpi-range {
-    font-size: 11px; font-weight: 500; color: #94a3b8; margin-top: 4px;
+  .delta-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: var(--radius-full);
+    line-height: 1.2;
   }
+  .delta-good { background: #d1fae5; color: #065f46; }
+  .delta-bad  { background: #fee2e2; color: #991b1b; }
 
-  /* ── Info icon ── */
-  .info-icon {
-    opacity: 0.45; cursor: help; position: relative;
-    display: inline-flex; align-items: center;
-  }
-  .info-icon:hover { opacity: 0.8; }
-  .info-icon:hover .info-tooltip { display: block; }
-  .info-tooltip {
-    display: none; position: absolute; bottom: calc(100% + 8px); left: 50%;
-    transform: translateX(-50%); width: 220px;
-    padding: 8px 12px; font-size: 12px; line-height: 1.5;
-    color: #fff; background: #262626; border-radius: 6px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
-    text-transform: none; letter-spacing: 0; font-weight: 400;
-    pointer-events: none; z-index: 10;
-    animation: tooltipFadeIn 150ms ease;
-  }
-  @keyframes tooltipFadeIn {
-    from { opacity: 0; transform: translateX(-50%) translateY(2px); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0); }
-  }
+  .kpi-spark { margin-top: 8px; }
 
-  .notes { margin-top: 48px; max-width: 900px; }
-  .notes h2 { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
-  .notes ul { padding-left: 20px; font-size: 13px; color: #475569; line-height: 1.8; }
-  .notes li { margin-bottom: 4px; }
-  .notes code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  /* ── Tooltip ── */
+  .tooltip-box {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 240px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    z-index: 10;
+    pointer-events: none;
+    white-space: normal;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .kpi-label:hover .tooltip-box { display: block; }
+
+  /* ── Section label ── */
+  .section-label {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    margin-bottom: 20px;
+  }
 </style>
 </head>
 <body>
 
-<h1>KPI Panel — Design Improvements</h1>
-<p class="subtitle">
-  Side-by-side comparison of the current vs improved right-side KPI panel.<br>
-  Budget: $150K/mo · thresholdDay = 8 (trust established on day 8)
-</p>
+<div>
+  <div class="section-label">Right-side KPI panel — preview</div>
+  <div class="panel">
 
-<div class="comparison">
+    <!-- ── HEADLINE KPI ── -->
+    <div class="headline">
+      <div class="headline-label">First 30 days</div>
+      <div class="headline-number">847</div>
+      <div class="headline-desc">new active users</div>
 
-  <!-- ════════ BEFORE ════════ -->
-  <div>
-    <div class="column-label">Before (current)</div>
-    <div class="panel">
-      <div class="headline">
-        <div class="headline-period">First 30 days</div>
-        <div class="headline-row">
-          <div class="headline-number">520</div>
-          <svg width="48" height="20" viewBox="0 0 40 16" style="margin-top: 8px;">
-            <polyline id="old-headline" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </div>
-        <div class="headline-caption">new active users</div>
-      </div>
-
-      <div class="kpi-grid" id="old-grid">
-        <!-- Filled by JS -->
-      </div>
-    </div>
-  </div>
-
-  <!-- ════════ AFTER ════════ -->
-  <div>
-    <div class="column-label">After (improved)</div>
-    <div class="panel">
-      <div class="headline">
-        <div class="headline-period">First 30 days</div>
-        <div class="headline-row">
-          <div class="headline-number">520</div>
-          <svg width="64" height="24" viewBox="0 0 60 16" style="margin-top: 8px;">
-            <polyline id="new-headline-line" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            <circle id="new-headline-dot" r="2.5" fill="#10b981" />
-          </svg>
-        </div>
-        <div class="headline-caption">new active users</div>
-      </div>
-
-      <div class="kpi-grid" id="new-grid">
-        <!-- Filled by JS -->
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- ════════ CHANGE NOTES ════════ -->
-<div class="notes">
-  <h2>What changed</h2>
-  <ul>
-    <li><strong>Trust-period filtering:</strong> Sparklines start from <code>thresholdDay</code> (day 8 at $150K) instead of day 1. Removes extreme outliers naturally — no more $6,503 CAC on day 2.</li>
-    <li><strong>Wider aspect ratio:</strong> SVG changed from 40×16 to 60×16 (~4:1 ratio). Trend is easier to read.</li>
-    <li><strong>Trailing dot:</strong> Small circle at the endpoint (Robinhood pattern). Marks "where we are now."</li>
-    <li><strong>Color coding:</strong> Green = improving trend, red = worsening. CAC is inverted (lower is better).</li>
-    <li><strong>3-point smoothing:</strong> Moving average removes day-to-day noise, highlights overall trend.</li>
-    <li><strong>Day range labels:</strong> Visible text below each KPI: "Day 8: $880 → Day 30: $289" (replaces hidden browser tooltip).</li>
-    <li><strong>Info icon + tooltip:</strong> Hover over ⓘ next to KPI name to see definition. Uses existing Tooltip component.</li>
-  </ul>
-</div>
-
-<script>
-// ─── Real engine data at $150K ───
-const data = {
-  thresholdDay: 8,
-  activeUsers: 520,
-  cumUsers: [0,2,5,10,17,25,35,46,58,72,87,103,119,136,154,173,193,214,236,258,281,305,330,355,381,408,435,463,491,520],
-  cac: [0,6503,3164,2069,1534,1222,1020,880,778,701,640,591,551,517,488,463,441,421,404,388,374,361,349,338,328,319,310,303,295,289],
-  roi: [0,0.1,0.1,0.2,0.3,0.3,0.4,0.4,0.5,0.6,0.6,0.7,0.7,0.8,0.9,0.9,1,1,1.1,1.1,1.2,1.3,1.3,1.4,1.5,1.5,1.6,1.6,1.7,1.7],
-  convRate: [0,0.05,0.1,0.16,0.22,0.27,0.32,0.38,0.42,0.47,0.52,0.56,0.6,0.64,0.68,0.71,0.75,0.78,0.82,0.85,0.88,0.92,0.95,0.98,1.01,1.03,1.06,1.09,1.12,1.14],
-  fraudSaved: [350,700,1050,1400,1750,2100,2450,2800,3150,3500,3850,4200,4550,4900,5250,5600,5950,6300,6650,7000,7350,7700,8050,8400,8750,9100,9450,9800,10150,10500],
-};
-
-const kpis = [
-  { label: 'Avg CAC', value: '$289', invert: true, curve: data.cac,
-    tipText: 'Customer Acquisition Cost — total spend divided by new active users. Lower is better.',
-    startVal: '$880', endVal: '$289' },
-  { label: 'ROI', value: '1.7x', invert: false, curve: data.roi,
-    tipText: 'Return on Investment — revenue generated by referred users divided by campaign spend.',
-    startVal: '0.4x', endVal: '1.7x' },
-  { label: 'Conv rate', value: '1.14%', invert: false, curve: data.convRate,
-    tipText: 'Conversion Rate — percentage of contacted users who completed the referral journey.',
-    startVal: '0.38%', endVal: '1.14%' },
-  { label: 'Fraud saved', value: '$11K', invert: false, curve: data.fraudSaved,
-    tipText: 'Estimated fraud prevention savings from EdooAI\'s verification layer.',
-    startVal: '$3K', endVal: '$11K' },
-];
-
-// ─── OLD sparkPoints (current code: self-norm, P5/P95, skip zeros) ───
-function sparkPointsOld(arr, invert) {
-  if (!arr || !arr.length) return [];
-  let start = 0;
-  while (start < arr.length && arr[start] === 0) start++;
-  const d = arr.slice(start);
-  if (d.length < 2) return [{x:2,y:8},{x:38,y:8}];
-  const sorted = [...d].sort((a,b) => a-b);
-  const lo = sorted[Math.floor(sorted.length * 0.05)];
-  const hi = sorted[Math.ceil(sorted.length * 0.95) - 1];
-  const range = hi - lo || 1;
-  return d.filter((_,i) => i % 5 === 0 || i === d.length-1).map((v,i,s) => {
-    const x = 2 + (i/(s.length-1)) * 36;
-    const norm = Math.max(0, Math.min(1, (v-lo)/range));
-    const y = invert ? 2 + norm*12 : 14 - norm*12;
-    return {x: +x.toFixed(1), y: +y.toFixed(1)};
-  });
-}
-
-// ─── NEW sparkPoints (trust-period, smoothed, wider) ───
-function smooth(arr) {
-  if (arr.length < 3) return arr;
-  return arr.map((v,i) => {
-    if (i === 0) return (arr[0] + arr[1]) / 2;
-    if (i === arr.length-1) return (arr[i-1] + arr[i]) / 2;
-    return (arr[i-1] + arr[i] + arr[i+1]) / 3;
-  });
-}
-
-function sparkPointsNew(arr, invert, thresholdDay) {
-  if (!arr || !arr.length) return [];
-  // Start from thresholdDay (trust period)
-  const d = arr.slice(Math.max(0, thresholdDay - 1));
-  if (d.length < 2) return [{x:2,y:8},{x:58,y:8}];
-
-  const smoothed = smooth(d);
-  const min = Math.min(...smoothed);
-  const max = Math.max(...smoothed);
-  const range = max - min || 1;
-
-  return smoothed.filter((_,i) => i % 3 === 0 || i === smoothed.length-1).map((v,i,s) => {
-    const x = 2 + (i/(s.length-1)) * 56;
-    const norm = (v - min) / range;
-    const y = invert ? 2 + norm*12 : 14 - norm*12;
-    return {x: +x.toFixed(1), y: +y.toFixed(1)};
-  });
-}
-
-function sparkColor(arr, invert, thresholdDay) {
-  const d = arr.slice(Math.max(0, thresholdDay - 1));
-  if (d.length < 2) return '#94a3b8';
-  const midIdx = Math.floor(d.length * 0.6);
-  const mid = d[midIdx];
-  const end = d[d.length - 1];
-  if (mid === 0 && end === 0) return '#94a3b8';
-  const improving = invert ? (end <= mid) : (end >= mid);
-  return improving ? '#10b981' : '#ef4444';
-}
-
-function ptsToStr(pts) { return pts.map(p => `${p.x},${p.y}`).join(' '); }
-
-// ─── Render OLD headline ───
-const oldHeadlinePts = sparkPointsOld(data.cumUsers, false);
-document.getElementById('old-headline').setAttribute('points', ptsToStr(oldHeadlinePts));
-
-// ─── Render NEW headline ───
-const newHeadlinePts = sparkPointsNew(data.cumUsers, false, 1); // cumUsers always starts from 1 (always growing)
-document.getElementById('new-headline-line').setAttribute('points', ptsToStr(newHeadlinePts));
-const lastH = newHeadlinePts[newHeadlinePts.length - 1];
-document.getElementById('new-headline-dot').setAttribute('cx', lastH.x);
-document.getElementById('new-headline-dot').setAttribute('cy', lastH.y);
-
-// ─── Render OLD KPI grid ───
-const oldGrid = document.getElementById('old-grid');
-kpis.forEach(kpi => {
-  const pts = sparkPointsOld(kpi.curve, kpi.invert);
-  const card = document.createElement('div');
-  card.className = 'kpi-card';
-  card.title = `Day 1: ... → Day 30: ${kpi.endVal}`;
-  card.innerHTML = `
-    <div class="kpi-name">${kpi.label}</div>
-    <div class="kpi-value-row">
-      <span class="kpi-value">${kpi.value}</span>
-      <svg width="40" height="16" viewBox="0 0 40 16">
-        <polyline points="${ptsToStr(pts)}" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
-    </div>
-  `;
-  oldGrid.appendChild(card);
-});
-
-// ─── Render NEW KPI grid ───
-const newGrid = document.getElementById('new-grid');
-kpis.forEach(kpi => {
-  const pts = sparkPointsNew(kpi.curve, kpi.invert, data.thresholdDay);
-  const last = pts[pts.length - 1];
-  const color = sparkColor(kpi.curve, kpi.invert, data.thresholdDay);
-
-  const card = document.createElement('div');
-  card.className = 'kpi-card';
-  card.innerHTML = `
-    <div class="kpi-label-row">
-      <span class="kpi-name">${kpi.label}</span>
-      <span class="info-icon">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5" />
-          <path d="M8 7v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-          <circle cx="8" cy="5" r="0.75" fill="currentColor" />
+      <div class="headline-spark">
+        <svg width="100%" height="40" viewBox="0 0 200 40" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="grad-headline" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#10b981" stop-opacity="0.10" />
+              <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <!-- Area fill -->
+          <polygon
+            points="4,36 4,34 14,32 24,29 34,26 44,24 54,22 64,20 74,18 84,17 94,15 104,14 114,12 124,11 134,10 144,9 154,8 164,7 174,7 184,6 196,5.5 196,40"
+            fill="url(#grad-headline)" />
+          <!-- Line -->
+          <polyline
+            points="4,34 14,32 24,29 34,26 44,24 54,22 64,20 74,18 84,17 94,15 104,14 114,12 124,11 134,10 144,9 154,8 164,7 174,7 184,6 196,5.5"
+            fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <!-- Trailing dot -->
+          <circle cx="196" cy="5.5" r="3" fill="#10b981" />
         </svg>
-        <span class="info-tooltip">${kpi.tipText}</span>
-      </span>
+        <div class="edge-labels">
+          <span>Day 8</span>
+          <span>Day 30</span>
+        </div>
+      </div>
     </div>
-    <div class="kpi-value-row">
-      <span class="kpi-value">${kpi.value}</span>
-      <svg width="60" height="16" viewBox="0 0 60 16">
-        <polyline points="${ptsToStr(pts)}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-        <circle cx="${last.x}" cy="${last.y}" r="2" fill="${color}" />
-      </svg>
+
+    <!-- ── 4 KPI CARDS ── -->
+    <div class="kpi-grid">
+
+      <!-- CAC -->
+      <div class="kpi-card">
+        <div class="kpi-label-row">
+          <span class="kpi-label">
+            Avg CAC
+            <span class="tooltip-box">Customer Acquisition Cost — total spend divided by new active users. Lower is better.</span>
+          </span>
+          <span class="delta-badge delta-good">↓61%</span>
+        </div>
+        <div class="kpi-value">$184</div>
+        <div class="kpi-spark">
+          <svg width="100%" height="36" viewBox="0 0 120 36" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="grad-cac" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#10b981" stop-opacity="0.12" />
+                <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <polygon points="4,4 4,4 14,6 24,9 34,12 44,15 54,17 64,19 74,21 84,23 94,25 104,27 116,30 116,36 4,36" fill="url(#grad-cac)" />
+            <polyline points="4,4 14,6 24,9 34,12 44,15 54,17 64,19 74,21 84,23 94,25 104,27 116,30" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="116" cy="30" r="2.5" fill="#10b981" />
+          </svg>
+          <div class="edge-labels">
+            <span>$449</span>
+            <span>$174</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROI -->
+      <div class="kpi-card">
+        <div class="kpi-label-row">
+          <span class="kpi-label">
+            ROI
+            <span class="tooltip-box">Return on Investment — revenue generated by referred users divided by campaign spend.</span>
+          </span>
+          <span class="delta-badge delta-good">↑367%</span>
+        </div>
+        <div class="kpi-value">2.1x</div>
+        <div class="kpi-spark">
+          <svg width="100%" height="36" viewBox="0 0 120 36" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="grad-roi" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#10b981" stop-opacity="0.12" />
+                <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <polygon points="4,32 4,32 14,30 24,27 34,24 44,21 54,19 64,16 74,14 84,12 94,10 104,8 116,5 116,36 4,36" fill="url(#grad-roi)" />
+            <polyline points="4,32 14,30 24,27 34,24 44,21 54,19 64,16 74,14 84,12 94,10 104,8 116,5" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="116" cy="5" r="2.5" fill="#10b981" />
+          </svg>
+          <div class="edge-labels">
+            <span>0.6x</span>
+            <span>2.8x</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conv rate -->
+      <div class="kpi-card">
+        <div class="kpi-label-row">
+          <span class="kpi-label">
+            Conv rate
+            <span class="tooltip-box">Conversion Rate — percentage of contacted users who completed the referral journey.</span>
+          </span>
+          <span class="delta-badge delta-good">↑48%</span>
+        </div>
+        <div class="kpi-value">3.1%</div>
+        <div class="kpi-spark">
+          <svg width="100%" height="36" viewBox="0 0 120 36" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="grad-conv" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#10b981" stop-opacity="0.12" />
+                <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <polygon points="4,30 4,30 14,28 24,26 34,23 44,21 54,19 64,17 74,15 84,13 94,11 104,9 116,7 116,36 4,36" fill="url(#grad-conv)" />
+            <polyline points="4,30 14,28 24,26 34,23 44,21 54,19 64,17 74,15 84,13 94,11 104,9 116,7" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="116" cy="7" r="2.5" fill="#10b981" />
+          </svg>
+          <div class="edge-labels">
+            <span>2.1%</span>
+            <span>3.1%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fraud saved -->
+      <div class="kpi-card">
+        <div class="kpi-label-row">
+          <span class="kpi-label">
+            Fraud saved
+            <span class="tooltip-box">Estimated fraud prevention savings from EdooAI's verification layer.</span>
+          </span>
+          <!-- No delta badge: daily values are constant -->
+        </div>
+        <div class="kpi-value">$15K</div>
+        <div class="kpi-spark">
+          <svg width="100%" height="36" viewBox="0 0 120 36" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="grad-fraud" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#94a3b8" stop-opacity="0.12" />
+                <stop offset="100%" stop-color="#94a3b8" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <polygon points="4,18 14,18 24,18 34,18 44,18 54,18 64,18 74,18 84,18 94,18 104,18 116,18 116,36 4,36" fill="url(#grad-fraud)" />
+            <polyline points="4,18 14,18 24,18 34,18 44,18 54,18 64,18 74,18 84,18 94,18 104,18 116,18" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="116" cy="18" r="2.5" fill="#94a3b8" />
+          </svg>
+          <div class="edge-labels">
+            <span>$1K</span>
+            <span>$1K</span>
+          </div>
+        </div>
+      </div>
+
     </div>
-    <div class="kpi-range">Day ${data.thresholdDay}: ${kpi.startVal} → Day 30: ${kpi.endVal}</div>
-  `;
-  newGrid.appendChild(card);
-});
-</script>
+  </div>
+</div>
+
 </body>
 </html>

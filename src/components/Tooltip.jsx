@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-export default function Tooltip({ text, children }) {
+export default function Tooltip({ text, children, underline = false }) {
   const [visible, setVisible] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0 });
   const triggerRef = useRef(null);
@@ -19,12 +19,24 @@ export default function Tooltip({ text, children }) {
     }
   }, [visible]);
 
+  const triggerStyle = {
+    position: 'relative',
+    cursor: 'help',
+  };
+
+  if (underline) {
+    triggerStyle.textDecoration = visible ? 'underline dashed' : 'none';
+    triggerStyle.textDecorationColor = 'var(--text-tertiary)';
+    triggerStyle.textUnderlineOffset = '3px';
+    triggerStyle.textDecorationThickness = '1px';
+  }
+
   return (
     <span
       ref={triggerRef}
       onMouseEnter={() => setVisible(true)}
       onMouseLeave={() => setVisible(false)}
-      style={{ position: 'relative', cursor: 'help' }}
+      style={triggerStyle}
     >
       {children}
       {visible && (
@@ -38,10 +50,11 @@ export default function Tooltip({ text, children }) {
             padding: '8px 12px',
             fontSize: 'var(--font-size-xs)',
             lineHeight: 1.5,
-            color: 'var(--color-white)',
-            backgroundColor: 'var(--color-gray-800)',
+            color: 'var(--text-secondary)',
+            backgroundColor: 'var(--surface)',
+            border: '1px solid var(--border)',
             borderRadius: 'var(--radius-sm)',
-            boxShadow: 'var(--shadow-md)',
+            boxShadow: 'var(--shadow-lg)',
             zIndex: 9999,
             pointerEvents: 'none',
             animation: 'tooltipFadeIn 150ms ease',

@@ -18,38 +18,6 @@ function smooth(arr) {
   });
 }
 
-/* Returns [{x, y}] for SVG polyline + trailing dot.
-   Line direction matches data direction (no axis inversion).
-   Color (from sparkColor) communicates whether the trend is good or bad.
-   startDay = thresholdDay (trust period start) for KPI curves,
-   or 0 for cumulative curves that don't need trust filtering. */
-function sparkPointsData(arr, startDay = 0) {
-  const fallback = [{ x: 2, y: 8 }, { x: 58, y: 8 }];
-  if (!arr || arr.length === 0) return fallback;
-
-  const data = startDay > 0 ? arr.slice(startDay - 1) : arr.filter((_, i) => i === 0 || arr[i] !== 0 || arr[i - 1] !== 0);
-  if (data.length < 2) return fallback;
-
-  const smoothed = smooth(data);
-  const min = Math.min(...smoothed);
-  const max = Math.max(...smoothed);
-  const range = max - min || 1;
-
-  return smoothed
-    .filter((_, i) => i % 3 === 0 || i === smoothed.length - 1)
-    .map((v, i, sampled) => {
-      const x = 2 + (i / (sampled.length - 1)) * 56;
-      const norm = (v - min) / range;
-      const y = 14 - norm * 12;  // high value = top, low value = bottom
-      return { x: +x.toFixed(1), y: +y.toFixed(1) };
-    });
-}
-
-/* Polyline points string (convenience wrapper) */
-function sparkPoints(arr, startDay = 0) {
-  return sparkPointsData(arr, startDay).map(p => `${p.x},${p.y}`).join(' ');
-}
-
 /* Green if KPI is improving, red if worsening.
    invertGood = true means lower values are better (e.g. CAC). */
 function sparkColor(arr, invertGood = false, startDay = 0) {
@@ -63,15 +31,46 @@ function sparkColor(arr, invertGood = false, startDay = 0) {
   return improving ? 'var(--success)' : 'var(--danger)';
 }
 
-/* Inline info icon SVG for KPI tooltip triggers */
-function InfoIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ opacity: 0.45 }}>
-      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M8 7v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="8" cy="5" r="0.75" fill="currentColor" />
-    </svg>
-  );
+/* Wide sparkline points for redesigned KPI cards and headline.
+   Returns { points: [{x,y}], startValue, endValue } for a configurable viewBox. */
+function sparkPointsWide(arr, startDay = 0, vbWidth = 120, vbHeight = 36, pad = 4) {
+  const mid = vbHeight / 2;
+  const fallback = { points: [{ x: pad, y: mid }, { x: vbWidth - pad, y: mid }], startValue: 0, endValue: 0 };
+  if (!arr || arr.length === 0) return fallback;
+
+  const data = startDay > 0 ? arr.slice(startDay - 1) : arr.filter((_, i) => i === 0 || arr[i] !== 0 || arr[i - 1] !== 0);
+  if (data.length < 2) return fallback;
+
+  const smoothed = smooth(data);
+  const min = Math.min(...smoothed);
+  const max = Math.max(...smoothed);
+  const range = max - min || 1;
+  const usableW = vbWidth - pad * 2;
+  const usableH = vbHeight - pad * 2;
+
+  const step = Math.max(1, Math.floor(smoothed.length / 20));
+  const sampled = smoothed.filter((_, i) => i % step === 0 || i === smoothed.length - 1);
+
+  const points = sampled.map((v, i) => {
+    const x = pad + (i / (sampled.length - 1)) * usableW;
+    const norm = (v - min) / range;
+    const y = (vbHeight - pad) - norm * usableH;
+    return { x: +x.toFixed(1), y: +y.toFixed(1) };
+  });
+
+  return { points, startValue: data[0], endValue: data[data.length - 1] };
+}
+
+/* Format a KPI value for sparkline edge labels */
+function formatKpiEdge(key, value) {
+  if (value == null || isNaN(value)) return '—';
+  switch (key) {
+    case 'cac': return `$${Math.round(value)}`;
+    case 'roi': return `${(Math.round(value * 10) / 10).toFixed(1)}x`;
+    case 'convRate': return `${(Math.round(value * 10) / 10).toFixed(1)}%`;
+    case 'fraudSaved': return `$${Math.round(value / 1000)}K`;
+    default: return String(Math.round(value));
+  }
 }
 
 /* ───────── KPI Card ───────── */
@@ -516,8 +515,8 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 </div>
               </div>
 
-              {/* Cell 2: Top-right — headline number */}
-              <div style={{ padding: '32px 28px 16px' }}>
+              {/* Cell 2: Top-right — headline number + full-width sparkline */}
+              <div style={{ padding: '32px 28px 20px' }}>
                 <div style={{
                   fontSize: 11,
                   fontWeight: 600,
@@ -528,35 +527,15 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   First 30 days
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{
-                    fontSize: 64,
-                    fontWeight: 800,
-                    letterSpacing: '-0.03em',
-                    color: 'var(--text-primary)',
-                    lineHeight: 1,
-                    marginTop: 6,
-                  }}>
-                    <AnimatedNumber value={activeUsers} duration={300} />
-                  </div>
-                  {/* Sparkline trend for headline — daily new users (matches chart below) */}
-                  {dailyCurve && (() => {
-                    const pts = sparkPointsData(dailyCurve, td);
-                    const last = pts[pts.length - 1];
-                    return (
-                      <svg width="64" height="24" viewBox="0 0 60 16" style={{ marginTop: 8 }}>
-                        <polyline
-                          points={pts.map(p => `${p.x},${p.y}`).join(' ')}
-                          fill="none"
-                          stroke="var(--success)"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <circle cx={last.x} cy={last.y} r="2.5" fill="var(--success)" />
-                      </svg>
-                    );
-                  })()}
+                <div style={{
+                  fontSize: 64,
+                  fontWeight: 800,
+                  letterSpacing: '-0.03em',
+                  color: 'var(--text-primary)',
+                  lineHeight: 1,
+                  marginTop: 6,
+                }}>
+                  <AnimatedNumber value={activeUsers} duration={300} />
                 </div>
 
                 <div style={{
@@ -566,6 +545,49 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 }}>
                   new active users
                 </div>
+
+                {/* Full-width sparkline with gradient fill */}
+                {dailyCurve && (() => {
+                  const sp = sparkPointsWide(dailyCurve, td, 200, 40, 4);
+                  const last = sp.points[sp.points.length - 1];
+                  const first = sp.points[0];
+                  return (
+                    <div style={{ marginTop: 14 }}>
+                      <svg width="100%" height="40" viewBox="0 0 200 40" preserveAspectRatio="none">
+                        <defs>
+                          <linearGradient id="grad-headline" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="var(--success)" stopOpacity="0.10" />
+                            <stop offset="100%" stopColor="var(--success)" stopOpacity="0" />
+                          </linearGradient>
+                        </defs>
+                        <polygon
+                          points={`${first.x},40 ${sp.points.map(p => `${p.x},${p.y}`).join(' ')} ${last.x},40`}
+                          fill="url(#grad-headline)"
+                        />
+                        <polyline
+                          points={sp.points.map(p => `${p.x},${p.y}`).join(' ')}
+                          fill="none"
+                          stroke="var(--success)"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <circle cx={last.x} cy={last.y} r="3" fill="var(--success)" />
+                      </svg>
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginTop: 4,
+                        fontSize: 11,
+                        fontWeight: 500,
+                        color: 'var(--text-tertiary)',
+                      }}>
+                        <span>Day {td || 1}</span>
+                        <span>Day 30</span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Cell 3: Bottom-left — slider + guidance */}
@@ -670,69 +692,130 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 </div>
               </div>
 
-              {/* Cell 4: Bottom-right — KPI grid */}
+              {/* Cell 4: Bottom-right — KPI grid (stacked cards with full-width sparklines) */}
               <div style={{
-                padding: '14px 28px 32px',
+                padding: '16px 28px 28px',
                 borderTop: '1px solid var(--border-light)',
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
-                gap: '10px 20px',
+                gap: '16px 24px',
               }}>
                   {[
-                    { label: 'Avg CAC', value: `$${cac}`, curve: dailyKPIs?.cac, invertGood: true,
+                    { key: 'cac', label: 'Avg CAC', value: `$${cac}`, curve: dailyKPIs?.cac, invertGood: true,
                       desc: 'Customer Acquisition Cost — total spend divided by new active users. Lower is better.' },
-                    { label: 'ROI', value: `${typeof roi === 'number' ? roi.toFixed(1) : roi}x`, curve: dailyKPIs?.roi, invertGood: false,
+                    { key: 'roi', label: 'ROI', value: `${typeof roi === 'number' ? roi.toFixed(1) : roi}x`, curve: dailyKPIs?.roi, invertGood: false,
                       desc: 'Return on Investment — revenue generated by referred users divided by campaign spend.' },
-                    { label: 'Conv rate', value: `${typeof convRate === 'number' ? convRate.toFixed(1) : convRate}%`, curve: dailyKPIs?.convRate, invertGood: false,
+                    { key: 'convRate', label: 'Conv rate', value: `${typeof convRate === 'number' ? convRate.toFixed(1) : convRate}%`, curve: dailyKPIs?.convRate, invertGood: false,
                       desc: 'Conversion Rate — percentage of contacted users who completed the referral journey.' },
-                    { label: 'Fraud saved', value: `$${Math.round((fraudSaved || 0) / 1000)}K`, curve: dailyKPIs?.fraudSaved, invertGood: false,
+                    { key: 'fraudSaved', label: 'Fraud saved', value: `$${Math.round((fraudSaved || 0) / 1000)}K`, curve: dailyKPIs?.fraudSaved, invertGood: false,
                       desc: "Estimated fraud prevention savings from EdooAI's verification layer." },
                   ].map((kpi) => {
-                    const pts = kpi.curve ? sparkPointsData(kpi.curve, td) : null;
-                    const last = pts ? pts[pts.length - 1] : null;
+                    const sp = kpi.curve ? sparkPointsWide(kpi.curve, td) : null;
                     const color = kpi.curve ? sparkColor(kpi.curve, kpi.invertGood, td) : 'var(--text-tertiary)';
+
+                    /* Delta: % change from start to end of trust-period slice */
+                    let deltaLabel = null;
+                    let deltaIsGood = false;
+                    if (sp && sp.startValue !== 0) {
+                      const pct = ((sp.endValue - sp.startValue) / Math.abs(sp.startValue)) * 100;
+                      /* Hide delta for flat curves (fraud saved) */
+                      if (Math.abs(pct) >= 1) {
+                        deltaIsGood = kpi.invertGood ? pct < 0 : pct > 0;
+                        const arrow = pct < 0 ? '↓' : '↑';
+                        deltaLabel = `${arrow}${Math.abs(Math.round(pct))}%`;
+                      }
+                    }
+
                     return (
-                    <div key={kpi.label} style={{ position: 'relative' }}>
+                    <div key={kpi.key} style={{ display: 'flex', flexDirection: 'column' }}>
+                      {/* Row 1: Label (hover-underline tooltip) + delta badge */}
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 4,
-                        fontSize: 11,
-                        fontWeight: 500,
-                        letterSpacing: '0.04em',
-                        textTransform: 'uppercase',
-                        color: 'var(--text-tertiary)',
+                        justifyContent: 'space-between',
                       }}>
-                        {kpi.label}
-                        <Tooltip text={kpi.desc}><InfoIcon /></Tooltip>
-                      </div>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        marginTop: 2,
-                      }}>
-                        <span style={{
-                          fontSize: 16,
-                          fontWeight: 600,
-                          color: 'var(--text-primary)',
-                        }}>
-                          {kpi.value}
-                        </span>
-                        {pts && last && (
-                          <svg width="60" height="16" viewBox="0 0 60 16">
-                            <polyline
-                              points={pts.map(p => `${p.x},${p.y}`).join(' ')}
-                              fill="none"
-                              stroke={color}
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <circle cx={last.x} cy={last.y} r="2" fill={color} />
-                          </svg>
+                        <Tooltip text={kpi.desc} underline>
+                          <span style={{
+                            fontSize: 11,
+                            fontWeight: 600,
+                            letterSpacing: '0.05em',
+                            textTransform: 'uppercase',
+                            color: 'var(--text-tertiary)',
+                          }}>
+                            {kpi.label}
+                          </span>
+                        </Tooltip>
+                        {deltaLabel && (
+                          <span style={{
+                            fontSize: 11,
+                            fontWeight: 600,
+                            padding: '2px 6px',
+                            borderRadius: 'var(--radius-full)',
+                            background: deltaIsGood ? '#d1fae5' : '#fee2e2',
+                            color: deltaIsGood ? '#065f46' : '#991b1b',
+                            lineHeight: 1.2,
+                          }}>
+                            {deltaLabel}
+                          </span>
                         )}
                       </div>
+
+                      {/* Row 2: Aggregate value */}
+                      <div style={{
+                        fontSize: 18,
+                        fontWeight: 700,
+                        color: 'var(--text-primary)',
+                        letterSpacing: '-0.01em',
+                        marginTop: 4,
+                        lineHeight: 1,
+                      }}>
+                        {kpi.value}
+                      </div>
+
+                      {/* Row 3: Sparkline — full card width with gradient fill */}
+                      {sp && (() => {
+                        const pts = sp.points;
+                        const first = pts[0];
+                        const last = pts[pts.length - 1];
+                        const gradId = `grad-${kpi.key}`;
+                        return (
+                          <div style={{ marginTop: 8 }}>
+                            <svg width="100%" height="36" viewBox="0 0 120 36" preserveAspectRatio="none">
+                              <defs>
+                                <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor={color} stopOpacity="0.12" />
+                                  <stop offset="100%" stopColor={color} stopOpacity="0" />
+                                </linearGradient>
+                              </defs>
+                              <polygon
+                                points={`${first.x},36 ${pts.map(p => `${p.x},${p.y}`).join(' ')} ${last.x},36`}
+                                fill={`url(#${gradId})`}
+                              />
+                              <polyline
+                                points={pts.map(p => `${p.x},${p.y}`).join(' ')}
+                                fill="none"
+                                stroke={color}
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <circle cx={last.x} cy={last.y} r="2.5" fill={color} />
+                            </svg>
+                            {/* Start → End values */}
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              marginTop: 4,
+                              fontSize: 11,
+                              fontWeight: 500,
+                              color: 'var(--text-tertiary)',
+                            }}>
+                              <span>{formatKpiEdge(kpi.key, sp.startValue)}</span>
+                              <span>{formatKpiEdge(kpi.key, sp.endValue)}</span>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
                     );
                   })}
