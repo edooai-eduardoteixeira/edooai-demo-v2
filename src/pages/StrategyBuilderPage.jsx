@@ -263,30 +263,12 @@ export default function StrategyBuilderPage({ config, onNext }) {
   const comboLabel = (msg, ch) =>
     msg.charAt(0).toUpperCase() + msg.slice(1) + ' \u00b7 ' + ch.charAt(0).toUpperCase() + ch.slice(1).toLowerCase();
 
-  const [lines, setLines] = useState([]);
-  const [currentText, setCurrentText] = useState('');
-
   const cancelRef = useRef(false);
   const hasStartedRef = useRef(false);
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  const streamText = useCallback(async (text, duration) => {
-    const charDelay = duration / text.length;
-    let built = '';
-    for (let i = 0; i < text.length; i++) {
-      if (cancelRef.current) return;
-      built += text[i];
-      setCurrentText(built);
-      await new Promise((r) => setTimeout(r, charDelay));
-    }
-    setLines((prev) => [...prev, text]);
-    setCurrentText('');
-  }, []);
-
   const runReveal = useCallback(async () => {
-    await streamText('Analyzing your data to propose Referral Strategy and Execution Plan...', 1600);
-    await sleep(400);
     if (cancelRef.current) return;
 
     setShowResult(true);
@@ -306,7 +288,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
     if (cancelRef.current) return;
 
     setShowCTA(true);
-  }, [streamText]);
+  }, []);
 
   useEffect(() => {
     if (hasStartedRef.current) return;
@@ -343,47 +325,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
           width: '100%',
         }}
       >
-        {/* ── Streaming text ── */}
-        <div style={{ minHeight: '50px', marginBottom: '1.5rem' }}>
-          {lines.map((line, i) => (
-            <p
-              key={i}
-              style={{
-                fontSize: '14px',
-                color: 'var(--text-secondary)',
-                lineHeight: 1.6,
-                margin: 0,
-                marginBottom: '4px',
-              }}
-            >
-              {line}
-            </p>
-          ))}
-          {currentText && (
-            <p
-              style={{
-                fontSize: '14px',
-                color: 'var(--text-secondary)',
-                lineHeight: 1.6,
-                margin: 0,
-              }}
-            >
-              {currentText}
-              <span
-                style={{
-                  display: 'inline-block',
-                  width: '2px',
-                  height: '1em',
-                  backgroundColor: 'var(--text-secondary)',
-                  marginLeft: '2px',
-                  animation: 'blink 1s step-end infinite',
-                  verticalAlign: 'text-bottom',
-                }}
-              />
-            </p>
-          )}
-        </div>
-
         {/* ════════════════════════════════════════════
             SECTION 1 — Forecast Panel (Budget + Result + Chart)
             Redesigned: v12 wireframe with real logic
@@ -562,8 +503,8 @@ export default function StrategyBuilderPage({ config, onNext }) {
                             const refY = sparkRefY(dailyCurve, activeUsers / 30, td);
                             return refY != null ? (
                               <line x1="2" y1={refY} x2="58" y2={refY}
-                                stroke="var(--text-tertiary)" strokeWidth="0.5"
-                                strokeDasharray="2 2" opacity="0.45" />
+                                stroke="var(--text-tertiary)" strokeWidth="0.6"
+                                strokeDasharray="2 2" opacity="0.55" />
                             ) : null;
                           })()}
                           <polyline
@@ -579,6 +520,20 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       </span>
                     );
                   })()}
+                  {hoveredSparkline === 'headline' && dailyCurve && dailyCurve.length > 0 && (() => {
+                    const lastDay = dailyCurve[dailyCurve.length - 1];
+                    const trendTo = Math.round(lastDay * 30);
+                    return (
+                      <span style={{
+                        fontSize: 12,
+                        fontWeight: 500,
+                        color: 'var(--text-tertiary)',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        Trending to {formatTrend('activeUsers', trendTo)}/mo
+                      </span>
+                    );
+                  })()}
                 </div>
 
                 <div style={{
@@ -588,22 +543,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 }}>
                   new active users
                 </div>
-
-                {/* Trending-to: last-day run rate projected to 30 days — visible on sparkline hover */}
-                {hoveredSparkline === 'headline' && dailyCurve && dailyCurve.length > 0 && (() => {
-                  const lastDay = dailyCurve[dailyCurve.length - 1];
-                  const trendTo = Math.round(lastDay * 30);
-                  return (
-                    <div style={{
-                      fontSize: 12,
-                      fontWeight: 500,
-                      color: 'var(--text-tertiary)',
-                      marginTop: 6,
-                    }}>
-                      Trending to {formatTrend('activeUsers', trendTo)}/mo
-                    </div>
-                  );
-                })()}
               </div>
 
               {/* Cell 3: Bottom-left — slider + guidance */}
