@@ -117,31 +117,48 @@ const neobank = {
   // ─── Projection Engine Parameters ───
   // All projections (daily curve, KPIs, threshold day) are computed dynamically
   // by src/engine/projectionEngine.js using these parameters.
+  //
+  // Model: Allocation Calculator
+  //   Supply curve: N_frontier(B) = N_max × (B / (B + B_half))^alpha
+  //   Efficiency:   eff(day, cumN) = floor + (1−floor) × timeLearning × volumeConfidence
+  //   Waste:        poorly-targeted contacts convert at accidentalFraction rate;
+  //                 all contacts deplete the pool; conversions replenish it.
+  //
+  // Calibrated via scripts/calibrate-engine.mjs to hit:
+  //   $50K  → ~200 users, CAC ~$250, ROI ~2.0x
+  //   $150K → ~500 users, CAC ~$300, ROI ~1.7x
+  //   $500K → ~900 users, CAC ~$560, ROI ~0.9x
   engineParams: {
-    learningCAC: 400,              // Starting CAC before any optimization ($)
-    optimizedCAC: 100,             // Best achievable CAC at full confidence ($)
+    // Supply curve — theoretical max conversions at given budget
+    N_max: 2000,                   // Ceiling: max conversions at infinite budget
+    B_half: 200000,                // Budget for 50% of N_max ($)
+    alpha: 1,                      // Concavity exponent (1 = Michaelis-Menten)
+
+    // Allocation efficiency — learning dynamics
+    effFloor: 0.15,                // Min efficiency (random allocation success rate)
+    timeLearnRate: 0.1,            // Speed of time-based learning (exp decay rate)
+    confHalfPoint: 70,             // Cumulative conversions for 50% volume confidence
+
+    // Waste model
+    accidentalFraction: 0.10,      // Fraction of wasted frontier that converts anyway
+    baseConvRate: 0.03,            // Conversion probability per well-targeted contact
+    referrerEligibilityRate: 0.4,  // Fraction of new converts who become eligible referrers
+
+    // Audience & economics
     audienceSize: 250000,          // Total reachable users for referral program
-    fraudRate: 0.07,               // Fraction of spend saved by fraud detection
     avgRevenuePerUser: 500,        // Revenue per activated user (for ROI calc)
-    baseConvRate: 4.8,            // Base conversion rate (%)
-    minSignalVolume: 40,          // Cumulative conversions for statistical significance
-    diminishing: {
-      // difficulty = 1 + scale * (dailyBudget/audience)^curve
-      // Produces U-shaped CAC: minimum in recommended range, rises above recMax
-      // Calibrated for audienceSize=250K: difficulty($75K)=1.03, difficulty($150K)=1.09, difficulty($500K)=1.44
-      scale: 16.5,
-      curve: 1.34,
-    },
-    confidence: {
-      volumeHalfPoint: 12,        // Cumulative conversions for 50% volume confidence
-      timeHalfPoint: 3,           // Days for 50% time confidence
-      volumeWeight: 0.6,          // Relative weight of volume vs time
-      timeWeight: 0.4,
-    },
+    fraudRate: 0.07,               // Fraction of spend saved by fraud detection
+    minSignalVolume: 40,           // Cumulative conversions for statistical significance
+    displayBaseConvRate: 4.8,      // Base conversion rate for display (%)
+
+    // Display: starting CAC shown in sparkline tooltip (Day 1 → Day 30)
+    learningCAC: 400,
+
+    // Budget guidance thresholds
     budget: {
-      floor: 75000,               // Below = belowFloor guidance
-      recMin: 100000,             // Below recMin = belowRec guidance
-      recMax: 200000,             // Above recMax = aboveRec guidance
+      floor: 15000,                // Below = belowFloor guidance
+      recMin: 100000,              // Below recMin = belowRec guidance
+      recMax: 200000,              // Above recMax = aboveRec guidance
     },
   },
 
