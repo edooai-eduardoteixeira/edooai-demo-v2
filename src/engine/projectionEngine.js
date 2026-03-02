@@ -148,6 +148,7 @@ export function computeProjection({ budget, params }) {
 
   const dailyCurve = [];
   const confidenceCurve = [];
+  const kpiCurves = { cac: [], roi: [], convRate: [], fraudSaved: [] };
   let thresholdDay = 30;
   let thresholdFound = false;
 
@@ -214,6 +215,14 @@ export function computeProjection({ budget, params }) {
       thresholdFound = true;
     }
 
+    // Daily KPI trajectories (running cumulative values)
+    const cumSpend = (budget / 30) * day;
+    kpiCurves.cac.push(cumulativeN > 0 ? Math.round(cumSpend / cumulativeN) : 0);
+    kpiCurves.roi.push(cumSpend > 0 ? Math.round((cumulativeValue / cumSpend) * 10) / 10 : 0);
+    kpiCurves.convRate.push(totalJourneysStarted > 0
+      ? Math.round((cumulativeN / totalJourneysStarted) * 10000) / 100 : 0);
+    kpiCurves.fraudSaved.push(Math.round(cumSpend * fraudRate));
+
     // Daily output: resolved conversions (rounded for display, minimum 0)
     dailyCurve.push(Math.max(0, Math.round(resolvedToday)));
   }
@@ -264,5 +273,6 @@ export function computeProjection({ budget, params }) {
     confidenceCurve,
     totalJourneysStarted: Math.round(totalJourneysStarted),
     avgValuePerUser,
+    kpiCurves,
   };
 }

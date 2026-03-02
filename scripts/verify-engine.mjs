@@ -31,7 +31,7 @@ function check(name, condition, detail) {
 
 console.log('\n═══ 1. Return Shape ═══');
 const r = computeProjection({ budget: 150_000, params });
-const REQUIRED_KEYS = ['dailyCurve', 'thresholdDay', 'activeUsers', 'cac', 'roi', 'convRate', 'fraudSaved', 'guidanceState', 'confidenceCurve', 'totalJourneysStarted', 'avgValuePerUser'];
+const REQUIRED_KEYS = ['dailyCurve', 'thresholdDay', 'activeUsers', 'cac', 'roi', 'convRate', 'fraudSaved', 'guidanceState', 'confidenceCurve', 'totalJourneysStarted', 'avgValuePerUser', 'kpiCurves'];
 for (const key of REQUIRED_KEYS) {
   check(`has '${key}'`, key in r, `missing from return object`);
 }
@@ -42,6 +42,9 @@ check('cac is number', typeof r.cac === 'number', typeof r.cac);
 check('roi is number', typeof r.roi === 'number', typeof r.roi);
 check('totalJourneysStarted is number', typeof r.totalJourneysStarted === 'number', typeof r.totalJourneysStarted);
 check('avgValuePerUser is number', typeof r.avgValuePerUser === 'number', typeof r.avgValuePerUser);
+check('kpiCurves has cac/roi/convRate/fraudSaved arrays of 30',
+  r.kpiCurves && ['cac', 'roi', 'convRate', 'fraudSaved'].every(k => Array.isArray(r.kpiCurves[k]) && r.kpiCurves[k].length === 30),
+  `keys=${r.kpiCurves ? Object.keys(r.kpiCurves) : 'missing'}`);
 
 // ─── 2. KPI Coherence (THE KEY CHECK) ──────────────────────────────
 
