@@ -1,8 +1,8 @@
 /**
  * Calibration script for the projection engine v3.
  *
- * v3 changes: pool quality decay, distributed resolution (truncated normal),
- * value learning (base/premium revenue).
+ * v3 changes: reach quality (structural, not temporal), distributed resolution
+ * (truncated normal), value learning (base/premium revenue).
  *
  * Sweeps parameter combinations to find values that hit calibration targets.
  * Implements the engine inline (no app imports) so it can run standalone.
@@ -35,6 +35,11 @@ function computeProjection(budget, p) {
   const totalJourneys = N_frontier / p.baseConvRate;
   const dailyJourneyTarget = totalJourneys / 30;
 
+  // Reach quality: computed once, structural not temporal
+  const reachPenetration = totalJourneys / audienceSize;
+  const qualityFactor = Math.pow(1 - reachPenetration, p.reachDecayExponent);
+  const effectiveBaseConvRate = p.baseConvRate * qualityFactor;
+
   const resolutionWeights = computeResolutionWeights(p.avgResolutionDays, p.offerExpirationDays);
 
   let remainingPool = audienceSize;
@@ -56,12 +61,8 @@ function computeProjection(budget, p) {
 
     const journeysToday = Math.min(dailyJourneyTarget, remainingPool * p.maxDailyReachRate);
 
-    // Pool quality decay
-    const poolQuality = Math.pow(remainingPool / audienceSize, p.poolDecayExponent);
-    const effectiveBaseConvRate = p.baseConvRate * poolQuality;
-
     const wellTargeted = journeysToday * eff;
-    const goodConversions = wellTargeted * effectiveBaseConvRate;
+    const goodConversions = wellTargeted * effectiveBaseConvRate;  // effectiveBaseConvRate is constant
 
     const poorlyTargeted = journeysToday * (1 - eff);
     const accidentalConversions = poorlyTargeted * p.accidentalConvRate;
@@ -172,7 +173,7 @@ const CONF_HALF_VALUES           = [20, 35, 50, 70];
 const MAX_DAILY_REACH_VALUES     = [0.03, 0.05, 0.08, 0.10];
 const AVG_RESOLUTION_VALUES      = [3, 4, 5];
 const ACCIDENTAL_CONV_VALUES     = [0.0005, 0.001, 0.002];
-const POOL_DECAY_VALUES          = [0.5, 1.0, 1.5, 2.0, 3.0, 4.0];
+const REACH_DECAY_VALUES         = [0.3, 0.5, 0.8, 1.0, 1.5, 2.0];
 const BASE_REVENUE_VALUES        = [250, 300, 350];
 const PREMIUM_REVENUE_VALUES     = [700, 800, 900];
 
@@ -221,8 +222,8 @@ console.log('Calibrating projection engine v3...');
 
 const stage1Combos = N_MAX_VALUES.length * B_HALF_VALUES.length * ALPHA_VALUES.length *
   EFF_FLOOR_VALUES.length * TIME_LEARN_VALUES.length * CONF_HALF_VALUES.length *
-  MAX_DAILY_REACH_VALUES.length * ACCIDENTAL_CONV_VALUES.length * POOL_DECAY_VALUES.length;
-console.log(`Stage 1: ${stage1Combos.toLocaleString()} combinations (supply + learning + pool decay)`);
+  MAX_DAILY_REACH_VALUES.length * ACCIDENTAL_CONV_VALUES.length * REACH_DECAY_VALUES.length;
+console.log(`Stage 1: ${stage1Combos.toLocaleString()} combinations (supply + learning + reach decay)`);
 
 let bestScore = Infinity;
 let bestParams = null;
@@ -242,14 +243,14 @@ for (const N_max of N_MAX_VALUES) {
           for (const confHalfPoint of CONF_HALF_VALUES) {
             for (const maxDailyReachRate of MAX_DAILY_REACH_VALUES) {
               for (const accidentalConvRate of ACCIDENTAL_CONV_VALUES) {
-                for (const poolDecayExponent of POOL_DECAY_VALUES) {
+                for (const reachDecayExponent of REACH_DECAY_VALUES) {
                   const params = {
                     ...FIXED,
                     ...STAGE1_DEFAULTS,
                     N_max, B_half, alpha,
                     effFloor, timeLearnRate, confHalfPoint,
                     maxDailyReachRate, accidentalConvRate,
-                    poolDecayExponent,
+                    reachDecayExponent,
                   };
                   const s = score(params);
                   tested++;
@@ -312,7 +313,7 @@ console.log(`  timeLearnRate:        ${bestParams.timeLearnRate}`);
 console.log(`  confHalfPoint:        ${bestParams.confHalfPoint}`);
 console.log(`  maxDailyReachRate:    ${bestParams.maxDailyReachRate}`);
 console.log(`  accidentalConvRate:   ${bestParams.accidentalConvRate}`);
-console.log(`  poolDecayExponent:    ${bestParams.poolDecayExponent}`);
+console.log(`  reachDecayExponent:   ${bestParams.reachDecayExponent}`);
 console.log(`  avgResolutionDays:    ${bestParams.avgResolutionDays}`);
 console.log(`  offerExpirationDays:  ${bestParams.offerExpirationDays}`);
 console.log(`  baseRevenuePerUser:   ${bestParams.baseRevenuePerUser}`);
@@ -430,7 +431,7 @@ console.log(`engineParams: {
   confHalfPoint: ${bestParams.confHalfPoint},
   baseConvRate: ${bestParams.baseConvRate},
   accidentalConvRate: ${bestParams.accidentalConvRate},
-  poolDecayExponent: ${bestParams.poolDecayExponent},
+  reachDecayExponent: ${bestParams.reachDecayExponent},
   maxDailyReachRate: ${bestParams.maxDailyReachRate},
   avgResolutionDays: ${bestParams.avgResolutionDays},
   offerExpirationDays: ${bestParams.offerExpirationDays},

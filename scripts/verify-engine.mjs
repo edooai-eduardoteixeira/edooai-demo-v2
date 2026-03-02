@@ -1,7 +1,7 @@
 /**
  * Verification script for the projection engine v3.
  *
- * v3 checks: pool quality decay (conv rate decreasing), distributed resolution
+ * v3 checks: reach quality (conv rate decreasing with budget), distributed resolution
  * (smooth curve from day 2), value learning (avgValuePerUser bounds).
  *
  * Imports the real engine + config and checks behavioral invariants.
@@ -57,7 +57,7 @@ for (const b of [50_000, 150_000, 500_000]) {
   );
 }
 
-// ─── 3. Conv rate DECREASES with budget (v3 pool decay) ─────────────
+// ─── 3. Conv rate DECREASES with budget (v3 reach quality) ──────────
 
 console.log('\n═══ 3. Conv Rate Direction ═══');
 const cr50 = computeProjection({ budget: 50_000, params }).convRate;
@@ -147,6 +147,25 @@ for (const b of budgets) {
     `$${b / 1000}K: last 5 days avg > first 5 days avg`,
     last5avg > first5avg,
     `first5=${first5avg.toFixed(1)}, last5=${last5avg.toFixed(1)}`
+  );
+}
+
+// ─── 7b. No fake saturation at $500K (plateau, no peak-and-drop) ────
+
+console.log('\n═══ 7b. $500K Plateau Check ═══');
+{
+  const res500 = computeProjection({ budget: 500_000, params });
+  const curve = res500.dailyCurve;
+  // Find peak value (ignoring first 5 days of ramp)
+  const peakVal = Math.max(...curve.slice(5));
+  const last5 = curve.slice(25);
+  const last5avg = last5.reduce((s, v) => s + v, 0) / last5.length;
+  // Last 5 days avg should be at least 85% of peak (no >15% decline)
+  const declinePct = peakVal > 0 ? ((peakVal - last5avg) / peakVal) * 100 : 0;
+  check(
+    `$500K: no fake saturation (last5avg ${last5avg.toFixed(1)} vs peak ${peakVal.toFixed(1)}, decline ${declinePct.toFixed(0)}%)`,
+    declinePct <= 15,
+    `decline=${declinePct.toFixed(1)}% (max 15%)`
   );
 }
 
@@ -251,7 +270,7 @@ check('alpha in (0, 2]', params.alpha > 0 && params.alpha <= 2, params.alpha);
 check('B_half > 0', params.B_half > 0, params.B_half);
 check('baseConvRate in (0, 1)', params.baseConvRate > 0 && params.baseConvRate < 1, params.baseConvRate);
 check('accidentalConvRate in (0, baseConvRate)', params.accidentalConvRate > 0 && params.accidentalConvRate < params.baseConvRate, params.accidentalConvRate);
-check('poolDecayExponent in (0, 5]', params.poolDecayExponent > 0 && params.poolDecayExponent <= 5, params.poolDecayExponent);
+check('reachDecayExponent > 0', params.reachDecayExponent > 0, params.reachDecayExponent);
 check('effFloor in (0, 1)', params.effFloor > 0 && params.effFloor < 1, params.effFloor);
 check('confHalfPoint > 0', params.confHalfPoint > 0, params.confHalfPoint);
 check('timeLearnRate in (0, 1]', params.timeLearnRate > 0 && params.timeLearnRate <= 1, params.timeLearnRate);

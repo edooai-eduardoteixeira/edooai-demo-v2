@@ -122,7 +122,7 @@ const neobank = {
   //   Supply curve: N_frontier(B) = N_max × (B / (B + B_half))^alpha  [conversion units]
   //   Journey target: totalJourneys = N_frontier / baseConvRate        [journey units]
   //   Efficiency:   eff(day, cumN) = floor + (1−floor) × timeLearning × volumeConfidence
-  //   Pool quality decay: best prospects targeted first → remaining harder to convert
+  //   Reach quality: wider net = lower quality per contact (structural, not temporal)
   //   Distributed resolution: truncated normal distribution (no staircase)
   //   Value learning: engine finds super referrers → higher-value customers over time
   //
@@ -142,15 +142,15 @@ const neobank = {
 
     // Allocation efficiency — learning dynamics
     effFloor: 0.30,                    // Min efficiency (random allocation success rate)
-    timeLearnRate: 0.10,               // Speed of time-based learning (exp decay rate)
+    timeLearnRate: 0.06,               // Speed of time-based learning (exp decay rate)
     confHalfPoint: 70,                 // Resolved conversions for 50% volume confidence
 
     // Conversion probabilities per journey
     baseConvRate: 0.03,                // P(conversion | well-targeted journey) for best prospects
-    accidentalConvRate: 0.001,         // P(conversion | poorly-targeted journey)
+    accidentalConvRate: 0.002,         // P(conversion | poorly-targeted journey)
 
-    // Pool quality decay — conv rate decreases as pool is consumed
-    poolDecayExponent: 3,              // How fast prospect quality degrades (higher = stronger decay)
+    // Reach quality — conv rate decreases with budget (structural)
+    reachDecayExponent: 1.0,           // How much wider reach penalizes conversion quality (calibrate)
 
     // Journey pacing & distributed resolution
     maxDailyReachRate: 0.03,           // Max fraction of pool contacted per day

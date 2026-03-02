@@ -13,9 +13,10 @@
  *      Models the learning period. Starts at effFloor, rises as resolved
  *      conversions accumulate.
  *
- *   3. Pool quality decay: as the engine consumes the best prospects first,
- *      remaining prospects are harder to convert. effectiveBaseConvRate drops
- *      as the pool shrinks. This makes conversion rate DECREASE with budget.
+ *   3. Reach quality: wider net (higher budget) = lower quality per contact.
+ *      effectiveBaseConvRate is computed once from reach penetration
+ *      (totalJourneys / audienceSize), not from daily pool state.
+ *      This makes conversion rate DECREASE with budget structurally.
  *
  *   4. Distributed resolution: conversions are spread across a truncated
  *      normal distribution from day+1 to day+offerExpirationDays, peaking
@@ -78,7 +79,7 @@ function assertParams(p) {
   if (!(p.B_half > 0)) fail('B_half must be > 0');
   if (!(p.baseConvRate > 0 && p.baseConvRate < 1)) fail('baseConvRate must be in (0, 1)');
   if (!(p.accidentalConvRate > 0 && p.accidentalConvRate < p.baseConvRate)) fail('accidentalConvRate must be in (0, baseConvRate)');
-  if (!(p.poolDecayExponent > 0 && p.poolDecayExponent <= 5)) fail('poolDecayExponent must be in (0, 5]');
+  if (!(p.reachDecayExponent > 0)) fail('reachDecayExponent must be > 0');
   if (!(p.effFloor > 0 && p.effFloor < 1)) fail('effFloor must be in (0, 1)');
   if (!(p.confHalfPoint > 0)) fail('confHalfPoint must be > 0');
   if (!(p.timeLearnRate > 0 && p.timeLearnRate <= 1)) fail('timeLearnRate must be in (0, 1]');
@@ -109,7 +110,7 @@ export function computeProjection({ budget, params }) {
     alpha,
     baseConvRate,
     accidentalConvRate,
-    poolDecayExponent,
+    reachDecayExponent,
     referrerEligibilityRate,
     maxDailyReachRate,
     avgResolutionDays,
@@ -130,6 +131,11 @@ export function computeProjection({ budget, params }) {
   // Convert from conversion units to journey units
   const totalJourneys = N_frontier / baseConvRate;
   const dailyJourneyTarget = totalJourneys / 30;
+
+  // Reach quality: wider net = lower quality per contact (structural, not temporal)
+  const reachPenetration = totalJourneys / audienceSize;
+  const qualityFactor = Math.pow(1 - reachPenetration, reachDecayExponent);
+  const effectiveBaseConvRate = baseConvRate * qualityFactor;
 
   // Pre-compute resolution distribution weights (once)
   const resolutionWeights = computeResolutionWeights(avgResolutionDays, offerExpirationDays);
@@ -153,11 +159,6 @@ export function computeProjection({ budget, params }) {
 
     // Pace journeys: don't exhaust pool before learning
     const journeysToday = Math.min(dailyJourneyTarget, remainingPool * maxDailyReachRate);
-
-    // Pool quality decay: best prospects are targeted first,
-    // remaining ones are progressively harder to convert
-    const poolQuality = Math.pow(remainingPool / audienceSize, poolDecayExponent);
-    const effectiveBaseConvRate = baseConvRate * poolQuality;
 
     // Targeting split
     const wellTargeted = journeysToday * eff;
