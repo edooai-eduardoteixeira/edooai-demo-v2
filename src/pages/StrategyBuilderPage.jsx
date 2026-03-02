@@ -121,41 +121,6 @@ function KPICard({ label, children }) {
 }
 
 /* ───────── Operations Cycle Step ───────── */
-function CycleStep({ step, index, total }) {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: '0.75rem',
-        padding: '0.75rem 0',
-        borderBottom: index < total - 1 ? '1px solid var(--border-light)' : 'none',
-      }}
-    >
-      <span
-        style={{
-          fontSize: 'var(--font-size-sm)',
-          fontWeight: 700,
-          color: 'var(--text-primary)',
-          minWidth: '70px',
-          flexShrink: 0,
-        }}
-      >
-        {step.name}
-      </span>
-      <span
-        style={{
-          fontSize: 'var(--font-size-sm)',
-          color: 'var(--text-secondary)',
-          lineHeight: 1.5,
-        }}
-      >
-        {step.description}
-      </span>
-    </div>
-  );
-}
-
 /* ═════════════════════════════════════════════════════════
    Main Page Component
    ═════════════════════════════════════════════════════════ */
@@ -166,7 +131,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
     recommendedBudget,
     budgetGuidance,
     engineParams,
-    operationsCycle,
     riskManagement,
     approvalScope,
     totalCustomers,
@@ -232,7 +196,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
   /* ── Progressive reveal ── */
   const [showResult, setShowResult] = useState(false);
   const [showJourney, setShowJourney] = useState(false);
-  const [showExecution, setShowExecution] = useState(false);
   const [showRisk, setShowRisk] = useState(false);
   const [showCTA, setShowCTA] = useState(false);
 
@@ -276,10 +239,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
     if (cancelRef.current) return;
 
     setShowJourney(true);
-    await sleep(400);
-    if (cancelRef.current) return;
-
-    setShowExecution(true);
     await sleep(400);
     if (cancelRef.current) return;
 
@@ -1240,140 +1199,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
         )}
 
         {/* ════════════════════════════════════════════
-            SECTION 3 — Execution: How Edoo Operates
-            ════════════════════════════════════════════ */}
-        {showExecution && (
-          <section
-            style={{
-              marginBottom: '3rem',
-              animation: 'fadeIn 0.4s ease forwards',
-            }}
-          >
-            <h3
-              style={{
-                fontSize: 'var(--font-size-lg)',
-                fontWeight: 700,
-                marginBottom: '0.25rem',
-              }}
-            >
-              How Edoo Operates
-            </h3>
-            <p
-              style={{
-                fontSize: 'var(--font-size-sm)',
-                color: 'var(--text-tertiary)',
-                marginBottom: '1.5rem',
-              }}
-            >
-              {operationsCycle.summary}
-            </p>
-
-            {/* Daily cycle */}
-            <div
-              style={{
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-lg)',
-                padding: '1.25rem',
-                marginBottom: '1.5rem',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '0.375rem',
-                  marginBottom: '1rem',
-                  flexWrap: 'wrap',
-                }}
-              >
-                {operationsCycle.steps.map((step, i) => (
-                  <React.Fragment key={i}>
-                    <span
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        color: 'var(--text-primary)',
-                        padding: '4px 10px',
-                        backgroundColor: 'var(--accent-light)',
-                        borderRadius: '12px',
-                      }}
-                    >
-                      {step.name}
-                    </span>
-                    {i < operationsCycle.steps.length - 1 && (
-                      <span style={{ fontSize: '12px', color: 'var(--border)', alignSelf: 'center' }}>
-                        {'\u2192'}
-                      </span>
-                    )}
-                  </React.Fragment>
-                ))}
-                <span style={{ fontSize: '12px', color: 'var(--border)', alignSelf: 'center' }}>
-                  {'\u21BB'}
-                </span>
-              </div>
-
-              {operationsCycle.steps.map((step, i) => (
-                <CycleStep key={i} step={step} index={i} total={operationsCycle.steps.length} />
-              ))}
-            </div>
-
-            {/* Expected daily ramp */}
-            <div
-              style={{
-                display: 'flex',
-                gap: '1rem',
-                marginBottom: '1.5rem',
-              }}
-            >
-              {operationsCycle.dailyRamp.map((phase, i) => (
-                <div
-                  key={i}
-                  style={{
-                    flex: 1,
-                    padding: '1rem',
-                    backgroundColor: 'var(--accent-subtle)',
-                    borderRadius: 'var(--radius-md)',
-                    textAlign: 'center',
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 'var(--font-size-xs)',
-                      fontWeight: 600,
-                      color: 'var(--text-tertiary)',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      marginBottom: '0.25rem',
-                    }}
-                  >
-                    Days {phase.days}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 'var(--font-size-xl)',
-                      fontWeight: 700,
-                      color: 'var(--text-primary)',
-                      marginBottom: '0.25rem',
-                    }}
-                  >
-                    ~{phase.activeUsersPerDay}/day
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 'var(--font-size-xs)',
-                      color: 'var(--text-tertiary)',
-                    }}
-                  >
-                    {phase.note}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-          </section>
-        )}
-
-        {/* ════════════════════════════════════════════
-            SECTION 4 — Risk Management
+            SECTION 3 — Risk Management
             ════════════════════════════════════════════ */}
         {showRisk && (
           <section
