@@ -542,10 +542,9 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   }}>
                     <AnimatedNumber value={activeUsers} duration={300} />
                   </div>
-                  {/* Sparkline trend for headline — cumulative users from engine */}
+                  {/* Sparkline trend for headline — daily new users (matches chart below) */}
                   {dailyCurve && (() => {
-                    const cum = dailyCurve.reduce((acc, v) => { acc.push((acc.length ? acc[acc.length - 1] : 0) + v); return acc; }, []);
-                    const pts = sparkPointsData(cum, false, 0);
+                    const pts = sparkPointsData(dailyCurve, false, td);
                     const last = pts[pts.length - 1];
                     return (
                       <svg width="64" height="24" viewBox="0 0 60 16" style={{ marginTop: 8 }}>
