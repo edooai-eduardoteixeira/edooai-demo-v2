@@ -18,11 +18,21 @@ function smooth(arr) {
   });
 }
 
-/* Returns [{x, y}] for SVG polyline + trailing dot.
-   Line direction matches data direction (no axis inversion).
-   Color (from sparkColor) communicates whether the trend is good or bad.
-   startDay = thresholdDay (trust period start) for KPI curves,
-   or 0 for cumulative curves that don't need trust filtering. */
+/* Green if KPI is improving, red if worsening.
+   invertGood = true means lower values are better (e.g. CAC). */
+function sparkColor(arr, invertGood = false, startDay = 0) {
+  const data = startDay > 0 ? arr.slice(startDay - 1) : arr;
+  if (!data || data.length < 2) return 'var(--text-tertiary)';
+  const midIdx = Math.floor(data.length * 0.6);
+  const mid = data[midIdx];
+  const end = data[data.length - 1];
+  if (mid === 0 && end === 0) return 'var(--text-tertiary)';
+  const improving = invertGood ? (end <= mid) : (end >= mid);
+  return improving ? 'var(--success)' : 'var(--danger)';
+}
+
+/* Returns [{x, y}] for SVG polyline + trailing dot (viewBox 0 0 60 16).
+   startDay = thresholdDay for KPI curves, 0 for headline. */
 function sparkPointsData(arr, startDay = 0) {
   const fallback = [{ x: 2, y: 8 }, { x: 58, y: 8 }];
   if (!arr || arr.length === 0) return fallback;
@@ -40,38 +50,22 @@ function sparkPointsData(arr, startDay = 0) {
     .map((v, i, sampled) => {
       const x = 2 + (i / (sampled.length - 1)) * 56;
       const norm = (v - min) / range;
-      const y = 14 - norm * 12;  // high value = top, low value = bottom
+      const y = 14 - norm * 12;
       return { x: +x.toFixed(1), y: +y.toFixed(1) };
     });
 }
 
-/* Polyline points string (convenience wrapper) */
-function sparkPoints(arr, startDay = 0) {
-  return sparkPointsData(arr, startDay).map(p => `${p.x},${p.y}`).join(' ');
-}
-
-/* Green if KPI is improving, red if worsening.
-   invertGood = true means lower values are better (e.g. CAC). */
-function sparkColor(arr, invertGood = false, startDay = 0) {
-  const data = startDay > 0 ? arr.slice(startDay - 1) : arr;
-  if (!data || data.length < 2) return 'var(--text-tertiary)';
-  const midIdx = Math.floor(data.length * 0.6);
-  const mid = data[midIdx];
-  const end = data[data.length - 1];
-  if (mid === 0 && end === 0) return 'var(--text-tertiary)';
-  const improving = invertGood ? (end <= mid) : (end >= mid);
-  return improving ? 'var(--success)' : 'var(--danger)';
-}
-
-/* Inline info icon SVG for KPI tooltip triggers */
-function InfoIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ opacity: 0.45 }}>
-      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M8 7v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="8" cy="5" r="0.75" fill="currentColor" />
-    </svg>
-  );
+/* Format a KPI value for "Trending to" labels */
+function formatTrend(key, value) {
+  if (value == null || isNaN(value)) return '—';
+  switch (key) {
+    case 'cac': return `$${Math.round(value)}`;
+    case 'roi': return `${(Math.round(value * 10) / 10).toFixed(1)}x`;
+    case 'convRate': return `${(Math.round(value * 10) / 10).toFixed(1)}%`;
+    case 'fraudSaved': return `$${Math.round(value / 1000)}K`;
+    case 'activeUsers': return String(Math.round(value));
+    default: return String(Math.round(value));
+  }
 }
 
 /* ───────── KPI Card ───────── */
@@ -539,7 +533,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   }}>
                     <AnimatedNumber value={activeUsers} duration={300} />
                   </div>
-                  {/* Sparkline trend for headline — daily new users (matches chart below) */}
                   {dailyCurve && (() => {
                     const pts = sparkPointsData(dailyCurve, td);
                     const last = pts[pts.length - 1];
@@ -566,6 +559,22 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 }}>
                   new active users
                 </div>
+
+                {/* Trending-to: last-day run rate projected to 30 days */}
+                {dailyCurve && dailyCurve.length > 0 && (() => {
+                  const lastDay = dailyCurve[dailyCurve.length - 1];
+                  const trendTo = Math.round(lastDay * 30);
+                  return (
+                    <div style={{
+                      fontSize: 12,
+                      fontWeight: 500,
+                      color: 'var(--text-tertiary)',
+                      marginTop: 6,
+                    }}>
+                      Trending to {formatTrend('activeUsers', trendTo)}/mo
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Cell 3: Bottom-left — slider + guidance */}
@@ -679,33 +688,44 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 gap: '10px 20px',
               }}>
                   {[
-                    { label: 'Avg CAC', value: `$${cac}`, curve: dailyKPIs?.cac, invertGood: true,
+                    { key: 'cac', label: 'Avg CAC', value: `$${cac}`, curve: dailyKPIs?.cac, invertGood: true,
                       desc: 'Customer Acquisition Cost — total spend divided by new active users. Lower is better.' },
-                    { label: 'ROI', value: `${typeof roi === 'number' ? roi.toFixed(1) : roi}x`, curve: dailyKPIs?.roi, invertGood: false,
+                    { key: 'roi', label: 'ROI', value: `${typeof roi === 'number' ? roi.toFixed(1) : roi}x`, curve: dailyKPIs?.roi, invertGood: false,
                       desc: 'Return on Investment — revenue generated by referred users divided by campaign spend.' },
-                    { label: 'Conv rate', value: `${typeof convRate === 'number' ? convRate.toFixed(1) : convRate}%`, curve: dailyKPIs?.convRate, invertGood: false,
+                    { key: 'convRate', label: 'Conv rate', value: `${typeof convRate === 'number' ? convRate.toFixed(1) : convRate}%`, curve: dailyKPIs?.convRate, invertGood: false,
                       desc: 'Conversion Rate — percentage of contacted users who completed the referral journey.' },
-                    { label: 'Fraud saved', value: `$${Math.round((fraudSaved || 0) / 1000)}K`, curve: dailyKPIs?.fraudSaved, invertGood: false,
+                    { key: 'fraudSaved', label: 'Fraud saved', value: `$${Math.round((fraudSaved || 0) / 1000)}K`, curve: dailyKPIs?.fraudSaved, invertGood: false,
                       desc: "Estimated fraud prevention savings from EdooAI's verification layer." },
                   ].map((kpi) => {
                     const pts = kpi.curve ? sparkPointsData(kpi.curve, td) : null;
                     const last = pts ? pts[pts.length - 1] : null;
                     const color = kpi.curve ? sparkColor(kpi.curve, kpi.invertGood, td) : 'var(--text-tertiary)';
+
+                    /* Trending-to: rates use last daily value, accumulations use × 30 */
+                    let trendLabel = null;
+                    if (kpi.curve && kpi.curve.length > 0) {
+                      const lastVal = kpi.curve[kpi.curve.length - 1];
+                      if (lastVal > 0) {
+                        const trendVal = kpi.key === 'fraudSaved' ? lastVal * 30 : lastVal;
+                        trendLabel = `Trending to ${formatTrend(kpi.key, trendVal)}`;
+                      }
+                    }
+
                     return (
-                    <div key={kpi.label} style={{ position: 'relative' }}>
+                    <div key={kpi.key} style={{ position: 'relative' }}>
+                      {/* Label (hover-underline tooltip) */}
                       <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4,
                         fontSize: 11,
-                        fontWeight: 500,
+                        fontWeight: 600,
                         letterSpacing: '0.04em',
                         textTransform: 'uppercase',
                         color: 'var(--text-tertiary)',
                       }}>
-                        {kpi.label}
-                        <Tooltip text={kpi.desc}><InfoIcon /></Tooltip>
+                        <Tooltip text={kpi.desc} underline>
+                          <span>{kpi.label}</span>
+                        </Tooltip>
                       </div>
+                      {/* Value + sparkline + trending-to (all inline) */}
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -731,6 +751,15 @@ export default function StrategyBuilderPage({ config, onNext }) {
                             />
                             <circle cx={last.x} cy={last.y} r="2" fill={color} />
                           </svg>
+                        )}
+                        {trendLabel && (
+                          <span style={{
+                            fontSize: 11,
+                            fontWeight: 500,
+                            color: 'var(--text-tertiary)',
+                          }}>
+                            {trendLabel}
+                          </span>
                         )}
                       </div>
                     </div>
