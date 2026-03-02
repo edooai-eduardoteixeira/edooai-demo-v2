@@ -1,14 +1,16 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import Logo from '../components/Logo.jsx';
 import CTAButton from '../components/CTAButton.jsx';
 import AnimatedNumber from '../components/AnimatedNumber.jsx';
 import Tooltip from '../components/Tooltip.jsx';
 import { useProjections } from '../hooks/useProjections.js';
+import { computeProjection } from '../engine/projectionEngine.js';
 import tl from '../styles/StrategyTimeline.module.css';
 
 /* ───────── Sparkline helper: maps 30-element array → SVG polyline points ───────── */
-function sparkPoints(arr, invert = false) {
-  if (!arr || arr.length === 0) return '2,8 38,8';
+/* bounds = [globalMin, globalMax] from refBounds (required for meaningful visuals) */
+function sparkPoints(arr, invert = false, bounds = null) {
+  if (!arr || arr.length === 0 || !bounds) return '2,8 38,8';
 
   // Skip leading zeros (before first conversions resolve)
   let start = 0;
@@ -16,17 +18,16 @@ function sparkPoints(arr, invert = false) {
   const data = arr.slice(start);
   if (data.length < 2) return '2,8 38,8';
 
-  // Log-scale normalization: spreads hyperbolic curves (e.g. CAC) evenly
-  const logs = data.map((v) => Math.log(v + 1));
-  const logMin = Math.min(...logs);
-  const logMax = Math.max(...logs);
+  // Log-scale normalization against global bounds (not per-curve)
+  const logMin = Math.log(bounds[0] + 1);
+  const logMax = Math.log(bounds[1] + 1);
   const logRange = logMax - logMin || 1;
 
   return data
     .filter((_, i) => i % 5 === 0 || i === data.length - 1)
     .map((v, i, sampled) => {
       const x = 2 + (i / (sampled.length - 1)) * 36;
-      const norm = (Math.log(v + 1) - logMin) / logRange;
+      const norm = Math.max(0, Math.min(1, (Math.log(v + 1) - logMin) / logRange));
       const y = invert ? 2 + norm * 12 : 14 - norm * 12;
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     })
@@ -126,6 +127,22 @@ export default function StrategyBuilderPage({ config, onNext }) {
   /* ── Budget + engine projections ── */
   const [budget, setBudget] = useState(budgetSlider.default);
   const proj = useProjections(engineParams, budget);
+
+  /* ── Global sparkline bounds (min/max budget projections, computed once) ── */
+  const refBounds = useMemo(() => {
+    if (!engineParams) return null;
+    const lo = computeProjection({ budget: budgetSlider.min, params: engineParams });
+    const hi = computeProjection({ budget: budgetSlider.max, params: engineParams });
+    const union = (a, b) => [Math.min(...a, ...b), Math.max(...a, ...b)];
+    const cumOf = (d) => d.reduce((acc, v) => { acc.push((acc.at(-1) || 0) + v); return acc; }, []);
+    return {
+      cac: union(lo.kpiCurves.cac, hi.kpiCurves.cac),
+      roi: union(lo.kpiCurves.roi, hi.kpiCurves.roi),
+      convRate: union(lo.kpiCurves.convRate, hi.kpiCurves.convRate),
+      fraudSaved: union(lo.kpiCurves.fraudSaved, hi.kpiCurves.fraudSaved),
+      cumUsers: union(cumOf(lo.dailyCurve), cumOf(hi.dailyCurve)),
+    };
+  }, [engineParams, budgetSlider.min, budgetSlider.max]);
 
   // Destructure engine outputs
   const {
@@ -507,7 +524,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       <polyline
                         points={(() => {
                           const cum = dailyCurve.reduce((acc, v) => { acc.push((acc.length ? acc[acc.length - 1] : 0) + v); return acc; }, []);
-                          return sparkPoints(cum);
+                          return sparkPoints(cum, false, refBounds?.cumUsers);
                         })()}
                         fill="none"
                         stroke="var(--success)"
@@ -639,10 +656,10 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 gap: '10px 20px',
               }}>
                   {[
-                    { label: 'Avg CAC', value: `$${cac}`, curve: kpiCurves?.cac, invert: true, tip: sparkData?.cac },
-                    { label: 'ROI', value: `${typeof roi === 'number' ? roi.toFixed(1) : roi}x`, curve: kpiCurves?.roi, invert: false, tip: sparkData?.roi },
-                    { label: 'Conv rate', value: `${typeof convRate === 'number' ? convRate.toFixed(1) : convRate}%`, curve: kpiCurves?.convRate, invert: false, tip: sparkData?.conv },
-                    { label: 'Fraud saved', value: `$${Math.round((fraudSaved || 0) / 1000)}K`, curve: kpiCurves?.fraudSaved, invert: false, tip: sparkData?.fraud },
+                    { label: 'Avg CAC', value: `$${cac}`, curve: kpiCurves?.cac, invert: true, tip: sparkData?.cac, bounds: refBounds?.cac },
+                    { label: 'ROI', value: `${typeof roi === 'number' ? roi.toFixed(1) : roi}x`, curve: kpiCurves?.roi, invert: false, tip: sparkData?.roi, bounds: refBounds?.roi },
+                    { label: 'Conv rate', value: `${typeof convRate === 'number' ? convRate.toFixed(1) : convRate}%`, curve: kpiCurves?.convRate, invert: false, tip: sparkData?.conv, bounds: refBounds?.convRate },
+                    { label: 'Fraud saved', value: `$${Math.round((fraudSaved || 0) / 1000)}K`, curve: kpiCurves?.fraudSaved, invert: false, tip: sparkData?.fraud, bounds: refBounds?.fraudSaved },
                   ].map((kpi) => (
                     <div key={kpi.label} style={{ position: 'relative' }} title={kpi.tip ? `Day 1: ${kpi.tip.start} → Day 30: ${kpi.tip.end}` : ''}>
                       <div style={{
@@ -669,7 +686,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         </span>
                         <svg width="40" height="16" viewBox="0 0 40 16">
                           <polyline
-                            points={sparkPoints(kpi.curve, kpi.invert)}
+                            points={sparkPoints(kpi.curve, kpi.invert, kpi.bounds)}
                             fill="none"
                             stroke="var(--success)"
                             strokeWidth="1.5"
