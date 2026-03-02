@@ -6,33 +6,69 @@ import Tooltip from '../components/Tooltip.jsx';
 import { useProjections } from '../hooks/useProjections.js';
 import tl from '../styles/StrategyTimeline.module.css';
 
-/* ───────── Sparkline helper: maps 30-element array → SVG polyline points ───────── */
-/* Self-normalized with P5/P95 outlier clipping so each curve fills its vertical     */
-/* range and early-day extremes don't flatten the rest of the trend.                 */
-function sparkPoints(arr, invert = false) {
-  if (!arr || arr.length === 0) return '2,8 38,8';
+/* ───────── Sparkline helpers ───────── */
 
-  // Skip leading zeros (before first conversions resolve)
-  let start = 0;
-  while (start < arr.length && arr[start] === 0) start++;
-  const data = arr.slice(start);
-  if (data.length < 2) return '2,8 38,8';
+/* 3-point moving average: smooths day-to-day noise, highlights trend */
+function smooth(arr) {
+  if (arr.length < 3) return arr;
+  return arr.map((v, i) => {
+    if (i === 0) return (arr[0] + arr[1]) / 2;
+    if (i === arr.length - 1) return (arr[i - 1] + arr[i]) / 2;
+    return (arr[i - 1] + arr[i] + arr[i + 1]) / 3;
+  });
+}
 
-  // Outlier clipping: normalize to P5/P95 range, clamp the rest
-  const sorted = [...data].sort((a, b) => a - b);
-  const lo = sorted[Math.floor(sorted.length * 0.05)];
-  const hi = sorted[Math.ceil(sorted.length * 0.95) - 1];
-  const range = hi - lo || 1;
+/* Returns [{x, y}] for SVG polyline + trailing dot.
+   startDay = thresholdDay (trust period start) for KPI curves,
+   or 0 for cumulative curves that don't need trust filtering. */
+function sparkPointsData(arr, invert = false, startDay = 0) {
+  const fallback = [{ x: 2, y: 8 }, { x: 58, y: 8 }];
+  if (!arr || arr.length === 0) return fallback;
 
-  return data
-    .filter((_, i) => i % 3 === 0 || i === data.length - 1)
+  const data = startDay > 0 ? arr.slice(startDay - 1) : arr.filter((_, i) => i === 0 || arr[i] !== 0 || arr[i - 1] !== 0);
+  if (data.length < 2) return fallback;
+
+  const smoothed = smooth(data);
+  const min = Math.min(...smoothed);
+  const max = Math.max(...smoothed);
+  const range = max - min || 1;
+
+  return smoothed
+    .filter((_, i) => i % 3 === 0 || i === smoothed.length - 1)
     .map((v, i, sampled) => {
-      const x = 2 + (i / (sampled.length - 1)) * 36;
-      const norm = Math.max(0, Math.min(1, (v - lo) / range));
+      const x = 2 + (i / (sampled.length - 1)) * 56;
+      const norm = (v - min) / range;
       const y = invert ? 2 + norm * 12 : 14 - norm * 12;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(' ');
+      return { x: +x.toFixed(1), y: +y.toFixed(1) };
+    });
+}
+
+/* Polyline points string (convenience wrapper) */
+function sparkPoints(arr, invert = false, startDay = 0) {
+  return sparkPointsData(arr, invert, startDay).map(p => `${p.x},${p.y}`).join(' ');
+}
+
+/* Green if KPI is improving, red if worsening (compares mid-curve to end) */
+function sparkColor(arr, invert = false, startDay = 0) {
+  const data = startDay > 0 ? arr.slice(startDay - 1) : arr;
+  if (!data || data.length < 2) return 'var(--text-tertiary)';
+  const midIdx = Math.floor(data.length * 0.6);
+  const mid = data[midIdx];
+  const end = data[data.length - 1];
+  if (mid === 0 && end === 0) return 'var(--text-tertiary)';
+  const improving = invert ? (end <= mid) : (end >= mid);
+  return improving ? 'var(--success)' : 'var(--danger)';
+}
+
+/* Inline info icon SVG for KPI tooltip triggers */
+function InfoIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ opacity: 0.45 }}>
+      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M8 7v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="8" cy="5" r="0.75" fill="currentColor" />
+    </svg>
+  );
 }
 
 /* ───────── KPI Card ───────── */
@@ -179,12 +215,13 @@ export default function StrategyBuilderPage({ config, onNext }) {
     : 20;
   const sliderPercent = ((budget - budgetSlider.min) / (budgetSlider.max - budgetSlider.min)) * 100;
 
-  /* ── Sparkline data (real day 1 → day 30 from engine) ── */
+  /* ── Sparkline data: from thresholdDay (trust established) → day 30 ── */
+  const td = thresholdDay; // alias for readability
   const sparkData = kpiCurves ? {
-    cac: { start: `$${kpiCurves.cac[0]}`, end: `$${kpiCurves.cac[29]}` },
-    roi: { start: `${kpiCurves.roi[0]}x`, end: `${kpiCurves.roi[29]}x` },
-    conv: { start: `${kpiCurves.convRate[0]}%`, end: `${kpiCurves.convRate[29]}%` },
-    fraud: { start: `$${Math.round(kpiCurves.fraudSaved[0] / 1000)}K`, end: `$${Math.round(kpiCurves.fraudSaved[29] / 1000)}K` },
+    cac: { start: `$${kpiCurves.cac[td - 1]}`, end: `$${kpiCurves.cac[29]}`, day: td },
+    roi: { start: `${kpiCurves.roi[td - 1]}x`, end: `${kpiCurves.roi[29]}x`, day: td },
+    conv: { start: `${kpiCurves.convRate[td - 1]}%`, end: `${kpiCurves.convRate[29]}%`, day: td },
+    fraud: { start: `$${Math.round(kpiCurves.fraudSaved[td - 1] / 1000)}K`, end: `$${Math.round(kpiCurves.fraudSaved[29] / 1000)}K`, day: td },
   } : null;
 
   /* ── Progressive reveal ── */
@@ -506,21 +543,24 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     <AnimatedNumber value={activeUsers} duration={300} />
                   </div>
                   {/* Sparkline trend for headline — cumulative users from engine */}
-                  {dailyCurve && (
-                    <svg width="48" height="20" viewBox="0 0 40 16" style={{ marginTop: 8 }}>
-                      <polyline
-                        points={(() => {
-                          const cum = dailyCurve.reduce((acc, v) => { acc.push((acc.length ? acc[acc.length - 1] : 0) + v); return acc; }, []);
-                          return sparkPoints(cum, false);
-                        })()}
-                        fill="none"
-                        stroke="var(--success)"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  )}
+                  {dailyCurve && (() => {
+                    const cum = dailyCurve.reduce((acc, v) => { acc.push((acc.length ? acc[acc.length - 1] : 0) + v); return acc; }, []);
+                    const pts = sparkPointsData(cum, false, 0);
+                    const last = pts[pts.length - 1];
+                    return (
+                      <svg width="64" height="24" viewBox="0 0 60 16" style={{ marginTop: 8 }}>
+                        <polyline
+                          points={pts.map(p => `${p.x},${p.y}`).join(' ')}
+                          fill="none"
+                          stroke="var(--success)"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <circle cx={last.x} cy={last.y} r="2.5" fill="var(--success)" />
+                      </svg>
+                    );
+                  })()}
                 </div>
 
                 <div style={{
@@ -643,13 +683,24 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 gap: '10px 20px',
               }}>
                   {[
-                    { label: 'Avg CAC', value: `$${cac}`, curve: kpiCurves?.cac, invert: true, tip: sparkData?.cac },
-                    { label: 'ROI', value: `${typeof roi === 'number' ? roi.toFixed(1) : roi}x`, curve: kpiCurves?.roi, invert: false, tip: sparkData?.roi },
-                    { label: 'Conv rate', value: `${typeof convRate === 'number' ? convRate.toFixed(1) : convRate}%`, curve: kpiCurves?.convRate, invert: false, tip: sparkData?.conv },
-                    { label: 'Fraud saved', value: `$${Math.round((fraudSaved || 0) / 1000)}K`, curve: kpiCurves?.fraudSaved, invert: false, tip: sparkData?.fraud },
-                  ].map((kpi) => (
-                    <div key={kpi.label} style={{ position: 'relative' }} title={kpi.tip ? `Day 1: ${kpi.tip.start} → Day 30: ${kpi.tip.end}` : ''}>
+                    { label: 'Avg CAC', value: `$${cac}`, curve: kpiCurves?.cac, invert: true, tip: sparkData?.cac,
+                      desc: 'Customer Acquisition Cost — total spend divided by new active users. Lower is better.' },
+                    { label: 'ROI', value: `${typeof roi === 'number' ? roi.toFixed(1) : roi}x`, curve: kpiCurves?.roi, invert: false, tip: sparkData?.roi,
+                      desc: 'Return on Investment — revenue generated by referred users divided by campaign spend.' },
+                    { label: 'Conv rate', value: `${typeof convRate === 'number' ? convRate.toFixed(1) : convRate}%`, curve: kpiCurves?.convRate, invert: false, tip: sparkData?.conv,
+                      desc: 'Conversion Rate — percentage of contacted users who completed the referral journey.' },
+                    { label: 'Fraud saved', value: `$${Math.round((fraudSaved || 0) / 1000)}K`, curve: kpiCurves?.fraudSaved, invert: false, tip: sparkData?.fraud,
+                      desc: "Estimated fraud prevention savings from EdooAI's verification layer." },
+                  ].map((kpi) => {
+                    const pts = kpi.curve ? sparkPointsData(kpi.curve, kpi.invert, td) : null;
+                    const last = pts ? pts[pts.length - 1] : null;
+                    const color = kpi.curve ? sparkColor(kpi.curve, kpi.invert, td) : 'var(--text-tertiary)';
+                    return (
+                    <div key={kpi.label} style={{ position: 'relative' }}>
                       <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
                         fontSize: 11,
                         fontWeight: 500,
                         letterSpacing: '0.04em',
@@ -657,6 +708,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         color: 'var(--text-tertiary)',
                       }}>
                         {kpi.label}
+                        <Tooltip text={kpi.desc}><InfoIcon /></Tooltip>
                       </div>
                       <div style={{
                         display: 'flex',
@@ -671,19 +723,33 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         }}>
                           {kpi.value}
                         </span>
-                        <svg width="40" height="16" viewBox="0 0 40 16">
-                          <polyline
-                            points={sparkPoints(kpi.curve, kpi.invert)}
-                            fill="none"
-                            stroke="var(--success)"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
+                        {pts && last && (
+                          <svg width="60" height="16" viewBox="0 0 60 16">
+                            <polyline
+                              points={pts.map(p => `${p.x},${p.y}`).join(' ')}
+                              fill="none"
+                              stroke={color}
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                            <circle cx={last.x} cy={last.y} r="2" fill={color} />
+                          </svg>
+                        )}
                       </div>
+                      {kpi.tip && (
+                        <div style={{
+                          fontSize: 11,
+                          fontWeight: 500,
+                          color: 'var(--text-tertiary)',
+                          marginTop: 4,
+                        }}>
+                          Day {kpi.tip.day}: {kpi.tip.start} → Day 30: {kpi.tip.end}
+                        </div>
+                      )}
                     </div>
-                  ))}
+                    );
+                  })}
               </div>
             </div>
 
