@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Sparkline Fix — Before vs After</title>
+<title>Sparklines — Global Bounds Fix</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -14,7 +14,6 @@
   }
   h1 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
   .subtitle { font-size: 13px; color: #475569; margin-bottom: 32px; line-height: 1.6; }
-  .subtitle code { background: #f1f5f9; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
 
   .budget-row { margin-bottom: 40px; }
   .budget-label {
@@ -22,318 +21,168 @@
     margin-bottom: 12px; padding-bottom: 8px;
     border-bottom: 1px solid #e2e8f0;
   }
-  .comparison { display: flex; gap: 32px; flex-wrap: wrap; }
-  .version {
+  .panel {
     background: #fff;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 16px 20px;
-    flex: 1;
-    min-width: 280px;
   }
-  .version-label {
-    font-size: 11px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.06em; margin-bottom: 14px;
-  }
-  .version-label.old { color: #ef4444; }
-  .version-label.new { color: #10b981; }
+  .headline-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .headline-number { font-size: 36px; font-weight: 800; letter-spacing: -0.03em; color: #0f172a; }
+  .headline-label { font-size: 11px; color: #94a3b8; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 4px; }
   .kpi-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px 20px;
   }
-  .kpi-item { }
   .kpi-name {
     font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
     text-transform: uppercase; color: #94a3b8;
   }
   .kpi-row { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
   .kpi-value { font-size: 16px; font-weight: 600; color: #0f172a; }
-  .callout {
-    background: #fef3c7; border: 1px solid #fbbf24; border-radius: 8px;
-    padding: 12px 16px; margin-bottom: 24px; font-size: 13px; line-height: 1.5;
-  }
-  .callout strong { color: #92400e; }
-
-  .headline-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-  .headline-number { font-size: 36px; font-weight: 800; letter-spacing: -0.03em; color: #0f172a; }
-  .headline-label { font-size: 11px; color: #94a3b8; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 4px; }
+  .note { font-size: 12px; color: #64748b; margin-top: 6px; line-height: 1.5; }
 </style>
 </head>
 <body>
-<h1>Sparkline Fix: Before vs After</h1>
+<h1>Sparklines with Global Reference Bounds</h1>
 <p class="subtitle">
-  <strong>Bug:</strong> The CAC sparkline was visually flat (only used 2px of 16px height) because day-1 = 0 and the
-  hyperbolic decay compressed all values into a tiny band after linear normalization.<br/>
-  <strong>Fix:</strong> Skip leading zeros + use <code>log()</code> normalization to spread values evenly.
+  Each sparkline is now normalized against the full budget range ($50K–$500K), not its own min/max.<br/>
+  Moving the slider shifts the sparkline position — different budgets produce visibly different curves.
 </p>
-
-<div class="callout">
-  <strong>Focus on the CAC sparkline</strong> — the other 3 (ROI, Conv rate, Fraud saved) already looked OK,
-  but they also benefit from slightly more dynamic shapes with log normalization.
-</div>
 
 <!-- $50K -->
 <div class="budget-row">
-  <div class="budget-label">Budget: $50K</div>
-  <div class="comparison">
-    <div class="version">
-      <div class="version-label old">BEFORE (broken)</div>
-      <div class="headline-row">
-        <div>
-          <div class="headline-label">Active users · First 30 days</div>
-          <div class="headline-number">214</div>
-        </div>
-        <svg width="48" height="20" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,13.4 14.0,11.9 20.0,9.9 26.0,7.5 32.0,4.6 38.0,2.0" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div class="budget-label">$50K /mo — Low budget</div>
+  <div class="panel">
+    <div class="headline-row">
+      <div>
+        <div class="headline-label">Active users · First 30 days</div>
+        <div class="headline-number">214</div>
       </div>
-      <div class="kpi-grid">
-        <div class="kpi-item">
-          <div class="kpi-name">Avg CAC</div>
-          <div class="kpi-row">
-            <span class="kpi-value">$234</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,2.0 8.0,4.3 14.0,3.2 20.0,2.9 26.0,2.7 32.0,2.6 38.0,2.6" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+      <svg width="48" height="20" viewBox="0 0 40 16"><polyline points="2.0,12.8 8.0,9.1 14.0,7.3 20.0,6.2 26.0,5.4 32.0,4.8 38.0,4.5" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="kpi-grid">
+      <div>
+        <div class="kpi-name">Avg CAC</div>
+        <div class="kpi-row">
+          <span class="kpi-value">$234</span>
+          <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,12.7 8.0,10.4 14.0,9.7 20.0,9.4 26.0,9.2 32.0,9.0 38.0,8.9" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div class="kpi-item">
-          <div class="kpi-name">ROI</div>
-          <div class="kpi-row">
-            <span class="kpi-value">2.0x</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,11.6 14.0,9.2 20.0,7.4 26.0,5.6 32.0,3.2 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+      </div>
+      <div>
+        <div class="kpi-name">ROI</div>
+        <div class="kpi-row">
+          <span class="kpi-value">2.0x</span>
+          <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,13.0 8.0,9.6 14.0,7.0 20.0,5.4 26.0,4.0 32.0,2.8 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div class="kpi-item">
-          <div class="kpi-name">Conv rate</div>
-          <div class="kpi-row">
-            <span class="kpi-value">1.2%</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,10.9 14.0,8.2 20.0,6.3 26.0,4.7 32.0,3.1 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+      </div>
+      <div>
+        <div class="kpi-name">Conv rate</div>
+        <div class="kpi-row">
+          <span class="kpi-value">1.2%</span>
+          <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,13.1 8.0,9.2 14.0,6.7 20.0,5.0 26.0,3.8 32.0,2.6 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div class="kpi-item">
-          <div class="kpi-name">Fraud saved</div>
-          <div class="kpi-row">
-            <span class="kpi-value">$4K</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,11.9 14.0,9.9 20.0,7.8 26.0,5.7 32.0,3.7 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+      </div>
+      <div>
+        <div class="kpi-name">Fraud saved</div>
+        <div class="kpi-row">
+          <span class="kpi-value">$4K</span>
+          <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,10.2 14.0,9.0 20.0,8.2 26.0,7.6 32.0,7.2 38.0,6.9" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
       </div>
     </div>
-
-    <div class="version">
-      <div class="version-label new">AFTER (fixed)</div>
-      <div class="headline-row">
-        <div>
-          <div class="headline-label">Active users · First 30 days</div>
-          <div class="headline-number">214</div>
-        </div>
-        <svg width="48" height="20" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,8.7 14.0,6.0 20.0,4.5 26.0,3.4 32.0,2.5 38.0,2.0" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <div class="kpi-grid">
-        <div class="kpi-item">
-          <div class="kpi-name">Avg CAC</div>
-          <div class="kpi-row">
-            <span class="kpi-value">$234</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,6.7 14.0,4.6 20.0,3.6 26.0,2.9 32.0,2.3 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-        </div>
-        <div class="kpi-item">
-          <div class="kpi-name">ROI</div>
-          <div class="kpi-row">
-            <span class="kpi-value">2.0x</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,10.3 14.0,7.5 20.0,5.7 26.0,4.2 32.0,2.8 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-        </div>
-        <div class="kpi-item">
-          <div class="kpi-name">Conv rate</div>
-          <div class="kpi-row">
-            <span class="kpi-value">1.2%</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,9.8 14.0,7.1 20.0,5.3 26.0,3.9 32.0,2.6 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-        </div>
-        <div class="kpi-item">
-          <div class="kpi-name">Fraud saved</div>
-          <div class="kpi-row">
-            <span class="kpi-value">$4K</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,7.7 14.0,5.6 20.0,4.2 26.0,3.3 32.0,2.5 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="note">ROI sparkline reaches near the top (2.0x). Fraud saved stays in the lower half ($4K of possible $35K range).</div>
   </div>
 </div>
 
 <!-- $150K -->
 <div class="budget-row">
-  <div class="budget-label">Budget: $150K</div>
-  <div class="comparison">
-    <div class="version">
-      <div class="version-label old">BEFORE (broken)</div>
-      <div class="headline-row">
-        <div>
-          <div class="headline-label">Active users · First 30 days</div>
-          <div class="headline-number">520</div>
-        </div>
-        <svg width="48" height="20" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,13.4 14.0,12.0 20.0,10.0 26.0,7.5 32.0,4.6 38.0,2.0" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div class="budget-label">$150K /mo — Recommended range</div>
+  <div class="panel">
+    <div class="headline-row">
+      <div>
+        <div class="headline-label">Active users · First 30 days</div>
+        <div class="headline-number">520</div>
       </div>
-      <div class="kpi-grid">
-        <div class="kpi-item">
-          <div class="kpi-name">Avg CAC</div>
-          <div class="kpi-row">
-            <span class="kpi-value">$289</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,2.0 8.0,4.3 14.0,3.2 20.0,2.9 26.0,2.7 32.0,2.6 38.0,2.5" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+      <svg width="48" height="20" viewBox="0 0 40 16"><polyline points="2.0,12.1 8.0,7.6 14.0,5.8 20.0,4.7 26.0,3.9 32.0,3.2 38.0,2.9" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="kpi-grid">
+      <div>
+        <div class="kpi-name">Avg CAC</div>
+        <div class="kpi-row">
+          <span class="kpi-value">$289</span>
+          <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,13.1 8.0,10.8 14.0,10.1 20.0,9.7 26.0,9.5 32.0,9.3 38.0,9.2" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div class="kpi-item">
-          <div class="kpi-name">ROI</div>
-          <div class="kpi-row">
-            <span class="kpi-value">1.7x</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,11.9 14.0,9.8 20.0,7.6 26.0,5.5 32.0,3.4 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+      </div>
+      <div>
+        <div class="kpi-name">ROI</div>
+        <div class="kpi-row">
+          <span class="kpi-value">1.7x</span>
+          <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,13.0 8.0,10.3 14.0,8.2 20.0,6.4 26.0,4.9 32.0,3.6 38.0,3.2" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div class="kpi-item">
-          <div class="kpi-name">Conv rate</div>
-          <div class="kpi-row">
-            <span class="kpi-value">1.1%</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,11.2 14.0,8.5 20.0,6.5 26.0,4.7 32.0,3.2 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+      </div>
+      <div>
+        <div class="kpi-name">Conv rate</div>
+        <div class="kpi-row">
+          <span class="kpi-value">1.1%</span>
+          <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,13.2 8.0,9.7 14.0,7.1 20.0,5.3 26.0,3.8 32.0,2.7 38.0,2.1" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div class="kpi-item">
-          <div class="kpi-name">Fraud saved</div>
-          <div class="kpi-row">
-            <span class="kpi-value">$11K</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,11.9 14.0,9.9 20.0,7.8 26.0,5.7 32.0,3.7 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+      </div>
+      <div>
+        <div class="kpi-name">Fraud saved</div>
+        <div class="kpi-row">
+          <span class="kpi-value">$11K</span>
+          <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,11.7 8.0,7.9 14.0,6.7 20.0,5.9 26.0,5.3 32.0,4.8 38.0,4.5" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
       </div>
     </div>
-
-    <div class="version">
-      <div class="version-label new">AFTER (fixed)</div>
-      <div class="headline-row">
-        <div>
-          <div class="headline-label">Active users · First 30 days</div>
-          <div class="headline-number">520</div>
-        </div>
-        <svg width="48" height="20" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,8.2 14.0,5.7 20.0,4.3 26.0,3.2 32.0,2.4 38.0,2.0" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <div class="kpi-grid">
-        <div class="kpi-item">
-          <div class="kpi-name">Avg CAC</div>
-          <div class="kpi-row">
-            <span class="kpi-value">$289</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,6.9 14.0,4.8 20.0,3.6 26.0,2.9 32.0,2.3 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-        </div>
-        <div class="kpi-item">
-          <div class="kpi-name">ROI</div>
-          <div class="kpi-row">
-            <span class="kpi-value">1.7x</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,10.8 14.0,8.2 20.0,6.0 26.0,4.1 32.0,2.5 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-        </div>
-        <div class="kpi-item">
-          <div class="kpi-name">Conv rate</div>
-          <div class="kpi-row">
-            <span class="kpi-value">1.1%</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,10.1 14.0,7.3 20.0,5.4 26.0,3.8 32.0,2.6 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-        </div>
-        <div class="kpi-item">
-          <div class="kpi-name">Fraud saved</div>
-          <div class="kpi-row">
-            <span class="kpi-value">$11K</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,7.7 14.0,5.5 20.0,4.2 26.0,3.3 32.0,2.5 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="note">ROI sparkline sits lower than $50K (1.7x vs 2.0x). Fraud saved climbs higher (3x more saved).</div>
   </div>
 </div>
 
 <!-- $500K -->
 <div class="budget-row">
-  <div class="budget-label">Budget: $500K</div>
-  <div class="comparison">
-    <div class="version">
-      <div class="version-label old">BEFORE (broken)</div>
-      <div class="headline-row">
-        <div>
-          <div class="headline-label">Active users · First 30 days</div>
-          <div class="headline-number">871</div>
-        </div>
-        <svg width="48" height="20" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,13.4 14.0,12.0 20.0,10.0 26.0,7.4 32.0,4.5 38.0,2.0" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div class="budget-label">$500K /mo — Maximum budget</div>
+  <div class="panel">
+    <div class="headline-row">
+      <div>
+        <div class="headline-label">Active users · First 30 days</div>
+        <div class="headline-number">871</div>
       </div>
-      <div class="kpi-grid">
-        <div class="kpi-item">
-          <div class="kpi-name">Avg CAC</div>
-          <div class="kpi-row">
-            <span class="kpi-value">$574</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,2.0 8.0,4.2 14.0,3.2 20.0,2.8 26.0,2.7 32.0,2.6 38.0,2.5" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+      <svg width="48" height="20" viewBox="0 0 40 16"><polyline points="2.0,11.5 8.0,6.8 14.0,4.9 20.0,3.7 26.0,2.9 32.0,2.3 38.0,2.0" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="kpi-grid">
+      <div>
+        <div class="kpi-name">Avg CAC</div>
+        <div class="kpi-row">
+          <span class="kpi-value">$574</span>
+          <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,11.6 14.0,10.9 20.0,10.6 26.0,10.3 32.0,10.1 38.0,10.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div class="kpi-item">
-          <div class="kpi-name">ROI</div>
-          <div class="kpi-row">
-            <span class="kpi-value">0.9x</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,11.3 14.0,10.0 20.0,7.3 26.0,6.0 32.0,3.3 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+      </div>
+      <div>
+        <div class="kpi-name">ROI</div>
+        <div class="kpi-row">
+          <span class="kpi-value">0.9x</span>
+          <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,13.0 8.0,12.0 14.0,10.3 20.0,9.6 26.0,8.2 32.0,7.6 38.0,7.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div class="kpi-item">
-          <div class="kpi-name">Conv rate</div>
-          <div class="kpi-row">
-            <span class="kpi-value">0.9%</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,11.2 14.0,8.6 20.0,6.5 26.0,4.7 32.0,3.0 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+      </div>
+      <div>
+        <div class="kpi-name">Conv rate</div>
+        <div class="kpi-row">
+          <span class="kpi-value">0.9%</span>
+          <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,13.4 8.0,10.4 14.0,8.1 20.0,6.5 26.0,5.2 32.0,4.2 38.0,3.7" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div class="kpi-item">
-          <div class="kpi-name">Fraud saved</div>
-          <div class="kpi-row">
-            <span class="kpi-value">$35K</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,11.9 14.0,9.9 20.0,7.8 26.0,5.7 32.0,3.7 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+      </div>
+      <div>
+        <div class="kpi-name">Fraud saved</div>
+        <div class="kpi-row">
+          <span class="kpi-value">$35K</span>
+          <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,9.2 8.0,5.4 14.0,4.1 20.0,3.3 26.0,2.8 32.0,2.3 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
       </div>
     </div>
-
-    <div class="version">
-      <div class="version-label new">AFTER (fixed)</div>
-      <div class="headline-row">
-        <div>
-          <div class="headline-label">Active users · First 30 days</div>
-          <div class="headline-number">871</div>
-        </div>
-        <svg width="48" height="20" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,8.0 14.0,5.6 20.0,4.2 26.0,3.2 32.0,2.4 38.0,2.0" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <div class="kpi-grid">
-        <div class="kpi-item">
-          <div class="kpi-name">Avg CAC</div>
-          <div class="kpi-row">
-            <span class="kpi-value">$574</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,6.9 14.0,4.7 20.0,3.6 26.0,2.8 32.0,2.3 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-        </div>
-        <div class="kpi-item">
-          <div class="kpi-name">ROI</div>
-          <div class="kpi-row">
-            <span class="kpi-value">0.9x</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,12.1 14.0,8.7 20.0,7.2 26.0,4.4 32.0,3.2 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-        </div>
-        <div class="kpi-item">
-          <div class="kpi-name">Conv rate</div>
-          <div class="kpi-row">
-            <span class="kpi-value">0.9%</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,10.3 14.0,7.5 20.0,5.5 26.0,3.9 32.0,2.6 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-        </div>
-        <div class="kpi-item">
-          <div class="kpi-name">Fraud saved</div>
-          <div class="kpi-row">
-            <span class="kpi-value">$35K</span>
-            <svg width="40" height="16" viewBox="0 0 40 16"><polyline points="2.0,14.0 8.0,7.7 14.0,5.5 20.0,4.2 26.0,3.3 32.0,2.5 38.0,2.0" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="note">ROI sparkline stays in the bottom half (0.9x). Fraud saved reaches the top ($35K). Headline sparkline reaches full height (871 users).</div>
   </div>
 </div>
 
