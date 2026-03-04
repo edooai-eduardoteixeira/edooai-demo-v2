@@ -206,7 +206,7 @@ const neobank = {
             controlType: 'duration', default: 2, options: [1, 2, 3, 5, 7], unit: 'days',
             description: 'Minimum gap between touchpoints within a stage' },
           { id: 'offer_window', label: 'Offer window',
-            controlType: 'duration', default: 30, range: [1, 30], unit: 'days',
+            controlType: 'duration', default: 14, range: [1, 30], unit: 'days',
             description: 'How long each customer is in play. Maps to offerExpirationDays.' },
         ],
       },
