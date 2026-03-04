@@ -281,6 +281,7 @@ export function computeProjection({ budget, params }) {
     guidanceState,
     confidenceCurve,
     totalJourneysStarted: Math.round(totalJourneysStarted),
+    dailyJourneyTarget: Math.round(dailyJourneyTarget),
     avgValuePerUser,
     kpiCurves,
     dailyKPIs,

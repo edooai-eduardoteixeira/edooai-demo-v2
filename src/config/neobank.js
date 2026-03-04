@@ -108,8 +108,8 @@ const neobank = {
 
   // Guidance messages — Head of Growth language, dynamic per budget level
   budgetGuidance: {
-    belowFloor: 'Below minimum delivery threshold. Not enough signal to optimize — CPA stays flat.',
-    belowRec: 'Lean delivery. System optimizes slower — expect 2x the ramp time to peak CPA.',
+    belowFloor: 'Below minimum delivery threshold. Not enough signal to optimize \u2014 CPA stays flat.',
+    belowRec: 'Lean delivery. System optimizes slower \u2014 expect 2x the ramp time to peak CPA.',
     atRec: 'Strong signal volume for 847K eligible users. Expect full CPA optimization within this period.',
     aboveRec: 'Audience saturates above $200K/mo for this base. Incremental spend raises CPA.',
   },
@@ -170,6 +170,83 @@ const neobank = {
       recMin: 100000,              // Below recMin = belowRec guidance
       recMax: 200000,              // Above recMax = aboveRec guidance
     },
+
+    // ─── Guardrails Config (UI display data — does NOT change engine computation) ───
+    guardrails: {
+      // FEAR 1: Audience Harm
+      audienceProtection: {
+        label: 'Audience Protection',
+        subtitle: 'Who is contacted',
+        filters: [
+          { id: 'opted_out', label: 'Opted-out users', locked: true,
+            description: 'Users who opted out of marketing communications' },
+          { id: 'low_nps', label: 'Low NPS', controlType: 'threshold', default: 6,
+            description: 'Exclude NPS detractors (score \u2264 threshold)' },
+          { id: 'active_support', label: 'Active support tickets', controlType: 'toggle', default: true,
+            description: 'Users with open support cases' },
+          { id: 'fraud_flagged', label: 'Fraud-flagged accounts', controlType: 'toggle', default: true,
+            description: 'Accounts with historical fraud indicators' },
+          { id: 'compliance_holds', label: 'Compliance holds', controlType: 'toggle', default: true,
+            description: 'Regulatory or compliance restrictions' },
+          { id: 'min_tenure', label: 'Account too new', controlType: 'threshold', default: 60,
+            unit: 'days', description: 'Accounts under threshold age' },
+          { id: 'inactive', label: 'Inactive accounts', controlType: 'threshold', default: 90,
+            unit: 'days', description: 'No activity beyond threshold' },
+        ],
+      },
+      // FEAR 2: Customer Fatigue
+      customerFatigue: {
+        label: 'Customer Fatigue',
+        subtitle: 'How people are treated',
+        rules: [
+          { id: 'max_touchpoints', label: 'Max touchpoints per stage',
+            controlType: 'integer', default: 2, range: [1, 5],
+            description: 'Limits volume per user per active funnel stage. Refreshes on progression.' },
+          { id: 'rest_period', label: 'Minimum rest period',
+            controlType: 'duration', default: 2, options: [1, 2, 3, 5, 7], unit: 'days',
+            description: 'Minimum gap between touchpoints within a stage' },
+          { id: 'offer_window', label: 'Offer window',
+            controlType: 'duration', default: 14, range: [1, 30], unit: 'days',
+            description: 'How long each customer is in play. Maps to offerExpirationDays.' },
+        ],
+      },
+      // FEAR 3: Financial Waste
+      financialControls: {
+        label: 'Financial Controls',
+        subtitle: 'How money is controlled',
+        rules: [
+          { id: 'daily_invite_cap', label: 'Daily invite cap',
+            controlType: 'integer', default: 'auto',
+            description: 'Max new top-of-funnel referral requests per day. Auto-calculated from budget and assumed conversion rate.' },
+          { id: 'max_outstanding', label: 'Max outstanding offers',
+            controlType: 'cap', default: 'budget * 2',
+            description: 'Hard limit on total $ value of unexpired links. Pauses new outreach if hit.' },
+          { id: 'spend_anomaly', label: 'Spend anomaly pause',
+            controlType: 'threshold', default: 'daily_pace * 5',
+            description: 'If actual paid conversions spike beyond threshold in 24h, pauses new invites and alerts client.' },
+        ],
+      },
+      // FEAR 4: Fraud
+      fraudPrevention: {
+        label: 'Fraud Prevention',
+        subtitle: 'How fraud is handled',
+        mechanisms: [
+          { id: 'self_referral', label: 'Self-Referral Blocker',
+            controlType: 'strictness', default: 'standard', options: ['standard', 'aggressive'],
+            description: 'Standard: reject identical IP. Aggressive: reject shared devices/Wi-Fi.' },
+          { id: 'suspicious_escrow', label: 'Suspicious Escrow',
+            controlType: 'conditional', default: { threshold: 3, window: '24h', holdDays: 7 },
+            description: 'If >N conversions in window, hold payout for X days.' },
+          { id: 'link_hijacking', label: 'Link Hijacking Limit',
+            controlType: 'threshold', default: 5,
+            description: 'Max payouts per referral link. Auto-invalidates after cap.' },
+          { id: 'network_shield', label: 'Network & Botnet Shield',
+            controlType: 'strictness', default: 'aggressive', options: ['standard', 'aggressive'],
+            description: 'Standard: reject datacenter/TOR/proxy IPs. Aggressive: add behavioral cluster detection.' },
+        ],
+        footer: 'Rewards held until signals clear.',
+      },
+    },
   },
 
   // Execution — daily operations cycle
@@ -206,69 +283,6 @@ const neobank = {
       { days: '8\u201321', activeUsersPerDay: 12, note: 'Scaling based on early data' },
       { days: '22\u201330', activeUsersPerDay: 18, note: 'Optimized allocation' },
     ],
-  },
-
-  // Risk management
-  riskManagement: {
-    controls: [
-      {
-        key: 'dailySpendCap',
-        label: 'Daily spend cap',
-        ratio: 1 / 30,
-        format: 'currency',
-        labelTooltip: 'Daily budget target adjusts for day-of-week patterns and offer expiration timing. Accelerates when outperforming, conserves when under.',
-        valueTooltip: 'Budget \u00f7 remaining days',
-      },
-      {
-        key: 'weeklySpendCap',
-        label: 'Weekly spend cap',
-        ratio: 0.25,
-        format: 'currency',
-        labelTooltip: 'Weekly ceiling prevents front-loading. Budget lasts the full month even if early cohorts convert fast.',
-        valueTooltip: '25% of monthly budget',
-      },
-      {
-        key: 'outstandingExposure',
-        label: 'Outstanding exposure',
-        ratio: 0.40,
-        format: 'currency',
-        labelTooltip: 'Offers issued but not yet redeemed are financial commitments. This cap limits how much can be in flight at once.',
-        valueTooltip: '40% of monthly budget',
-      },
-      {
-        key: 'offerWindow',
-        label: 'Offer expiration',
-        fixedValue: '14 days',
-        labelTooltip: 'Referee has 14 days to complete first transaction. Expired offers free budget back to the allocation pool.',
-        valueTooltip: 'Fixed window per offer',
-      },
-      {
-        key: 'anomalyPause',
-        label: 'Anomaly auto-pause',
-        fixedValue: 'On',
-        labelTooltip: 'Pattern-based detection for unexpected conversion drops, spend spikes, or behavioral shifts. Auto-pauses affected segments.',
-        valueTooltip: 'Triggered by anomaly detection models',
-      },
-    ],
-    fraud: [
-      {
-        type: 'Suspicious Individuals',
-        rate: 2.1,
-        tooltip: 'Fake accounts self-referring. Detected via device fingerprint + KYC overlap + dormancy cycling patterns.',
-      },
-      {
-        type: 'Fraud Rings',
-        rate: 0.4,
-        tooltip: 'Organized groups extracting rewards. Detected via graph analysis + velocity anomalies + shared infrastructure markers.',
-      },
-      {
-        type: 'Attribution Abuse',
-        rate: 1.3,
-        tooltip: 'Referral codes posted publicly. Detected via channel classification + referrer volume caps + click-to-signup timing.',
-      },
-    ],
-    fraudTotalTooltip: 'Combined estimated fraud exposure across all detection categories. Based on industry benchmarks and your customer profile.',
-    fraudPolicy: 'Rewards held until signals clear.',
   },
 
   // Approval scope
