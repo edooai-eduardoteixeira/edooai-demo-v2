@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview — Guardrails Card</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --radius-lg: 14px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #94a3b8;
+    --border: #e2e8f0;
+    --border-light: #f1f5f9;
+    --surface: #ffffff;
+    --transition-base: 200ms ease;
+  }
+
+  body {
+    font-family: var(--font-family);
+    background: #f8fafc;
+    padding: 48px 24px;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* ── Context Card (matches Strategy Rules card from StrategyTimeline.module.css) ── */
+  .contextCard {
+    max-width: 600px;
+    width: 100%;
+    padding: 24px 28px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    background: var(--surface);
+    transition: box-shadow var(--transition-base), transform var(--transition-base);
+  }
+  .contextCard:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+
+  .contextCardTitle {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
+  }
+
+  /* ── Fields Grid ── */
+  .fieldsGrid {
+    display: grid;
+    grid-template-columns: 170px 1fr;
+    gap: 0 32px;
+  }
+  .fieldsGrid .fieldLabel,
+  .fieldsGrid .fieldVal {
+    padding: 6px 0;
+    border-top: 1px solid var(--border-light);
+  }
+  .fieldsGrid .fieldLabel:first-child,
+  .fieldsGrid .fieldLabel:first-child + .fieldVal {
+    border-top: none;
+  }
+
+  .fieldLabel {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    min-width: 170px;
+    padding-top: 8px !important;
+  }
+
+  .fieldVal {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+
+  .excludeList {
+    padding-left: 12px;
+    line-height: 1.6;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .footer {
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    color: var(--text-tertiary);
+    margin: 0;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-light);
+  }
+
+  .subtext {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  /* Strategy Rules reference card */
+  .refCard {
+    max-width: 600px;
+    width: 100%;
+    padding: 24px 28px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    background: var(--surface);
+    margin-bottom: 32px;
+    transition: box-shadow var(--transition-base), transform var(--transition-base);
+  }
+  .refCard:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+
+  .wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .fieldsGrid {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .fieldLabel {
+      padding-bottom: 2px !important;
+      border-top: 1px solid var(--border-light) !important;
+      margin-top: 8px;
+    }
+    .fieldVal {
+      border-top: none !important;
+      padding-top: 0 !important;
+    }
+    .fieldsGrid .fieldLabel:first-child {
+      border-top: none !important;
+      margin-top: 0;
+    }
+    .contextCard, .refCard { padding: 16px 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Reference: Strategy Rules card (for visual comparison) -->
+  <div class="label">Reference — Strategy Rules (existing card)</div>
+  <div class="refCard">
+    <div class="contextCardTitle">Strategy Rules</div>
+    <div class="fieldsGrid">
+      <div class="fieldLabel">Activated by</div>
+      <span class="fieldVal">All Transactions, Timing Insights</span>
+      <div class="fieldLabel">Redemption upon</div>
+      <span class="fieldVal">1st Transaction</span>
+      <div class="fieldLabel">Redemption journey</div>
+      <span class="fieldVal">Sign Up, KYC</span>
+      <div class="fieldLabel">Reward</div>
+      <span class="fieldVal">$0, $20, $50, $75</span>
+      <div class="fieldLabel">Paid as</div>
+      <span class="fieldVal">Organic, Gift Card, Coupon, Account Credit, Cashback</span>
+      <div class="fieldLabel">Tracked via</div>
+      <span class="fieldVal">Referral Link</span>
+    </div>
+  </div>
+
+  <!-- NEW: Guardrails card -->
+  <div class="label">New — Guardrails Card</div>
+  <div class="contextCard">
+    <div class="contextCardTitle">Guardrails</div>
+    <div class="fieldsGrid">
+
+      <!-- FEAR 1: Audience Protection -->
+      <div class="fieldLabel">Audience Protection</div>
+      <div class="fieldVal">
+        <div style="margin-bottom: 6px;">
+          249,865 of 847,000 customers eligible (29.5%)
+        </div>
+        <div class="excludeList">
+          Exclude:<br>
+          <div style="padding-left: 12px;">
+            Opted-out users<br>
+            NPS &le; 6<br>
+            Active support tickets<br>
+            Fraud-flagged accounts<br>
+            Compliance holds<br>
+            &lt; 60 days<br>
+            Inactive &gt; 90 days
+          </div>
+        </div>
+      </div>
+
+      <!-- FEAR 2: Customer Fatigue -->
+      <div class="fieldLabel">Customer Fatigue</div>
+      <span class="fieldVal">Max 2 touchpoints per stage &middot; 2-day rest between contacts &middot; 30-day offer window</span>
+
+      <!-- FEAR 3: Financial Controls -->
+      <div class="fieldLabel">Financial Controls</div>
+      <span class="fieldVal">Daily invite cap: ~1,515 &middot; Outstanding: ~$300,000 in flight &middot; Auto-pause: payouts &gt; $25,000/day</span>
+
+      <!-- FEAR 4: Fraud Prevention -->
+      <div class="fieldLabel">Fraud Prevention</div>
+      <div class="fieldVal">
+        <div>Self-Referral Blocker (Standard) &middot; Suspicious Escrow (&gt;3/24h &rarr; 7-day hold) &middot; Link cap: 5/link &middot; Network &amp; Botnet Shield (Aggressive)</div>
+        <div class="subtext">Est. fraud saved: $10,500</div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <p class="footer">Rewards held until signals clear.</p>
+  </div>
+
+</div>
+</body>
+</html>

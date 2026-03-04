@@ -131,7 +131,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
     recommendedBudget,
     budgetGuidance,
     engineParams,
-    riskManagement,
     approvalScope,
     totalCustomers,
   } = config;
@@ -153,6 +152,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
     fraudSaved,
     guidanceState,
     totalJourneysStarted,
+    dailyJourneyTarget,
     avgValuePerUser,
     kpiCurves,
     dailyKPIs,
@@ -1199,230 +1199,126 @@ export default function StrategyBuilderPage({ config, onNext }) {
         )}
 
         {/* ════════════════════════════════════════════
-            SECTION 3 — Risk Management
+            SECTION 3 — Guardrails
             ════════════════════════════════════════════ */}
-        {showRisk && (
+        {showRisk && (() => {
+          const gr = engineParams.guardrails;
+          const eligibleCount = Math.round(engineParams.totalCustomers * engineParams.eligibilityRate);
+          const eligiblePct = (engineParams.eligibilityRate * 100).toFixed(1);
+          const maxOutstanding = formatCurrency(budget * 2);
+          const autoPauseThreshold = formatCurrency(Math.round((budget / 30) * 5));
+
+          return (
           <section
             style={{
               marginBottom: '2rem',
               animation: 'fadeIn 0.4s ease forwards',
             }}
           >
-            <h3
-              style={{
-                fontSize: 'var(--font-size-lg)',
-                fontWeight: 700,
-                marginBottom: '0.25rem',
-              }}
-            >
-              Risk Management
-            </h3>
-            <p
-              style={{
-                fontSize: 'var(--font-size-sm)',
-                color: 'var(--text-tertiary)',
-                marginBottom: '1.5rem',
-              }}
-            >
-              How Edoo protects your budget during continuous operations.
-            </p>
-
-            {/* Two-column layout: Controls + Fraud side by side on desktop */}
-            <div className="risk-layout">
-              {/* Left column — Controls */}
-              <div
-                style={{
-                  border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius-lg)',
-                  overflow: 'hidden',
-                }}
-              >
-                {riskManagement.controls.map((ctrl, i) => {
-                  const displayValue = ctrl.format === 'currency'
-                    ? formatCurrency(Math.round(budget * ctrl.ratio))
-                    : ctrl.fixedValue;
-                  return (
-                    <div
-                      key={ctrl.key}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '0.75rem 1.25rem',
-                        borderBottom: i < riskManagement.controls.length - 1 ? '1px solid var(--border-light)' : 'none',
-                        backgroundColor: 'var(--surface)',
-                      }}
-                    >
-                      <Tooltip text={ctrl.labelTooltip}>
-                        <span
-                          style={{
-                            fontSize: 'var(--font-size-sm)',
-                            fontWeight: 500,
-                            color: 'var(--text-secondary)',
-                            borderBottom: '1px dotted var(--text-tertiary)',
-                          }}
-                        >
-                          {ctrl.label}
-                        </span>
-                      </Tooltip>
-                      <Tooltip text={ctrl.valueTooltip}>
-                        <span
-                          style={{
-                            fontSize: 'var(--font-size-sm)',
-                            fontWeight: 600,
-                            color: 'var(--text-primary)',
-                            padding: '2px 10px',
-                            border: '1px solid var(--border)',
-                            borderRadius: 'var(--radius-sm)',
-                            backgroundColor: 'var(--accent-subtle)',
-                            fontFamily: 'monospace',
-                            cursor: 'help',
-                          }}
-                        >
-                          {displayValue}
-                        </span>
-                      </Tooltip>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Right column — Fraud Estimation */}
-              <div
-                style={{
-                  border: '1px dashed var(--border)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '1.25rem',
-                  backgroundColor: 'var(--surface)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}
-              >
-                {/* Estimation label */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                  <span
-                    className="monitoring-pulse"
-                    style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      backgroundColor: 'var(--text-tertiary)',
-                      flexShrink: 0,
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: 'var(--font-size-xs)',
-                      fontWeight: 600,
-                      color: 'var(--text-tertiary)',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                    }}
-                  >
-                    Estimated
-                  </span>
-                </div>
-
-                {/* Big KPI — total fraud rate */}
-                <Tooltip text={riskManagement.fraudTotalTooltip}>
-                  <div style={{ marginBottom: '1rem' }}>
-                    <div
-                      style={{
-                        fontSize: 'var(--font-size-4xl)',
-                        fontWeight: 700,
-                        color: 'var(--text-secondary)',
-                        lineHeight: 1,
-                        cursor: 'help',
-                      }}
-                    >
-                      ~{riskManagement.fraud.reduce((sum, f) => sum + f.rate, 0).toFixed(1)}%
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 'var(--font-size-xs)',
-                        color: 'var(--text-tertiary)',
-                        marginTop: '0.25rem',
-                      }}
-                    >
-                      Total fraud exposure
-                    </div>
+            <div className={tl.contextCard}>
+              <div className={tl.contextCardTitle}>Guardrails</div>
+              <div className={tl.fieldsGrid}>
+                {/* ── FEAR 1: Audience Protection ── */}
+                <div className={tl.fieldLabel}>{gr.audienceProtection.label}</div>
+                <div className={tl.fieldVal}>
+                  <div style={{ marginBottom: 6 }}>
+                    {eligibleCount.toLocaleString('en-US')} of {engineParams.totalCustomers.toLocaleString('en-US')} customers eligible ({eligiblePct}%)
                   </div>
-                </Tooltip>
-
-                {/* Breakdown rows */}
-                <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '0.75rem' }}>
-                  {riskManagement.fraud.map((item, i) => (
-                    <Tooltip key={i} text={item.tooltip}>
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          padding: '0.375rem 0',
-                          borderBottom: i < riskManagement.fraud.length - 1 ? '1px solid var(--border-light)' : 'none',
-                          cursor: 'help',
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 'var(--font-size-xs)',
-                            color: 'var(--text-secondary)',
-                          }}
-                        >
-                          {item.type}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 'var(--font-size-sm)',
-                            fontWeight: 600,
-                            color: 'var(--text-secondary)',
-                            fontFamily: 'monospace',
-                          }}
-                        >
-                          {item.rate}%
-                        </span>
-                      </div>
-                    </Tooltip>
-                  ))}
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                    Exclude:
+                    {gr.audienceProtection.filters.map((f) => {
+                      let label = f.label;
+                      if (f.id === 'low_nps') label = `NPS \u2264 ${f.default}`;
+                      if (f.id === 'min_tenure') label = `< ${f.default} days`;
+                      if (f.id === 'inactive') label = `Inactive > ${f.default} days`;
+                      return (
+                        <div key={f.id} style={{ paddingLeft: 12, lineHeight: 1.6 }}>
+                          {label}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                {/* Monitoring footer */}
-                <div
-                  style={{
-                    marginTop: 'auto',
-                    paddingTop: '0.75rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.375rem',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      color: 'var(--text-tertiary)',
-                      fontStyle: 'italic',
-                    }}
-                  >
-                    Monitored in real-time during execution
-                  </span>
+                {/* ── FEAR 2: Customer Fatigue ── */}
+                <div className={tl.fieldLabel}>{gr.customerFatigue.label}</div>
+                <span className={tl.fieldVal}>
+                  {gr.customerFatigue.rules.map((r, i) => {
+                    let val;
+                    if (r.id === 'max_touchpoints') val = `Max ${r.default} touchpoints per stage`;
+                    else if (r.id === 'rest_period') val = `${r.default}-day rest between contacts`;
+                    else if (r.id === 'offer_window') val = `${r.default}-day offer window`;
+                    else val = `${r.label}: ${r.default}`;
+                    return (
+                      <span key={r.id}>
+                        {i > 0 && ' \u00b7 '}
+                        {val}
+                      </span>
+                    );
+                  })}
+                </span>
+
+                {/* ── FEAR 3: Financial Controls ── */}
+                <div className={tl.fieldLabel}>{gr.financialControls.label}</div>
+                <span className={tl.fieldVal}>
+                  {gr.financialControls.rules.map((r, i) => {
+                    let val;
+                    if (r.id === 'daily_invite_cap') val = `Daily invite cap: ~${dailyJourneyTarget || '\u2014'}`;
+                    else if (r.id === 'max_outstanding') val = `Outstanding: ~${maxOutstanding} in flight`;
+                    else if (r.id === 'spend_anomaly') val = `Auto-pause: payouts > ${autoPauseThreshold}/day`;
+                    else val = `${r.label}: ${r.default}`;
+                    return (
+                      <span key={r.id}>
+                        {i > 0 && ' \u00b7 '}
+                        {val}
+                      </span>
+                    );
+                  })}
+                </span>
+
+                {/* ── FEAR 4: Fraud Prevention ── */}
+                <div className={tl.fieldLabel}>{gr.fraudPrevention.label}</div>
+                <div className={tl.fieldVal}>
+                  <div>
+                    {gr.fraudPrevention.mechanisms.map((m, i) => {
+                      let val;
+                      if (m.id === 'self_referral') val = `${m.label} (${m.default === 'standard' ? 'Standard' : 'Aggressive'})`;
+                      else if (m.id === 'suspicious_escrow') val = `${m.label} (>${m.default.threshold}/${m.default.window} \u2192 ${m.default.holdDays}-day hold)`;
+                      else if (m.id === 'link_hijacking') val = `Link cap: ${m.default}/link`;
+                      else if (m.id === 'network_shield') val = `${m.label} (${m.default === 'aggressive' ? 'Aggressive' : 'Standard'})`;
+                      else val = `${m.label}: ${m.default}`;
+                      return (
+                        <span key={m.id}>
+                          {i > 0 && ' \u00b7 '}
+                          {val}
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <div style={{ marginTop: 6, fontSize: 13, color: 'var(--text-secondary)' }}>
+                    Est. fraud saved: {formatCurrency(fraudSaved || 0)}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Policy line */}
-            <p
-              style={{
-                fontSize: 'var(--font-size-sm)',
-                fontWeight: 600,
-                color: 'var(--text-secondary)',
-                margin: 0,
-                marginTop: '1rem',
-              }}
-            >
-              {riskManagement.fraudPolicy}
-            </p>
+              {/* Footer */}
+              <p
+                style={{
+                  fontSize: 'var(--font-size-xs)',
+                  fontWeight: 500,
+                  color: 'var(--text-tertiary)',
+                  margin: 0,
+                  marginTop: 16,
+                  paddingTop: 12,
+                  borderTop: '1px solid var(--border-light)',
+                }}
+              >
+                {gr.fraudPrevention.footer}
+              </p>
+            </div>
           </section>
-        )}
+          );
+        })()}
       </main>
 
       {/* ── Approve button (sticky bottom) ── */}

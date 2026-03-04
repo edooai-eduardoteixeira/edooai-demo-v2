@@ -200,30 +200,6 @@ input[type="range"]::-moz-range-progress {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Risk Management — two-column layout */
-.risk-layout {
-  display: flex;
-  gap: 1.25rem;
-  align-items: stretch;
-}
-
-.risk-layout > div:first-child {
-  flex: 55;
-}
-
-.risk-layout > div:last-child {
-  flex: 45;
-}
-
-/* Monitoring pulse animation */
-@keyframes monitoringPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-.monitoring-pulse {
-  animation: monitoringPulse 3s ease-in-out infinite;
-}
 
 /* Desktop-only line break (hidden on mobile) */
 .br-desktop {
@@ -280,9 +256,6 @@ input[type="range"]::-moz-range-progress {
     padding-right: 1.5rem !important;
   }
 
-  .risk-layout {
-    flex-direction: column !important;
-  }
 }
 
 @media (max-width: 480px) {
