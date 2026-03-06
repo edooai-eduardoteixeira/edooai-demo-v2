@@ -293,6 +293,78 @@
   background: var(--accent);
 }
 
+/* ── Selectable Cards (always-visible two-option picker) ── */
+.selectableCardsGroup {
+  margin-bottom: 12px;
+}
+
+.selectableCardsRow {
+  display: flex;
+  gap: 8px;
+}
+
+.selectableCard {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  background: var(--surface);
+}
+
+.selectableCard:hover {
+  border-color: var(--color-gray-300);
+}
+
+.selectableCardActive {
+  border-color: #3b5bdb;
+  background: #eef1ff;
+}
+
+.selectableCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.selectableCardRadio {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-gray-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: var(--transition-fast);
+}
+
+.selectableCardRadioActive {
+  border-color: #3b5bdb;
+}
+
+.selectableCardRadioDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3b5bdb;
+}
+
+.selectableCardTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.selectableCardDesc {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+  padding-left: 22px;
+}
+
 /* ── Derived / Auto badge ── */
 .drawerRowDerived {
   font-size: 13px;

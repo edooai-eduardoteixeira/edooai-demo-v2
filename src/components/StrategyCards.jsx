@@ -165,6 +165,35 @@ const RichSelect = ({ value: initial, richChoices }) => {
   );
 };
 
+/* ── SelectableCards (always-visible two-option selector with descriptions) ── */
+const SelectableCards = ({ label, tip, value: initial, choices }) => {
+  const [selected, setSelected] = useState(initial);
+  return (
+    <div className={s.selectableCardsGroup}>
+      <div className={s.drawerRow} style={{ marginBottom: 6 }}>
+        <span className={s.drawerRowLabel} data-tip={tip || undefined}>{label}</span>
+      </div>
+      <div className={s.selectableCardsRow}>
+        {choices.map((c) => (
+          <div
+            key={c.value}
+            className={`${s.selectableCard} ${c.value === selected ? s.selectableCardActive : ''}`}
+            onClick={() => setSelected(c.value)}
+          >
+            <div className={s.selectableCardHeader}>
+              <div className={`${s.selectableCardRadio} ${c.value === selected ? s.selectableCardRadioActive : ''}`}>
+                {c.value === selected && <div className={s.selectableCardRadioDot} />}
+              </div>
+              <span className={s.selectableCardTitle}>{c.value}</span>
+            </div>
+            <div className={s.selectableCardDesc}>{c.desc}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 /* ── NumericStepper ── */
 const NumericStepper = ({ value: initial, min, max, suffix }) => {
   const [val, setVal] = useState(initial);
@@ -509,13 +538,13 @@ const drawerContent = {
     sections: [
       {
         title: 'Detection',
-        type: 'rows',
+        type: 'detection-cards',
         rows: [
-          { label: 'Self-referral blocker', tip: 'Detects users referring themselves', value: 'Standard', richChoices: [
+          { label: 'Self-referral blocker', tip: 'Detects users referring themselves', value: 'Standard', choices: [
             { value: 'Standard', desc: 'Rejects identical IP addresses.' },
             { value: 'Aggressive', desc: 'Adds shared device and Wi-Fi detection.' }
           ]},
-          { label: 'Network & botnet shield', tip: 'Detects coordinated fraud networks', value: 'Aggressive', richChoices: [
+          { label: 'Network & botnet shield', tip: 'Detects coordinated fraud networks', value: 'Aggressive', choices: [
             { value: 'Standard', desc: 'Blocks datacenters, TOR, and high-risk proxies.' },
             { value: 'Aggressive', desc: 'Adds behavioral cluster detection.' }
           ]},
@@ -602,6 +631,12 @@ const Drawer = ({ blockKey, onClose, onNavigate }) => {
                           <span className={s.multiplierResult}>{row.result}</span>
                         </div>
                       </div>
+                    ))
+                  )}
+
+                  {section.type === 'detection-cards' && section.rows && (
+                    section.rows.map((row, ri) => (
+                      <SelectableCards key={ri} label={row.label} tip={row.tip} value={row.value} choices={row.choices} />
                     ))
                   )}
 
