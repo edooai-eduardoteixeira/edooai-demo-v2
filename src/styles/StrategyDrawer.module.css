@@ -318,8 +318,7 @@
 }
 
 .selectableCardActive {
-  border-color: #3b5bdb;
-  background: #eef1ff;
+  border-color: var(--text-primary);
 }
 
 .selectableCardHeader {
@@ -342,14 +341,14 @@
 }
 
 .selectableCardRadioActive {
-  border-color: #3b5bdb;
+  border-color: var(--text-primary);
 }
 
 .selectableCardRadioDot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #3b5bdb;
+  background: var(--text-primary);
 }
 
 .selectableCardTitle {
