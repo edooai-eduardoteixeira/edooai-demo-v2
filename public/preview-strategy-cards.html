@@ -1,548 +1,904 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Referral Journey — Strategy Preview</title>
-<style>
-  :root {
-    --text-primary: #0f172a; --text-strong: #334155; --text-secondary: #475569; --text-muted: #64748b; --text-tertiary: #94a3b8;
-    --border: #e2e8f0; --border-light: #f1f5f9;
-    --accent: #1a1a1a; --accent-subtle: #fafafa; --accent-light: #f5f5f5;
-    --surface: #ffffff; --bg: #f8f8f8;
-    --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
-    --font-family: -apple-system, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', sans-serif;
-    --referrer-bg: #dbeafe; --referrer-text: #1e40af;
-    --referee-bg: #d1fae5; --referee-text: #065f46;
-    --both-bg: #fef3c7; --both-text: #92400e;
-    --transition-fast: 150ms ease;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font-family); color: var(--text-primary); background: var(--bg); line-height: 1.5; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-  .page { max-width: 375px; margin: 0 auto; padding: 20px 16px 40px; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edoo AI — v10</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #f7f8fa; margin: 0; -webkit-font-smoothing: antialiased; font-family: Inter, system-ui, sans-serif; }
 
-  /* Desktop responsive */
-  @media (min-width: 600px) {
-    .page { max-width: 520px; padding: 32px 24px 48px; }
-    .card-header { padding: 12px 16px; }
-    .fields-grid { column-gap: 16px; padding: 0 16px; }
-    .field-inline { padding: 6px 16px; }
-    .msg-header { padding: 6px 16px; }
-    .msg-content { padding: 16px; }
-    .share-row { padding: 8px 16px; }
-    .step-name { font-size: 15px; }
-    .field-val { font-size: 13px; }
-    .field-label { font-size: 12px; }
-  }
-  .concept-label { display: inline-block; font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; /* v6 */ }
-  .section-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 2px; }
-  .section-meta { font-size: 12px; color: var(--text-tertiary); margin-bottom: 20px; }
-  .section-meta .sep { margin: 0 4px; }
+    /* Card stack */
+    .card-group { background: #fff; border-radius: 12px; border: 1px solid #e5e6e8; overflow: hidden; }
+    .card-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; cursor: pointer; transition: background 0.12s; }
+    .card-row:hover { background: #fafbfc; }
+    .card-row + .card-row { border-top: 1px solid #e5e6e8; }
+    .card-row-title { font-size: 14px; font-weight: 600; color: #1a1a2e; }
 
-  /* ═══ Stepper ═══ */
-  .stepper { position: relative; padding-left: 36px; }
-  .stepper::before { content: ''; position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: var(--border); }
-  .step { position: relative; margin-bottom: 16px; }
-  .step:last-child { margin-bottom: 0; }
-  .step-dot { position: absolute; left: -36px; top: 12px; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; z-index: 2; box-shadow: 0 0 0 3px var(--bg); }
-  .step-dot.referrer { background: var(--referrer-text); }
-  .step-dot.referee { background: var(--referee-text); }
-  .step-dot.both { background: var(--both-text); }
+    /* Drawer overlay */
+    .drawer-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.15); z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+    .drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+    .drawer-panel { position: fixed; top: 0; right: 0; bottom: 0; width: 420px; max-width: 90vw; background: #fff; z-index: 101; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: -8px 0 30px rgba(0,0,0,0.08); display: flex; flex-direction: column; }
+    .drawer-panel.open { transform: translateX(0); }
 
-  /* ═══ Card ═══ */
-  .card { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); overflow: hidden; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; position: relative; }
-  .card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
-  .card:hover .edit-hint { opacity: 1; }
-  .edit-hint { position: absolute; top: 10px; right: 12px; font-size: 11px; color: var(--text-tertiary); opacity: 0; transition: opacity 0.2s; display: flex; align-items: center; gap: 4px; }
-  .edit-hint svg { width: 12px; height: 12px; }
+    /* Drawer header */
+    .drawer-header { padding: 16px 24px 14px; border-bottom: 1px solid #f0f1f3; flex-shrink: 0; }
+    .drawer-header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+    .drawer-header-sub { font-size: 12px; color: #8b8d98; }
+    .drawer-close { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 6px; color: #8b8d98; transition: background 0.12s; flex-shrink: 0; }
+    .drawer-close:hover { background: #f4f5f7; color: #1a1a2e; }
 
-  /* Card header */
-  .card-header { padding: 10px 12px; display: flex; align-items: center; gap: 8px; }
-  .step-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .step-icon.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
-  .step-icon.referee { background: var(--referee-bg); color: var(--referee-text); }
-  .step-icon.both { background: var(--both-bg); color: var(--both-text); }
-  .step-icon svg { width: 12px; height: 12px; }
-  .step-name { font-size: 14px; font-weight: 600; flex: 1; }
-  .party-tag { font-size: 9px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 6px; border-radius: 100px; }
-  .party-tag.referrer { background: var(--referrer-bg); color: var(--referrer-text); }
-  .party-tag.referee { background: var(--referee-bg); color: var(--referee-text); }
-  .party-tag.both { background: var(--both-bg); color: var(--both-text); }
+    /* Drawer nav */
+    .drawer-nav { display: flex; align-items: center; gap: 2px; }
+    .drawer-nav-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 6px; color: #8b8d98; transition: all 0.12s; border: none; background: none; padding: 0; }
+    .drawer-nav-btn:hover:not(:disabled) { background: #f4f5f7; color: #1a1a2e; }
+    .drawer-nav-btn:disabled { color: #d0d2d8; cursor: default; }
+    .drawer-nav-count { font-size: 11px; color: #a0a2ae; padding: 0 4px; min-width: 36px; text-align: center; }
 
-  /* ═══ LAYOUT CHANGE: Data fields ═══ */
-  .field { border-top: 1px solid var(--border-light); padding: 6px 12px; }
-  .field-label { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-bottom: 1px; }
+    /* Drawer body */
+    .drawer-body { flex: 1; overflow-y: auto; }
+    .drawer-section { padding: 12px 24px; }
+    .drawer-section + .drawer-section { border-top: 1px solid #f0f1f3; }
+    .drawer-section-title { font-size: 10px; color: #8b8d98; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; margin-bottom: 8px; }
 
-  /* ═══ Grid-aligned fields (Stripe/Linear pattern) ═══ */
-  .fields-grid {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    column-gap: 12px;
-    padding: 0 12px;
-    align-items: baseline;
-  }
-  .fields-grid .field-label { margin-bottom: 0; }
-  /* Row separators: border-top on each label + its value */
-  .fields-grid > .field-label,
-  .fields-grid > .field-label + * {
-    border-top: 1px solid var(--border-light);
-    padding-top: 6px;
-    padding-bottom: 6px;
-  }
+    /* Drawer rows — consistent 40px height */
+    .drawer-row { display: flex; align-items: center; justify-content: space-between; min-height: 40px; padding: 0; box-sizing: border-box; }
+    .drawer-row + .drawer-row { border-top: 1px solid #f2f3f5; }
 
-  /* Inline fallback for single-field rows */
-  .field-inline {
-    border-top: 1px solid var(--border-light);
-    padding: 6px 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 36px;
-  }
-  .field-inline .field-label { margin-bottom: 0; flex-shrink: 0; }
+    /* Label with hover tooltip */
+    .drawer-row-label { font-size: 13px; font-weight: 500; color: #1a1a2e; position: relative; cursor: default; }
+    .drawer-row-label[data-tip]:hover::after {
+      content: attr(data-tip);
+      position: absolute; left: 0; top: 100%; margin-top: 4px;
+      background: #1a1a2e; color: #fff; padding: 5px 10px; border-radius: 6px;
+      font-size: 11px; font-weight: 400; white-space: nowrap; z-index: 20; line-height: 1.4;
+      pointer-events: none;
+    }
+    .drawer-row-value { font-size: 13px; color: #6b6d7b; text-align: right; }
 
-  .field-val { font-size: 12px; font-weight: 400; color: var(--text-strong); line-height: 1.5; }
+    /* Single-select trigger (same as multiselect visually) */
+    .singleselect-trigger { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #f7f8fa; border: 1px solid #e5e6e8; border-radius: 6px; font-size: 13px; color: #6b6d7b; cursor: pointer; transition: border-color 0.15s; }
+    .singleselect-trigger:hover { border-color: #c0c2cc; }
+    .singleselect-dropdown { position: absolute; right: 0; top: 100%; margin-top: 4px; background: #fff; border: 1px solid #e5e6e8; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); z-index: 10; min-width: 140px; padding: 4px 0; }
+    .singleselect-option { display: flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 13px; color: #1a1a2e; cursor: pointer; transition: background 0.1s; user-select: none; }
+    .singleselect-option:hover { background: #f7f8fa; }
+    .singleselect-option.selected { color: #3b5bdb; font-weight: 500; }
+    .singleselect-radio { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #d0d2d8; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.12s; }
+    .singleselect-radio.selected { border-color: #1a1a2e; }
+    .singleselect-radio-dot { width: 8px; height: 8px; border-radius: 50%; background: #1a1a2e; }
 
-  .or-sep { font-size: 10px; color: var(--text-tertiary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 6px; }
-  .val-sep { color: var(--text-tertiary); font-weight: 400; margin: 0 2px; }
-  .range-sep { color: var(--text-tertiary); margin: 0 4px; font-weight: 400; }
+    /* Derived value */
+    .drawer-row-derived { font-size: 13px; color: #8b8d98; font-weight: 400; }
+    .auto-badge { font-size: 9px; color: #a0a2ae; background: #f4f5f7; padding: 1.5px 5px; border-radius: 3px; margin-left: 6px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 500; }
 
-  /* ═══ Message block — ghost dropdown (Figma/Iterable pattern) ═══ */
-  .message-block { border-top: 1px solid var(--border-light); margin-top: 0; }
-  .msg-header {
-    display: flex;
-    align-items: center;
-    padding: 6px 12px;
-    min-height: 36px;
-    background: var(--accent-light);
-  }
-  .msg-header-label { font-size: 11px; font-weight: 400; color: var(--text-muted); flex-shrink: 0; }
+    /* Toggle */
+    .toggle-track { width: 34px; height: 20px; border-radius: 10px; cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0; }
+    .toggle-track.on { background: #1a1a2e; }
+    .toggle-track.off { background: #d0d2d8; }
+    .toggle-knob { width: 16px; height: 16px; border-radius: 50%; background: #fff; position: absolute; top: 2px; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+    .toggle-track.on .toggle-knob { left: 16px; }
+    .toggle-track.off .toggle-knob { left: 2px; }
 
-  /* Ghost dropdown trigger — text + chevron, no border/background */
-  .msg-dropdown-wrap { position: relative; margin-left: auto; }
-  .msg-dropdown-trigger {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 8px;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-muted);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-family: inherit;
-    transition: color var(--transition-fast), border-color var(--transition-fast);
-  }
-  .msg-dropdown-trigger:hover { color: var(--text-strong); border-color: var(--text-tertiary); }
-  .msg-dropdown-trigger .chevron {
-    width: 10px;
-    height: 10px;
-    transition: transform var(--transition-fast);
-  }
-  .msg-dropdown-wrap.open .chevron { transform: rotate(180deg); }
+    /* Multi-select dropdown */
+    .multiselect-trigger { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #f7f8fa; border: 1px solid #e5e6e8; border-radius: 6px; font-size: 13px; color: #6b6d7b; cursor: pointer; transition: border-color 0.15s; max-width: 260px; }
+    .multiselect-trigger:hover { border-color: #c0c2cc; }
+    .multiselect-dropdown { position: absolute; right: 0; top: 100%; margin-top: 4px; background: #fff; border: 1px solid #e5e6e8; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); z-index: 10; min-width: 200px; padding: 4px 0; }
+    .multiselect-option { display: flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 13px; color: #1a1a2e; cursor: pointer; transition: background 0.1s; user-select: none; }
+    .multiselect-option:hover { background: #f7f8fa; }
+    .multiselect-check { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid #d0d2d8; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.12s; }
+    .multiselect-check.checked { background: #1a1a2e; border-color: #1a1a2e; }
 
-  /* Dropdown menu */
-  .msg-dropdown-menu {
-    display: none;
-    position: absolute;
-    top: calc(100% + 4px);
-    right: 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    box-shadow: var(--shadow-md);
-    min-width: 160px;
-    z-index: 10;
-    padding: 4px 0;
-  }
-  .msg-dropdown-wrap.open .msg-dropdown-menu { display: block; }
-  .msg-dropdown-item {
-    display: block;
-    width: 100%;
-    padding: 6px 12px;
-    font-size: 12px;
-    font-weight: 400;
-    color: var(--text-secondary);
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    text-align: left;
-    transition: background var(--transition-fast);
-  }
-  .msg-dropdown-item:hover { background: var(--accent-light); }
-  .msg-dropdown-item.active { color: var(--text-primary); font-weight: 500; }
+    /* Live summary */
+    .live-summary { background: #f7f8fa; border-radius: 8px; padding: 10px 14px; margin-bottom: 4px; }
+    .live-summary-top { display: flex; align-items: baseline; justify-content: space-between; }
+    .live-summary-value { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+    .live-summary-context { font-size: 11.5px; color: #8b8d98; }
+    .live-summary-note { font-size: 11px; color: #a0a2ae; margin-top: 4px; line-height: 1.4; }
 
-  .msg-content { padding: 12px; background: var(--accent-light); display: flex; flex-wrap: wrap; justify-content: center; }
+    /* Numeric stepper */
+    .stepper-wrap { display: inline-flex; align-items: center; gap: 0; background: #f7f8fa; border: 1px solid #e5e6e8; border-radius: 6px; overflow: hidden; }
+    .stepper-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: none; background: none; cursor: pointer; font-size: 14px; color: #6b6d7b; transition: all 0.12s; padding: 0; }
+    .stepper-btn:hover:not(:disabled) { background: #eef0f4; color: #1a1a2e; }
+    .stepper-btn:disabled { color: #d0d2d8; cursor: default; }
+    .stepper-value { font-size: 13px; color: #6b6d7b; min-width: 52px; text-align: center; padding: 0 2px; }
 
-  /* ═══ Mockups (unchanged) ═══ */
-  .mockup-push { background: #f8f8f8; border-radius: 14px; padding: 10px 14px; max-width: 320px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-  .push-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-  .push-icon { width: 20px; height: 20px; border-radius: var(--radius-sm); background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--surface); flex-shrink: 0; }
-  .push-app { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
-  .push-time { font-size: 10px; color: var(--text-tertiary); margin-left: auto; }
-  .push-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
-  .push-body { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+    /* Journey stepper */
+    .journey-step { display: flex; align-items: stretch; min-height: 44px; }
+    .journey-rail { display: flex; flex-direction: column; align-items: center; width: 20px; flex-shrink: 0; }
+    .journey-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #d0d2d8; background: #fff; flex-shrink: 0; margin-top: 6px; }
+    .journey-dot.start { border-color: #1a1a2e; background: #1a1a2e; }
+    .journey-dot.trigger { border-color: #3b5bdb; background: #3b5bdb; }
+    .journey-line { width: 1.5px; background: #e5e6e8; flex: 1; min-height: 8px; }
+    .journey-content { flex: 1; display: flex; align-items: center; justify-content: space-between; padding: 6px 0 6px 10px; }
+    .journey-label { font-size: 13px; font-weight: 500; color: #1a1a2e; }
+    .journey-badge { font-size: 9px; padding: 2px 6px; border-radius: 3px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+    .journey-badge.start-badge { color: #8b8d98; background: #f4f5f7; }
+    .journey-badge.trigger-badge { color: #3b5bdb; background: #eef1ff; }
+    .journey-remove { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 4px; cursor: pointer; color: #c0c2cc; transition: all 0.12s; flex-shrink: 0; margin-left: 4px; }
+    .journey-remove:hover { background: #fef2f2; color: #ef4444; }
+    .journey-add { display: flex; align-items: center; gap: 6px; padding: 4px 0 4px 30px; font-size: 12px; color: #8b8d98; cursor: pointer; transition: color 0.12s; }
+    .journey-add:hover { color: #3b5bdb; }
 
-  .mockup-sms { max-width: 280px; }
-  .sms-sender { font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px; }
-  .sms-bubble { background: #e5e5ea; border-radius: 16px; padding: 8px 12px; font-size: 13px; line-height: 1.4; }
+    /* Budget pacing */
+    .pacing-block { background: #f7f8fa; border-radius: 8px; padding: 12px 14px; }
+    .pacing-row { display: flex; align-items: center; justify-content: space-between; height: 32px; }
+    .pacing-label { font-size: 12px; color: '#8b8d98'; }
+    .pacing-explanation { font-size: 11.5px; color: #a0a2ae; line-height: 1.4; margin-top: 6px; }
 
-  .mockup-email { border: 1px solid var(--border); border-radius: var(--radius-sm); max-width: 380px; overflow: hidden; background: var(--surface); }
-  .email-header { padding: 10px 12px; border-bottom: 1px solid var(--border-light); }
-  .email-from { font-size: 10px; color: var(--text-tertiary); margin-bottom: 2px; }
-  .email-subject { font-size: 13px; font-weight: 700; }
-  .email-body { padding: 14px 12px; }
-  .email-hero { background: linear-gradient(135deg, #312e81, #7c3aed); color: #fff; padding: 20px 16px; text-align: center; margin-bottom: 12px; border-radius: 4px; }
-  .email-hero-title { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
-  .email-hero-sub { font-size: 12px; opacity: 0.8; }
-  .email-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px; }
-  .email-cta { display: block; padding: 8px 20px; background: #7c3aed; color: #fff; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; text-align: center; width: 100%; }
+    /* Multiplier formula display */
+    .multiplier-formula { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #a0a2ae; }
+    .multiplier-result { font-size: 13px; color: #6b6d7b; font-weight: 500; }
 
-  /* Share channel (step 2) */
-  .share-row { border-top: 1px solid var(--border-light); padding: 6px 12px; }
-  .share-label { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-bottom: 2px; }
-  .share-sub { font-size: 10px; color: var(--text-tertiary); font-style: italic; margin-bottom: 6px; }
-  .share-icons { display: flex; gap: 6px; }
-  .share-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #fff; }
-  .share-bubble { background: #dcf8c6; border-radius: 14px; padding: 8px 12px; font-size: 12px; line-height: 1.4; max-width: 100%; }
-  .share-bubble .link { color: #1e40af; text-decoration: underline; }
+    /* Conditional block (IF/THEN) */
+    .conditional-block { background: #f7f8fa; border-radius: 8px; overflow: hidden; }
+    .conditional-row { display: flex; align-items: center; height: 40px; padding: 0 12px; gap: 10px; }
+    .conditional-keyword { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #a0a2ae; min-width: 32px; }
 
-  /* ═══ Milestone (step 4) ═══ */
-  .milestone { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
-  .milestone-icon { width: 24px; height: 24px; border-radius: 50%; background: var(--both-bg); color: var(--both-text); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .milestone-icon svg { width: 12px; height: 12px; }
-  .milestone-body { flex: 1; }
-  .milestone-title { font-size: 13px; font-weight: 700; }
-  .milestone-detail { font-size: 11px; color: var(--text-secondary); }
-  .milestone-detail b { font-weight: 700; }
-
-  /* ═══ Device phone frame ═══ */
-  .device-phone {
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    max-width: 100%;
-    width: 100%;
-    overflow: hidden;
-    background: var(--surface);
-    box-shadow: var(--shadow-sm);
-  }
-  .device-statusbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 16px 4px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
-  .device-statusbar-icons {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 10px;
-    font-weight: 500;
-  }
-  .device-screen {
-    padding: 4px 10px 6px;
-  }
-  .device-home-bar {
-    display: flex;
-    justify-content: center;
-    padding: 4px 0 8px;
-  }
-  .device-home-bar::after {
-    content: '';
-    width: 36%;
-    height: 4px;
-    background: var(--border);
-    border-radius: 100px;
-  }
-  .device-screen .mockup-push,
-  .device-screen .mockup-sms { max-width: none; box-shadow: none; }
-  .device-screen .mockup-email { max-width: none; }
-
-  /* SMS enhancements */
-  .sms-app-header { font-size: 11px; font-weight: 600; text-align: center; color: var(--text-primary); padding: 2px 0 6px; }
-  .sms-meta { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 4px; font-size: 10px; color: var(--text-tertiary); }
-  .sms-meta svg { width: 10px; height: 10px; }
-
-  /* Email enhancements */
-  .email-logo { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-  .email-logo-icon { width: 20px; height: 20px; background: var(--accent); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--surface); flex-shrink: 0; }
-  .email-logo-name { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
-  .email-after-cta { font-size: 11px; color: var(--text-tertiary); margin-top: 10px; }
-  .email-footer { padding: 10px 12px; border-top: 1px solid var(--border-light); font-size: 11px; color: var(--text-tertiary); text-align: center; }
-
-  .hidden { display: none; }
-</style>
+    /* Add rule button */
+    .add-rule-btn { display: flex; align-items: center; gap: 6px; height: 40px; font-size: 13px; color: #3b5bdb; cursor: pointer; font-weight: 500; transition: opacity 0.12s; }
+    .add-rule-btn:hover { opacity: 0.8; }
+    .add-rule-plus { width: 18px; height: 18px; border-radius: 5px; background: #eef1ff; display: flex; align-items: center; justify-content: center; }
+  </style>
 </head>
 <body>
-<div class="page">
-  <div class="concept-label">Strategy Preview — Mobile</div>
-  <h2 class="section-title">Referral Journey</h2>
-  <div class="section-meta">$75 per side · $150 total<span class="sep">·</span>14-day window<span class="sep">·</span>Pay on 1st transaction</div>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useRef, useEffect, useCallback } = React;
 
-  <div class="stepper">
+/* ── Ordered drawer keys for navigation ── */
+const DRAWER_ORDER = ['invite', 'rewards', 'redemption', 'fatigue', 'budget', 'fraud'];
 
-    <!-- ═══ STEP 1: Referral Ask ═══ -->
-    <div class="step">
-      <div class="step-dot referrer">1</div>
-      <div class="card" id="step1">
-        <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
-        <div class="card-header">
-          <div class="step-icon referrer">
-            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13 3v10l-5-2.5H4.5A1.5 1.5 0 013 9V7a1.5 1.5 0 011.5-1.5H8L13 3z"/></svg>
-          </div>
-          <div class="step-name">Referral Ask</div>
-          <span class="party-tag referrer">Referrer</span>
-        </div>
+/* ── Icons ── */
+const ChevronRight = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M6 4L10 8L6 12" stroke="#c0c2cc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+const CloseIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <path d="M11 3L3 11M3 3L11 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+);
+const ChevronUp = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M10 9L7 6L4 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+);
+const ChevronDown = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 5L7 8L10 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+);
+const Sparkle = () => (
+  <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="#3b5bdb"/></svg>
+);
+const CheckIcon = () => (
+  <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+);
 
-        <div class="fields-grid">
-          <div class="field-label">Transactional trigger</div>
-          <span class="field-val">All Transactions</span>
-
-          <div class="field-label">Promotional trigger</div>
-          <span class="field-val">Scheduled <span class="or-sep">or</span> AI Recommendation</span>
-
-          <div class="field-label">Qualifying event</div>
-          <span class="field-val">1st Transaction</span>
-
-          <div class="field-label">Reward range</div>
-          <span class="field-val">$0 <span class="range-sep">—</span> $75</span>
-
-          <div class="field-label">Reward format</div>
-          <span class="field-val">Cashback, Account Credit, Coupon, Gift Card, Organic</span>
-        </div>
-
-        <div class="message-block">
-          <div class="msg-header">
-            <span class="msg-header-label">Message</span>
-            <div class="msg-dropdown-wrap" id="dd-s1">
-              <button class="msg-dropdown-trigger" onclick="toggleDropdown('dd-s1')">
-                <span class="dd-label">Ask · Push</span>
-                <svg class="chevron" viewBox="0 0 10 10" fill="currentColor"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <div class="msg-dropdown-menu">
-                <button class="msg-dropdown-item active" onclick="selectCombo('s1','ask','push')">Ask · Push</button>
-                <button class="msg-dropdown-item" onclick="selectCombo('s1','ask','sms')">Ask · SMS</button>
-                <button class="msg-dropdown-item" onclick="selectCombo('s1','ask','email')">Ask · Email</button>
-                <button class="msg-dropdown-item" onclick="selectCombo('s1','reminder','push')">Reminder · Push</button>
-                <button class="msg-dropdown-item" onclick="selectCombo('s1','reminder','sms')">Reminder · SMS</button>
-                <button class="msg-dropdown-item" onclick="selectCombo('s1','reminder','email')">Reminder · Email</button>
-              </div>
-            </div>
-          </div>
-          <div class="msg-content">
-            <!-- Ask × Push -->
-            <div class="preview-mock" data-step="s1" data-msg="ask" data-ch="push">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">$211 on streaming, Gina? 💸</div><div class="push-body">Gina, you spent $211 on streaming! 💸 Claim one free month of Netflix for you now. Tap to share! 🍿</div></div></div><div class="device-home-bar"></div></div>
-            </div>
-            <!-- Ask × SMS -->
-            <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="sms">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Gina, you spent $211 on streaming! 💸 Claim one free month of Netflix for you now. Tap to share https://nflx.it/gina 🍿</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
-            </div>
-            <!-- Ask × Email -->
-            <div class="preview-mock hidden" data-step="s1" data-msg="ask" data-ch="email">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Gina, let's get that $211 back? 🍿</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Netflix for free, Gina</div><div class="email-hero-sub">One for you, one for a friend</div></div><div class="email-text">Hi Gina,<br><br>You spent $211 on streaming last month. Ready to claim a free month of Netflix now? 🍿<br><br>Send your link to a friend. Once they use the card for the first time, your next month of Netflix is on us (and theirs, too!)</div><span class="email-cta">Share</span><div class="email-after-cta">Your friend gets a free month, too!</div></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
-            </div>
-            <!-- Reminder × Push -->
-            <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="push">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Still thinking about it, Gina? 🍿</div><div class="push-body">Your free Netflix month is still here. Share your link with a friend before it expires!</div></div></div><div class="device-home-bar"></div></div>
-            </div>
-            <!-- Reminder × SMS -->
-            <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="sms">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Gina, your free Netflix month is still up for grabs! 🍿 Share with a friend before it expires: neo.bnk/r/gina</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
-            </div>
-            <!-- Reminder × Email -->
-            <div class="preview-mock hidden" data-step="s1" data-msg="reminder" data-ch="email">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Gina, your Netflix reward is still here 🍿</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">Don't let it expire, Gina</div><div class="email-hero-sub">Your free month is still waiting</div></div><div class="email-text">Remember those $211 on streaming? Your free Netflix month is still available. Share your link with a friend — when they make their first transaction, you both get rewarded.</div><span class="email-cta">Share Now</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ STEP 2: Invite ═══ -->
-    <div class="step">
-      <div class="step-dot referee">2</div>
-      <div class="card" id="step2">
-        <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
-        <div class="card-header">
-          <div class="step-icon referee">
-            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 1.5L2 7.5l5 2L10.5 5 7.5 10l2 5z"/></svg>
-          </div>
-          <div class="step-name">Invite</div>
-          <span class="party-tag referee">Referee</span>
-        </div>
-
-        <div class="share-row">
-          <div class="share-label">Shared via</div>
-          <div class="share-sub">Referrer chooses how to share with their friend</div>
-          <div class="share-icons">
-            <div class="share-icon" style="background:#25D366;" title="WhatsApp">W</div>
-            <div class="share-icon" style="background:#007AFF;" title="iMessage">iM</div>
-            <div class="share-icon" style="background:#1DA1F2;" title="X">X</div>
-            <div class="share-icon" style="background:#E4405F;" title="Instagram">IG</div>
-            <div class="share-icon" style="background:#0A66C2;" title="LinkedIn">in</div>
-            <div class="share-icon" style="background:var(--text-tertiary);">···</div>
-          </div>
-        </div>
-
-        <div class="message-block">
-          <div class="msg-header">
-            <span class="msg-header-label">Message</span>
-          </div>
-          <div class="msg-content">
-            <div class="share-bubble">Hey! I've been using NeoBank and love it. Sign up with my link and we both get up to $75: <span class="link">neo.bnk/r/gina</span></div>
-          </div>
-        </div>
-
-        <div class="field-inline">
-          <div class="field-label">Tracking</div>
-          <span class="field-val">Referral Link</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ STEP 3: Redemption ═══ -->
-    <div class="step">
-      <div class="step-dot referee">3</div>
-      <div class="card" id="step3">
-        <span class="edit-hint"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.1 1.3a1.5 1.5 0 012.1 2.1L5.6 12H3v-2.6l9.1-8.1z"/></svg>Edit</span>
-        <div class="card-header">
-          <div class="step-icon referee">
-            <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 15A7 7 0 108 1a7 7 0 000 14zm3.4-8.8a.75.75 0 00-1.1-1L7 8.5 5.65 7.15a.75.75 0 10-1.1 1l2 2a.75.75 0 001.1 0l4.05-4z"/></svg>
-          </div>
-          <div class="step-name">Redemption</div>
-          <span class="party-tag referee">Referee</span>
-        </div>
-
-        <div class="fields-grid">
-          <div class="field-label">Qualifying event</div>
-          <span class="field-val">1st Transaction</span>
-
-          <div class="field-label">Reward range</div>
-          <span class="field-val">$0 <span class="range-sep">—</span> $75</span>
-
-          <div class="field-label">Reward format</div>
-          <span class="field-val">Cashback, Account Credit, Coupon, Gift Card, Organic</span>
-        </div>
-
-        <div class="message-block">
-          <div class="msg-header">
-            <span class="msg-header-label">Message</span>
-            <div class="msg-dropdown-wrap" id="dd-s3">
-              <button class="msg-dropdown-trigger" onclick="toggleDropdown('dd-s3')">
-                <span class="dd-label">Reminder · Push</span>
-                <svg class="chevron" viewBox="0 0 10 10" fill="currentColor"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <div class="msg-dropdown-menu">
-                <button class="msg-dropdown-item active" onclick="selectCombo('s3','reminder','push')">Reminder · Push</button>
-                <button class="msg-dropdown-item" onclick="selectCombo('s3','reminder','sms')">Reminder · SMS</button>
-                <button class="msg-dropdown-item" onclick="selectCombo('s3','reminder','email')">Reminder · Email</button>
-                <button class="msg-dropdown-item" onclick="selectCombo('s3','success','push')">Success · Push</button>
-                <button class="msg-dropdown-item" onclick="selectCombo('s3','success','sms')">Success · SMS</button>
-                <button class="msg-dropdown-item" onclick="selectCombo('s3','success','email')">Success · Email</button>
-              </div>
-            </div>
-          </div>
-          <div class="msg-content">
-            <!-- Reminder × Push -->
-            <div class="preview-mock" data-step="s3" data-msg="reminder" data-ch="push">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">Don't forget your $75</div><div class="push-body">Complete your first transaction to claim your reward. Your offer expires in 7 days.</div></div></div><div class="device-home-bar"></div></div>
-            </div>
-            <!-- Reminder × SMS -->
-            <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="sms">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Your $75 reward is waiting! Make your first transaction to claim it. Expires in 7 days.</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
-            </div>
-            <!-- Reminder × Email -->
-            <div class="preview-mock hidden" data-step="s3" data-msg="reminder" data-ch="email">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">Your $75 reward is waiting</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 is waiting for you</div><div class="email-hero-sub">Make your first transaction</div></div><div class="email-text">Your friend referred you to NeoBank. Complete your first transaction within 7 days and you'll both earn up to $75.</div><span class="email-cta">Make My First Transaction</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
-            </div>
-            <!-- Success × Push -->
-            <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="push">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="mockup-push"><div class="push-header"><div class="push-icon">N</div><span class="push-app">NeoBank</span><span class="push-time">now</span></div><div class="push-title">You earned $75!</div><div class="push-body">Your first transaction is complete. $75 has been credited to your account.</div></div></div><div class="device-home-bar"></div></div>
-            </div>
-            <!-- Success × SMS -->
-            <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="sms">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Messages</div><div class="mockup-sms"><div class="sms-sender">NeoBank · Short Code</div><div class="sms-bubble">Congrats! Your $75 reward has been credited to your account. Welcome to NeoBank!</div><div class="sms-meta"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 6l3 3L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Delivered · 9:41 AM</div></div></div><div class="device-home-bar"></div></div>
-            </div>
-            <!-- Success × Email -->
-            <div class="preview-mock hidden" data-step="s3" data-msg="success" data-ch="email">
-              <div class="device-phone"><div class="device-statusbar"><span>9:41</span><span class="device-statusbar-icons">85%</span></div><div class="device-screen"><div class="sms-app-header">Mail</div><div class="mockup-email"><div class="email-header"><div class="email-logo"><div class="email-logo-icon">N</div><span class="email-logo-name">NeoBank</span></div><div class="email-from">From: NeoBank &lt;rewards@neobank.com&gt;</div><div class="email-subject">You earned $75!</div></div><div class="email-body"><div class="email-hero"><div class="email-hero-title">$75 credited</div><div class="email-hero-sub">Your referral reward is ready</div></div><div class="email-text">Congratulations! You completed your first transaction and earned $75. Welcome to NeoBank!</div><span class="email-cta">View My Balance</span></div><div class="email-footer">Unsubscribe · Privacy Policy</div></div></div><div class="device-home-bar"></div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ STEP 4: Reward Credited — milestone, not a card ═══ -->
-    <div class="step">
-      <div class="step-dot both" style="font-size: 14px;">✓</div>
-      <div class="milestone">
-        <div class="milestone-icon">
-          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.6l1.7 3.5 3.8.6-2.7 2.7.6 3.8L8 10.5l-3.4 1.7.6-3.8L2.5 5.7l3.8-.6z"/></svg>
-        </div>
-        <div class="milestone-body">
-          <div class="milestone-title">Reward Credited</div>
-          <div class="milestone-detail"><b>$75</b> referrer + <b>$75</b> referee</div>
-        </div>
-        <span class="party-tag both" style="margin-left: auto;">Both</span>
-      </div>
-    </div>
-
+/* ── Toggle (clickable) ── */
+const Toggle = ({ on, onChange }) => (
+  <div className={`toggle-track ${on ? 'on' : 'off'}`} onClick={() => onChange && onChange(!on)}>
+    <div className="toggle-knob" />
   </div>
-</div>
+);
 
-<script>
-const state = { s1: { msg: 'ask', ch: 'push' }, s3: { msg: 'reminder', ch: 'push' } };
+/* ── Multi-select ── */
+const MultiSelect = ({ items: initialItems }) => {
+  const [items, setItems] = useState(initialItems);
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
 
-function toggleDropdown(ddId) {
-  const wrap = document.getElementById(ddId);
-  const wasOpen = wrap.classList.contains('open');
-  // Close all dropdowns first
-  document.querySelectorAll('.msg-dropdown-wrap').forEach(w => w.classList.remove('open'));
-  if (!wasOpen) wrap.classList.add('open');
-}
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
-function selectCombo(stepId, msg, ch) {
-  state[stepId].msg = msg;
-  state[stepId].ch = ch;
-  updatePreview(stepId);
+  const toggle = (idx) => {
+    setItems(items.map((item, i) => i === idx ? { ...item, on: !item.on } : item));
+  };
 
-  // Update dropdown label
-  const ddId = 'dd-' + stepId;
-  const wrap = document.getElementById(ddId);
-  const label = msg.charAt(0).toUpperCase() + msg.slice(1) + ' · ' + ch.charAt(0).toUpperCase() + ch.slice(1).toLowerCase();
-  wrap.querySelector('.dd-label').textContent = label;
+  const activeNames = items.filter(i => i.on).map(i => i.label);
+  const display = activeNames.length === 0 ? 'None selected'
+    : activeNames.length === items.length ? 'All'
+    : activeNames.join(', ');
 
-  // Update active state in menu
-  wrap.querySelectorAll('.msg-dropdown-item').forEach(item => {
-    item.classList.toggle('active', item.textContent === label);
-  });
+  return (
+    <div style={{ position: 'relative' }} ref={ref}>
+      <div className="multiselect-trigger" onClick={() => setOpen(!open)}>
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{display}</span>
+        <span style={{ color: '#b0b2bc', fontSize: 10, flexShrink: 0 }}>▾</span>
+      </div>
+      {open && (
+        <div className="multiselect-dropdown">
+          {items.map((item, i) => (
+            <div className="multiselect-option" key={i} onClick={() => toggle(i)}>
+              <div className={`multiselect-check ${item.on ? 'checked' : ''}`}>
+                {item.on && <CheckIcon />}
+              </div>
+              {item.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
-  // Close dropdown
-  wrap.classList.remove('open');
-}
+/* ── Single-select dropdown (same pattern as MultiSelect but picks one) ── */
+const SingleSelect = ({ value: initial, choices }) => {
+  const [val, setVal] = useState(initial);
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
 
-function updatePreview(stepId) {
-  const { msg, ch } = state[stepId];
-  document.querySelectorAll(`.preview-mock[data-step="${stepId}"]`).forEach(el => {
-    el.classList.toggle('hidden', !(el.dataset.msg === msg && el.dataset.ch === ch));
-  });
-}
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
-// Close dropdown when clicking outside
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.msg-dropdown-wrap')) {
-    document.querySelectorAll('.msg-dropdown-wrap').forEach(w => w.classList.remove('open'));
+  const pick = (choice) => {
+    setVal(choice);
+    setOpen(false);
+  };
+
+  return (
+    <div style={{ position: 'relative' }} ref={ref}>
+      <div className="singleselect-trigger" onClick={() => setOpen(!open)}>
+        <span>{val}</span>
+        <span style={{ color: '#b0b2bc', fontSize: 10, flexShrink: 0 }}>▾</span>
+      </div>
+      {open && (
+        <div className="singleselect-dropdown">
+          {choices.map((choice, i) => (
+            <div className={`singleselect-option ${choice === val ? 'selected' : ''}`} key={i} onClick={() => pick(choice)}>
+              <div className={`singleselect-radio ${choice === val ? 'selected' : ''}`}>
+                {choice === val && <div className="singleselect-radio-dot" />}
+              </div>
+              {choice}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ── Rich single-select (options with descriptions) ── */
+const RichSelect = ({ value: initial, richChoices }) => {
+  const [val, setVal] = useState(initial);
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+  const pick = (v) => { setVal(v); setOpen(false); };
+  return (
+    <div style={{ position: 'relative' }} ref={ref}>
+      <div className="singleselect-trigger" onClick={() => setOpen(!open)}>
+        <span>{val}</span>
+        <span style={{ color: '#b0b2bc', fontSize: 10, flexShrink: 0 }}>▾</span>
+      </div>
+      {open && (
+        <div className="singleselect-dropdown" style={{ minWidth: 220, padding: '4px 0' }}>
+          {richChoices.map((c, i) => (
+            <div className={`singleselect-option ${c.value === val ? 'selected' : ''}`} key={i} onClick={() => pick(c.value)} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2, padding: '8px 14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div className={`singleselect-radio ${c.value === val ? 'selected' : ''}`}>
+                  {c.value === val && <div className="singleselect-radio-dot" />}
+                </div>
+                <span style={{ fontWeight: 500 }}>{c.value}</span>
+              </div>
+              <div style={{ fontSize: 11.5, color: '#a0a2ae', paddingLeft: 22, lineHeight: 1.3 }}>{c.desc}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ── Numeric stepper (for integer ranges like 1-30) ── */
+const NumericStepper = ({ value: initial, min, max, suffix }) => {
+  const [val, setVal] = useState(initial);
+  const dec = () => setVal(v => Math.max(min, v - 1));
+  const inc = () => setVal(v => Math.min(max, v + 1));
+  return (
+    <div className="stepper-wrap">
+      <button className="stepper-btn" onClick={dec} disabled={val <= min}>−</button>
+      <span className="stepper-value">{val}{suffix ? ` ${suffix}` : ''}</span>
+      <button className="stepper-btn" onClick={inc} disabled={val >= max}>+</button>
+    </div>
+  );
+};
+
+/* ── Journey stepper (ordered pipeline) ── */
+const XSmall = () => (
+  <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M7.5 2.5L2.5 7.5M2.5 2.5L7.5 7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+);
+const PlusSmall = () => (
+  <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 2V8M2 5H8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+);
+
+const JourneySection = ({ section }) => {
+  const [steps, setSteps] = useState(section.steps);
+  const [showAdd, setShowAdd] = useState(false);
+  const addRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => { if (addRef.current && !addRef.current.contains(e.target)) setShowAdd(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const usedLabels = steps.map(s => s.label);
+  const available = (section.available || []).filter(a => !usedLabels.includes(a));
+
+  const removeStep = (idx) => {
+    const updated = steps.filter((_, i) => i !== idx);
+    // last remaining non-fixed step becomes trigger
+    if (updated.length > 0) {
+      updated.forEach(s => s.trigger = false);
+      updated[updated.length - 1].trigger = true;
+    }
+    setSteps([...updated]);
+  };
+
+  const addStep = (label) => {
+    // new step goes before current trigger, becomes regular step
+    // current trigger stays as trigger
+    const newSteps = [...steps];
+    // insert before last (trigger) position
+    const triggerIdx = newSteps.findIndex(s => s.trigger);
+    newSteps.splice(triggerIdx, 0, { label });
+    setSteps(newSteps);
+    setShowAdd(false);
+  };
+
+  return (
+    <div>
+      {steps.map((step, i) => {
+        const isFirst = i === 0;
+        const isLast = i === steps.length - 1;
+        const canRemove = !step.fixed && steps.length > 2;
+        return (
+          <div className="journey-step" key={i}>
+            <div className="journey-rail">
+              {!isFirst && <div className="journey-line" />}
+              <div className={`journey-dot ${step.fixed ? 'start' : ''} ${step.trigger ? 'trigger' : ''}`} />
+              {!isLast && <div className="journey-line" />}
+            </div>
+            <div className="journey-content">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span className="journey-label">{step.label}</span>
+                {step.fixed && <span className="journey-badge start-badge">Start</span>}
+                {step.trigger && <span className="journey-badge trigger-badge">Redeems</span>}
+              </div>
+              {canRemove && (
+                <div className="journey-remove" onClick={() => removeStep(i)}><XSmall /></div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+      {available.length > 0 && (
+        <div style={{ position: 'relative' }} ref={addRef}>
+          <div className="journey-add" onClick={() => setShowAdd(!showAdd)}>
+            <PlusSmall /> Add step before redemption
+          </div>
+          {showAdd && (
+            <div className="singleselect-dropdown" style={{ left: 30, right: 'auto', minWidth: 180 }}>
+              {available.map((a, i) => (
+                <div className="singleselect-option" key={i} onClick={() => addStep(a)}>
+                  {a}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ── Activation modes (Transactional / Promotional) ── */
+const ActivationModes = ({ modes: initialModes }) => {
+  const [modes, setModes] = useState(initialModes);
+  const toggleMode = (idx) => {
+    setModes(modes.map((m, i) => i === idx ? { ...m, on: !m.on } : m));
+  };
+  return (
+    <div>
+      {modes.map((mode, i) => (
+        <div key={mode.key} style={{ borderTop: i > 0 ? '1px solid #f2f3f5' : 'none' }}>
+          <div className="drawer-row">
+            <span className="drawer-row-label">{mode.label}</span>
+            <Toggle on={mode.on} onChange={() => toggleMode(i)} />
+          </div>
+          <div style={{ fontSize: 11.5, color: '#a0a2ae', lineHeight: 1.4, paddingBottom: 8 }}>
+            {mode.description}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/* ── Budget pacing (conversion rate + intensity throttle) ── */
+const BudgetPacing = ({ section }) => {
+  const [intensity, setIntensity] = useState(section.intensity);
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+  const pct = parseInt(intensity) / 100;
+  const cap = Math.round(section.baseCap * pct);
+  const capDisplay = cap >= 1000 ? `~${(cap / 1000).toFixed(1).replace(/\.0$/, '')}K` : `~${cap}`;
+  return (
+    <div className="pacing-block">
+      <div className="pacing-row">
+        <span style={{ fontSize: 13, fontWeight: 500, color: '#1a1a2e' }}>Conversion rate</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 13, color: '#6b6d7b' }}>{section.conversionRate}</span>
+          <span className="auto-badge">from data</span>
+        </div>
+      </div>
+      <div className="pacing-row">
+        <span style={{ fontSize: 13, fontWeight: 500, color: '#1a1a2e' }}>Pacing intensity</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative' }} ref={ref}>
+          <div className="singleselect-trigger" onClick={() => setOpen(!open)}>
+            <span>{intensity}</span>
+            <span style={{ color: '#b0b2bc', fontSize: 10, flexShrink: 0 }}>▾</span>
+          </div>
+          {open && (
+            <div className="singleselect-dropdown">
+              {section.intensityChoices.map((c, i) => (
+                <div className={`singleselect-option ${c === intensity ? 'selected' : ''}`} key={i} onClick={() => { setIntensity(c); setOpen(false); }}>
+                  <div className={`singleselect-radio ${c === intensity ? 'selected' : ''}`}>
+                    {c === intensity && <div className="singleselect-radio-dot" />}
+                  </div>
+                  {c}
+                </div>
+              ))}
+            </div>
+          )}
+          <span style={{ fontSize: 12, color: '#a0a2ae' }}>→</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e' }}>{capDisplay}</span>
+          <span style={{ fontSize: 12, color: '#a0a2ae' }}>invites/day</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ── Drawer content definitions ── */
+const drawerContent = {
+  invite: {
+    title: 'Invite',
+    subtitle: 'Strategy',
+    sections: [
+      {
+        title: 'Audience',
+        type: 'audience',
+        rows: [
+          { label: 'Exclude NPS ≤', tip: 'Customers with NPS score at or below this threshold', value: '6', choices: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'] },
+          { label: 'Exclude active support tickets', tip: 'Customers with unresolved support issues', toggle: true, on: true },
+          { label: 'Exclude fraud-flagged', tip: 'Accounts flagged by fraud detection systems', toggle: true, on: true },
+          { label: 'Exclude compliance holds', tip: 'Accounts under regulatory or compliance review', toggle: true, on: true },
+          { label: 'Min. account age', tip: 'Minimum days since account creation', value: '60 days', choices: ['30 days', '60 days', '90 days', '120 days', '180 days'] },
+          { label: 'Exclude inactive accounts', tip: 'Accounts inactive beyond this threshold', value: '> 90 days', choices: ['> 30 days', '> 60 days', '> 90 days', '> 180 days', '> 365 days'] },
+        ],
+        summary: { value: '249,865 of 847,000', context: '29.5% eligible — as of today', note: 'Opted-out users are always excluded.' }
+      },
+      {
+        title: 'Triggers',
+        type: 'activation-modes',
+        modes: [
+          { key: 'transactional', label: 'Transactional', on: true, description: 'Referral ask is embedded in post-transaction moments.' },
+          { key: 'promotional', label: 'Promotional', on: true, description: 'AI-initiated outreach using Timing Insights — 1:1, not scheduled blasts.' },
+        ]
+      }
+    ]
+  },
+  rewards: {
+    title: 'Rewards Offered',
+    subtitle: 'Strategy',
+    sections: [
+      {
+        title: 'Referrer reward',
+        type: 'reward-block',
+        rows: [
+          { label: 'Tier 1 (organic)', tip: 'No incentive — relies on goodwill', value: '$0', choices: ['$0'] },
+          { label: 'Tier 2', tip: 'Low-cost nudge for warm leads', value: '$20', choices: ['$10', '$15', '$20', '$25', '$30'] },
+          { label: 'Tier 3', tip: 'Mid-range incentive for moderate intent', value: '$50', choices: ['$35', '$40', '$50', '$60', '$75'] },
+          { label: 'Tier 4', tip: 'High-value offer for hard conversions', value: '$75', choices: ['$75', '$100', '$125', '$150', '$200'] },
+        ],
+        paidAs: [
+          { label: 'Account Credit', on: true },
+          { label: 'Gift Card', on: true },
+          { label: 'Coupon', on: false },
+          { label: 'Cashback', on: false },
+        ]
+      },
+      {
+        title: 'Referee reward',
+        type: 'reward-block',
+        rows: [
+          { label: 'Tier 1 (organic)', tip: 'No incentive — relies on goodwill', value: '$0', choices: ['$0'] },
+          { label: 'Tier 2', tip: 'Welcome bonus for new sign-ups', value: '$10', choices: ['$5', '$10', '$15', '$20', '$25'] },
+          { label: 'Tier 3', tip: 'Mid-range incentive for activation', value: '$25', choices: ['$20', '$25', '$30', '$40', '$50'] },
+          { label: 'Tier 4', tip: 'High-value offer for first transaction', value: '$50', choices: ['$50', '$60', '$75', '$100'] },
+        ],
+        paidAs: [
+          { label: 'Account Credit', on: true },
+          { label: 'Coupon', on: true },
+          { label: 'Gift Card', on: false },
+          { label: 'Cashback', on: false },
+        ]
+      },
+      {
+        title: null,
+        type: 'summary',
+        summary: { note: 'Tracked via Referral Link. AI selects tier per customer based on predicted conversion.' }
+      }
+    ]
+  },
+  redemption: {
+    title: 'Redemption',
+    subtitle: 'Strategy',
+    sections: [
+      {
+        title: 'Referee journey',
+        type: 'journey',
+        steps: [
+          { label: 'Sign Up', fixed: true },
+          { label: 'KYC' },
+          { label: '1st Transaction', trigger: true },
+        ],
+        available: ['Email Verified', 'Phone Verified', 'Profile Complete', 'Card Linked', '2nd Transaction', '3rd Transaction'],
+        note: 'Steps from your data pipeline. Last step triggers the reward payout.'
+      }
+    ]
+  },
+  fatigue: {
+    title: 'Customer Fatigue',
+    subtitle: 'Guardrails',
+    sections: [
+      {
+        title: 'Limits',
+        type: 'rows',
+        rows: [
+          { label: 'Max touchpoints per stage', tip: 'Limits contact attempts per customer, per stage of the funnel', value: '2', choices: ['1', '2', '3', '4', '5'] },
+          { label: 'Minimum rest period', tip: 'Cool-down between consecutive touchpoints within a stage', stepper: { value: 2, min: 1, max: 7, suffix: 'days' } },
+          { label: 'Offer window', tip: 'How long each customer is "in play" before the offer expires', stepper: { value: 30, min: 1, max: 30, suffix: 'days' } },
+        ],
+        note: 'Touchpoint count refreshes when the user progresses to the next stage.'
+      }
+    ]
+  },
+  budget: {
+    title: 'Budget Protection',
+    subtitle: 'Guardrails',
+    sections: [
+      {
+        title: 'Pacing',
+        type: 'budget-pacing',
+        conversionRate: '2.3%',
+        baseCap: 1500,
+        intensity: '100%',
+        intensityChoices: ['50%', '75%', '80%', '90%', '100%', '110%', '125%', '150%'],
+      },
+      {
+        title: 'Safeguards',
+        type: 'multiplier-rows',
+        rows: [
+          { label: 'Max outstanding offers', tip: 'Total uncommitted reward liability. If hit, engine pauses new outreach.', multiplier: '2.0x', choices: ['1.5x', '2.0x', '2.5x', '3.0x', '4.0x'], ref: 'budget', result: '$300,000' },
+          { label: 'Spend anomaly pause', tip: 'Auto-pause if actual paid conversions spike massively in one day.', multiplier: '5.0x', choices: ['3.0x', '5.0x', '7.0x', '10.0x'], ref: 'daily pace', result: '$25,000/day' },
+        ]
+      }
+    ]
+  },
+  fraud: {
+    title: 'Fraud Prevention',
+    subtitle: 'Guardrails',
+    sections: [
+      {
+        title: 'Detection',
+        type: 'rows',
+        rows: [
+          { label: 'Self-referral blocker', tip: 'Detects users referring themselves', value: 'Standard', richChoices: [
+            { value: 'Standard', desc: 'Rejects identical IP addresses.' },
+            { value: 'Aggressive', desc: 'Adds shared device and Wi-Fi detection.' }
+          ]},
+          { label: 'Network & botnet shield', tip: 'Detects coordinated fraud networks', value: 'Aggressive', richChoices: [
+            { value: 'Standard', desc: 'Blocks datacenters, TOR, and high-risk proxies.' },
+            { value: 'Aggressive', desc: 'Adds behavioral cluster detection.' }
+          ]},
+        ]
+      },
+      {
+        title: 'Suspicious escrow',
+        type: 'conditional',
+        ifRow: { label: 'Conversions', value: '3.0x', choices: ['2.5x', '3.0x', '3.5x', '4.0x', '4.5x', '5.0x'], suffix: 'in 24h' },
+        thenRow: { label: 'Hold period', stepper: { value: 7, min: 1, max: 30, suffix: 'days' } },
+      },
+      {
+        title: 'Limits',
+        type: 'rows',
+        rows: [
+          { label: 'Link hijacking limit', tip: 'Max payouts per referral link. Link auto-invalidates after cap.', stepper: { value: 5, min: 1, max: 20, suffix: 'payouts/link' } },
+        ]
+      }
+    ]
   }
-});
+};
+
+/* ── Drawer ── */
+const Drawer = ({ blockKey, onClose, onNavigate }) => {
+  const data = blockKey ? drawerContent[blockKey] : null;
+  const isOpen = !!data;
+  const currentIdx = DRAWER_ORDER.indexOf(blockKey);
+  const canPrev = currentIdx > 0;
+  const canNext = currentIdx < DRAWER_ORDER.length - 1;
+
+  const goPrev = () => { if (canPrev) onNavigate(DRAWER_ORDER[currentIdx - 1]); };
+  const goNext = () => { if (canNext) onNavigate(DRAWER_ORDER[currentIdx + 1]); };
+
+  /* Audience toggles with local state */
+  const AudienceSection = ({ section }) => {
+    const [rows, setRows] = useState(section.rows);
+    const toggleRow = (idx) => {
+      setRows(rows.map((r, i) => i === idx ? { ...r, on: !r.on } : r));
+    };
+
+    return (
+      <>
+        {rows.map((row, ri) => (
+          <div className="drawer-row" key={ri}>
+            <span className="drawer-row-label" data-tip={row.tip || undefined}>
+              {row.label}
+              {row.detail && <span style={{ fontSize: 12, color: '#8b8d98', fontWeight: 400, marginLeft: 4 }}>{row.detail}</span>}
+            </span>
+            {row.toggle ? (
+              <Toggle on={row.on} onChange={() => toggleRow(ri)} />
+            ) : row.choices ? (
+              <SingleSelect value={row.value} choices={row.choices} />
+            ) : (
+              <span className="drawer-row-value">{row.value}</span>
+            )}
+          </div>
+        ))}
+        {section.summary && (
+          <div className="live-summary" style={{ marginTop: 8 }}>
+            <div className="live-summary-top">
+              <span className="live-summary-value">{section.summary.value}</span>
+              <span className="live-summary-context">{section.summary.context}</span>
+            </div>
+            {section.summary.note && (
+              <div className="live-summary-note">{section.summary.note}</div>
+            )}
+          </div>
+        )}
+      </>
+    );
+  };
+
+  return (
+    <>
+      <div className={`drawer-backdrop ${isOpen ? 'open' : ''}`} onClick={onClose} />
+      <div className={`drawer-panel ${isOpen ? 'open' : ''}`}>
+        {data && (
+          <>
+            <div className="drawer-header">
+              <div className="drawer-header-top">
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: '#1a1a2e' }}>{data.title}</div>
+                  <div className="drawer-header-sub">{data.subtitle}</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  {/* Navigation */}
+                  <div className="drawer-nav">
+                    <button className="drawer-nav-btn" onClick={goPrev} disabled={!canPrev}><ChevronUp /></button>
+                    <span className="drawer-nav-count">{currentIdx + 1} / {DRAWER_ORDER.length}</span>
+                    <button className="drawer-nav-btn" onClick={goNext} disabled={!canNext}><ChevronDown /></button>
+                  </div>
+                  <div className="drawer-close" onClick={onClose}><CloseIcon /></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="drawer-body">
+              {data.sections.map((section, si) => (
+                <div className="drawer-section" key={`${blockKey}-${si}`}>
+                  {section.title && <div className="drawer-section-title">{section.title}</div>}
+
+                  {section.type === 'audience' && (
+                    <AudienceSection section={section} />
+                  )}
+
+                  {section.type === 'activation-modes' && (
+                    <ActivationModes modes={section.modes} />
+                  )}
+
+                  {section.type === 'budget-pacing' && (
+                    <BudgetPacing section={section} />
+                  )}
+
+                  {section.type === 'multiplier-rows' && section.rows && (
+                    section.rows.map((row, ri) => (
+                      <div className="drawer-row" key={ri} style={{ minHeight: 44 }}>
+                        <span className="drawer-row-label" data-tip={row.tip || undefined}>{row.label}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <SingleSelect value={row.multiplier} choices={row.choices} />
+                          <span className="multiplier-formula">{row.ref} =</span>
+                          <span className="multiplier-result">{row.result}</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+
+                  {section.type === 'conditional' && (
+                    <div className="conditional-block">
+                      <div className="conditional-row">
+                        <span className="conditional-keyword">If</span>
+                        <span className="drawer-row-label" style={{ flex: 1 }}>{section.ifRow.label}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <SingleSelect value={section.ifRow.value} choices={section.ifRow.choices} />
+                          {section.ifRow.suffix && <span style={{ fontSize: 12, color: '#a0a2ae' }}>{section.ifRow.suffix}</span>}
+                        </div>
+                      </div>
+                      <div className="conditional-row">
+                        <span className="conditional-keyword">Then</span>
+                        <span className="drawer-row-label" style={{ flex: 1 }}>{section.thenRow.label}</span>
+                        {section.thenRow.stepper && (
+                          <NumericStepper value={section.thenRow.stepper.value} min={section.thenRow.stepper.min} max={section.thenRow.stepper.max} suffix={section.thenRow.stepper.suffix} />
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {section.type === 'journey' && (
+                    <JourneySection section={section} />
+                  )}
+
+                  {section.type === 'reward-block' && (
+                    <>
+                      {section.rows.map((row, ri) => (
+                        <div className="drawer-row" key={ri}>
+                          <span className="drawer-row-label" data-tip={row.tip || undefined}>{row.label}</span>
+                          {row.choices ? (
+                            <SingleSelect value={row.value} choices={row.choices} />
+                          ) : (
+                            <span className="drawer-row-value">{row.value}</span>
+                          )}
+                        </div>
+                      ))}
+                      {section.paidAs && (
+                        <div className="drawer-row" style={{ marginTop: 4 }}>
+                          <span className="drawer-row-label" style={{ fontSize: 10, color: '#8b8d98', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600 }}>Paid as</span>
+                          <MultiSelect items={section.paidAs} />
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {section.type === 'rows' && section.rows && (
+                    section.rows.map((row, ri) => (
+                      <div className="drawer-row" key={ri}>
+                        <span className="drawer-row-label" data-tip={row.tip || undefined}>{row.label}</span>
+                        {row.stepper ? (
+                          <NumericStepper value={row.stepper.value} min={row.stepper.min} max={row.stepper.max} suffix={row.stepper.suffix} />
+                        ) : row.richChoices ? (
+                          <RichSelect value={row.value} richChoices={row.richChoices} />
+                        ) : row.choices ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <SingleSelect value={row.value} choices={row.choices} />
+                            {row.suffix && <span style={{ fontSize: 12, color: '#a0a2ae' }}>{row.suffix}</span>}
+                            {row.ref && <span className="auto-badge">{row.ref}</span>}
+                          </div>
+                        ) : row.editable ? (
+                          <SingleSelect value={row.value} choices={row.options ? row.options.split(' / ').map(s => s.trim()) : [row.value]} />
+                        ) : row.formula ? (
+                          <span className="drawer-row-derived">{row.value}<span className="auto-badge">{row.formula}</span></span>
+                        ) : (
+                          <span className="drawer-row-value">{row.value}</span>
+                        )}
+                      </div>
+                    ))
+                  )}
+
+                  {section.type === 'multiselect' && (
+                    <div className="drawer-row" style={{ borderTop: 'none' }}>
+                      <span className="drawer-row-label">Active</span>
+                      <MultiSelect items={section.items} />
+                    </div>
+                  )}
+
+                  {section.type === 'summary' && section.summary && (
+                    <div className="live-summary">
+                      {section.summary.note && (
+                        <div className="live-summary-note">{section.summary.note}</div>
+                      )}
+                    </div>
+                  )}
+
+                  {section.note && (
+                    <div style={{ fontSize: 11.5, color: '#a0a2ae', marginTop: 10, lineHeight: 1.5, fontStyle: 'italic' }}>{section.note}</div>
+                  )}
+                </div>
+              ))}
+
+              {/* Semantic Engine — add rule via AI */}
+              <div className="drawer-section" style={{ borderTop: '1px solid #f0f1f3' }}>
+                <div className="add-rule-btn">
+                  <div className="add-rule-plus"><Sparkle /></div>
+                  Add rule with AI
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
+};
+
+/* ── Card Row ── */
+const CardRow = ({ title, onClick }) => (
+  <div className="card-row" onClick={onClick}>
+    <span className="card-row-title">{title}</span>
+    <ChevronRight />
+  </div>
+);
+
+/* ── App ── */
+const App = () => {
+  const [activeDrawer, setActiveDrawer] = useState(null);
+  const open = (key) => setActiveDrawer(key);
+  const close = () => setActiveDrawer(null);
+
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-10">
+
+      {/* Strategy */}
+      <div style={{ marginBottom: 6, padding: '0 4px' }}>
+        <span style={{ fontSize: 10, color: '#8b8d98', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600 }}>Strategy</span>
+      </div>
+      <div className="card-group mb-8">
+        <CardRow title="Invite" onClick={() => open('invite')} />
+        <CardRow title="Rewards Offered" onClick={() => open('rewards')} />
+        <CardRow title="Redemption" onClick={() => open('redemption')} />
+      </div>
+
+      {/* Guardrails */}
+      <div style={{ marginBottom: 6, padding: '0 4px' }}>
+        <span style={{ fontSize: 10, color: '#8b8d98', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600 }}>Guardrails</span>
+      </div>
+      <div className="card-group mb-8">
+        <CardRow title="Customer Fatigue" onClick={() => open('fatigue')} />
+        <CardRow title="Budget Protection" onClick={() => open('budget')} />
+        <CardRow title="Fraud Prevention" onClick={() => open('fraud')} />
+      </div>
+
+      {/* Launch */}
+      <div className="text-center">
+        <div className="inline-block bg-slate-900 text-white px-8 py-3 rounded-xl text-sm font-semibold cursor-pointer hover:bg-slate-800 transition-colors">Launch Campaigns</div>
+        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 8 }}>You're approving the budget and the goal. Edoo handles the rest.</p>
+      </div>
+
+      {/* Drawer */}
+      <Drawer blockKey={activeDrawer} onClose={close} onNavigate={open} />
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
 </body>
 </html>
