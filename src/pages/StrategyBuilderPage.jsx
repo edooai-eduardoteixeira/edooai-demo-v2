@@ -4,6 +4,7 @@ import CTAButton from '../components/CTAButton.jsx';
 import AnimatedNumber from '../components/AnimatedNumber.jsx';
 import Tooltip from '../components/Tooltip.jsx';
 import { useProjections } from '../hooks/useProjections.js';
+import StrategyCards from '../components/StrategyCards.jsx';
 import tl from '../styles/StrategyTimeline.module.css';
 
 /* ───────── Sparkline helpers ───────── */
@@ -916,25 +917,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
             <span className={tl.sectionLabel}>Strategy Preview — Timeline Layout</span>
             <h3 className={tl.sectionTitle}>Referral Strategy and User Journey</h3>
 
-            {/* Context Card — Strategy Rules */}
-            <div className={tl.contextCard}>
-              <div className={tl.contextCardTitle}>Strategy Rules</div>
-              <div className={tl.fieldsGrid}>
-                <div className={tl.fieldLabel}>Activated by</div>
-                <span className={tl.fieldVal}>All Transactions, Timing Insights</span>
-                <div className={tl.fieldLabel}>Redemption upon</div>
-                <span className={tl.fieldVal}>1st Transaction</span>
-                <div className={tl.fieldLabel}>Redemption journey</div>
-                <span className={tl.fieldVal}>Sign Up, KYC</span>
-                <div className={tl.fieldLabel}>Reward</div>
-                <span className={tl.fieldVal}>$0, $20, $50, $75</span>
-                <div className={tl.fieldLabel}>Paid as</div>
-                <span className={tl.fieldVal}>Organic, Gift Card, Coupon, Account Credit, Cashback</span>
-                <div className={tl.fieldLabel}>Tracked via</div>
-                <span className={tl.fieldVal}>Referral Link</span>
-              </div>
-            </div>
-
             {/* Timeline — Two-Column Grid */}
             <div className={tl.timeline}>
 
@@ -1199,126 +1181,18 @@ export default function StrategyBuilderPage({ config, onNext }) {
         )}
 
         {/* ════════════════════════════════════════════
-            SECTION 3 — Guardrails
+            SECTION 3 — Strategy & Guardrails Cards
             ════════════════════════════════════════════ */}
-        {showRisk && (() => {
-          const gr = engineParams.guardrails;
-          const eligibleCount = Math.round(engineParams.totalCustomers * engineParams.eligibilityRate);
-          const eligiblePct = (engineParams.eligibilityRate * 100).toFixed(1);
-          const maxOutstanding = formatCurrency(budget * 2);
-          const autoPauseThreshold = formatCurrency(Math.round((budget / 30) * 5));
-
-          return (
+        {showRisk && (
           <section
             style={{
               marginBottom: '2rem',
               animation: 'fadeIn 0.4s ease forwards',
             }}
           >
-            <div className={tl.contextCard}>
-              <div className={tl.contextCardTitle}>Guardrails</div>
-              <div className={tl.fieldsGrid}>
-                {/* ── FEAR 1: Audience Protection ── */}
-                <div className={tl.fieldLabel}>{gr.audienceProtection.label}</div>
-                <div className={tl.fieldVal}>
-                  <div style={{ marginBottom: 6 }}>
-                    {eligibleCount.toLocaleString('en-US')} of {engineParams.totalCustomers.toLocaleString('en-US')} customers eligible ({eligiblePct}%)
-                  </div>
-                  <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                    Exclude:
-                    {gr.audienceProtection.filters.map((f) => {
-                      let label = f.label;
-                      if (f.id === 'low_nps') label = `NPS \u2264 ${f.default}`;
-                      if (f.id === 'min_tenure') label = `< ${f.default} days`;
-                      if (f.id === 'inactive') label = `Inactive > ${f.default} days`;
-                      return (
-                        <div key={f.id} style={{ paddingLeft: 12, lineHeight: 1.6 }}>
-                          {label}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* ── FEAR 2: Customer Fatigue ── */}
-                <div className={tl.fieldLabel}>{gr.customerFatigue.label}</div>
-                <span className={tl.fieldVal}>
-                  {gr.customerFatigue.rules.map((r, i) => {
-                    let val;
-                    if (r.id === 'max_touchpoints') val = `Max ${r.default} touchpoints per stage`;
-                    else if (r.id === 'rest_period') val = `${r.default}-day rest between contacts`;
-                    else if (r.id === 'offer_window') val = `${r.default}-day offer window`;
-                    else val = `${r.label}: ${r.default}`;
-                    return (
-                      <span key={r.id}>
-                        {i > 0 && ' \u00b7 '}
-                        {val}
-                      </span>
-                    );
-                  })}
-                </span>
-
-                {/* ── FEAR 3: Financial Controls ── */}
-                <div className={tl.fieldLabel}>{gr.financialControls.label}</div>
-                <span className={tl.fieldVal}>
-                  {gr.financialControls.rules.map((r, i) => {
-                    let val;
-                    if (r.id === 'daily_invite_cap') val = `Daily invite cap: ~${dailyJourneyTarget || '\u2014'}`;
-                    else if (r.id === 'max_outstanding') val = `Outstanding: ~${maxOutstanding} in flight`;
-                    else if (r.id === 'spend_anomaly') val = `Auto-pause: payouts > ${autoPauseThreshold}/day`;
-                    else val = `${r.label}: ${r.default}`;
-                    return (
-                      <span key={r.id}>
-                        {i > 0 && ' \u00b7 '}
-                        {val}
-                      </span>
-                    );
-                  })}
-                </span>
-
-                {/* ── FEAR 4: Fraud Prevention ── */}
-                <div className={tl.fieldLabel}>{gr.fraudPrevention.label}</div>
-                <div className={tl.fieldVal}>
-                  <div>
-                    {gr.fraudPrevention.mechanisms.map((m, i) => {
-                      let val;
-                      if (m.id === 'self_referral') val = `${m.label} (${m.default === 'standard' ? 'Standard' : 'Aggressive'})`;
-                      else if (m.id === 'suspicious_escrow') val = `${m.label} (>${m.default.threshold}/${m.default.window} \u2192 ${m.default.holdDays}-day hold)`;
-                      else if (m.id === 'link_hijacking') val = `Link cap: ${m.default}/link`;
-                      else if (m.id === 'network_shield') val = `${m.label} (${m.default === 'aggressive' ? 'Aggressive' : 'Standard'})`;
-                      else val = `${m.label}: ${m.default}`;
-                      return (
-                        <span key={m.id}>
-                          {i > 0 && ' \u00b7 '}
-                          {val}
-                        </span>
-                      );
-                    })}
-                  </div>
-                  <div style={{ marginTop: 6, fontSize: 13, color: 'var(--text-secondary)' }}>
-                    Est. fraud saved: {formatCurrency(fraudSaved || 0)}
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <p
-                style={{
-                  fontSize: 'var(--font-size-xs)',
-                  fontWeight: 500,
-                  color: 'var(--text-tertiary)',
-                  margin: 0,
-                  marginTop: 16,
-                  paddingTop: 12,
-                  borderTop: '1px solid var(--border-light)',
-                }}
-              >
-                {gr.fraudPrevention.footer}
-              </p>
-            </div>
+            <StrategyCards />
           </section>
-          );
-        })()}
+        )}
       </main>
 
       {/* ── Approve button (sticky bottom) ── */}

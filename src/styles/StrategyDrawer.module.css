@@ -1,0 +1,694 @@
+/* ═══════════════════════════════════════════
+   Strategy Cards + Drawer — Design System
+   All colors via CSS variables from global.css
+   ═══════════════════════════════════════════ */
+
+/* ── Card Stack ── */
+.cardGroup {
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.cardRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.cardRow:hover {
+  background: var(--accent-subtle);
+}
+
+.cardRow + .cardRow {
+  border-top: 1px solid var(--border);
+}
+
+.cardRowTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ── Drawer Overlay ── */
+.drawerBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.drawerBackdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drawerPanel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  max-width: 90vw;
+  background: var(--surface);
+  z-index: 101;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+}
+
+.drawerPanel.open {
+  transform: translateX(0);
+}
+
+/* ── Drawer Header ── */
+.drawerHeader {
+  padding: 16px 24px 14px;
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+.drawerHeaderTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.drawerHeaderSub {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.drawerClose {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  transition: background var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.drawerClose:hover {
+  background: var(--accent-light);
+  color: var(--text-primary);
+}
+
+/* ── Drawer Nav ── */
+.drawerNav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.drawerNavBtn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  transition: all var(--transition-fast);
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+.drawerNavBtn:hover:not(:disabled) {
+  background: var(--accent-light);
+  color: var(--text-primary);
+}
+
+.drawerNavBtn:disabled {
+  color: var(--color-gray-300);
+  cursor: default;
+}
+
+.drawerNavCount {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  padding: 0 4px;
+  min-width: 36px;
+  text-align: center;
+}
+
+/* ── Drawer Body ── */
+.drawerBody {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.drawerSection {
+  padding: 12px 24px;
+}
+
+.drawerSection + .drawerSection {
+  border-top: 1px solid var(--border-light);
+}
+
+.drawerSectionTitle {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* ── Drawer Rows ── */
+.drawerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.drawerRow + .drawerRow {
+  border-top: 1px solid var(--border-light);
+}
+
+.drawerRowLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  position: relative;
+  cursor: default;
+}
+
+.drawerRowLabel[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: 4px;
+  background: var(--text-primary);
+  color: var(--surface);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 400;
+  white-space: nowrap;
+  z-index: 20;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.drawerRowValue {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+/* ── Single-select ── */
+.singleselectTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: var(--accent-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.singleselectTrigger:hover {
+  border-color: var(--color-gray-400);
+}
+
+.singleselectDropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+  min-width: 140px;
+  padding: 4px 0;
+}
+
+.singleselectOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  user-select: none;
+}
+
+.singleselectOption:hover {
+  background: var(--accent-subtle);
+}
+
+.singleselectOption.selected {
+  color: #3b5bdb;
+  font-weight: 500;
+}
+
+.singleselectRadio {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-gray-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.singleselectRadio.selected {
+  border-color: var(--accent);
+}
+
+.singleselectRadioDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ── Derived / Auto badge ── */
+.drawerRowDerived {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  font-weight: 400;
+}
+
+.autoBadge {
+  font-size: 9px;
+  color: var(--text-tertiary);
+  background: var(--accent-light);
+  padding: 1.5px 6px;
+  border-radius: 3px;
+  margin-left: 6px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* ── Toggle ── */
+.toggleTrack {
+  width: 34px;
+  height: 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: background var(--transition-base);
+  flex-shrink: 0;
+}
+
+.toggleTrack.on {
+  background: var(--accent);
+}
+
+.toggleTrack.off {
+  background: var(--color-gray-300);
+}
+
+.toggleKnob {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--surface);
+  position: absolute;
+  top: 2px;
+  transition: left var(--transition-base);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.toggleTrack.on .toggleKnob {
+  left: 16px;
+}
+
+.toggleTrack.off .toggleKnob {
+  left: 2px;
+}
+
+/* ── Multi-select ── */
+.multiselectTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: var(--accent-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+  max-width: 260px;
+}
+
+.multiselectTrigger:hover {
+  border-color: var(--color-gray-400);
+}
+
+.multiselectDropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+  min-width: 200px;
+  padding: 4px 0;
+}
+
+.multiselectOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  user-select: none;
+}
+
+.multiselectOption:hover {
+  background: var(--accent-subtle);
+}
+
+.multiselectCheck {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid var(--color-gray-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.multiselectCheck.checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ── Live Summary ── */
+.liveSummary {
+  background: var(--accent-subtle);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 4px;
+}
+
+.liveSummaryTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.liveSummaryValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.liveSummaryContext {
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+}
+
+.liveSummaryNote {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* ── Numeric Stepper ── */
+.stepperWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  background: var(--accent-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.stepperBtn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+  padding: 0;
+}
+
+.stepperBtn:hover:not(:disabled) {
+  background: var(--accent-light);
+  color: var(--text-primary);
+}
+
+.stepperBtn:disabled {
+  color: var(--color-gray-300);
+  cursor: default;
+}
+
+.stepperValue {
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-width: 52px;
+  text-align: center;
+  padding: 0 2px;
+}
+
+/* ── Journey Stepper ── */
+.journeyStep {
+  display: flex;
+  align-items: stretch;
+  min-height: 44px;
+}
+
+.journeyRail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.journeyDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--color-gray-300);
+  background: var(--surface);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.journeyDot.start {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.journeyDot.trigger {
+  border-color: #3b5bdb;
+  background: #3b5bdb;
+}
+
+.journeyLine {
+  width: 1.5px;
+  background: var(--border);
+  flex: 1;
+  min-height: 8px;
+}
+
+.journeyContent {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0 6px 10px;
+}
+
+.journeyLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.journeyBadge {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.journeyBadge.startBadge {
+  color: var(--text-tertiary);
+  background: var(--accent-light);
+}
+
+.journeyBadge.triggerBadge {
+  color: #3b5bdb;
+  background: #eef1ff;
+}
+
+.journeyRemove {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--color-gray-400);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+.journeyRemove:hover {
+  background: #fef2f2;
+  color: var(--danger);
+}
+
+.journeyAdd {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0 4px 30px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.journeyAdd:hover {
+  color: #3b5bdb;
+}
+
+/* ── Budget Pacing ── */
+.pacingBlock {
+  background: var(--accent-subtle);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.pacingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+}
+
+/* ── Multiplier Formula ── */
+.multiplierFormula {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.multiplierResult {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* ── Conditional Block (IF/THEN) ── */
+.conditionalBlock {
+  background: var(--accent-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.conditionalRow {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  gap: 10px;
+}
+
+.conditionalKeyword {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  min-width: 32px;
+}
+
+/* ── Add Rule Button ── */
+.addRuleBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  font-size: 13px;
+  color: #3b5bdb;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity var(--transition-fast);
+}
+
+.addRuleBtn:hover {
+  opacity: 0.8;
+}
+
+.addRulePlus {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: #eef1ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Section Group Label ── */
+.groupLabel {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 6px;
+  padding: 0 4px;
+}
