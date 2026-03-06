@@ -3,35 +3,65 @@
    All colors via CSS variables from global.css
    ═══════════════════════════════════════════ */
 
-/* ── Card Stack ── */
-.cardGroup {
-  background: var(--surface);
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  overflow: hidden;
+/* ── Section 3 Zone (full-width background band) ── */
+.section3Zone {
+  background: var(--color-gray-50);
+  margin-left: -3rem;
+  margin-right: -3rem;
+  padding: 48px 3rem 56px;
+  animation: fadeIn 0.4s ease forwards;
 }
 
-.cardRow {
+.group {
+  margin-bottom: 28px;
+}
+
+.configRows {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.configRow {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
+  gap: 4px;
+  padding: 8px 2px;
   cursor: pointer;
-  transition: background var(--transition-fast);
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast);
 }
 
-.cardRow:hover {
-  background: var(--accent-subtle);
+.configRow:hover .configRowTitle {
+  color: var(--text-secondary);
 }
 
-.cardRow + .cardRow {
-  border-top: 1px solid var(--border);
+.configRow:hover .configRowChevron {
+  color: var(--text-secondary);
 }
 
-.cardRowTitle {
+.configRowTitle {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
+  transition: color var(--transition-fast);
+}
+
+.configRowChevron {
+  flex-shrink: 0;
+  color: var(--color-gray-400);
+  transition: color var(--transition-fast);
+}
+
+.ctaWrap {
+  margin-top: 12px;
+}
+
+.ctaSubtitle {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-top: 10px;
+  line-height: 1.4;
 }
 
 /* ── Drawer Overlay ── */
@@ -760,6 +790,6 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-weight: 600;
-  margin-bottom: 6px;
-  padding: 0 4px;
+  margin-bottom: 4px;
+  padding: 0 2px;
 }

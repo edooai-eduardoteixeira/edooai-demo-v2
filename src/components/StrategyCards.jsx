@@ -10,9 +10,9 @@ import s from '../styles/StrategyDrawer.module.css';
 const DRAWER_ORDER = ['invite', 'rewards', 'redemption', 'fatigue', 'budget', 'fraud'];
 
 /* ── Icons ── */
-const ChevronRight = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-    <path d="M6 4L10 8L6 12" stroke="var(--color-gray-400)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+const ChevronRight = ({ className }) => (
+  <svg className={className} width="14" height="14" viewBox="0 0 16 16" fill="none">
+    <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 const CloseIcon = () => (
@@ -741,34 +741,48 @@ const Drawer = ({ blockKey, onClose, onNavigate }) => {
    CardRow + StrategyCards (exported)
    ══════════════════════════════════════ */
 
-const CardRow = ({ title, onClick }) => (
-  <div className={s.cardRow} onClick={onClick}>
-    <span className={s.cardRowTitle}>{title}</span>
-    <ChevronRight />
+const ConfigRow = ({ title, onClick }) => (
+  <div className={s.configRow} onClick={onClick}>
+    <span className={s.configRowTitle}>{title}</span>
+    <ChevronRight className={s.configRowChevron} />
   </div>
 );
 
-export default function StrategyCards() {
+export default function StrategyCards({ ctaButton, ctaSubtitle }) {
   const [activeDrawer, setActiveDrawer] = useState(null);
   const open = (key) => setActiveDrawer(key);
   const close = () => setActiveDrawer(null);
 
   return (
     <>
-      {/* Strategy */}
-      <div className={s.groupLabel}>Strategy</div>
-      <div className={s.cardGroup} style={{ marginBottom: 32 }}>
-        <CardRow title="Invite" onClick={() => open('invite')} />
-        <CardRow title="Rewards Offered" onClick={() => open('rewards')} />
-        <CardRow title="Redemption" onClick={() => open('redemption')} />
-      </div>
+      <div className={s.section3Zone}>
+        {/* Strategy */}
+        <div className={s.group}>
+          <div className={s.groupLabel}>Strategy</div>
+          <div className={s.configRows}>
+            <ConfigRow title="Invite" onClick={() => open('invite')} />
+            <ConfigRow title="Rewards Offered" onClick={() => open('rewards')} />
+            <ConfigRow title="Redemption" onClick={() => open('redemption')} />
+          </div>
+        </div>
 
-      {/* Guardrails */}
-      <div className={s.groupLabel}>Guardrails</div>
-      <div className={s.cardGroup} style={{ marginBottom: 32 }}>
-        <CardRow title="Customer Fatigue" onClick={() => open('fatigue')} />
-        <CardRow title="Budget Protection" onClick={() => open('budget')} />
-        <CardRow title="Fraud Prevention" onClick={() => open('fraud')} />
+        {/* Guardrails */}
+        <div className={s.group}>
+          <div className={s.groupLabel}>Guardrails</div>
+          <div className={s.configRows}>
+            <ConfigRow title="Customer Fatigue" onClick={() => open('fatigue')} />
+            <ConfigRow title="Budget Protection" onClick={() => open('budget')} />
+            <ConfigRow title="Fraud Prevention" onClick={() => open('fraud')} />
+          </div>
+        </div>
+
+        {/* CTA inside zone */}
+        {ctaButton && (
+          <div className={s.ctaWrap}>
+            {ctaButton}
+            {ctaSubtitle && <div className={s.ctaSubtitle}>{ctaSubtitle}</div>}
+          </div>
+        )}
       </div>
 
       {/* Drawer */}

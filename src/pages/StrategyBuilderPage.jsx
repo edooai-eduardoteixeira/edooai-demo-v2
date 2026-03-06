@@ -897,40 +897,10 @@ export default function StrategyBuilderPage({ config, onNext }) {
             SECTION 3 — Strategy & Guardrails Cards
             ════════════════════════════════════════════ */}
         {showRisk && (
-          <section
-            style={{
-              marginBottom: '2rem',
-              animation: 'fadeIn 0.4s ease forwards',
-            }}
-          >
-            <StrategyCards />
-          </section>
-        )}
-        {/* ── Approve button (fixed at end of content) ── */}
-        {showCTA && (
-          <div
-            style={{
-              borderTop: '1px solid var(--border)',
-              backgroundColor: 'var(--surface)',
-              padding: '1.25rem 3rem',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.5rem',
-            }}
-          >
-            <CTAButton onClick={onNext}>Launch Campaigns</CTAButton>
-            <p
-              style={{
-                fontSize: 'var(--font-size-xs)',
-                color: 'var(--text-tertiary)',
-                margin: 0,
-                textAlign: 'center',
-              }}
-            >
-              {approvalScope}
-            </p>
-          </div>
+          <StrategyCards
+            ctaButton={showCTA ? <CTAButton onClick={onNext}>Launch Campaigns</CTAButton> : null}
+            ctaSubtitle={showCTA ? approvalScope : null}
+          />
         )}
       </main>
 
