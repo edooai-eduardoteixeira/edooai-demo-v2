@@ -3,13 +3,20 @@
    All colors via CSS variables from global.css
    ═══════════════════════════════════════════ */
 
-/* ── Section 3 Zone (full-width background band) ── */
+/* ── Section 3 Zone (full-bleed background band) ── */
 .section3Zone {
   background: var(--color-gray-50);
-  margin-left: -3rem;
-  margin-right: -3rem;
-  padding: 48px 3rem 56px;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  padding: 48px 0 56px;
   animation: fadeIn 0.4s ease forwards;
+}
+
+/* Re-center content to match page grid */
+.section3Inner {
+  max-width: calc(1100px - 6rem);
+  margin: 0 auto;
+  padding: 0 3rem;
 }
 
 .group {
