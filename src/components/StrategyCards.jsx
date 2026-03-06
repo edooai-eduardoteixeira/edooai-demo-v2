@@ -756,33 +756,35 @@ export default function StrategyCards({ ctaButton, ctaSubtitle }) {
   return (
     <>
       <div className={s.section3Zone}>
-        {/* Strategy */}
-        <div className={s.group}>
-          <div className={s.groupLabel}>Strategy</div>
-          <div className={s.configRows}>
-            <ConfigRow title="Invite" onClick={() => open('invite')} />
-            <ConfigRow title="Rewards Offered" onClick={() => open('rewards')} />
-            <ConfigRow title="Redemption" onClick={() => open('redemption')} />
+        <div className={s.section3Inner}>
+          {/* Strategy */}
+          <div className={s.group}>
+            <div className={s.groupLabel}>Strategy</div>
+            <div className={s.configRows}>
+              <ConfigRow title="Invite" onClick={() => open('invite')} />
+              <ConfigRow title="Rewards Offered" onClick={() => open('rewards')} />
+              <ConfigRow title="Redemption" onClick={() => open('redemption')} />
+            </div>
           </div>
-        </div>
 
-        {/* Guardrails */}
-        <div className={s.group}>
-          <div className={s.groupLabel}>Guardrails</div>
-          <div className={s.configRows}>
-            <ConfigRow title="Customer Fatigue" onClick={() => open('fatigue')} />
-            <ConfigRow title="Budget Protection" onClick={() => open('budget')} />
-            <ConfigRow title="Fraud Prevention" onClick={() => open('fraud')} />
+          {/* Guardrails */}
+          <div className={s.group}>
+            <div className={s.groupLabel}>Guardrails</div>
+            <div className={s.configRows}>
+              <ConfigRow title="Customer Fatigue" onClick={() => open('fatigue')} />
+              <ConfigRow title="Budget Protection" onClick={() => open('budget')} />
+              <ConfigRow title="Fraud Prevention" onClick={() => open('fraud')} />
+            </div>
           </div>
-        </div>
 
-        {/* CTA inside zone */}
-        {ctaButton && (
-          <div className={s.ctaWrap}>
-            {ctaButton}
-            {ctaSubtitle && <div className={s.ctaSubtitle}>{ctaSubtitle}</div>}
-          </div>
-        )}
+          {/* CTA inside zone */}
+          {ctaButton && (
+            <div className={s.ctaWrap}>
+              {ctaButton}
+              {ctaSubtitle && <div className={s.ctaSubtitle}>{ctaSubtitle}</div>}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Drawer */}
