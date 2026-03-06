@@ -914,8 +914,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
               animation: 'fadeIn 0.4s ease forwards',
             }}
           >
-            <span className={tl.sectionLabel}>Strategy Preview — Timeline Layout</span>
-            <h3 className={tl.sectionTitle}>Referral Strategy and User Journey</h3>
+            <h3 className={tl.sectionTitle}>What Users See</h3>
 
             {/* Timeline — Two-Column Grid */}
             <div className={tl.timeline}>
@@ -1193,36 +1192,33 @@ export default function StrategyBuilderPage({ config, onNext }) {
             <StrategyCards />
           </section>
         )}
-      </main>
-
-      {/* ── Approve button (sticky bottom) ── */}
-      {showCTA && (
-        <div
-          style={{
-            position: 'sticky',
-            bottom: 0,
-            borderTop: '1px solid var(--border)',
-            backgroundColor: 'var(--surface)',
-            padding: '1.25rem 3rem',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '0.5rem',
-          }}
-        >
-          <CTAButton onClick={onNext}>Launch Campaigns</CTAButton>
-          <p
+        {/* ── Approve button (fixed at end of content) ── */}
+        {showCTA && (
+          <div
             style={{
-              fontSize: 'var(--font-size-xs)',
-              color: 'var(--text-tertiary)',
-              margin: 0,
-              textAlign: 'center',
+              borderTop: '1px solid var(--border)',
+              backgroundColor: 'var(--surface)',
+              padding: '1.25rem 3rem',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.5rem',
             }}
           >
-            {approvalScope}
-          </p>
-        </div>
-      )}
+            <CTAButton onClick={onNext}>Launch Campaigns</CTAButton>
+            <p
+              style={{
+                fontSize: 'var(--font-size-xs)',
+                color: 'var(--text-tertiary)',
+                margin: 0,
+                textAlign: 'center',
+              }}
+            >
+              {approvalScope}
+            </p>
+          </div>
+        )}
+      </main>
 
       <style>{`
         @keyframes blink { 50% { opacity: 0; } }
