@@ -92,7 +92,7 @@ const neobank = {
   // Budget
   budgetSlider: {
     min: 50000,
-    max: 500000,
+    max: 300000,
     step: 5000,
     default: 150000,
   },
@@ -129,7 +129,7 @@ const neobank = {
   // Calibrated via scripts/calibrate-engine.mjs to hit:
   //   $50K  → ~200 users, CAC ~$250, ROI ~2.0x
   //   $150K → ~500 users, CAC ~$300, ROI ~1.7x
-  //   $500K → ~900 users, CAC ~$560, ROI ~0.9x
+  //   $300K → ~720 users, CAC ~$417, ROI ~1.2x
   engineParams: {
     // Audience — derived: audienceSize = totalCustomers × eligibilityRate
     totalCustomers: 847000,            // Total customer base (from data ingestion)
