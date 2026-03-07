@@ -409,7 +409,7 @@ const AudienceSection = ({ section }) => {
 const drawerContent = {
   invite: {
     title: 'Invite',
-    subtitle: 'Strategy',
+    subtitle: 'Referral Rules',
     sections: [
       {
         title: 'Audience',
@@ -436,7 +436,7 @@ const drawerContent = {
   },
   rewards: {
     title: 'Rewards Offered',
-    subtitle: 'Strategy',
+    subtitle: 'Referral Rules',
     sections: [
       {
         title: 'Referrer reward',
@@ -479,7 +479,7 @@ const drawerContent = {
   },
   redemption: {
     title: 'Redemption',
-    subtitle: 'Strategy',
+    subtitle: 'Referral Rules',
     sections: [
       {
         title: 'Referee journey',
@@ -757,9 +757,9 @@ export default function StrategyCards({ ctaButton, ctaSubtitle }) {
     <>
       <div className={s.section3Zone}>
         <div className={s.section3Inner}>
-          {/* Strategy */}
+          {/* Referral Rules */}
           <div className={s.group}>
-            <div className={s.groupLabel}>Strategy</div>
+            <div className={s.groupLabel}>Referral Rules</div>
             <div className={s.configRows}>
               <ConfigRow title="Invite" onClick={() => open('invite')} />
               <ConfigRow title="Rewards Offered" onClick={() => open('rewards')} />
@@ -780,8 +780,8 @@ export default function StrategyCards({ ctaButton, ctaSubtitle }) {
           {/* CTA inside zone */}
           {ctaButton && (
             <div className={s.ctaWrap}>
-              {ctaButton}
               {ctaSubtitle && <div className={s.ctaSubtitle}>{ctaSubtitle}</div>}
+              {ctaButton}
             </div>
           )}
         </div>
