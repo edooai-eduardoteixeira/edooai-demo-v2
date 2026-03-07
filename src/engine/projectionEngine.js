@@ -285,10 +285,11 @@ export function computeProjection({ budget, params }) {
     kpiCurves.fraudSaved.push(Math.round(cumSpend * fraudRate));
 
     // Daily KPI values (marginal, this day only — for sparkline trends)
-    dailyKPIs.cac.push(resolvedToday > 0 ? Math.round(dailyRewardCost) : 0);
-    dailyKPIs.roi.push(resolvedToday > 0 ? Math.round((resolvedValueToday / dailySpend) * 10) / 10 : 0);
+    // Use generation-time values (not resolution-time) to avoid cohort mismatch
+    dailyKPIs.cac.push(dailyConversionsGenerated > 0 ? Math.round(dailyRewardCost) : 0);
+    dailyKPIs.roi.push(dailyConversionsGenerated > 0 ? Math.round((dailyValueGenerated / dailySpend) * 10) / 10 : 0);
     dailyKPIs.convRate.push(journeysToday > 0
-      ? Math.round((resolvedToday / journeysToday) * 10000) / 100 : 0);
+      ? Math.round((dailyConversionsGenerated / journeysToday) * 10000) / 100 : 0);
     dailyKPIs.fraudSaved.push(Math.round(dailySpend * fraudRate));
 
     // Daily output: resolved conversions (rounded for display, minimum 0)
