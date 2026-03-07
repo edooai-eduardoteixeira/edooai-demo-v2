@@ -143,8 +143,8 @@ const neobank = {
 
     // Allocation efficiency — learning dynamics
     effFloor: 0.30,                    // Min efficiency (random allocation success rate)
-    timeLearnRate: 0.10,               // Speed of time-based learning (exp decay rate)
-    confHalfPoint: 40,                 // Resolved conversions for 50% volume confidence
+    timeLearnRate: 0.025,              // Speed of time-based learning (exp decay rate) — realistic: months to learn
+    confHalfPoint: 500,                // Resolved conversions for 50% volume confidence — needs real data
 
     // Conversion probabilities per journey
     baseConvRate: 0.05,                // P(conversion | well-targeted journey) for best prospects
