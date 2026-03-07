@@ -113,7 +113,28 @@ function computeProjection(budget, p) {
   }
 
   const activeUsers = Math.round(dailyCurve.reduce((s, v) => s + v, 0));
-  const cac = activeUsers > 0 ? Math.round(budget / activeUsers) : Infinity;
+  // Reward-based CAC: compute actual reward spend from budget-driven tier distribution
+  let cumulativeRewardCost = 0;
+  const referrerTiers = p.referrerTiers || [0, 20, 50, 75];
+  const refereeTiers = p.refereeTiers || [0, 10, 25, 50];
+  const distCheap = p.tierDistCheap || [0.30, 0.45, 0.20, 0.05];
+  const distExpensive = p.tierDistExpensive || [0.01, 0.04, 0.10, 0.85];
+  const tierBudgetCeiling = p.tierBudgetCeiling || 300000;
+  const tierBudgetAlpha = p.tierBudgetAlpha || 0.7;
+  const effTierDiscount = p.effTierDiscount || 0.10;
+  const tierReach = Math.pow(Math.min(1, budget / tierBudgetCeiling), tierBudgetAlpha);
+  const baseTierCost = (() => {
+    const weights = distCheap.map((wC, i) => wC + (distExpensive[i] - wC) * tierReach);
+    let c = 0;
+    for (let i = 0; i < weights.length; i++) c += weights[i] * (referrerTiers[i] + refereeTiers[i]);
+    return c;
+  })();
+  for (let d = 0; d < 30; d++) {
+    const eff = effCurve[d] || 0.3;
+    const dailyRewardCost = baseTierCost * (1 - eff * effTierDiscount);
+    cumulativeRewardCost += dailyRewardCost * dailyCurve[d];
+  }
+  const cac = activeUsers > 0 ? Math.round(cumulativeRewardCost / activeUsers) : Infinity;
   const roi = cumulativeValue > 0 && budget > 0
     ? Math.round((cumulativeValue / budget) * 10) / 10
     : 0;

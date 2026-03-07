@@ -94,7 +94,7 @@ const MultiSelect = ({ items: initialItems }) => {
 };
 
 /* ── SingleSelect ── */
-const SingleSelect = ({ value: initial, choices }) => {
+const SingleSelect = ({ value: initial, choices, onChange }) => {
   const [val, setVal] = useState(initial);
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -105,7 +105,7 @@ const SingleSelect = ({ value: initial, choices }) => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const pick = (choice) => { setVal(choice); setOpen(false); };
+  const pick = (choice) => { setVal(choice); setOpen(false); onChange?.(choice); };
 
   return (
     <div style={{ position: 'relative' }} ref={ref}>
@@ -666,16 +666,23 @@ const Drawer = ({ blockKey, onClose, onNavigate }) => {
 
                   {section.type === 'reward-block' && (
                     <>
-                      {section.rows.map((row, ri) => (
-                        <div className={s.drawerRow} key={ri}>
-                          <span className={s.drawerRowLabel} data-tip={row.tip || undefined}>{row.label}</span>
-                          {row.choices ? (
-                            <SingleSelect value={row.value} choices={row.choices} />
-                          ) : (
-                            <span className={s.drawerRowValue}>{row.value}</span>
-                          )}
-                        </div>
-                      ))}
+                      {section.rows.map((row, ri) => {
+                        const side = section.title?.toLowerCase().includes('referrer') ? 'referrer' : 'referee';
+                        return (
+                          <div className={s.drawerRow} key={ri}>
+                            <span className={s.drawerRowLabel} data-tip={row.tip || undefined}>{row.label}</span>
+                            {row.choices ? (
+                              <SingleSelect
+                                value={row.value}
+                                choices={row.choices}
+                                onChange={(val) => handleRewardChange(side, ri, val)}
+                              />
+                            ) : (
+                              <span className={s.drawerRowValue}>{row.value}</span>
+                            )}
+                          </div>
+                        );
+                      })}
                       {section.paidAs && (
                         <div className={s.drawerRow} style={{ marginTop: 4 }}>
                           <span className={s.drawerRowLabel} style={{ fontSize: 10, color: 'var(--text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600 }}>Paid as</span>
@@ -748,10 +755,34 @@ const ConfigRow = ({ title, onClick }) => (
   </div>
 );
 
-export default function StrategyCards({ ctaButton, ctaSubtitle }) {
+export default function StrategyCards({ ctaButton, ctaSubtitle, onRewardsChange }) {
   const [activeDrawer, setActiveDrawer] = useState(null);
   const open = (key) => setActiveDrawer(key);
   const close = () => setActiveDrawer(null);
+
+  // Track reward tier values — parse "$75" → 75
+  const parseDollar = (v) => Number(String(v).replace(/[^0-9.]/g, '')) || 0;
+  const [referrerTiers, setReferrerTiers] = useState([0, 20, 50, 75]);
+  const [refereeTiers, setRefereeTiers] = useState([0, 10, 25, 50]);
+
+  const handleRewardChange = (side, tierIndex, dollarValue) => {
+    const val = parseDollar(dollarValue);
+    if (side === 'referrer') {
+      setReferrerTiers(prev => {
+        const next = [...prev];
+        next[tierIndex] = val;
+        onRewardsChange?.({ referrerTiers: next, refereeTiers });
+        return next;
+      });
+    } else {
+      setRefereeTiers(prev => {
+        const next = [...prev];
+        next[tierIndex] = val;
+        onRewardsChange?.({ referrerTiers, refereeTiers: next });
+        return next;
+      });
+    }
+  };
 
   return (
     <>

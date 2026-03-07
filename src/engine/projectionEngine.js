@@ -13,10 +13,13 @@
  *      Models the learning period. Starts at effFloor, rises as resolved
  *      conversions accumulate.
  *
- *   3. Reach quality: wider net (higher budget) = lower quality per contact.
- *      effectiveBaseConvRate is computed once from reach penetration
- *      (totalJourneys / audienceSize), not from daily pool state.
- *      This makes conversion rate DECREASE with budget structurally.
+ *   3. Budget-driven tier selection & reward dynamics:
+ *      - Wider reach = lower quality per contact (effectiveBaseConvRate decreases)
+ *      - Tier distribution driven by budget level: low budget → cheap tiers
+ *        (cherry-picking easy converts), high budget → expensive tiers
+ *        (hard prospects need bigger incentives). CAC is always bounded by tiers.
+ *      - Reward-to-conversion boost: higher rewards increase prospect willingness
+ *        to convert, partially offsetting quality decline (U-curve on conversion)
  *
  *   4. Distributed resolution: conversions are spread across a truncated
  *      normal distribution from day+1 to day+offerExpirationDays, peaking
@@ -64,6 +67,20 @@ function computeResolutionWeights(avgResolutionDays, offerExpirationDays) {
   return weights.map(w => w / sum);
 }
 
+// ─── Reward Cost per Conversion ──────────────────────────────────────
+// Returns the blended reward cost (referrer + referee) per conversion
+// given a tier interpolation factor (0 = cheap distribution, 1 = expensive).
+// Budget level drives the primary interpolation (deeper reach = more expensive tiers).
+// Efficiency provides a small secondary discount (trained engine saves on tier selection).
+function blendedRewardCost(factor, referrerTiers, refereeTiers, distCheap, distExpensive) {
+  const weights = distCheap.map((wCheap, i) => wCheap + (distExpensive[i] - wCheap) * factor);
+  let cost = 0;
+  for (let i = 0; i < weights.length; i++) {
+    cost += weights[i] * (referrerTiers[i] + refereeTiers[i]);
+  }
+  return cost;
+}
+
 // ─── Guardrail Assertions ────────────────────────────────────────────
 function assertParams(p) {
   const fail = (msg) => { throw new Error(`Engine assertion failed: ${msg}`); };
@@ -90,6 +107,10 @@ function assertParams(p) {
   if (!(p.baseRevenuePerUser > 0)) fail('baseRevenuePerUser must be > 0');
   if (!(p.premiumRevenuePerUser >= p.baseRevenuePerUser)) fail('premiumRevenuePerUser must be >= baseRevenuePerUser');
   if (!(p.effFloor > 0 || p.accidentalConvRate > 0)) fail('effFloor or accidentalConvRate must be > 0 (bootstrap safety)');
+  if (!(Array.isArray(p.referrerTiers) && p.referrerTiers.length >= 2)) fail('referrerTiers must be an array with >= 2 elements');
+  if (!(Array.isArray(p.refereeTiers) && p.refereeTiers.length >= 2)) fail('refereeTiers must be an array with >= 2 elements');
+  if (!(Array.isArray(p.tierDistCheap) && p.tierDistCheap.length === p.referrerTiers.length)) fail('tierDistCheap must match referrerTiers length');
+  if (!(Array.isArray(p.tierDistExpensive) && p.tierDistExpensive.length === p.referrerTiers.length)) fail('tierDistExpensive must match referrerTiers length');
 }
 
 // ─── Main Computation ───────────────────────────────────────────────
@@ -117,6 +138,10 @@ export function computeProjection({ budget, params }) {
     offerExpirationDays,
     baseRevenuePerUser,
     premiumRevenuePerUser,
+    referrerTiers,
+    refereeTiers,
+    tierDistCheap,
+    tierDistExpensive,
     fraudRate,
     minSignalVolume,
     budget: budgetThresholds,
@@ -128,8 +153,29 @@ export function computeProjection({ budget, params }) {
   // Supply curve: theoretical max CONVERSIONS at this budget
   const N_frontier = supplyFrontier(budget, N_max, B_half, alpha);
 
+  // Budget-driven tier reach: determines reward tier distribution.
+  // Low budget → cheap tiers (cherry-picking easy converts).
+  // High budget → expensive tiers (hard prospects need bigger incentives).
+  // Uses power function for tunable concavity.
+  const tierBudgetCeiling = params.tierBudgetCeiling || 300000;
+  const tierBudgetAlpha = params.tierBudgetAlpha || 0.7;
+  const tierReach = Math.pow(Math.min(1, budget / tierBudgetCeiling), tierBudgetAlpha);
+
+  // Expected reward cost at this budget level (at mid efficiency for budget constraint)
+  const effTierDiscount = params.effTierDiscount || 0.10;
+  const midBudgetRewardCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
+  const midEffDiscountFactor = 1 - 0.5 * effTierDiscount; // at mid efficiency
+  const adjMidEffReward = midBudgetRewardCost * midEffDiscountFactor;
+
+  // Budget-as-reward-pool constraint: can't convert more than budget can pay for.
+  // Only resolved conversions cost rewards (expired offers cost nothing),
+  // so we scale up by 1/realizationEstimate to account for resolution losses.
+  const realizationEstimate = params.budgetRealizationFactor || 0.55;
+  const maxAffordable = adjMidEffReward > 0 ? budget / adjMidEffReward / realizationEstimate : Infinity;
+  const effectiveN = Math.min(N_frontier, maxAffordable);
+
   // Convert from conversion units to journey units
-  const totalJourneys = N_frontier / baseConvRate;
+  const totalJourneys = effectiveN / baseConvRate;
   const dailyJourneyTarget = totalJourneys / 30;
 
   // Reach quality: wider net = lower quality per contact (structural, not temporal)
@@ -151,6 +197,7 @@ export function computeProjection({ budget, params }) {
   const kpiCurves = { cac: [], roi: [], convRate: [], fraudSaved: [] };
   const dailyKPIs = { cac: [], roi: [], convRate: [], fraudSaved: [] };
   const dailySpend = budget / 30;
+  let cumulativeRewardCost = 0;
   let thresholdDay = 30;
   let thresholdFound = false;
 
@@ -160,12 +207,22 @@ export function computeProjection({ budget, params }) {
     const eff = allocationEfficiency(day, cumulativeN, params);
     confidenceCurve.push(eff);
 
+    // Reward cost: budget-driven tier distribution with learning discount.
+    // tierReach (computed once before loop) determines base tier mix.
+    // Efficiency provides a small discount (trained engine saves on tier selection).
+    const baseTierCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
+    const dailyRewardCost = baseTierCost * (1 - eff * effTierDiscount);
+
     // Pace journeys: don't exhaust pool before learning
     const journeysToday = Math.min(dailyJourneyTarget, remainingPool * maxDailyReachRate);
+    const maxTierCost = referrerTiers[referrerTiers.length - 1] + refereeTiers[refereeTiers.length - 1];
+    const rewardIntensity = maxTierCost > 0 ? dailyRewardCost / maxTierCost : 0;
+    const rewardConvBoost = 1 + rewardIntensity * (params.rewardConvElasticity || 0.5);
+    const adjustedConvRate = effectiveBaseConvRate * rewardConvBoost;
 
     // Targeting split
     const wellTargeted = journeysToday * eff;
-    const goodConversions = wellTargeted * effectiveBaseConvRate;
+    const goodConversions = wellTargeted * adjustedConvRate;
 
     const poorlyTargeted = journeysToday * (1 - eff);
     const accidentalConversions = poorlyTargeted * accidentalConvRate;
@@ -200,6 +257,8 @@ export function computeProjection({ budget, params }) {
         resolvedValueToday += entry.value;
       }
     }
+    cumulativeRewardCost += dailyRewardCost * resolvedToday;
+
     cumulativeN += resolvedToday;
     cumulativeValue += resolvedValueToday;
 
@@ -219,14 +278,14 @@ export function computeProjection({ budget, params }) {
 
     // Running cumulative KPI trajectories
     const cumSpend = (budget / 30) * day;
-    kpiCurves.cac.push(cumulativeN > 0 ? Math.round(cumSpend / cumulativeN) : 0);
+    kpiCurves.cac.push(cumulativeN > 0 ? Math.round(cumulativeRewardCost / cumulativeN) : 0);
     kpiCurves.roi.push(cumSpend > 0 ? Math.round((cumulativeValue / cumSpend) * 10) / 10 : 0);
     kpiCurves.convRate.push(totalJourneysStarted > 0
       ? Math.round((cumulativeN / totalJourneysStarted) * 10000) / 100 : 0);
     kpiCurves.fraudSaved.push(Math.round(cumSpend * fraudRate));
 
     // Daily KPI values (marginal, this day only — for sparkline trends)
-    dailyKPIs.cac.push(resolvedToday > 0 ? Math.round(dailySpend / resolvedToday) : 0);
+    dailyKPIs.cac.push(resolvedToday > 0 ? Math.round(dailyRewardCost) : 0);
     dailyKPIs.roi.push(resolvedToday > 0 ? Math.round((resolvedValueToday / dailySpend) * 10) / 10 : 0);
     dailyKPIs.convRate.push(journeysToday > 0
       ? Math.round((resolvedToday / journeysToday) * 10000) / 100 : 0);
@@ -238,7 +297,7 @@ export function computeProjection({ budget, params }) {
 
   // ─── Aggregate Metrics ─────────────────────────────────────────────
   const activeUsers = dailyCurve.reduce((sum, v) => sum + v, 0);
-  const cac = activeUsers > 0 ? Math.round(budget / activeUsers) : 999;
+  const cac = activeUsers > 0 ? Math.round(cumulativeRewardCost / activeUsers) : 999;
 
   // ROI uses actual cumulative value generated (not fixed average)
   const roi = cumulativeValue > 0 && budget > 0

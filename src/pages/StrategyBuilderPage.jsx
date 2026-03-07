@@ -136,9 +136,17 @@ export default function StrategyBuilderPage({ config, onNext }) {
     totalCustomers,
   } = config;
 
-  /* ── Budget + engine projections ── */
+  /* ── Budget + reward tiers + engine projections ── */
   const [budget, setBudget] = useState(budgetSlider.default);
-  const proj = useProjections(engineParams, budget);
+  const [rewardTiers, setRewardTiers] = useState(null); // null = use config defaults
+
+  // Merge reward tier overrides into engine params when user changes them
+  const mergedEngineParams = useMemo(() => {
+    if (!rewardTiers) return engineParams;
+    return { ...engineParams, ...rewardTiers };
+  }, [engineParams, rewardTiers]);
+
+  const proj = useProjections(mergedEngineParams, budget);
 
 
 
@@ -827,6 +835,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
           <StrategyCards
             ctaButton={showCTA ? <CTAButton onClick={onNext}>Launch Campaigns</CTAButton> : null}
             ctaSubtitle={showCTA ? approvalScope : null}
+            onRewardsChange={setRewardTiers}
           />
         )}
       </main>
