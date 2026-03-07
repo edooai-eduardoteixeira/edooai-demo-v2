@@ -36,10 +36,12 @@ function computeProjection(budget, p) {
   const N_frontier = supplyFrontier(budget, p.N_max, p.B_half, p.alpha);
 
   const midEffReward = rewardCostForEfficiency(0.5, p.referrerTiers, p.refereeTiers, p.tierDistLowEff, p.tierDistHighEff);
-  // Only resolved conversions cost rewards. Unrealized conversions (resolve after day 30) expire.
-  // Scale up the cap by 1/realizationEstimate to account for this.
+  // Estimate reach cost premium from N_frontier (no circularity)
+  const estReachPen = (N_frontier / p.baseConvRate) / audienceSize;
+  const estReachPremium = 1 + estReachPen * (p.reachCostElasticity || 1.0);
+  const adjMidEffReward = midEffReward * estReachPremium;
   const realizationEstimate = p.budgetRealizationFactor || 0.55;
-  const maxAffordable = midEffReward > 0 ? budget / midEffReward / realizationEstimate : Infinity;
+  const maxAffordable = adjMidEffReward > 0 ? budget / adjMidEffReward / realizationEstimate : Infinity;
   const effectiveN = Math.min(N_frontier, maxAffordable);
 
   const totalJourneys = effectiveN / p.baseConvRate;
@@ -68,10 +70,21 @@ function computeProjection(budget, p) {
     const eff = p.effFloor + (1 - p.effFloor) * timeFactor * volumeFactor;
     effCurve.push(eff);
 
+    // Reward cost: eff-driven tier mix + reach cost premium
+    const baseRewardCost = rewardCostForEfficiency(eff, p.referrerTiers, p.refereeTiers, p.tierDistLowEff, p.tierDistHighEff);
+    const reachCostPremium = 1 + reachPenetration * (p.reachCostElasticity || 1.0);
+    const dailyRewardCost = baseRewardCost * reachCostPremium;
+
     const journeysToday = Math.min(dailyJourneyTarget, remainingPool * p.maxDailyReachRate);
 
+    // Reward-to-conversion boost: higher rewards increase prospect willingness to convert
+    const maxTierCost = p.referrerTiers[p.referrerTiers.length - 1] + p.refereeTiers[p.refereeTiers.length - 1];
+    const rewardIntensity = maxTierCost > 0 ? dailyRewardCost / maxTierCost : 0;
+    const rewardConvBoost = 1 + rewardIntensity * (p.rewardConvElasticity || 0.5);
+    const adjustedConvRate = effectiveBaseConvRate * rewardConvBoost;
+
     const wellTargeted = journeysToday * eff;
-    const goodConversions = wellTargeted * effectiveBaseConvRate;
+    const goodConversions = wellTargeted * adjustedConvRate;
     const poorlyTargeted = journeysToday * (1 - eff);
     const accidentalConversions = poorlyTargeted * p.accidentalConvRate;
     const dailyConversionsGenerated = goodConversions + accidentalConversions;
@@ -100,7 +113,6 @@ function computeProjection(budget, p) {
       }
     }
 
-    const dailyRewardCost = rewardCostForEfficiency(eff, p.referrerTiers, p.refereeTiers, p.tierDistLowEff, p.tierDistHighEff);
     cumulativeRewardCost += dailyRewardCost * resolvedToday;
 
     cumulativeN += resolvedToday;
@@ -166,13 +178,16 @@ const paramSets = [
       offerExpirationDays: 14,
       referrerEligibilityRate: 0.4,
       baseRevenuePerUser: 100,
-      premiumRevenuePerUser: 350,
+      premiumRevenuePerUser: 220,
       fraudRate: 0.07,
       minSignalVolume: 40,
       referrerTiers: [0, 20, 50, 75],
       refereeTiers: [0, 10, 25, 50],
       tierDistLowEff: [0.03, 0.12, 0.40, 0.45],
       tierDistHighEff: [0.07, 0.38, 0.45, 0.10],
+      reachCostElasticity: 1.0,
+      rewardConvElasticity: 0.5,
+      budgetRealizationFactor: 0.55,
     },
   },
   {

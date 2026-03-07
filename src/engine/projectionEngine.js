@@ -13,10 +13,12 @@
  *      Models the learning period. Starts at effFloor, rises as resolved
  *      conversions accumulate.
  *
- *   3. Reach quality: wider net (higher budget) = lower quality per contact.
- *      effectiveBaseConvRate is computed once from reach penetration
- *      (totalJourneys / audienceSize), not from daily pool state.
- *      This makes conversion rate DECREASE with budget structurally.
+ *   3. Reach quality & cost dynamics:
+ *      - Wider reach = lower quality per contact (effectiveBaseConvRate decreases)
+ *      - Reach cost premium: deeper reach requires higher rewards to convert
+ *        less propense prospects (dailyRewardCost × reachCostPremium)
+ *      - Reward-to-conversion boost: higher rewards increase prospect willingness
+ *        to convert, partially offsetting quality decline (U-curve on conversion)
  *
  *   4. Distributed resolution: conversions are spread across a truncated
  *      normal distribution from day+1 to day+offerExpirationDays, peaking
@@ -153,9 +155,13 @@ export function computeProjection({ budget, params }) {
   // Budget-as-reward-pool constraint: can't convert more than budget can pay for.
   // Only resolved conversions cost rewards (expired offers cost nothing),
   // so we scale up by 1/realizationEstimate to account for resolution losses.
+  // Estimate reach cost premium from N_frontier (no circularity — N_frontier is budget-only)
   const midEffReward = rewardCostForEfficiency(0.5, referrerTiers, refereeTiers, tierDistLowEff, tierDistHighEff);
+  const estReachPen = (N_frontier / baseConvRate) / Math.round(totalCustomers * eligibilityRate);
+  const estReachPremium = 1 + estReachPen * (params.reachCostElasticity || 1.0);
+  const adjMidEffReward = midEffReward * estReachPremium;
   const realizationEstimate = params.budgetRealizationFactor || 0.55;
-  const maxAffordable = midEffReward > 0 ? budget / midEffReward / realizationEstimate : Infinity;
+  const maxAffordable = adjMidEffReward > 0 ? budget / adjMidEffReward / realizationEstimate : Infinity;
   const effectiveN = Math.min(N_frontier, maxAffordable);
 
   // Convert from conversion units to journey units
@@ -191,12 +197,24 @@ export function computeProjection({ budget, params }) {
     const eff = allocationEfficiency(day, cumulativeN, params);
     confidenceCurve.push(eff);
 
+    // Reward cost: eff-driven tier mix + reach cost premium
+    const baseRewardCost = rewardCostForEfficiency(eff, referrerTiers, refereeTiers, tierDistLowEff, tierDistHighEff);
+    // Deeper reach requires higher rewards — less propense prospects need more incentive
+    const reachCostPremium = 1 + reachPenetration * (params.reachCostElasticity || 1.0);
+    const dailyRewardCost = baseRewardCost * reachCostPremium;
+
     // Pace journeys: don't exhaust pool before learning
     const journeysToday = Math.min(dailyJourneyTarget, remainingPool * maxDailyReachRate);
 
+    // Reward-to-conversion boost: higher rewards increase prospect willingness to convert
+    const maxTierCost = referrerTiers[referrerTiers.length - 1] + refereeTiers[refereeTiers.length - 1];
+    const rewardIntensity = maxTierCost > 0 ? dailyRewardCost / maxTierCost : 0;
+    const rewardConvBoost = 1 + rewardIntensity * (params.rewardConvElasticity || 0.5);
+    const adjustedConvRate = effectiveBaseConvRate * rewardConvBoost;
+
     // Targeting split
     const wellTargeted = journeysToday * eff;
-    const goodConversions = wellTargeted * effectiveBaseConvRate;
+    const goodConversions = wellTargeted * adjustedConvRate;
 
     const poorlyTargeted = journeysToday * (1 - eff);
     const accidentalConversions = poorlyTargeted * accidentalConvRate;
@@ -231,8 +249,6 @@ export function computeProjection({ budget, params }) {
         resolvedValueToday += entry.value;
       }
     }
-    // Reward cost: eff-driven tier mix determines cost per conversion
-    const dailyRewardCost = rewardCostForEfficiency(eff, referrerTiers, refereeTiers, tierDistLowEff, tierDistHighEff);
     cumulativeRewardCost += dailyRewardCost * resolvedToday;
 
     cumulativeN += resolvedToday;
