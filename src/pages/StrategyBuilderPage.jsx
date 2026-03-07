@@ -403,16 +403,26 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       borderRadius: 3,
                     }} />
 
-                    {/* Recommended zone band */}
+                    {/* Zone boundary tick marks */}
                     <div style={{
                       position: 'absolute',
                       left: `${recZoneLeft}%`,
-                      width: `${recZoneWidth}%`,
-                      top: 3,
-                      height: 14,
-                      background: 'var(--color-gray-300)',
-                      borderRadius: 7,
-                      zIndex: 0,
+                      top: 2,
+                      width: 1.5,
+                      height: 16,
+                      background: 'var(--color-gray-400)',
+                      borderRadius: 1,
+                      zIndex: 2,
+                    }} />
+                    <div style={{
+                      position: 'absolute',
+                      left: `${recZoneLeft + recZoneWidth}%`,
+                      top: 2,
+                      width: 1.5,
+                      height: 16,
+                      background: 'var(--color-gray-400)',
+                      borderRadius: 1,
+                      zIndex: 2,
                     }} />
 
                     {/* Fill */}
@@ -787,16 +797,26 @@ export default function StrategyBuilderPage({ config, onNext }) {
         )}
 
         {/* ════════════════════════════════════════════
-            SECTION 2 — What Users See (Redesigned)
+            SECTION 2 — What Users See (grey background zone)
             ════════════════════════════════════════════ */}
         {showJourney && (
           <section
             style={{
-              marginBottom: '3rem',
               animation: 'fadeIn 0.4s ease forwards',
+              background: 'var(--color-gray-50)',
+              width: '100vw',
+              marginLeft: 'calc(-50vw + 50%)',
+              padding: '48px 0 56px',
+              marginBottom: '3rem',
             }}
           >
-            <WhatUsersSee />
+            <div style={{
+              maxWidth: 'calc(1100px - 6rem)',
+              margin: '0 auto',
+              padding: '0 3rem',
+            }}>
+              <WhatUsersSee />
+            </div>
           </section>
         )}
 
