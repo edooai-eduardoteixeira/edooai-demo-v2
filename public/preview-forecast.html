@@ -62,11 +62,11 @@
           <div id="slider-thumb" style="position:absolute;top:50%;transform:translate(-50%,-50%);width:20px;height:20px;background:var(--accent);border:3px solid var(--surface);border-radius:50%;cursor:grab;z-index:3;box-shadow:var(--shadow-md);"></div>
         </div>
 
-        <input type="range" id="budget-slider" min="50000" max="500000" step="5000" value="150000"
+        <input type="range" id="budget-slider" min="50000" max="300000" step="5000" value="150000"
           style="position:absolute;top:-6px;left:0;width:100%;height:20px;opacity:0;cursor:pointer;z-index:4;" />
 
         <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--text-tertiary);">
-          <span>$50K</span><span>$500K</span>
+          <span>$50K</span><span>$300K</span>
         </div>
       </div>
 
@@ -221,7 +221,7 @@ function computeProjection(budget, p) {
 // ─── Rendering ─────────────────────────────────────────────────────
 
 const slider = document.getElementById('budget-slider');
-const sliderMin = 50000, sliderMax = 500000;
+const sliderMin = 50000, sliderMax = 300000;
 const recMin = 100000, recMax = 200000;
 const recLeft = ((recMin - sliderMin) / (sliderMax - sliderMin)) * 100;
 const recWidth = ((recMax - recMin) / (sliderMax - sliderMin)) * 100;
