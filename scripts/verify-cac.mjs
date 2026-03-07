@@ -35,7 +35,7 @@ function computeProjection(budget, p) {
   const audienceSize = Math.round(p.totalCustomers * p.eligibilityRate);
   const N_frontier = supplyFrontier(budget, p.N_max, p.B_half, p.alpha);
 
-  const budgetPressure = budget / (budget + p.B_half);
+  const budgetPressure = Math.pow(budget / (budget + p.B_half), 2);
   const midEffReward = rewardCostForEfficiency(0.5, p.referrerTiers, p.refereeTiers, p.tierDistLowEff, p.tierDistHighEff);
   const reachCostPremium = 1 + budgetPressure * (p.reachCostElasticity || 1.0);
   const adjMidEffReward = midEffReward * reachCostPremium;
@@ -183,7 +183,7 @@ const paramSets = [
       refereeTiers: [0, 10, 25, 50],
       tierDistLowEff: [0.03, 0.12, 0.40, 0.45],
       tierDistHighEff: [0.07, 0.38, 0.45, 0.10],
-      reachCostElasticity: 1.5,
+      reachCostElasticity: 2.5,
       rewardConvElasticity: 0.5,
       budgetRealizationFactor: 0.70,
     },

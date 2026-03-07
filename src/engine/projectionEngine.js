@@ -153,8 +153,9 @@ export function computeProjection({ budget, params }) {
   const N_frontier = supplyFrontier(budget, N_max, B_half, alpha);
 
   // Budget pressure: how hard you're pushing relative to the sweet spot.
-  // Concave 0-1 range — directly measures "push intensity" without self-limiting feedback.
-  const budgetPressure = budget / (budget + B_half);
+  // Squared so premium is near-zero at low budgets (cherry-picking cheap tiers)
+  // and ramps steeply at high budgets (full audience needs bigger rewards).
+  const budgetPressure = Math.pow(budget / (budget + B_half), 2);
 
   // Budget-as-reward-pool constraint: can't convert more than budget can pay for.
   // Only resolved conversions cost rewards (expired offers cost nothing),
