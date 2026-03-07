@@ -22,8 +22,8 @@ function computeResolutionWeights(avgResolutionDays, offerExpirationDays) {
   return weights.map(w => w / sum);
 }
 
-function rewardCostForEfficiency(eff, referrerTiers, refereeTiers, distLow, distHigh) {
-  const weights = distLow.map((wLow, i) => wLow + (distHigh[i] - wLow) * eff);
+function blendedRewardCost(factor, referrerTiers, refereeTiers, distCheap, distExpensive) {
+  const weights = distCheap.map((wCheap, i) => wCheap + (distExpensive[i] - wCheap) * factor);
   let cost = 0;
   for (let i = 0; i < weights.length; i++) {
     cost += weights[i] * (referrerTiers[i] + refereeTiers[i]);
@@ -35,11 +35,15 @@ function computeProjection(budget, p) {
   const audienceSize = Math.round(p.totalCustomers * p.eligibilityRate);
   const N_frontier = supplyFrontier(budget, p.N_max, p.B_half, p.alpha);
 
-  const budgetPressure = Math.pow(budget / (budget + p.B_half), 2);
-  const midEffReward = rewardCostForEfficiency(0.5, p.referrerTiers, p.refereeTiers, p.tierDistLowEff, p.tierDistHighEff);
-  const maxTierCostCap = p.referrerTiers[p.referrerTiers.length - 1] + p.refereeTiers[p.refereeTiers.length - 1];
-  const reachCostPremium = 1 + budgetPressure * (p.reachCostElasticity || 1.0);
-  const adjMidEffReward = Math.min(midEffReward * reachCostPremium, maxTierCostCap);
+  // Budget-driven tier reach
+  const tierBudgetCeiling = p.tierBudgetCeiling || 300000;
+  const tierBudgetAlpha = p.tierBudgetAlpha || 0.7;
+  const tierReach = Math.pow(Math.min(1, budget / tierBudgetCeiling), tierBudgetAlpha);
+  const effTierDiscount = p.effTierDiscount || 0.10;
+
+  const midBudgetRewardCost = blendedRewardCost(tierReach, p.referrerTiers, p.refereeTiers, p.tierDistCheap, p.tierDistExpensive);
+  const midEffDiscountFactor = 1 - 0.5 * effTierDiscount;
+  const adjMidEffReward = midBudgetRewardCost * midEffDiscountFactor;
   const realizationEstimate = p.budgetRealizationFactor || 0.55;
   const maxAffordable = adjMidEffReward > 0 ? budget / adjMidEffReward / realizationEstimate : Infinity;
   const effectiveN = Math.min(N_frontier, maxAffordable);
@@ -70,12 +74,12 @@ function computeProjection(budget, p) {
     const eff = p.effFloor + (1 - p.effFloor) * timeFactor * volumeFactor;
     effCurve.push(eff);
 
-    // Reward cost: eff-driven tier mix + budget pressure premium, capped at max tier
-    const baseRewardCost = rewardCostForEfficiency(eff, p.referrerTiers, p.refereeTiers, p.tierDistLowEff, p.tierDistHighEff);
-    const maxTierCost = p.referrerTiers[p.referrerTiers.length - 1] + p.refereeTiers[p.refereeTiers.length - 1];
-    const dailyRewardCost = Math.min(baseRewardCost * reachCostPremium, maxTierCost);
+    // Reward cost: budget-driven tier distribution with learning discount
+    const baseTierCost = blendedRewardCost(tierReach, p.referrerTiers, p.refereeTiers, p.tierDistCheap, p.tierDistExpensive);
+    const dailyRewardCost = baseTierCost * (1 - eff * effTierDiscount);
 
     const journeysToday = Math.min(dailyJourneyTarget, remainingPool * p.maxDailyReachRate);
+    const maxTierCost = p.referrerTiers[p.referrerTiers.length - 1] + p.refereeTiers[p.refereeTiers.length - 1];
     const rewardIntensity = maxTierCost > 0 ? dailyRewardCost / maxTierCost : 0;
     const rewardConvBoost = 1 + rewardIntensity * (p.rewardConvElasticity || 0.5);
     const adjustedConvRate = effectiveBaseConvRate * rewardConvBoost;
@@ -143,7 +147,7 @@ function computeProjection(budget, p) {
     N_frontier: Math.round(N_frontier),
     effectiveN: Math.round(effectiveN),
     maxAffordable: Math.round(maxAffordable),
-    midEffReward: Math.round(midEffReward * 100) / 100,
+    midBudgetRewardCost: Math.round(midBudgetRewardCost * 100) / 100,
     totalRewardSpend: Math.round(cumulativeRewardCost),
     totalRevenue: Math.round(cumulativeValue),
     effRange: `${(effCurve[0] * 100).toFixed(0)}-${(effCurve[29] * 100).toFixed(0)}%`,
@@ -157,7 +161,7 @@ function computeProjection(budget, p) {
 // Param sets to test
 const paramSets = [
   {
-    label: 'A: Higher pool + faster learn + higher convRate',
+    label: 'A: Neobank config (budget-driven tiers)',
     params: {
       totalCustomers: 847000,
       eligibilityRate: 0.50,
@@ -180,95 +184,13 @@ const paramSets = [
       minSignalVolume: 40,
       referrerTiers: [0, 20, 50, 75],
       refereeTiers: [0, 10, 25, 50],
-      tierDistLowEff: [0.03, 0.12, 0.40, 0.45],
-      tierDistHighEff: [0.07, 0.38, 0.45, 0.10],
-      reachCostElasticity: 2.5,
+      tierDistCheap: [0.30, 0.45, 0.20, 0.05],
+      tierDistExpensive: [0.01, 0.04, 0.10, 0.85],
+      tierBudgetCeiling: 300000,
+      tierBudgetAlpha: 0.7,
+      effTierDiscount: 0.10,
       rewardConvElasticity: 0.5,
       budgetRealizationFactor: 0.70,
-    },
-  },
-  {
-    label: 'B: More aggressive — higher effFloor, faster timeLearn',
-    params: {
-      totalCustomers: 847000,
-      eligibilityRate: 0.50,
-      N_max: 20000,
-      B_half: 150000,
-      alpha: 1,
-      effFloor: 0.35,
-      timeLearnRate: 0.12,
-      confHalfPoint: 30,
-      baseConvRate: 0.06,
-      accidentalConvRate: 0.004,
-      reachDecayExponent: 0.4,
-      maxDailyReachRate: 0.05,
-      avgResolutionDays: 2,
-      offerExpirationDays: 14,
-      referrerEligibilityRate: 0.4,
-      baseRevenuePerUser: 100,
-      premiumRevenuePerUser: 350,
-      fraudRate: 0.07,
-      minSignalVolume: 40,
-      referrerTiers: [0, 20, 50, 75],
-      refereeTiers: [0, 10, 25, 50],
-      tierDistLowEff: [0.03, 0.12, 0.40, 0.45],
-      tierDistHighEff: [0.07, 0.38, 0.45, 0.10],
-    },
-  },
-  {
-    label: 'C: High throughput — fast ramp, high conv, big pool',
-    params: {
-      totalCustomers: 847000,
-      eligibilityRate: 0.50,
-      N_max: 25000,
-      B_half: 200000,
-      alpha: 1,
-      effFloor: 0.40,
-      timeLearnRate: 0.15,
-      confHalfPoint: 20,
-      baseConvRate: 0.08,
-      accidentalConvRate: 0.005,
-      reachDecayExponent: 0.4,
-      maxDailyReachRate: 0.06,
-      avgResolutionDays: 2,
-      offerExpirationDays: 14,
-      referrerEligibilityRate: 0.4,
-      baseRevenuePerUser: 100,
-      premiumRevenuePerUser: 350,
-      fraudRate: 0.07,
-      minSignalVolume: 40,
-      referrerTiers: [0, 20, 50, 75],
-      refereeTiers: [0, 10, 25, 50],
-      tierDistLowEff: [0.03, 0.12, 0.40, 0.45],
-      tierDistHighEff: [0.07, 0.38, 0.45, 0.10],
-    },
-  },
-  {
-    label: 'D: Max throughput — very fast ramp, no budget cap',
-    params: {
-      totalCustomers: 847000,
-      eligibilityRate: 0.50,
-      N_max: 40000,
-      B_half: 300000,
-      alpha: 1,
-      effFloor: 0.40,
-      timeLearnRate: 0.14,
-      confHalfPoint: 25,
-      baseConvRate: 0.07,
-      accidentalConvRate: 0.004,
-      reachDecayExponent: 0.3,
-      maxDailyReachRate: 0.06,
-      avgResolutionDays: 2,
-      offerExpirationDays: 14,
-      referrerEligibilityRate: 0.4,
-      baseRevenuePerUser: 100,
-      premiumRevenuePerUser: 350,
-      fraudRate: 0.07,
-      minSignalVolume: 40,
-      referrerTiers: [0, 20, 50, 75],
-      refereeTiers: [0, 10, 25, 50],
-      tierDistLowEff: [0.03, 0.12, 0.40, 0.45],
-      tierDistHighEff: [0.07, 0.38, 0.45, 0.10],
     },
   },
 ];
@@ -319,22 +241,34 @@ for (const b of budgets) {
   console.log(`$${b/1000}K: CAC($${r.cac}) × Users(${r.activeUsers}) = $${impliedSpend.toLocaleString()} (${(ratio * 100).toFixed(0)}% of budget) — RewardSpend: $${r.totalRewardSpend.toLocaleString()}`);
 }
 
-// Reward cost at different efficiency levels
-console.log('\n═══ Reward Cost per Efficiency ═══');
-for (const eff of [0.0, 0.3, 0.5, 0.7, 0.8, 1.0]) {
-  const cost = rewardCostForEfficiency(eff, params.referrerTiers, params.refereeTiers, params.tierDistLowEff, params.tierDistHighEff);
-  console.log(`eff=${eff.toFixed(1)}: $${cost.toFixed(2)}/conversion`);
+// Reward cost at different tier reach levels
+console.log('\n═══ Reward Cost per Tier Reach (budget-driven) ═══');
+for (const tr of [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]) {
+  const cost = blendedRewardCost(tr, params.referrerTiers, params.refereeTiers, params.tierDistCheap, params.tierDistExpensive);
+  console.log(`tierReach=${tr.toFixed(1)}: $${cost.toFixed(2)}/conversion`);
+}
+
+// Tier reach at each budget level
+console.log('\n═══ Tier Reach per Budget ═══');
+const tc = params.tierBudgetCeiling || 300000;
+const ta = params.tierBudgetAlpha || 0.7;
+for (const b of budgets) {
+  const tr = Math.pow(Math.min(1, b / tc), ta);
+  const cost = blendedRewardCost(tr, params.referrerTiers, params.refereeTiers, params.tierDistCheap, params.tierDistExpensive);
+  console.log(`$${b/1000}K: tierReach=${tr.toFixed(3)} → baseCost=$${cost.toFixed(2)}`);
 }
 
 // Daily curve at $150K
 console.log('\n═══ Daily Curve at $150K ═══');
 const mid = computeProjection(150000, params);
 const maxVal = Math.max(...mid.dailyCurve);
+const tr150 = Math.pow(Math.min(1, 150000 / tc), ta);
+const baseCost150 = blendedRewardCost(tr150, params.referrerTiers, params.refereeTiers, params.tierDistCheap, params.tierDistExpensive);
 for (let d = 0; d < 30; d++) {
   const val = mid.dailyCurve[d];
   const barLen = maxVal > 0 ? Math.round((val / maxVal) * 40) : 0;
   const bar = '█'.repeat(barLen);
   const eff = (mid.effCurve[d] * 100).toFixed(0);
-  const rewCost = rewardCostForEfficiency(mid.effCurve[d], params.referrerTiers, params.refereeTiers, params.tierDistLowEff, params.tierDistHighEff);
+  const rewCost = baseCost150 * (1 - mid.effCurve[d] * (params.effTierDiscount || 0.10));
   console.log(`Day ${(d + 1).toString().padStart(2)}: ${bar.padEnd(40)} ${val.toFixed(1).padStart(6)} (eff ${eff}%, CAC $${rewCost.toFixed(0)})`);
 }

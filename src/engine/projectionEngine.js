@@ -13,10 +13,11 @@
  *      Models the learning period. Starts at effFloor, rises as resolved
  *      conversions accumulate.
  *
- *   3. Reach quality & cost dynamics:
+ *   3. Budget-driven tier selection & reward dynamics:
  *      - Wider reach = lower quality per contact (effectiveBaseConvRate decreases)
- *      - Reach cost premium: deeper reach requires higher rewards to convert
- *        less propense prospects (dailyRewardCost × reachCostPremium)
+ *      - Tier distribution driven by budget level: low budget → cheap tiers
+ *        (cherry-picking easy converts), high budget → expensive tiers
+ *        (hard prospects need bigger incentives). CAC is always bounded by tiers.
  *      - Reward-to-conversion boost: higher rewards increase prospect willingness
  *        to convert, partially offsetting quality decline (U-curve on conversion)
  *
@@ -68,11 +69,11 @@ function computeResolutionWeights(avgResolutionDays, offerExpirationDays) {
 
 // ─── Reward Cost per Conversion ──────────────────────────────────────
 // Returns the blended reward cost (referrer + referee) per conversion
-// at a given allocation efficiency level.
-// Low eff → AI uses expensive tiers (3/4) → high cost per conversion.
-// High eff → AI finds willing converters → cheap tiers (2/3) → low cost.
-function rewardCostForEfficiency(eff, referrerTiers, refereeTiers, distLow, distHigh) {
-  const weights = distLow.map((wLow, i) => wLow + (distHigh[i] - wLow) * eff);
+// given a tier interpolation factor (0 = cheap distribution, 1 = expensive).
+// Budget level drives the primary interpolation (deeper reach = more expensive tiers).
+// Efficiency provides a small secondary discount (trained engine saves on tier selection).
+function blendedRewardCost(factor, referrerTiers, refereeTiers, distCheap, distExpensive) {
+  const weights = distCheap.map((wCheap, i) => wCheap + (distExpensive[i] - wCheap) * factor);
   let cost = 0;
   for (let i = 0; i < weights.length; i++) {
     cost += weights[i] * (referrerTiers[i] + refereeTiers[i]);
@@ -108,8 +109,8 @@ function assertParams(p) {
   if (!(p.effFloor > 0 || p.accidentalConvRate > 0)) fail('effFloor or accidentalConvRate must be > 0 (bootstrap safety)');
   if (!(Array.isArray(p.referrerTiers) && p.referrerTiers.length >= 2)) fail('referrerTiers must be an array with >= 2 elements');
   if (!(Array.isArray(p.refereeTiers) && p.refereeTiers.length >= 2)) fail('refereeTiers must be an array with >= 2 elements');
-  if (!(Array.isArray(p.tierDistLowEff) && p.tierDistLowEff.length === p.referrerTiers.length)) fail('tierDistLowEff must match referrerTiers length');
-  if (!(Array.isArray(p.tierDistHighEff) && p.tierDistHighEff.length === p.referrerTiers.length)) fail('tierDistHighEff must match referrerTiers length');
+  if (!(Array.isArray(p.tierDistCheap) && p.tierDistCheap.length === p.referrerTiers.length)) fail('tierDistCheap must match referrerTiers length');
+  if (!(Array.isArray(p.tierDistExpensive) && p.tierDistExpensive.length === p.referrerTiers.length)) fail('tierDistExpensive must match referrerTiers length');
 }
 
 // ─── Main Computation ───────────────────────────────────────────────
@@ -139,8 +140,8 @@ export function computeProjection({ budget, params }) {
     premiumRevenuePerUser,
     referrerTiers,
     refereeTiers,
-    tierDistLowEff,
-    tierDistHighEff,
+    tierDistCheap,
+    tierDistExpensive,
     fraudRate,
     minSignalVolume,
     budget: budgetThresholds,
@@ -152,18 +153,23 @@ export function computeProjection({ budget, params }) {
   // Supply curve: theoretical max CONVERSIONS at this budget
   const N_frontier = supplyFrontier(budget, N_max, B_half, alpha);
 
-  // Budget pressure: how hard you're pushing relative to the sweet spot.
-  // Squared so premium is near-zero at low budgets (cherry-picking cheap tiers)
-  // and ramps steeply at high budgets (full audience needs bigger rewards).
-  const budgetPressure = Math.pow(budget / (budget + B_half), 2);
+  // Budget-driven tier reach: determines reward tier distribution.
+  // Low budget → cheap tiers (cherry-picking easy converts).
+  // High budget → expensive tiers (hard prospects need bigger incentives).
+  // Uses power function for tunable concavity.
+  const tierBudgetCeiling = params.tierBudgetCeiling || 300000;
+  const tierBudgetAlpha = params.tierBudgetAlpha || 0.7;
+  const tierReach = Math.pow(Math.min(1, budget / tierBudgetCeiling), tierBudgetAlpha);
+
+  // Expected reward cost at this budget level (at mid efficiency for budget constraint)
+  const effTierDiscount = params.effTierDiscount || 0.10;
+  const midBudgetRewardCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
+  const midEffDiscountFactor = 1 - 0.5 * effTierDiscount; // at mid efficiency
+  const adjMidEffReward = midBudgetRewardCost * midEffDiscountFactor;
 
   // Budget-as-reward-pool constraint: can't convert more than budget can pay for.
   // Only resolved conversions cost rewards (expired offers cost nothing),
   // so we scale up by 1/realizationEstimate to account for resolution losses.
-  const midEffReward = rewardCostForEfficiency(0.5, referrerTiers, refereeTiers, tierDistLowEff, tierDistHighEff);
-  const maxTierCostCap = referrerTiers[referrerTiers.length - 1] + refereeTiers[refereeTiers.length - 1];
-  const reachCostPremium = 1 + budgetPressure * (params.reachCostElasticity || 1.0);
-  const adjMidEffReward = Math.min(midEffReward * reachCostPremium, maxTierCostCap);
   const realizationEstimate = params.budgetRealizationFactor || 0.55;
   const maxAffordable = adjMidEffReward > 0 ? budget / adjMidEffReward / realizationEstimate : Infinity;
   const effectiveN = Math.min(N_frontier, maxAffordable);
@@ -201,14 +207,15 @@ export function computeProjection({ budget, params }) {
     const eff = allocationEfficiency(day, cumulativeN, params);
     confidenceCurve.push(eff);
 
-    // Reward cost: eff-driven tier mix + budget pressure premium, capped at max tier
-    const baseRewardCost = rewardCostForEfficiency(eff, referrerTiers, refereeTiers, tierDistLowEff, tierDistHighEff);
-    const maxTierCost = referrerTiers[referrerTiers.length - 1] + refereeTiers[refereeTiers.length - 1];
-    // reachCostPremium computed once before loop from budgetPressure
-    const dailyRewardCost = Math.min(baseRewardCost * reachCostPremium, maxTierCost);
+    // Reward cost: budget-driven tier distribution with learning discount.
+    // tierReach (computed once before loop) determines base tier mix.
+    // Efficiency provides a small discount (trained engine saves on tier selection).
+    const baseTierCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
+    const dailyRewardCost = baseTierCost * (1 - eff * effTierDiscount);
 
     // Pace journeys: don't exhaust pool before learning
     const journeysToday = Math.min(dailyJourneyTarget, remainingPool * maxDailyReachRate);
+    const maxTierCost = referrerTiers[referrerTiers.length - 1] + refereeTiers[refereeTiers.length - 1];
     const rewardIntensity = maxTierCost > 0 ? dailyRewardCost / maxTierCost : 0;
     const rewardConvBoost = 1 + rewardIntensity * (params.rewardConvElasticity || 0.5);
     const adjustedConvRate = effectiveBaseConvRate * rewardConvBoost;

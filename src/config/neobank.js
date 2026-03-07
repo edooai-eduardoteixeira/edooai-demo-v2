@@ -127,10 +127,10 @@ const neobank = {
   //   Value learning: engine finds super referrers → higher-value customers over time
   //
   // Calibrated via scripts/calibrate-engine.mjs to hit:
-  //   $50K  → ~416 users, CAC ~$82, ROI ~1.5x (cherry-pick, low rewards, 10% premium)
-  //   $150K → ~1,090 users, CAC ~$105, ROI ~1.4x (scaling, higher rewards, 46% premium)
-  //   $300K → ~1,852 users, CAC ~$135, ROI ~1.2x (full audience, highest rewards, 90% premium)
-  // CAC = weighted avg reward per conversion (driven by eff → tier mix × budget pressure premium)
+  //   $50K  → CAC ~$55, ROI ~1.8x (cherry-pick: cheap tier distribution)
+  //   $150K → CAC ~$85, ROI ~1.5x (scaling: mid-tier distribution)
+  //   $300K → CAC ~$110, ROI ~1.2x (full audience: expensive tier distribution)
+  // CAC = weighted avg reward per conversion (driven by budget-level tier distribution)
   engineParams: {
     // Audience — derived: audienceSize = totalCustomers × eligibilityRate
     totalCustomers: 847000,            // Total customer base (from data ingestion)
@@ -167,13 +167,16 @@ const neobank = {
     referrerTiers: [0, 20, 50, 75],    // $ referrer reward per tier (Tier 1 = organic, Tier 4 = hard conversion)
     refereeTiers: [0, 10, 25, 50],     // $ referee reward per tier
 
-    // Tier distribution endpoints — interpolated by allocation efficiency (eff)
-    // Tiers 1 and 4 are always rare; bulk shifts from 3/4 → 2/3 as engine learns
-    tierDistLowEff:  [0.03, 0.12, 0.40, 0.45],  // untrained: heavy Tier 3/4
-    tierDistHighEff: [0.07, 0.38, 0.45, 0.10],  // trained: heavy Tier 2/3, 1&4 rare
+    // Tier distribution — interpolated by budget level (NOT efficiency)
+    // Low budget: cherry-pick easy converts → mostly cheap tiers
+    // High budget: full audience → need expensive tiers to convert hard prospects
+    tierDistCheap:     [0.30, 0.45, 0.20, 0.05],  // low budget: heavy Tier 1-2 (CAC ~$35)
+    tierDistExpensive: [0.01, 0.04, 0.10, 0.85],  // high budget: heavy Tier 4 (CAC ~$115)
 
-    // Reach cost dynamics — budget-dependent reward and conversion effects
-    reachCostElasticity: 2.5,      // How much rewards increase with budget pressure (premium = 1 + pressure² × this)
+    // Budget-driven tier selection parameters
+    tierBudgetCeiling: 300000,     // Budget at which tier distribution reaches max expensive
+    tierBudgetAlpha: 0.7,          // Concavity of tier escalation (<1 = fast ramp at low budgets)
+    effTierDiscount: 0.10,         // Max % discount from engine learning on tier costs (10%)
     rewardConvElasticity: 0.5,     // How much higher rewards boost conversion rate (U-curve upward leg)
 
     // Economics — value varies with engine learning (80/20 dynamic)
@@ -297,9 +300,9 @@ const neobank = {
       },
     ],
     dailyRamp: [
-      { days: '1\u20137', activeUsersPerDay: 16, note: 'Initial cohort, learning' },
-      { days: '8\u201321', activeUsersPerDay: 38, note: 'Scaling based on early data' },
-      { days: '22\u201330', activeUsersPerDay: 48, note: 'Improving allocation' },
+      { days: '1\u20137', activeUsersPerDay: 19, note: 'Initial cohort, learning' },
+      { days: '8\u201321', activeUsersPerDay: 45, note: 'Scaling based on early data' },
+      { days: '22\u201330', activeUsersPerDay: 66, note: 'Improving allocation' },
     ],
   },
 
@@ -310,12 +313,12 @@ const neobank = {
   // ─── Screen 4 — Dashboard (30-day projected results) ───
 
   dashboard30Day: {
-    activeUsers: 1090,
-    totalReferralsSent: 9500,
+    activeUsers: 1362,
+    totalReferralsSent: 11000,
     totalSpend: 150000,
-    cac: 105,
-    roi: 1.4,
-    fraudSaved: 7500,
+    cac: 79,
+    roi: 1.7,
+    fraudSaved: 10500,
     chartPhases: [
       { label: 'Learning', days: '1\u20137', note: 'Small cohort' },
       { label: 'Scaling', days: '8\u201321', note: 'Acceleration' },
@@ -323,12 +326,12 @@ const neobank = {
     ],
     ctaText: 'Book a Call',
     ctaLink: '#',
-    // S-curve daily data points (cumulative active users, building to ~1090)
+    // S-curve daily data points (cumulative active users, building to ~1362)
     dailyData: [
-      8, 22, 42, 68, 98, 132, 170,
-      212, 258, 308, 360, 415, 472, 530,
-      588, 648, 708, 766, 822, 876, 926,
-      970, 1005, 1030, 1048, 1060, 1070, 1078, 1085, 1090,
+      4, 17, 39, 70, 110, 155, 205,
+      265, 330, 400, 475, 555, 640, 725,
+      810, 895, 978, 1055, 1125, 1185, 1235,
+      1270, 1295, 1315, 1330, 1340, 1348, 1354, 1358, 1362,
     ],
   },
 };
