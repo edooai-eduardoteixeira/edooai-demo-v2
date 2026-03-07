@@ -127,9 +127,9 @@ const neobank = {
   //   Value learning: engine finds super referrers → higher-value customers over time
   //
   // Calibrated via scripts/calibrate-engine.mjs to hit:
-  //   $50K  → ~600 users, CAC ~$71, ROI ~2.7x (cherry-pick, low rewards, 10% premium)
-  //   $150K → ~1,513 users, CAC ~$92, ROI ~2.3x (scaling, higher rewards, 46% premium)
-  //   $300K → ~2,507 users, CAC ~$119, ROI ~2.0x (full audience, highest rewards, 90% premium)
+  //   $50K  → ~416 users, CAC ~$82, ROI ~1.5x (cherry-pick, low rewards, 10% premium)
+  //   $150K → ~1,090 users, CAC ~$105, ROI ~1.4x (scaling, higher rewards, 46% premium)
+  //   $300K → ~1,852 users, CAC ~$135, ROI ~1.2x (full audience, highest rewards, 90% premium)
   // CAC = weighted avg reward per conversion (driven by eff → tier mix × budget pressure premium)
   engineParams: {
     // Audience — derived: audienceSize = totalCustomers × eligibilityRate
@@ -143,8 +143,8 @@ const neobank = {
 
     // Allocation efficiency — learning dynamics
     effFloor: 0.30,                    // Min efficiency (random allocation success rate)
-    timeLearnRate: 0.025,              // Speed of time-based learning (exp decay rate) — realistic: months to learn
-    confHalfPoint: 500,                // Resolved conversions for 50% volume confidence — needs real data
+    timeLearnRate: 0.04,               // Speed of time-based learning (exp decay rate) — months to learn
+    confHalfPoint: 200,                // Resolved conversions for 50% volume confidence
 
     // Conversion probabilities per journey
     baseConvRate: 0.05,                // P(conversion | well-targeted journey) for best prospects
@@ -297,9 +297,9 @@ const neobank = {
       },
     ],
     dailyRamp: [
-      { days: '1\u20137', activeUsersPerDay: 22, note: 'Initial cohort, learning' },
-      { days: '8\u201321', activeUsersPerDay: 50, note: 'Scaling based on early data' },
-      { days: '22\u201330', activeUsersPerDay: 65, note: 'Optimized allocation' },
+      { days: '1\u20137', activeUsersPerDay: 16, note: 'Initial cohort, learning' },
+      { days: '8\u201321', activeUsersPerDay: 38, note: 'Scaling based on early data' },
+      { days: '22\u201330', activeUsersPerDay: 48, note: 'Improving allocation' },
     ],
   },
 
@@ -310,12 +310,12 @@ const neobank = {
   // ─── Screen 4 — Dashboard (30-day projected results) ───
 
   dashboard30Day: {
-    activeUsers: 1513,
-    totalReferralsSent: 12800,
+    activeUsers: 1090,
+    totalReferralsSent: 9500,
     totalSpend: 150000,
-    cac: 92,
-    roi: 2.3,
-    fraudSaved: 10500,
+    cac: 105,
+    roi: 1.4,
+    fraudSaved: 7500,
     chartPhases: [
       { label: 'Learning', days: '1\u20137', note: 'Small cohort' },
       { label: 'Scaling', days: '8\u201321', note: 'Acceleration' },
@@ -323,12 +323,12 @@ const neobank = {
     ],
     ctaText: 'Book a Call',
     ctaLink: '#',
-    // S-curve daily data points (cumulative active users, building to ~1513)
+    // S-curve daily data points (cumulative active users, building to ~1090)
     dailyData: [
-      12, 35, 65, 100, 145, 195, 250,
-      315, 385, 460, 540, 630, 715, 790,
-      865, 935, 1000, 1065, 1125, 1180, 1230,
-      1280, 1325, 1365, 1400, 1435, 1460, 1485, 1500, 1513,
+      8, 22, 42, 68, 98, 132, 170,
+      212, 258, 308, 360, 415, 472, 530,
+      588, 648, 708, 766, 822, 876, 926,
+      970, 1005, 1030, 1048, 1060, 1070, 1078, 1085, 1090,
     ],
   },
 };
