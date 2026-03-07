@@ -35,11 +35,10 @@ function computeProjection(budget, p) {
   const audienceSize = Math.round(p.totalCustomers * p.eligibilityRate);
   const N_frontier = supplyFrontier(budget, p.N_max, p.B_half, p.alpha);
 
+  const budgetPressure = budget / (budget + p.B_half);
   const midEffReward = rewardCostForEfficiency(0.5, p.referrerTiers, p.refereeTiers, p.tierDistLowEff, p.tierDistHighEff);
-  // Estimate reach cost premium from N_frontier (no circularity)
-  const estReachPen = (N_frontier / p.baseConvRate) / audienceSize;
-  const estReachPremium = 1 + estReachPen * (p.reachCostElasticity || 1.0);
-  const adjMidEffReward = midEffReward * estReachPremium;
+  const reachCostPremium = 1 + budgetPressure * (p.reachCostElasticity || 1.0);
+  const adjMidEffReward = midEffReward * reachCostPremium;
   const realizationEstimate = p.budgetRealizationFactor || 0.55;
   const maxAffordable = adjMidEffReward > 0 ? budget / adjMidEffReward / realizationEstimate : Infinity;
   const effectiveN = Math.min(N_frontier, maxAffordable);
@@ -70,9 +69,8 @@ function computeProjection(budget, p) {
     const eff = p.effFloor + (1 - p.effFloor) * timeFactor * volumeFactor;
     effCurve.push(eff);
 
-    // Reward cost: eff-driven tier mix + reach cost premium
+    // Reward cost: eff-driven tier mix + budget pressure premium
     const baseRewardCost = rewardCostForEfficiency(eff, p.referrerTiers, p.refereeTiers, p.tierDistLowEff, p.tierDistHighEff);
-    const reachCostPremium = 1 + reachPenetration * (p.reachCostElasticity || 1.0);
     const dailyRewardCost = baseRewardCost * reachCostPremium;
 
     const journeysToday = Math.min(dailyJourneyTarget, remainingPool * p.maxDailyReachRate);
@@ -178,16 +176,16 @@ const paramSets = [
       offerExpirationDays: 14,
       referrerEligibilityRate: 0.4,
       baseRevenuePerUser: 100,
-      premiumRevenuePerUser: 220,
+      premiumRevenuePerUser: 280,
       fraudRate: 0.07,
       minSignalVolume: 40,
       referrerTiers: [0, 20, 50, 75],
       refereeTiers: [0, 10, 25, 50],
       tierDistLowEff: [0.03, 0.12, 0.40, 0.45],
       tierDistHighEff: [0.07, 0.38, 0.45, 0.10],
-      reachCostElasticity: 1.0,
+      reachCostElasticity: 1.5,
       rewardConvElasticity: 0.5,
-      budgetRealizationFactor: 0.55,
+      budgetRealizationFactor: 0.70,
     },
   },
   {

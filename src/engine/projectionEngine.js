@@ -152,14 +152,16 @@ export function computeProjection({ budget, params }) {
   // Supply curve: theoretical max CONVERSIONS at this budget
   const N_frontier = supplyFrontier(budget, N_max, B_half, alpha);
 
+  // Budget pressure: how hard you're pushing relative to the sweet spot.
+  // Concave 0-1 range — directly measures "push intensity" without self-limiting feedback.
+  const budgetPressure = budget / (budget + B_half);
+
   // Budget-as-reward-pool constraint: can't convert more than budget can pay for.
   // Only resolved conversions cost rewards (expired offers cost nothing),
   // so we scale up by 1/realizationEstimate to account for resolution losses.
-  // Estimate reach cost premium from N_frontier (no circularity — N_frontier is budget-only)
   const midEffReward = rewardCostForEfficiency(0.5, referrerTiers, refereeTiers, tierDistLowEff, tierDistHighEff);
-  const estReachPen = (N_frontier / baseConvRate) / Math.round(totalCustomers * eligibilityRate);
-  const estReachPremium = 1 + estReachPen * (params.reachCostElasticity || 1.0);
-  const adjMidEffReward = midEffReward * estReachPremium;
+  const reachCostPremium = 1 + budgetPressure * (params.reachCostElasticity || 1.0);
+  const adjMidEffReward = midEffReward * reachCostPremium;
   const realizationEstimate = params.budgetRealizationFactor || 0.55;
   const maxAffordable = adjMidEffReward > 0 ? budget / adjMidEffReward / realizationEstimate : Infinity;
   const effectiveN = Math.min(N_frontier, maxAffordable);
@@ -197,10 +199,9 @@ export function computeProjection({ budget, params }) {
     const eff = allocationEfficiency(day, cumulativeN, params);
     confidenceCurve.push(eff);
 
-    // Reward cost: eff-driven tier mix + reach cost premium
+    // Reward cost: eff-driven tier mix + budget pressure premium
     const baseRewardCost = rewardCostForEfficiency(eff, referrerTiers, refereeTiers, tierDistLowEff, tierDistHighEff);
-    // Deeper reach requires higher rewards — less propense prospects need more incentive
-    const reachCostPremium = 1 + reachPenetration * (params.reachCostElasticity || 1.0);
+    // reachCostPremium computed once before loop from budgetPressure
     const dailyRewardCost = baseRewardCost * reachCostPremium;
 
     // Pace journeys: don't exhaust pool before learning

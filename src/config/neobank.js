@@ -127,10 +127,10 @@ const neobank = {
   //   Value learning: engine finds super referrers → higher-value customers over time
   //
   // Calibrated via scripts/calibrate-engine.mjs to hit:
-  //   $50K  → ~677 users, CAC ~$68, ROI ~2.5x (cherry-pick, low rewards)
-  //   $150K → ~1,739 users, CAC ~$70, ROI ~2.2x (scaling, higher rewards)
-  //   $300K → ~3,038 users, CAC ~$75, ROI ~1.9x (full audience, highest rewards)
-  // CAC = weighted avg reward per conversion (driven by eff → tier mix × reach cost premium)
+  //   $50K  → ~523 users, CAC ~$85, ROI ~2.3x (cherry-pick, low rewards)
+  //   $150K → ~1,391 users, CAC ~$104, ROI ~2.1x (scaling, higher rewards)
+  //   $300K → ~2,507 users, CAC ~$119, ROI ~2.0x (full audience, highest rewards)
+  // CAC = weighted avg reward per conversion (driven by eff → tier mix × budget pressure premium)
   engineParams: {
     // Audience — derived: audienceSize = totalCustomers × eligibilityRate
     totalCustomers: 847000,            // Total customer base (from data ingestion)
@@ -160,7 +160,7 @@ const neobank = {
     referrerEligibilityRate: 0.4,      // Fraction of new converts who become eligible referrers
 
     // Budget realization — fraction of theoretical conversions that resolve within 30 days
-    budgetRealizationFactor: 0.55,     // Used to scale budget cap (only resolved conversions cost rewards)
+    budgetRealizationFactor: 0.70,     // Fraction of started conversions that resolve within 30 days
 
     // Reward tiers — matches StrategyCards defaults (referrer + referee per tier)
     // AI selects tier per customer based on predicted conversion difficulty
@@ -173,12 +173,12 @@ const neobank = {
     tierDistHighEff: [0.07, 0.38, 0.45, 0.10],  // trained: heavy Tier 2/3, 1&4 rare
 
     // Reach cost dynamics — budget-dependent reward and conversion effects
-    reachCostElasticity: 1.0,      // How much rewards increase with reach depth (premium = 1 + reachPen × this)
+    reachCostElasticity: 1.5,      // How much rewards increase with budget pressure (premium = 1 + pressure × this)
     rewardConvElasticity: 0.5,     // How much higher rewards boost conversion rate (U-curve upward leg)
 
     // Economics — value varies with engine learning (80/20 dynamic)
     baseRevenuePerUser: 100,           // Revenue per user when engine is untrained (random targeting)
-    premiumRevenuePerUser: 220,        // Revenue per user when engine is fully optimized (super referrers)
+    premiumRevenuePerUser: 280,        // Revenue per user when engine is fully optimized (super referrers)
     fraudRate: 0.07,                   // Fraction of spend saved by fraud detection
     minSignalVolume: 40,               // Resolved conversions for statistical significance
 
@@ -297,9 +297,9 @@ const neobank = {
       },
     ],
     dailyRamp: [
-      { days: '1\u20137', activeUsersPerDay: 25, note: 'Initial cohort, learning' },
-      { days: '8\u201321', activeUsersPerDay: 55, note: 'Scaling based on early data' },
-      { days: '22\u201330', activeUsersPerDay: 75, note: 'Optimized allocation' },
+      { days: '1\u20137', activeUsersPerDay: 20, note: 'Initial cohort, learning' },
+      { days: '8\u201321', activeUsersPerDay: 45, note: 'Scaling based on early data' },
+      { days: '22\u201330', activeUsersPerDay: 60, note: 'Optimized allocation' },
     ],
   },
 
@@ -310,11 +310,11 @@ const neobank = {
   // ─── Screen 4 — Dashboard (30-day projected results) ───
 
   dashboard30Day: {
-    activeUsers: 1739,
-    totalReferralsSent: 16400,
+    activeUsers: 1391,
+    totalReferralsSent: 11800,
     totalSpend: 150000,
-    cac: 70,
-    roi: 2.2,
+    cac: 104,
+    roi: 2.1,
     fraudSaved: 10500,
     chartPhases: [
       { label: 'Learning', days: '1\u20137', note: 'Small cohort' },
@@ -323,12 +323,12 @@ const neobank = {
     ],
     ctaText: 'Book a Call',
     ctaLink: '#',
-    // S-curve daily data points (cumulative active users, building to ~1739)
+    // S-curve daily data points (cumulative active users, building to ~1391)
     dailyData: [
-      15, 40, 75, 120, 170, 230, 300,
-      380, 470, 560, 660, 770, 870, 960,
-      1040, 1120, 1190, 1250, 1310, 1360, 1410,
-      1460, 1510, 1560, 1600, 1640, 1670, 1700, 1720, 1739,
+      10, 30, 55, 90, 130, 175, 225,
+      285, 350, 420, 495, 575, 650, 720,
+      790, 855, 920, 980, 1035, 1085, 1130,
+      1170, 1210, 1245, 1280, 1310, 1335, 1360, 1375, 1391,
     ],
   },
 };
