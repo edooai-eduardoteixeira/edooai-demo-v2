@@ -262,30 +262,32 @@ export default function StrategyBuilderPage({ config, onNext }) {
         }}
       >
         {/* ════════════════════════════════════════════
-            SECTION 1 — Forecast Panel (Budget + Result + Chart)
-            Redesigned: v12 wireframe with real logic
+            SECTION 1 — Your Referral Strategy (open surface)
             ════════════════════════════════════════════ */}
+        <h3 style={{
+          fontSize: 32,
+          fontWeight: 600,
+          letterSpacing: '-0.02em',
+          color: 'var(--text-primary)',
+          marginBottom: 32,
+        }}>Your Referral Strategy</h3>
+
         {showResult && (
           <section
             style={{
               marginBottom: 48,
               animation: 'fadeIn 0.4s ease forwards',
-              background: 'var(--surface)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-lg)',
-              overflow: 'hidden',
             }}
           >
-            {/* ── Forecast panel: 2×2 grid — shared row boundary aligns separator lines ── */}
+            {/* ── Open surface grid: budget | results ── */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: '380px 1fr',
-              gridTemplateRows: 'auto auto',
+              gridTemplateColumns: '340px 1fr',
             }}>
 
-              {/* Cell 1: Top-left — budget label + number */}
+              {/* ── Budget column ── */}
               <div style={{
-                padding: '32px 28px 16px',
+                padding: '0 32px 0 0',
                 borderRight: '1px solid var(--border-light)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -300,12 +302,11 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   Monthly budget
                 </div>
 
-                {/* Budget number — inline editable, $ and K are always visible as mask */}
+                {/* Budget number — inline editable */}
                 <div
                   style={{
-                    display: 'flex',
+                    display: 'inline-flex',
                     alignItems: 'baseline',
-                    gap: 0,
                     marginTop: 8,
                     cursor: 'text',
                   }}
@@ -384,37 +385,132 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   }}>/mo</span>
                 </div>
 
-                {/* Recommended zone label — pushed to bottom via marginTop auto */}
-                <div style={{
-                  marginTop: 'auto',
-                  paddingLeft: `${recZoneLeft}%`,
-                }}>
+                {/* Slider — tight spacing */}
+                <div style={{ marginTop: 12 }}>
+                  <div style={{ position: 'relative', height: 20 }}>
+                    {/* Track background */}
+                    <div style={{
+                      position: 'absolute',
+                      top: 7,
+                      left: 0,
+                      right: 0,
+                      height: 6,
+                      background: 'var(--color-gray-200)',
+                      borderRadius: 3,
+                    }} />
+
+                    {/* Recommended zone band */}
+                    <div style={{
+                      position: 'absolute',
+                      left: `${recZoneLeft}%`,
+                      width: `${recZoneWidth}%`,
+                      top: 3,
+                      height: 14,
+                      background: 'var(--color-gray-300)',
+                      borderRadius: 7,
+                      zIndex: 0,
+                    }} />
+
+                    {/* Fill */}
+                    <div style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 7,
+                      width: `${sliderPercent}%`,
+                      height: 6,
+                      background: 'var(--accent)',
+                      borderRadius: 3,
+                      zIndex: 1,
+                    }} />
+
+                    {/* Thumb */}
+                    <div style={{
+                      position: 'absolute',
+                      left: `${sliderPercent}%`,
+                      top: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: 20,
+                      height: 20,
+                      background: 'var(--accent)',
+                      border: '3px solid var(--surface)',
+                      borderRadius: '50%',
+                      cursor: 'grab',
+                      zIndex: 3,
+                      boxShadow: 'var(--shadow-sm)',
+                    }} />
+
+                    {/* Invisible range input */}
+                    <input
+                      type="range"
+                      min={budgetSlider.min}
+                      max={budgetSlider.max}
+                      step={budgetSlider.step}
+                      value={budget}
+                      onChange={(e) => setBudget(Number(e.target.value))}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        opacity: 0,
+                        cursor: 'pointer',
+                        zIndex: 4,
+                      }}
+                    />
+                  </div>
+
+                  {/* Bounds — subtle */}
                   <div style={{
-                    width: `${recZoneWidth}%`,
-                    textAlign: 'center',
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: 'var(--text-tertiary)',
-                    letterSpacing: '0.04em',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 6,
+                    fontSize: 10,
+                    color: 'var(--color-gray-300)',
                   }}>
-                    Recommended
+                    <span>${Math.round(budgetSlider.min / 1000)}K</span>
+                    <span>${Math.round(budgetSlider.max / 1000)}K</span>
+                  </div>
+                </div>
+
+                {/* AI insight */}
+                <div style={{
+                  marginTop: 24,
+                  display: 'flex',
+                  gap: 8,
+                  alignItems: 'flex-start',
+                }}>
+                  <svg style={{ flexShrink: 0, marginTop: 1 }} width="14" height="14" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="var(--text-tertiary)"/>
+                  </svg>
+                  <div style={{
+                    fontSize: 12.5,
+                    color: 'var(--text-secondary)',
+                    lineHeight: 1.5,
+                  }}>
+                    {guidanceMessage}
                   </div>
                 </div>
               </div>
 
-              {/* Cell 2: Top-right — headline number */}
-              <div style={{ padding: '32px 28px 16px' }}>
-                <div style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  letterSpacing: '0.05em',
-                  textTransform: 'uppercase',
-                  color: 'var(--text-tertiary)',
-                }}>
-                  First 30 days
-                </div>
+              {/* ── Results column ── */}
+              <div style={{
+                paddingLeft: 32,
+                display: 'flex',
+                flexDirection: 'column',
+              }}>
+                {/* Headline */}
+                <div style={{ paddingBottom: 16 }}>
+                  <div style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    color: 'var(--text-tertiary)',
+                  }}>
+                    First 30 days
+                  </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{
                     fontSize: 64,
                     fontWeight: 800,
@@ -425,172 +521,24 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   }}>
                     <AnimatedNumber value={activeUsers} duration={300} />
                   </div>
-                  {dailyCurve && (() => {
-                    const pts = sparkPointsData(dailyCurve, td);
-                    const last = pts[pts.length - 1];
-                    return (
-                      <span
-                        onMouseEnter={() => setHoveredSparkline('headline')}
-                        onMouseLeave={() => setHoveredSparkline(null)}
-                        style={{ display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
-                      >
-                        <svg width="64" height="24" viewBox="0 0 60 16" style={{ marginTop: 8 }}>
-                          {(() => {
-                            const refY = sparkRefY(dailyCurve, activeUsers / 30, td);
-                            return refY != null ? (
-                              <line x1="2" y1={refY} x2="58" y2={refY}
-                                stroke="var(--text-tertiary)" strokeWidth="0.6"
-                                strokeDasharray="2 2" opacity="0.55" />
-                            ) : null;
-                          })()}
-                          <polyline
-                            points={pts.map(p => `${p.x},${p.y}`).join(' ')}
-                            fill="none"
-                            stroke="var(--success)"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <circle cx={last.x} cy={last.y} r="2.5" fill="var(--success)" />
-                        </svg>
-                      </span>
-                    );
-                  })()}
-                  {hoveredSparkline === 'headline' && dailyCurve && dailyCurve.length > 0 && (() => {
-                    const lastDay = dailyCurve[dailyCurve.length - 1];
-                    const trendTo = Math.round(lastDay * 30);
-                    return (
-                      <span style={{
-                        fontSize: 12,
-                        fontWeight: 500,
-                        color: 'var(--text-tertiary)',
-                        whiteSpace: 'nowrap',
-                      }}>
-                        Trending to {formatTrend('activeUsers', trendTo)}/mo
-                      </span>
-                    );
-                  })()}
+
+                  <div style={{
+                    fontSize: 14,
+                    color: 'var(--text-secondary)',
+                    marginTop: 4,
+                  }}>
+                    new active users
+                  </div>
                 </div>
 
+                {/* KPI grid */}
                 <div style={{
-                  fontSize: 14,
-                  color: 'var(--text-secondary)',
-                  marginTop: 4,
+                  paddingTop: 14,
+                  borderTop: '1px solid var(--border-light)',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '14px 20px',
                 }}>
-                  new active users
-                </div>
-              </div>
-
-              {/* Cell 3: Bottom-left — slider + guidance */}
-              <div style={{
-                padding: '0 28px 32px',
-                borderRight: '1px solid var(--border-light)',
-              }}>
-                {/* Track + input wrapper — marginTop: -7 aligns track (at top:7) with Cell 4 borderTop */}
-                <div style={{ position: 'relative', height: 20, marginTop: -7 }}>
-                  {/* Track background */}
-                  <div style={{
-                    position: 'absolute',
-                    top: 7,
-                    left: 0,
-                    right: 0,
-                    height: 6,
-                    background: 'var(--border-light)',
-                    borderRadius: 3,
-                  }} />
-
-                  {/* Recommended zone band */}
-                  <div style={{
-                    position: 'absolute',
-                    left: `${recZoneLeft}%`,
-                    width: `${recZoneWidth}%`,
-                    top: 3,
-                    height: 14,
-                    background: 'var(--color-gray-300)',
-                    borderRadius: 7,
-                    zIndex: 0,
-                  }} />
-
-                  {/* Fill */}
-                  <div style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: 7,
-                    width: `${sliderPercent}%`,
-                    height: 6,
-                    background: 'var(--accent)',
-                    borderRadius: 3,
-                    zIndex: 1,
-                  }} />
-
-                  {/* Thumb */}
-                  <div style={{
-                    position: 'absolute',
-                    left: `${sliderPercent}%`,
-                    top: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: 20,
-                    height: 20,
-                    background: 'var(--accent)',
-                    border: '3px solid var(--surface)',
-                    borderRadius: '50%',
-                    cursor: 'grab',
-                    zIndex: 3,
-                    boxShadow: 'var(--shadow-md)',
-                  }} />
-
-                  {/* Invisible range input */}
-                  <input
-                    type="range"
-                    min={budgetSlider.min}
-                    max={budgetSlider.max}
-                    step={budgetSlider.step}
-                    value={budget}
-                    onChange={(e) => setBudget(Number(e.target.value))}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      opacity: 0,
-                      cursor: 'pointer',
-                      zIndex: 4,
-                    }}
-                  />
-                </div>
-
-                {/* Bounds */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginTop: 8,
-                  fontSize: 11,
-                  color: 'var(--text-tertiary)',
-                }}>
-                  <span>${Math.round(budgetSlider.min / 1000)}K</span>
-                  <span>${Math.round(budgetSlider.max / 1000)}K</span>
-                </div>
-
-                {/* Guidance note */}
-                <div style={{
-                  marginTop: 20,
-                  fontSize: 12,
-                  color: 'var(--text-secondary)',
-                  lineHeight: 1.55,
-                }}>
-                  {guidanceMessage}
-                </div>
-              </div>
-
-              {/* Cell 4: Bottom-right — KPI grid */}
-              <div style={{
-                padding: '14px 28px 32px',
-                borderTop: '1px solid var(--border-light)',
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '10px 20px',
-              }}>
                   {[
                     { key: 'cac', label: 'Avg CAC', value: `$${cac}`, curve: dailyKPIs?.cac, invertGood: true, refValue: cac,
                       desc: 'Customer Acquisition Cost — total spend divided by new active users. Lower is better.' },
@@ -605,7 +553,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     const last = pts ? pts[pts.length - 1] : null;
                     const color = kpi.curve ? sparkColor(kpi.curve, kpi.invertGood, td) : 'var(--text-tertiary)';
 
-                    /* Trending-to: rates use last daily value, accumulations use × 30 */
                     let trendLabel = null;
                     if (kpi.curve && kpi.curve.length > 0) {
                       const lastVal = kpi.curve[kpi.curve.length - 1];
@@ -617,7 +564,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
                     return (
                     <div key={kpi.key} style={{ position: 'relative' }}>
-                      {/* Label (hover-underline tooltip) */}
                       <div style={{
                         fontSize: 11,
                         fontWeight: 600,
@@ -629,7 +575,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           <span>{kpi.label}</span>
                         </Tooltip>
                       </div>
-                      {/* Value + sparkline + trending-to (all inline) */}
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -683,142 +628,100 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     </div>
                     );
                   })}
+                </div>
               </div>
             </div>
 
-            {/* ── Daily new users chart ── */}
+            {/* ── Chart: daily forecast with learning zone + area fill ── */}
             {dailyCurve && (
-              <div style={{
-                padding: '20px 16px 16px',
-                borderTop: '1px solid var(--border-light)',
-              }}>
+              <div style={{ marginTop: 32 }}>
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'baseline',
-                  padding: '0 12px',
                 }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>
-                    Daily new active users
-                  </span>
-                  <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
-                    Projected · 30 days
+                    Daily forecast: new active users
                   </span>
                 </div>
 
-                <div style={{ marginTop: 14, height: 260, position: 'relative' }}>
+                <div style={{ marginTop: 8 }}>
                   <svg
-                    viewBox="0 0 780 240"
+                    viewBox="-28 0 828 210"
                     preserveAspectRatio="xMidYMid meet"
-                    style={{ width: '100%', height: '100%', display: 'block' }}
+                    style={{ width: '100%', height: 'auto', display: 'block' }}
                   >
-                    <defs>
-                      {(() => {
-                        // Threshold X position
-                        const threshX = 30 + ((thresholdDay - 1) / 29) * 730;
-                        return (
-                          <>
-                            <linearGradient id="curveGrad" x1={threshX} y1="0" x2="760" y2="0" gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="var(--color-gray-400)" />
-                              <stop offset="25%" stopColor="var(--color-gray-500)" />
-                              <stop offset="55%" stopColor="var(--color-gray-700)" />
-                              <stop offset="100%" stopColor="var(--text-primary)" />
-                            </linearGradient>
-                            <linearGradient id="areaGradPost" x1={threshX} y1="0" x2="760" y2="0" gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="var(--color-gray-300)" stopOpacity="0.04" />
-                              <stop offset="100%" stopColor="var(--text-primary)" stopOpacity="0.07" />
-                            </linearGradient>
-                            <clipPath id="clipPost">
-                              <rect x={threshX} y="0" width={760 - threshX} height="240" />
-                            </clipPath>
-                            <clipPath id="clipPre">
-                              <rect x="0" y="0" width={threshX} height="240" />
-                            </clipPath>
-                          </>
-                        );
-                      })()}
-                    </defs>
-
-                    {/* Pre-threshold background wash */}
-                    {(() => {
-                      const threshX = 30 + ((thresholdDay - 1) / 29) * 730;
-                      return <rect x="30" y="10" width={threshX - 30} height="190" fill="var(--accent-subtle)" />;
-                    })()}
-
-                    {/* Grid lines */}
-                    {[30, 70, 110, 150, 195].map((y) => (
-                      <line key={y} x1="30" y1={y} x2="760" y2={y} stroke="var(--border-light)" strokeWidth="1" />
-                    ))}
-
-                    {/* Y-axis labels */}
                     {(() => {
                       const maxVal = Math.max(...dailyCurve) + 2;
-                      const step = Math.ceil(maxVal / 4);
-                      return [0, step, step * 2, step * 3, step * 4].map((v, i) => (
-                        <text
-                          key={i}
-                          x="24"
-                          y={199 - i * 41}
-                          fontSize="11"
-                          fill="var(--text-tertiary)"
-                          textAnchor="end"
-                          fontFamily="var(--font-family)"
-                        >
-                          {v}
-                        </text>
-                      ));
-                    })()}
-
-                    {/* X-axis */}
-                    <line x1="30" y1="195" x2="760" y2="195" stroke="var(--border)" strokeWidth="1" />
-                    {[1, 5, 10, 15, 20, 25, 30].map((d) => {
-                      const x = 30 + ((d - 1) / 29) * 730;
-                      return (
-                        <text
-                          key={d}
-                          x={x}
-                          y="214"
-                          fontSize="11"
-                          fill="var(--text-tertiary)"
-                          textAnchor="middle"
-                          fontFamily="var(--font-family)"
-                        >
-                          {d}
-                        </text>
-                      );
-                    })}
-                    <text x="395" y="232" fontSize="11" fill="var(--text-tertiary)" textAnchor="middle" fontFamily="var(--font-family)">Day</text>
-
-                    {/* Build SVG path from daily data */}
-                    {(() => {
-                      const maxVal = Math.max(...dailyCurve) + 2;
-                      const chartLeft = 30, chartRight = 760, chartBottom = 195, chartTop = 15;
+                      const chartLeft = 0, chartRight = 800, chartBottom = 170, chartTop = 10;
                       const chartW = chartRight - chartLeft, chartH = chartBottom - chartTop;
+                      const threshX = chartLeft + ((thresholdDay - 1) / 29) * chartW;
+
                       const points = dailyCurve.map((v, i) => {
                         const x = chartLeft + (i / 29) * chartW;
                         const y = chartBottom - (v / maxVal) * chartH;
-                        return `${x},${y}`;
+                        return { x, y };
                       });
-                      const pathD = `M${points[0]} ${points.slice(1).map((p) => `L${p}`).join(' ')}`;
+                      const pathD = `M${points.map(p => `${p.x},${p.y}`).join(' L')}`;
                       const areaD = `${pathD} L${chartRight},${chartBottom} L${chartLeft},${chartBottom} Z`;
-                      const lastPoint = points[points.length - 1].split(',');
+                      const lastPt = points[points.length - 1];
                       const lastVal = dailyCurve[dailyCurve.length - 1];
 
                       return (
                         <>
-                          {/* Area fill pre-threshold */}
-                          <path d={areaD} fill="var(--accent-subtle)" clipPath="url(#clipPre)" opacity="0.5" />
+                          <defs>
+                            {/* Area fill: dark grey fading to transparent */}
+                            <linearGradient id="areaFill" x1="0" y1={chartTop} x2="0" y2={chartBottom} gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stopColor="#1e293b" stopOpacity="0.10" />
+                              <stop offset="60%" stopColor="#1e293b" stopOpacity="0.04" />
+                              <stop offset="100%" stopColor="#1e293b" stopOpacity="0" />
+                            </linearGradient>
+                            {/* Post-threshold stroke gradient */}
+                            <linearGradient id="strokeGrad" x1={threshX} y1="0" x2={chartRight} y2="0" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stopColor="#94a3b8" />
+                              <stop offset="40%" stopColor="#475569" />
+                              <stop offset="100%" stopColor="#1e293b" />
+                            </linearGradient>
+                            <clipPath id="clipPost">
+                              <rect x={threshX} y="0" width={chartRight - threshX} height="210" />
+                            </clipPath>
+                            <clipPath id="clipPre">
+                              <rect x="0" y="0" width={threshX} height="210" />
+                            </clipPath>
+                          </defs>
 
-                          {/* Area fill post-threshold */}
-                          <path d={areaD} fill="url(#areaGradPost)" clipPath="url(#clipPost)" />
+                          {/* Learning phase shaded zone */}
+                          <rect x={chartLeft} y={chartTop} width={threshX - chartLeft} height={chartH} fill="#f1f5f9" />
 
-                          {/* Curve pre-threshold (flat light) */}
-                          <path d={pathD} fill="none" stroke="var(--color-gray-200)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#clipPre)" />
+                          {/* Light gridlines — after learning zone only */}
+                          <line x1={threshX} y1={chartTop + chartH * 0.33} x2={chartRight} y2={chartTop + chartH * 0.33} stroke="var(--border-light)" strokeWidth="1" strokeDasharray="4,4" />
+                          <line x1={threshX} y1={chartTop + chartH * 0.66} x2={chartRight} y2={chartTop + chartH * 0.66} stroke="var(--border-light)" strokeWidth="1" strokeDasharray="4,4" />
 
-                          {/* Curve post-threshold (gradient) */}
-                          <path d={pathD} fill="none" stroke="url(#curveGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#clipPost)" />
+                          {/* X-axis baseline */}
+                          <line x1={chartLeft} y1={chartBottom} x2={chartRight} y2={chartBottom} stroke="var(--border-light)" strokeWidth="1" />
 
-                          {/* Hover overlay for tooltip */}
+                          {/* Y-axis: 0 and max */}
+                          <text x="-6" y={chartBottom + 4} fontSize="10" fill="var(--text-tertiary)" textAnchor="end" fontFamily="var(--font-family)">0</text>
+                          <text x="-6" y={chartTop + 14} fontSize="10" fill="var(--text-tertiary)" textAnchor="end" fontFamily="var(--font-family)">{Math.round(maxVal)}</text>
+
+                          {/* X-axis labels */}
+                          <text x={chartLeft} y="190" fontSize="11" fill="var(--text-tertiary)" textAnchor="start" fontFamily="var(--font-family)">Day 1</text>
+                          <text x={chartRight} y="190" fontSize="11" fill="var(--text-tertiary)" textAnchor="end" fontFamily="var(--font-family)">Day 30</text>
+
+                          {/* Area fill */}
+                          <path d={areaD} fill="url(#areaFill)" />
+
+                          {/* Pre-threshold curve — light */}
+                          <path d={pathD} fill="none" stroke="var(--color-gray-300)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#clipPre)" />
+
+                          {/* Post-threshold curve — confident dark gradient */}
+                          <path d={pathD} fill="none" stroke="url(#strokeGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#clipPost)" />
+
+                          {/* Learning phase label */}
+                          <text x={chartLeft + 8} y={chartTop + 16} fontSize="10" fill="var(--text-secondary)" fontFamily="var(--font-family)" fontWeight="600">Learning phase</text>
+                          <text x={chartLeft + 8} y={chartTop + 28} fontSize="9" fill="var(--text-tertiary)" fontFamily="var(--font-family)">AI calibrating signals</text>
+
+                          {/* Hover overlay */}
                           <rect
                             x={chartLeft} y={chartTop}
                             width={chartW} height={chartH}
@@ -839,15 +742,15 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           {/* Tooltip */}
                           {hoveredDay && (
                             <>
-                              <line x1={hoveredDay.x} y1={chartTop} x2={hoveredDay.x} y2={chartBottom} stroke="var(--text-tertiary)" strokeWidth="1" strokeDasharray="3,3" opacity="0.5" />
+                              <line x1={hoveredDay.x} y1={chartTop} x2={hoveredDay.x} y2={chartBottom} stroke="var(--color-gray-300)" strokeWidth="1" strokeDasharray="3,3" />
                               <circle cx={hoveredDay.x} cy={hoveredDay.y} r="4" fill="var(--text-primary)" stroke="white" strokeWidth="2" />
                               <rect
-                                x={hoveredDay.x - 36} y={hoveredDay.y - 32}
+                                x={Math.max(-20, Math.min(chartRight - 52, hoveredDay.x - 36))} y={hoveredDay.y - 32}
                                 width="72" height="22" rx="4"
                                 fill="var(--text-primary)"
                               />
                               <text
-                                x={hoveredDay.x} y={hoveredDay.y - 17}
+                                x={Math.max(16, Math.min(chartRight - 16, hoveredDay.x))} y={hoveredDay.y - 17}
                                 fontSize="11" fontWeight="600" fill="white"
                                 textAnchor="middle" fontFamily="var(--font-family)"
                               >
@@ -857,10 +760,10 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           )}
 
                           {/* Endpoint */}
-                          <circle cx={lastPoint[0]} cy={lastPoint[1]} r="3.5" fill="var(--text-primary)" />
+                          <circle cx={lastPt.x} cy={lastPt.y} r="3.5" fill="var(--text-primary)" />
                           <text
-                            x={Number(lastPoint[0])}
-                            y={Number(lastPoint[1]) - 10}
+                            x={lastPt.x - 14}
+                            y={lastPt.y - 10}
                             fontSize="11"
                             fill="var(--text-primary)"
                             fontWeight="600"
