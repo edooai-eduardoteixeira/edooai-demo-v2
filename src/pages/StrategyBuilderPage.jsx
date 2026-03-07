@@ -162,6 +162,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
   /* ── Editable budget number ── */
   const [editingBudget, setEditingBudget] = useState(false);
   const [budgetInput, setBudgetInput] = useState('');
+  const [budgetHovered, setBudgetHovered] = useState(false);
   const budgetInputRef = useRef(null);
 
   const startEditBudget = () => {
@@ -338,7 +339,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         lineHeight: 1,
                         border: 'none',
                         outline: 'none',
-                        background: '#ececec',
+                        background: 'var(--color-gray-100)',
                         padding: '2px 4px 3px 2px',
                         borderRadius: 4,
                         width: `${Math.max(2, String(budgetInput).length) * 0.6}em`,
@@ -352,14 +353,17 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       }}
                     />
                   ) : (
-                    <span style={{
+                    <span
+                      onMouseEnter={() => setBudgetHovered(true)}
+                      onMouseLeave={() => setBudgetHovered(false)}
+                      style={{
                       fontSize: 40,
                       fontWeight: 500,
                       letterSpacing: '-0.02em',
                       color: 'var(--text-primary)',
                       lineHeight: 1,
                       cursor: 'pointer',
-                      background: '#ececec',
+                      background: budgetHovered ? 'var(--color-gray-100)' : 'transparent',
                       padding: '2px 4px 3px 2px',
                       borderRadius: 4,
                       textDecoration: 'underline',
