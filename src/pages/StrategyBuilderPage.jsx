@@ -785,7 +785,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           <circle cx={lastPt.x} cy={lastPt.y} r="3.5" fill="var(--text-primary)" />
                           <text
                             x={lastPt.x - 14}
-                            y={lastPt.y - 10}
+                            y={Math.max(10, lastPt.y - 10)}
                             fontSize="11"
                             fill="var(--text-primary)"
                             fontWeight="600"
