@@ -64,6 +64,20 @@ function computeResolutionWeights(avgResolutionDays, offerExpirationDays) {
   return weights.map(w => w / sum);
 }
 
+// ─── Reward Cost per Conversion ──────────────────────────────────────
+// Returns the blended reward cost (referrer + referee) per conversion
+// at a given allocation efficiency level.
+// Low eff → AI uses expensive tiers (3/4) → high cost per conversion.
+// High eff → AI finds willing converters → cheap tiers (2/3) → low cost.
+function rewardCostForEfficiency(eff, referrerTiers, refereeTiers, distLow, distHigh) {
+  const weights = distLow.map((wLow, i) => wLow + (distHigh[i] - wLow) * eff);
+  let cost = 0;
+  for (let i = 0; i < weights.length; i++) {
+    cost += weights[i] * (referrerTiers[i] + refereeTiers[i]);
+  }
+  return cost;
+}
+
 // ─── Guardrail Assertions ────────────────────────────────────────────
 function assertParams(p) {
   const fail = (msg) => { throw new Error(`Engine assertion failed: ${msg}`); };
@@ -90,6 +104,10 @@ function assertParams(p) {
   if (!(p.baseRevenuePerUser > 0)) fail('baseRevenuePerUser must be > 0');
   if (!(p.premiumRevenuePerUser >= p.baseRevenuePerUser)) fail('premiumRevenuePerUser must be >= baseRevenuePerUser');
   if (!(p.effFloor > 0 || p.accidentalConvRate > 0)) fail('effFloor or accidentalConvRate must be > 0 (bootstrap safety)');
+  if (!(Array.isArray(p.referrerTiers) && p.referrerTiers.length >= 2)) fail('referrerTiers must be an array with >= 2 elements');
+  if (!(Array.isArray(p.refereeTiers) && p.refereeTiers.length >= 2)) fail('refereeTiers must be an array with >= 2 elements');
+  if (!(Array.isArray(p.tierDistLowEff) && p.tierDistLowEff.length === p.referrerTiers.length)) fail('tierDistLowEff must match referrerTiers length');
+  if (!(Array.isArray(p.tierDistHighEff) && p.tierDistHighEff.length === p.referrerTiers.length)) fail('tierDistHighEff must match referrerTiers length');
 }
 
 // ─── Main Computation ───────────────────────────────────────────────
@@ -117,6 +135,10 @@ export function computeProjection({ budget, params }) {
     offerExpirationDays,
     baseRevenuePerUser,
     premiumRevenuePerUser,
+    referrerTiers,
+    refereeTiers,
+    tierDistLowEff,
+    tierDistHighEff,
     fraudRate,
     minSignalVolume,
     budget: budgetThresholds,
@@ -128,8 +150,16 @@ export function computeProjection({ budget, params }) {
   // Supply curve: theoretical max CONVERSIONS at this budget
   const N_frontier = supplyFrontier(budget, N_max, B_half, alpha);
 
+  // Budget-as-reward-pool constraint: can't convert more than budget can pay for.
+  // Only resolved conversions cost rewards (expired offers cost nothing),
+  // so we scale up by 1/realizationEstimate to account for resolution losses.
+  const midEffReward = rewardCostForEfficiency(0.5, referrerTiers, refereeTiers, tierDistLowEff, tierDistHighEff);
+  const realizationEstimate = params.budgetRealizationFactor || 0.55;
+  const maxAffordable = midEffReward > 0 ? budget / midEffReward / realizationEstimate : Infinity;
+  const effectiveN = Math.min(N_frontier, maxAffordable);
+
   // Convert from conversion units to journey units
-  const totalJourneys = N_frontier / baseConvRate;
+  const totalJourneys = effectiveN / baseConvRate;
   const dailyJourneyTarget = totalJourneys / 30;
 
   // Reach quality: wider net = lower quality per contact (structural, not temporal)
@@ -151,6 +181,7 @@ export function computeProjection({ budget, params }) {
   const kpiCurves = { cac: [], roi: [], convRate: [], fraudSaved: [] };
   const dailyKPIs = { cac: [], roi: [], convRate: [], fraudSaved: [] };
   const dailySpend = budget / 30;
+  let cumulativeRewardCost = 0;
   let thresholdDay = 30;
   let thresholdFound = false;
 
@@ -200,6 +231,10 @@ export function computeProjection({ budget, params }) {
         resolvedValueToday += entry.value;
       }
     }
+    // Reward cost: eff-driven tier mix determines cost per conversion
+    const dailyRewardCost = rewardCostForEfficiency(eff, referrerTiers, refereeTiers, tierDistLowEff, tierDistHighEff);
+    cumulativeRewardCost += dailyRewardCost * resolvedToday;
+
     cumulativeN += resolvedToday;
     cumulativeValue += resolvedValueToday;
 
@@ -219,14 +254,14 @@ export function computeProjection({ budget, params }) {
 
     // Running cumulative KPI trajectories
     const cumSpend = (budget / 30) * day;
-    kpiCurves.cac.push(cumulativeN > 0 ? Math.round(cumSpend / cumulativeN) : 0);
+    kpiCurves.cac.push(cumulativeN > 0 ? Math.round(cumulativeRewardCost / cumulativeN) : 0);
     kpiCurves.roi.push(cumSpend > 0 ? Math.round((cumulativeValue / cumSpend) * 10) / 10 : 0);
     kpiCurves.convRate.push(totalJourneysStarted > 0
       ? Math.round((cumulativeN / totalJourneysStarted) * 10000) / 100 : 0);
     kpiCurves.fraudSaved.push(Math.round(cumSpend * fraudRate));
 
     // Daily KPI values (marginal, this day only — for sparkline trends)
-    dailyKPIs.cac.push(resolvedToday > 0 ? Math.round(dailySpend / resolvedToday) : 0);
+    dailyKPIs.cac.push(resolvedToday > 0 ? Math.round(dailyRewardCost) : 0);
     dailyKPIs.roi.push(resolvedToday > 0 ? Math.round((resolvedValueToday / dailySpend) * 10) / 10 : 0);
     dailyKPIs.convRate.push(journeysToday > 0
       ? Math.round((resolvedToday / journeysToday) * 10000) / 100 : 0);
@@ -238,7 +273,7 @@ export function computeProjection({ budget, params }) {
 
   // ─── Aggregate Metrics ─────────────────────────────────────────────
   const activeUsers = dailyCurve.reduce((sum, v) => sum + v, 0);
-  const cac = activeUsers > 0 ? Math.round(budget / activeUsers) : 999;
+  const cac = activeUsers > 0 ? Math.round(cumulativeRewardCost / activeUsers) : 999;
 
   // ROI uses actual cumulative value generated (not fixed average)
   const roi = cumulativeValue > 0 && budget > 0

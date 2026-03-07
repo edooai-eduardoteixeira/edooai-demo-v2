@@ -127,40 +127,54 @@ const neobank = {
   //   Value learning: engine finds super referrers → higher-value customers over time
   //
   // Calibrated via scripts/calibrate-engine.mjs to hit:
-  //   $50K  → ~200 users, CAC ~$250, ROI ~2.0x
-  //   $150K → ~500 users, CAC ~$300, ROI ~1.7x
-  //   $300K → ~720 users, CAC ~$417, ROI ~1.2x
+  //   $50K  → ~625 users, CAC ~$80, ROI ~2.2x
+  //   $150K → ~2,100 users, CAC ~$71, ROI ~3.2x
+  //   $300K → ~4,000 users, CAC ~$75, ROI ~2.8x
+  // CAC = weighted avg reward per conversion (driven by eff → tier mix)
   engineParams: {
     // Audience — derived: audienceSize = totalCustomers × eligibilityRate
     totalCustomers: 847000,            // Total customer base (from data ingestion)
-    eligibilityRate: 0.295,            // Fraction eligible for referral program → ~250K
+    eligibilityRate: 0.50,             // Fraction eligible for referral program → ~424K
 
     // Supply curve — theoretical max CONVERSIONS at given budget
-    N_max: 5000,                       // Ceiling: max conversions at infinite budget (NOT audience size)
-    B_half: 400000,                    // Budget for 50% of N_max ($)
+    N_max: 25000,                      // Ceiling: max conversions at infinite budget (NOT audience size)
+    B_half: 200000,                    // Budget for 50% of N_max ($)
     alpha: 1,                          // Concavity exponent (1 = Michaelis-Menten)
 
     // Allocation efficiency — learning dynamics
     effFloor: 0.30,                    // Min efficiency (random allocation success rate)
-    timeLearnRate: 0.06,               // Speed of time-based learning (exp decay rate)
-    confHalfPoint: 70,                 // Resolved conversions for 50% volume confidence
+    timeLearnRate: 0.10,               // Speed of time-based learning (exp decay rate)
+    confHalfPoint: 40,                 // Resolved conversions for 50% volume confidence
 
     // Conversion probabilities per journey
-    baseConvRate: 0.03,                // P(conversion | well-targeted journey) for best prospects
-    accidentalConvRate: 0.002,         // P(conversion | poorly-targeted journey)
+    baseConvRate: 0.05,                // P(conversion | well-targeted journey) for best prospects
+    accidentalConvRate: 0.003,         // P(conversion | poorly-targeted journey)
 
     // Reach quality — conv rate decreases with budget (structural)
-    reachDecayExponent: 1.0,           // How much wider reach penalizes conversion quality (calibrate)
+    reachDecayExponent: 0.5,           // How much wider reach penalizes conversion quality (calibrate)
 
     // Journey pacing & distributed resolution
-    maxDailyReachRate: 0.03,           // Max fraction of pool contacted per day
+    maxDailyReachRate: 0.04,           // Max fraction of pool contacted per day
     avgResolutionDays: 3,              // Mean of normal distribution for resolution timing
     offerExpirationDays: 14,           // Max days before offer expires (right bound of distribution)
     referrerEligibilityRate: 0.4,      // Fraction of new converts who become eligible referrers
 
+    // Budget realization — fraction of theoretical conversions that resolve within 30 days
+    budgetRealizationFactor: 0.55,     // Used to scale budget cap (only resolved conversions cost rewards)
+
+    // Reward tiers — matches StrategyCards defaults (referrer + referee per tier)
+    // AI selects tier per customer based on predicted conversion difficulty
+    referrerTiers: [0, 20, 50, 75],    // $ referrer reward per tier (Tier 1 = organic, Tier 4 = hard conversion)
+    refereeTiers: [0, 10, 25, 50],     // $ referee reward per tier
+
+    // Tier distribution endpoints — interpolated by allocation efficiency (eff)
+    // Tiers 1 and 4 are always rare; bulk shifts from 3/4 → 2/3 as engine learns
+    tierDistLowEff:  [0.03, 0.12, 0.40, 0.45],  // untrained: heavy Tier 3/4
+    tierDistHighEff: [0.07, 0.38, 0.45, 0.10],  // trained: heavy Tier 2/3, 1&4 rare
+
     // Economics — value varies with engine learning (80/20 dynamic)
-    baseRevenuePerUser: 250,           // Revenue per user when engine is untrained (random targeting)
-    premiumRevenuePerUser: 700,        // Revenue per user when engine is fully optimized (super referrers)
+    baseRevenuePerUser: 100,           // Revenue per user when engine is untrained (random targeting)
+    premiumRevenuePerUser: 220,        // Revenue per user when engine is fully optimized (super referrers)
     fraudRate: 0.07,                   // Fraction of spend saved by fraud detection
     minSignalVolume: 40,               // Resolved conversions for statistical significance
 
@@ -279,9 +293,9 @@ const neobank = {
       },
     ],
     dailyRamp: [
-      { days: '1\u20137', activeUsersPerDay: 5, note: 'Small initial cohort, learning' },
-      { days: '8\u201321', activeUsersPerDay: 12, note: 'Scaling based on early data' },
-      { days: '22\u201330', activeUsersPerDay: 18, note: 'Optimized allocation' },
+      { days: '1\u20137', activeUsersPerDay: 30, note: 'Initial cohort, learning' },
+      { days: '8\u201321', activeUsersPerDay: 65, note: 'Scaling based on early data' },
+      { days: '22\u201330', activeUsersPerDay: 90, note: 'Optimized allocation' },
     ],
   },
 
@@ -292,12 +306,12 @@ const neobank = {
   // ─── Screen 4 — Dashboard (30-day projected results) ───
 
   dashboard30Day: {
-    activeUsers: 260,
-    totalReferralsSent: 6500,
+    activeUsers: 1981,
+    totalReferralsSent: 22100,
     totalSpend: 150000,
-    cac: 577,
-    roi: 1.5,
-    fraudSaved: 42000,
+    cac: 63,
+    roi: 2.5,
+    fraudSaved: 10500,
     chartPhases: [
       { label: 'Learning', days: '1\u20137', note: 'Small cohort' },
       { label: 'Scaling', days: '8\u201321', note: 'Acceleration' },
@@ -305,12 +319,12 @@ const neobank = {
     ],
     ctaText: 'Book a Call',
     ctaLink: '#',
-    // S-curve daily data points (cumulative active users, building to 260)
+    // S-curve daily data points (cumulative active users, building to ~1981)
     dailyData: [
-      5, 10, 16, 22, 29, 37, 45,
-      56, 68, 82, 97, 113, 130, 147,
-      162, 176, 189, 200, 210, 219, 227,
-      234, 239, 244, 248, 251, 254, 256, 258, 260,
+      20, 50, 90, 140, 200, 270, 350,
+      440, 540, 650, 770, 900, 1020, 1120,
+      1210, 1300, 1380, 1450, 1520, 1580, 1640,
+      1700, 1750, 1800, 1840, 1880, 1910, 1940, 1960, 1981,
     ],
   },
 };

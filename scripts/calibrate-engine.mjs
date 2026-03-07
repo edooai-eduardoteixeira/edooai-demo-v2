@@ -113,7 +113,20 @@ function computeProjection(budget, p) {
   }
 
   const activeUsers = Math.round(dailyCurve.reduce((s, v) => s + v, 0));
-  const cac = activeUsers > 0 ? Math.round(budget / activeUsers) : Infinity;
+  // Reward-based CAC: compute actual reward spend from eff-driven tier mix
+  let cumulativeRewardCost = 0;
+  const referrerTiers = p.referrerTiers || [0, 20, 50, 75];
+  const refereeTiers = p.refereeTiers || [0, 10, 25, 50];
+  const distLow = p.tierDistLowEff || [0.03, 0.12, 0.40, 0.45];
+  const distHigh = p.tierDistHighEff || [0.07, 0.38, 0.45, 0.10];
+  for (let d = 0; d < 30; d++) {
+    const eff = effCurve[d] || 0.3;
+    const weights = distLow.map((wLow, i) => wLow + (distHigh[i] - wLow) * eff);
+    let cost = 0;
+    for (let i = 0; i < weights.length; i++) cost += weights[i] * (referrerTiers[i] + refereeTiers[i]);
+    cumulativeRewardCost += cost * dailyCurve[d];
+  }
+  const cac = activeUsers > 0 ? Math.round(cumulativeRewardCost / activeUsers) : Infinity;
   const roi = cumulativeValue > 0 && budget > 0
     ? Math.round((cumulativeValue / budget) * 10) / 10
     : 0;
