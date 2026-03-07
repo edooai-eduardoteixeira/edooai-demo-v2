@@ -161,8 +161,9 @@ export function computeProjection({ budget, params }) {
   // Only resolved conversions cost rewards (expired offers cost nothing),
   // so we scale up by 1/realizationEstimate to account for resolution losses.
   const midEffReward = rewardCostForEfficiency(0.5, referrerTiers, refereeTiers, tierDistLowEff, tierDistHighEff);
+  const maxTierCostCap = referrerTiers[referrerTiers.length - 1] + refereeTiers[refereeTiers.length - 1];
   const reachCostPremium = 1 + budgetPressure * (params.reachCostElasticity || 1.0);
-  const adjMidEffReward = midEffReward * reachCostPremium;
+  const adjMidEffReward = Math.min(midEffReward * reachCostPremium, maxTierCostCap);
   const realizationEstimate = params.budgetRealizationFactor || 0.55;
   const maxAffordable = adjMidEffReward > 0 ? budget / adjMidEffReward / realizationEstimate : Infinity;
   const effectiveN = Math.min(N_frontier, maxAffordable);
@@ -200,16 +201,14 @@ export function computeProjection({ budget, params }) {
     const eff = allocationEfficiency(day, cumulativeN, params);
     confidenceCurve.push(eff);
 
-    // Reward cost: eff-driven tier mix + budget pressure premium
+    // Reward cost: eff-driven tier mix + budget pressure premium, capped at max tier
     const baseRewardCost = rewardCostForEfficiency(eff, referrerTiers, refereeTiers, tierDistLowEff, tierDistHighEff);
+    const maxTierCost = referrerTiers[referrerTiers.length - 1] + refereeTiers[refereeTiers.length - 1];
     // reachCostPremium computed once before loop from budgetPressure
-    const dailyRewardCost = baseRewardCost * reachCostPremium;
+    const dailyRewardCost = Math.min(baseRewardCost * reachCostPremium, maxTierCost);
 
     // Pace journeys: don't exhaust pool before learning
     const journeysToday = Math.min(dailyJourneyTarget, remainingPool * maxDailyReachRate);
-
-    // Reward-to-conversion boost: higher rewards increase prospect willingness to convert
-    const maxTierCost = referrerTiers[referrerTiers.length - 1] + refereeTiers[refereeTiers.length - 1];
     const rewardIntensity = maxTierCost > 0 ? dailyRewardCost / maxTierCost : 0;
     const rewardConvBoost = 1 + rewardIntensity * (params.rewardConvElasticity || 0.5);
     const adjustedConvRate = effectiveBaseConvRate * rewardConvBoost;

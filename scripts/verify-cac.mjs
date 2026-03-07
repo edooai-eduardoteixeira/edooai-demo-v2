@@ -37,8 +37,9 @@ function computeProjection(budget, p) {
 
   const budgetPressure = Math.pow(budget / (budget + p.B_half), 2);
   const midEffReward = rewardCostForEfficiency(0.5, p.referrerTiers, p.refereeTiers, p.tierDistLowEff, p.tierDistHighEff);
+  const maxTierCostCap = p.referrerTiers[p.referrerTiers.length - 1] + p.refereeTiers[p.refereeTiers.length - 1];
   const reachCostPremium = 1 + budgetPressure * (p.reachCostElasticity || 1.0);
-  const adjMidEffReward = midEffReward * reachCostPremium;
+  const adjMidEffReward = Math.min(midEffReward * reachCostPremium, maxTierCostCap);
   const realizationEstimate = p.budgetRealizationFactor || 0.55;
   const maxAffordable = adjMidEffReward > 0 ? budget / adjMidEffReward / realizationEstimate : Infinity;
   const effectiveN = Math.min(N_frontier, maxAffordable);
@@ -69,14 +70,12 @@ function computeProjection(budget, p) {
     const eff = p.effFloor + (1 - p.effFloor) * timeFactor * volumeFactor;
     effCurve.push(eff);
 
-    // Reward cost: eff-driven tier mix + budget pressure premium
+    // Reward cost: eff-driven tier mix + budget pressure premium, capped at max tier
     const baseRewardCost = rewardCostForEfficiency(eff, p.referrerTiers, p.refereeTiers, p.tierDistLowEff, p.tierDistHighEff);
-    const dailyRewardCost = baseRewardCost * reachCostPremium;
+    const maxTierCost = p.referrerTiers[p.referrerTiers.length - 1] + p.refereeTiers[p.refereeTiers.length - 1];
+    const dailyRewardCost = Math.min(baseRewardCost * reachCostPremium, maxTierCost);
 
     const journeysToday = Math.min(dailyJourneyTarget, remainingPool * p.maxDailyReachRate);
-
-    // Reward-to-conversion boost: higher rewards increase prospect willingness to convert
-    const maxTierCost = p.referrerTiers[p.referrerTiers.length - 1] + p.refereeTiers[p.refereeTiers.length - 1];
     const rewardIntensity = maxTierCost > 0 ? dailyRewardCost / maxTierCost : 0;
     const rewardConvBoost = 1 + rewardIntensity * (p.rewardConvElasticity || 0.5);
     const adjustedConvRate = effectiveBaseConvRate * rewardConvBoost;
