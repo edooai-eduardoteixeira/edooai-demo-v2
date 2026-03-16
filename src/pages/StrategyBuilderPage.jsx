@@ -253,8 +253,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
       {/* Header */}
       <header
         style={{
-          padding: '1.5rem 3rem',
-          borderBottom: '1px solid var(--border-light)',
+          padding: '14px 48px',
         }}
       >
         <Logo />

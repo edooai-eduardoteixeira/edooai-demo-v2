@@ -223,8 +223,7 @@ input[type="range"]::-moz-range-progress {
     display: none;
   }
   header {
-    padding-left: 1.5rem !important;
-    padding-right: 1.5rem !important;
+    padding: 14px 24px !important;
   }
 
   main {
@@ -271,7 +270,7 @@ input[type="range"]::-moz-range-progress {
 
 @media (max-width: 480px) {
   header {
-    padding: 16px 20px !important;
+    padding: 12px 20px !important;
   }
 
   main {

@@ -178,8 +178,7 @@ export default function DashboardPage({ config }) {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <header
         style={{
-          padding: '1.5rem 3rem',
-          borderBottom: '1px solid var(--border-light)',
+          padding: '14px 48px',
         }}
       >
         <Logo />

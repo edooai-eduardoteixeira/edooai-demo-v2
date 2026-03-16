@@ -10,8 +10,7 @@ export default function LandingPage({ config, onNext }) {
       {/* Header */}
       <header
         style={{
-          padding: '20px 48px',
-          borderBottom: '1px solid var(--color-gray-100)',
+          padding: '14px 48px',
         }}
       >
         <Logo />
