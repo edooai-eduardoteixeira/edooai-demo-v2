@@ -222,7 +222,7 @@ export default function DataConnectionPage({ config, onNext }) {
         if (nextIncomplete && sectionRefs[nextIncomplete]?.current) {
           sectionRefs[nextIncomplete].current.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-      }, 400);
+      }, 800);
     }
 
     prevFulfilledRef.current = currentFulfilledAreas;
@@ -645,14 +645,14 @@ against this mapping automatically.`);
     );
   };
 
-  // Helper to render collapsed section summary
+  // Helper to render collapsed section summary — shows connected platform rows
   const renderCollapsedSectionSummary = (sectionId) => {
     const section = SETUP_AREAS[sectionId];
-    const connectedNames = connectedPlatforms.filter(name => {
+    const connectedInSection = connectedPlatforms.filter(name => {
       const p = INTEGRATION_CATALOG[name];
       return p && section.categories.includes(p.category);
     });
-    return connectedNames.join(' · ');
+    return connectedInSection.map(renderConnectedPlatformRow);
   };
 
   // Helper to toggle section collapse
@@ -757,48 +757,80 @@ against this mapping automatically.`);
                 data-section={sectionId}
                 className={`${styles.section} ${isCollapsed ? styles.sectionCollapsed : ''}`}
               >
-                {/* Section Header */}
-                <div
-                  className={styles.sectionHeader}
-                  onClick={() => isFulfilled && toggleSectionCollapse(sectionId)}
-                >
-                  {isFulfilled && (
-                    <div className={styles.sectionHeaderCheck}>
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path d="M2 6l3 3 5-5" stroke="var(--color-green-600)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                {/* Section Header — collapsed: clickable to expand */}
+                {isCollapsed && isFulfilled ? (
+                  <>
+                    <div
+                      className={styles.sectionHeader}
+                      onClick={() => toggleSectionCollapse(sectionId)}
+                    >
+                      <div className={styles.sectionHeaderCheck}>
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M2 6l3 3 5-5" stroke="var(--color-green-600)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                      <div className={styles.sectionHeaderTitle}>
+                        {section.question}
+                        {!section.required && <span className={styles.optionalBadge} style={{ marginLeft: '8px' }}>Optional</span>}
+                      </div>
+                      <svg
+                        className={styles.sectionChevron}
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                      >
+                        <path d="M12 6l-4 4-4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
-                  )}
-                  <div className={styles.sectionHeaderTitle}>
-                    {section.title}
-                    {!section.required && <span className={styles.optionalBadge} style={{ marginLeft: '8px' }}>Optional</span>}
-                  </div>
-                  {isFulfilled && (
-                    <svg
-                      className={`${styles.sectionChevron} ${isCollapsed ? '' : styles.sectionChevronOpen}`}
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                    >
-                      <path d="M12 6l-4 4-4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
-                </div>
-
-                {isCollapsed && isFulfilled && (
-                  <div className={styles.sectionHeaderSummary}>
-                    {renderCollapsedSectionSummary(sectionId)}
-                  </div>
-                )}
-
-                {/* Section Content */}
-                {!isCollapsed && (
-                  <div className={styles.sectionContent}>
-                    <div className={styles.promptQuestion}>{section.question}</div>
-                    <div className={styles.promptSub}>{section.sub}</div>
-                    {renderSectionContent(sectionId)}
-                  </div>
+                    <div className={styles.sectionHeaderSummary}>
+                      {renderCollapsedSectionSummary(sectionId)}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Expanded: question goes directly into content, no separate header title */}
+                    {isFulfilled && (
+                      <div
+                        className={styles.sectionHeader}
+                        onClick={() => toggleSectionCollapse(sectionId)}
+                      >
+                        <div className={styles.sectionHeaderCheck}>
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path d="M2 6l3 3 5-5" stroke="var(--color-green-600)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+                        <div className={styles.sectionHeaderTitle}>
+                          {section.question}
+                          {!section.required && <span className={styles.optionalBadge} style={{ marginLeft: '8px' }}>Optional</span>}
+                        </div>
+                        <svg
+                          className={`${styles.sectionChevron} ${styles.sectionChevronOpen}`}
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                        >
+                          <path d="M12 6l-4 4-4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                    )}
+                    <div className={styles.sectionContent}>
+                      {!isFulfilled && (
+                        <>
+                          <div className={styles.promptQuestion}>
+                            {section.question}
+                            {!section.required && <span className={styles.optionalBadge} style={{ marginLeft: '12px', verticalAlign: 'middle' }}>Optional</span>}
+                          </div>
+                          <div className={styles.promptSub}>{section.sub}</div>
+                        </>
+                      )}
+                      {isFulfilled && (
+                        <div className={styles.promptSub} style={{ marginTop: 0 }}>{section.sub}</div>
+                      )}
+                      {renderSectionContent(sectionId)}
+                    </div>
+                  </>
                 )}
               </div>
             );
