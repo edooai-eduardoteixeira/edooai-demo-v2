@@ -9,8 +9,10 @@ import styles from '../styles/DataConnection.module.css';
 const SIMPLE_ICON_PATHS = {
   Zendesk: 'M12.914 2.904V16.29L24 2.905H12.914zM0 2.906C0 5.966 2.483 8.45 5.543 8.45s5.542-2.484 5.543-5.544H0zm11.086 4.807L0 21.096h11.086V7.713zm7.37 7.84c-3.063 0-5.542 2.48-5.542 5.543H24c0-3.06-2.48-5.543-5.543-5.543z',
   Intercom: 'M21 0H3C1.343 0 0 1.343 0 3v18c0 1.658 1.343 3 3 3h18c1.658 0 3-1.342 3-3V3c0-1.657-1.342-3-3-3zm-5.801 4.399c0-.44.36-.8.802-.8.44 0 .8.36.8.8v10.688c0 .442-.36.801-.8.801-.443 0-.802-.359-.802-.801V4.399zM11.2 3.994c0-.44.357-.799.8-.799s.8.359.8.799v11.602c0 .44-.357.8-.8.8s-.8-.36-.8-.8V3.994zm-4 .405c0-.44.359-.8.799-.8.443 0 .802.36.802.8v10.688c0 .442-.36.801-.802.801-.44 0-.799-.359-.799-.801V4.399zM3.199 6c0-.442.36-.8.802-.8.44 0 .799.358.799.8v7.195c0 .441-.359.8-.799.8-.443 0-.802-.36-.802-.8V6zM20.52 18.202c-.123.105-3.086 2.593-8.52 2.593-5.433 0-8.397-2.486-8.521-2.593-.335-.288-.375-.792-.086-1.128.285-.334.79-.375 1.125-.09.047.041 2.693 2.211 7.481 2.211 4.848 0 7.456-2.186 7.479-2.207.334-.289.839-.25 1.128.086.289.336.25.84-.086 1.128zm.281-5.007c0 .441-.36.8-.801.8-.441 0-.801-.36-.801-.8V6c0-.442.361-.8.801-.8.441 0 .801.357.801.8v7.195z',
+  HubSpot: 'M18.164 7.93V5.084a2.198 2.198 0 001.267-1.978v-.067A2.2 2.2 0 0017.238.845h-.067a2.2 2.2 0 00-2.193 2.193v.067a2.196 2.196 0 001.252 1.973l.013.006v2.852a6.22 6.22 0 00-2.969 1.31l.012-.01-7.828-6.095A2.497 2.497 0 104.3 4.656l-.012.006 7.697 5.991a6.176 6.176 0 00-1.038 3.446c0 1.343.425 2.588 1.147 3.607l-.013-.02-2.342 2.343a1.968 1.968 0 00-.58-.095h-.002a2.033 2.033 0 102.033 2.033 1.978 1.978 0 00-.1-.595l.005.014 2.317-2.317a6.247 6.247 0 104.782-11.134l-.036-.005zm-.964 9.378a3.206 3.206 0 113.215-3.207v.002a3.206 3.206 0 01-3.207 3.207z',
   Mailchimp: 'M11.267 0C6.791-.015-1.82 10.246 1.397 12.964l.79.669a3.88 3.88 0 0 0-.22 1.792c.084.84.518 1.644 1.22 2.266.666.59 1.542.964 2.392.964 1.406 3.24 4.62 5.228 8.386 5.34 4.04.12 7.433-1.776 8.854-5.182.093-.24.488-1.316.488-2.267 0-.956-.54-1.352-.885-1.352-.01-.037-.078-.286-.172-.586-.093-.3-.19-.51-.19-.51.375-.563.382-1.065.332-1.35-.053-.353-.2-.653-.496-.964-.296-.311-.902-.63-1.753-.868l-.446-.124c-.002-.019-.024-1.053-.043-1.497-.014-.32-.042-.822-.197-1.315-.186-.668-.508-1.253-.911-1.627 1.112-1.152 1.806-2.422 1.804-3.511-.003-2.095-2.576-2.729-5.746-1.416l-.672.285A678.22 678.22 0 0 0 12.7.504C12.304.159 11.817.002 11.267 0z',
   Mailgun: 'M11.837 0c6.602 0 11.984 5.381 11.984 11.994-.017 2.99-3.264 4.84-5.844 3.331a3.805 3.805 0 0 1-.06-.035l-.055-.033-.022.055c-2.554 4.63-9.162 4.758-11.894.232-2.732-4.527.46-10.313 5.746-10.416a6.868 6.868 0 0 1 7.002 6.866 1.265 1.265 0 0 0 2.52 0c0-5.18-4.197-9.38-9.377-9.387C4.611 2.594.081 10.41 3.683 16.673c3.238 5.632 11.08 6.351 15.289 1.402l1.997 1.686A11.95 11.95 0 0 1 11.837 24C2.6 23.72-2.87 13.543 1.992 5.684A12.006 12.006 0 0 1 11.837 0Zm0 7.745c-3.276-.163-5.5 3.281-4.003 6.2a4.26 4.26 0 0 0 4.014 2.31c3.276-.171 5.137-3.824 3.35-6.575a4.26 4.26 0 0 0-3.36-1.935Zm0 2.53c1.324 0 2.152 1.433 1.49 2.58a1.72 1.72 0 0 1-1.49.86 1.72 1.72 0 1 1 0-3.44Z',
+  SurveyMonkey: 'M21.1627 13.1843a2.8517 2.8517 0 0 0-.6778.0841c-.8438-3.3181-3.5478-5.8376-6.9172-6.4452a8.3933 8.3933 0 0 0-.4407-.0668c.0259-.8255.0636-1.7791 1.2781-2.6369l-.1918-.4838s-2.3708.7349-2.6391 2.7598c-.1175-.5507-1.2209-1.2403-1.7673-1.3707l-.2717.4384s.7242.3621.9009 1.361c-3.3691.6056-6.0743 3.1229-6.9204 6.4398-1.5194-.376-3.056.5508-3.432 2.0703-.376 1.5194.5508 3.056 2.0703 3.432a2.8346 2.8346 0 0 0 1.7195-.1142 8.6821 8.6821 0 0 0 .9203 1.7123l2.3524-1.5852c-.6381-.8071-1.0206-1.9884-1.0873-3.1736-.07-1.2931.2446-2.5755 1.0701-3.3298 1.7016-1.4483 3.5561-.7877 4.7135.6002h.3114c1.1606-1.388 3.0173-2.0475 4.7135-.6002.8244.7543 1.1401 2.0378 1.0701 3.3298-.0656 1.1853-.4481 2.3664-1.0873 3.1736l2.3524 1.5852a8.6854 8.6854 0 0 0 .9224-1.7123c1.4551.5751 3.1009-.1384 3.676-1.5935s-.1384-3.1009-1.5935-3.676a2.8349 2.8349 0 0 0-1.0448-.1983zM2.7861 16.8482a.8362.8362 0 0 1 0-1.6724.8442.8442 0 0 1 .4688.1444c.0071.4391.0369.8776.0894 1.3136-.1472.1346-.3738.2329-.5582.2144zm18.4273 0a.8361.8361 0 0 1-.5582-.2155 12.679 12.679 0 0 0 .0894-1.3136.8352.8352 0 0 1 1.304.6929c.0078.4574-.3823.8581-.8352.8362z',
 };
 
 const CUSTOM_SVGS = {
@@ -19,8 +21,7 @@ const CUSTOM_SVGS = {
   SendGrid: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#1A82E2"/><path d="M8 8h8v8H8z" fill="white" opacity="0.5"/><path d="M8 8h4v4H8z" fill="white"/><path d="M12 12h4v4h-4z" fill="white"/></svg>`,
   Segment: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#52BD95"/><rect x="5" y="10.5" width="14" height="3" rx="1.5" fill="white"/><rect x="8" y="5.5" width="11" height="3" rx="1.5" fill="white" opacity="0.7"/><rect x="5" y="15.5" width="11" height="3" rx="1.5" fill="white" opacity="0.7"/></svg>`,
   Freshdesk: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#00A65A"/><path d="M12 4C8.13 4 5 7.13 5 11v2c0 1.1.9 2 2 2h1v-4h-1.5c.5-2.76 2.94-5 5.5-5s5 2.24 5.5 5H16v4h1c1.1 0 2-.9 2-2v-2c0-3.87-3.13-7-7-7z" fill="white"/><circle cx="9.5" cy="15" r="1.5" fill="white"/><circle cx="14.5" cy="15" r="1.5" fill="white"/></svg>`,
-  SurveyMonkey: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#00BF6F"/><path d="M12 5c-3.314 0-6 2.686-6 6 0 2.21 1.194 4.134 2.974 5.168L12 19l3.026-2.832C16.806 15.134 18 13.21 18 11c0-3.314-2.686-6-6-6z" fill="white"/><circle cx="10" cy="10.5" r="1" fill="#00BF6F"/><circle cx="14" cy="10.5" r="1" fill="#00BF6F"/><path d="M9.5 13c0 0 1 1.5 2.5 1.5s2.5-1.5 2.5-1.5" stroke="#00BF6F" strokeWidth="1" strokeLinecap="round" fill="none"/></svg>`,
-  Typeform: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#262627"/><path d="M6 8h12v1.5H13v8h-2v-8H6V8z" fill="white"/></svg>`,
+  Typeform: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#262627"/><path d="M6 7.5h12v2H13.25v8.5h-2.5v-8.5H6v-2z" fill="white"/></svg>`,
   Qualtrics: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#B71C8A"/><path d="M6 6h5v5H6zM13 6h5v5h-5zM6 13h5v5H6zM13 13h5v5h-5z" fill="white" opacity="0.85"/><path d="M15.5 15.5l3 3" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>`,
   Salesforce: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><path d="M10.2 4.8c1.2-1.3 2.9-2.1 4.8-2.1 2.5 0 4.7 1.4 5.8 3.5.5-.2 1.1-.3 1.7-.3 2.7 0 4.9 2.2 4.9 4.9 0 2.7-2.2 4.9-4.9 4.9-.4 0-.8-.05-1.2-.14-1 1.7-2.8 2.84-4.9 2.84-.9 0-1.8-.2-2.5-.6-1 1.4-2.6 2.3-4.4 2.3-2.1 0-3.9-1.2-4.7-2.9-.4.08-.8.12-1.3.12C1.6 18.21-.5 16.1-.5 13.2c0-1.9 1-3.6 2.6-4.5-.3-.7-.5-1.5-.5-2.4C1.6 3.2 4.1.7 7.2.7c2.4 0 1.9.1 3 4.1z" fill="#00A1E0" transform="translate(1.5 2) scale(0.88)"/></svg>`,
   Twilio: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="#F22F46" strokeWidth="2.2" fill="none"/><circle cx="9" cy="9" r="2" fill="#F22F46"/><circle cx="15" cy="9" r="2" fill="#F22F46"/><circle cx="9" cy="15" r="2" fill="#F22F46"/><circle cx="15" cy="15" r="2" fill="#F22F46"/></svg>`,
@@ -38,7 +39,7 @@ const CUSTOM_SVGS = {
   Hightouch: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#6C47FF"/><path d="M12 5v10M8 9l4-4 4 4" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M6 18h12" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg>`,
   RudderStack: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#1A8563"/><circle cx="12" cy="12" r="6" stroke="white" strokeWidth="2" fill="none"/><circle cx="12" cy="12" r="1.5" fill="white"/><line x1="12" y1="6" x2="12" y2="9" stroke="white" strokeWidth="1.8"/><line x1="12" y1="15" x2="12" y2="18" stroke="white" strokeWidth="1.8"/><line x1="6" y1="12" x2="9" y2="12" stroke="white" strokeWidth="1.8"/><line x1="15" y1="12" x2="18" y2="12" stroke="white" strokeWidth="1.8"/></svg>`,
   Gorgias: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#4B88D3"/><path d="M15 8.5A5.5 5.5 0 1012 17.5 5.5 5.5 0 0017.5 12H13v2h2a3.5 3.5 0 11-1-4.5" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/></svg>`,
-  Kustomer: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#354353"/><path d="M8 6v12M8 12l6-6M8 12l6 6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>`,
+  Kustomer: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#354353"/><path d="M8.5 5.5v13M8.5 12l7-6.5M8.5 12l7 6.5" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>`,
   Delighted: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#6B4FBB"/><circle cx="12" cy="12" r="7" stroke="white" strokeWidth="1.8" fill="none"/><circle cx="9.5" cy="10.5" r="1.2" fill="white"/><circle cx="14.5" cy="10.5" r="1.2" fill="white"/><path d="M8.5 14.5c.8 1.5 2 2 3.5 2s2.7-.5 3.5-2" stroke="white" strokeWidth="1.5" strokeLinecap="round" fill="none"/></svg>`,
   AskNicely: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#F83A49"/><path d="M12 4l2.5 5.5L20 10.5l-4 4 1 5.5-5-2.5-5 2.5 1-5.5-4-4 5.5-1L12 4z" fill="white"/></svg>`,
   Shopify: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#96BF48"/><path d="M16 6.5c-.1 0-.2.05-.2.15 0 0-.5.15-.5.15-.3-.9-.8-1.7-1.8-1.7h-.2c-.3-.4-.6-.5-.9-.5-2.2 0-3.3 2.8-3.6 4.2l-1.5.5c-.5.1-.5.2-.5.6L5.5 19l8.5 1.5 4.5-1S16.1 6.5 16 6.5z" fill="white"/><path d="M13.3 6.8l-1 .3v-.2c0-.6-.1-1.1-.3-1.4.4.1.6.4.8 1 0 .1.3.2.5.3z" fill="#96BF48" opacity="0.5"/></svg>`,
@@ -597,6 +598,18 @@ against this mapping automatically.`);
   const currentIndex = areaKeys.indexOf(activeSetupArea);
   const isLast = currentIndex === areaKeys.length - 1;
 
+  // Navigation logic: required areas must have all capabilities fulfilled
+  const currentAreaFulfilled = area.capabilities.every(cap =>
+    fulfilledCapabilities.some(c => c.key === cap)
+  );
+  const allRequiredFulfilled = Object.entries(SETUP_AREAS)
+    .filter(([, a]) => a.required)
+    .every(([, a]) => a.capabilities.every(cap =>
+      fulfilledCapabilities.some(c => c.key === cap)
+    ));
+  const canAdvance = area.required ? currentAreaFulfilled : true;
+  const canFinish = allRequiredFulfilled;
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -687,9 +700,26 @@ against this mapping automatically.`);
           <div className={styles.promptQuestion}>{area.question}</div>
           <div className={styles.promptSub}>{area.sub}</div>
           {gridContent}
-          <button className={styles.ctaBtn} onClick={handleNextArea} style={{ marginTop: '32px' }}>
-            {isLast ? 'Finish Setup' : 'Continue'}
-          </button>
+          {/* Navigation: required areas need caps fulfilled; optional can skip */}
+          {area.required ? (
+            <button
+              className={`${styles.ctaBtn} ${!currentAreaFulfilled ? styles.ctaBtnDisabled : ''}`}
+              onClick={currentAreaFulfilled ? handleNextArea : undefined}
+              disabled={!currentAreaFulfilled}
+              style={{ marginTop: '32px' }}
+            >
+              {isLast ? 'Finish Setup' : 'Continue'}
+            </button>
+          ) : (
+            <button
+              className={`${styles.ctaBtn} ${isLast && !canFinish ? styles.ctaBtnDisabled : ''}`}
+              onClick={isLast && !canFinish ? undefined : handleNextArea}
+              disabled={isLast && !canFinish}
+              style={{ marginTop: '32px' }}
+            >
+              {isLast ? 'Finish Setup' : (currentAreaFulfilled ? 'Continue' : 'Skip')}
+            </button>
+          )}
         </div>
       </div>
 
