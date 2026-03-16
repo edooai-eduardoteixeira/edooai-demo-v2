@@ -264,8 +264,9 @@ export default function DataConnectionPage({ config, onNext }) {
 
   const showModal = useCallback((platform) => {
     const p = INTEGRATION_CATALOG[platform];
-    const modalType = p?.modalType || 'oauth';
-    setModal({ type: modalType, platform });
+    const modalType = p?.modalType || 'preauth';
+    const type = modalType === 'oauth' ? 'preauth' : modalType;
+    setModal({ type, platform });
   }, []);
 
   const closeModal = useCallback(() => {
@@ -279,7 +280,7 @@ export default function DataConnectionPage({ config, onNext }) {
     setTimeout(() => {
       connectPlatform(platform);
       setModal(null);
-    }, 1200);
+    }, 900);
   }, [connectPlatform]);
 
   const handleGenerateWebhookMapping = useCallback(() => {
@@ -344,6 +345,14 @@ Schema saved. Future uploads will be validated
 against this mapping automatically.`);
     }, 900);
   }, [agenticInput]);
+
+  const handleCopy = useCallback((text, e) => {
+    navigator.clipboard?.writeText(text);
+    const btn = e.currentTarget;
+    const original = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  }, []);
 
   const handleNextArea = useCallback(() => {
     const areaKeys = Object.keys(SETUP_AREAS);
@@ -415,57 +424,78 @@ against this mapping automatically.`);
   // Render content based on active area
   let gridContent = null;
   if (activeSetupArea === 'comms') {
+    const allUnfulfilled = commsGrid.unfulfilledCaps.length === commsGrid.commsCaps.length;
+    const allFulfilled = commsGrid.unfulfilledCaps.length === 0;
+
     gridContent = (
-      <div className={styles.platformGrid}>
-        {commsGrid.connectedComms.map(renderConnectedPlatformRow)}
-        {commsGrid.unfulfilledCaps.length > 0 && commsGrid.relevantCRMs.length > 0 && (
+      <div>
+        {/* Connected platforms inline at top */}
+        {commsGrid.connectedComms.length > 0 && (
+          <div className={styles.platformGrid}>
+            {commsGrid.connectedComms.map(renderConnectedPlatformRow)}
+          </div>
+        )}
+
+        {/* All fulfilled — no more available */}
+        {!allFulfilled && allUnfulfilled && (
           <>
-            {commsGrid.connectedComms.length === 0 && (
-              <div className={styles.groupLabel} style={{ gridColumn: '1 / -1' }}>
-                Platforms
+            {/* ALL 3 unfulfilled: CRMs first (no label), then expand for specialists */}
+            {commsGrid.relevantCRMs.length > 0 && (
+              <div className={styles.platformGrid}>
+                {commsGrid.relevantCRMs.map(renderPlatformRow)}
               </div>
             )}
-            {commsGrid.relevantCRMs.map(renderPlatformRow)}
+            {!commsExpanded && (
+              <button
+                className={styles.skipBtn}
+                onClick={() => setCommsExpanded(true)}
+              >
+                See more options
+              </button>
+            )}
+            {commsExpanded && commsGrid.neededSpecialistCats.map(cat => {
+              const platforms = Object.entries(INTEGRATION_CATALOG)
+                .filter(([name, v]) => v.category === cat && !connectedPlatforms.includes(name))
+                .map(([name]) => name);
+              if (platforms.length === 0) return null;
+              return (
+                <div key={cat}>
+                  <div className={styles.groupLabel}>{cat}</div>
+                  <div className={styles.platformGrid}>
+                    {platforms.map(renderPlatformRow)}
+                  </div>
+                </div>
+              );
+            })}
           </>
         )}
-        {commsGrid.unfulfilledCaps.length > 0 && !commsExpanded && commsGrid.relevantCRMs.length > 0 && (
-          <button
-            className={styles.skipBtn}
-            onClick={() => setCommsExpanded(true)}
-            style={{ gridColumn: '1 / -1' }}
-          >
-            See more options
-          </button>
-        )}
-        {commsExpanded && commsGrid.unfulfilledCaps.length === commsGrid.commsCaps.length && (
-          commsGrid.neededSpecialistCats.map(cat => {
-            const platforms = Object.entries(INTEGRATION_CATALOG)
-              .filter(([name, v]) => v.category === cat && !connectedPlatforms.includes(name))
-              .map(([name]) => name);
-            return platforms.length > 0 && (
-              <div key={cat} style={{ gridColumn: '1 / -1' }}>
-                <div className={styles.groupLabel}>{cat}</div>
+
+        {!allFulfilled && !allUnfulfilled && (
+          <>
+            {/* PARTIAL: CRMs with "Platforms" label + specialists directly */}
+            {commsGrid.relevantCRMs.length > 0 && (
+              <>
+                <div className={styles.groupLabel} style={commsGrid.connectedComms.length === 0 ? { marginTop: 0 } : undefined}>Platforms</div>
                 <div className={styles.platformGrid}>
-                  {platforms.map(renderPlatformRow)}
+                  {commsGrid.relevantCRMs.map(renderPlatformRow)}
                 </div>
-              </div>
-            );
-          })
-        )}
-        {commsExpanded && commsGrid.unfulfilledCaps.length < commsGrid.commsCaps.length && (
-          commsGrid.neededSpecialistCats.map(cat => {
-            const platforms = Object.entries(INTEGRATION_CATALOG)
-              .filter(([name, v]) => v.category === cat && !connectedPlatforms.includes(name))
-              .map(([name]) => name);
-            return platforms.length > 0 && (
-              <div key={cat} style={{ gridColumn: '1 / -1' }}>
-                <div className={styles.groupLabel}>{cat}</div>
-                <div className={styles.platformGrid}>
-                  {platforms.map(renderPlatformRow)}
+              </>
+            )}
+            {commsGrid.neededSpecialistCats.map(cat => {
+              const platforms = Object.entries(INTEGRATION_CATALOG)
+                .filter(([name, v]) => v.category === cat && !connectedPlatforms.includes(name))
+                .map(([name]) => name);
+              if (platforms.length === 0) return null;
+              return (
+                <div key={cat}>
+                  <div className={styles.groupLabel}>{cat}</div>
+                  <div className={styles.platformGrid}>
+                    {platforms.map(renderPlatformRow)}
+                  </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            })}
+          </>
         )}
       </div>
     );
@@ -667,7 +697,7 @@ against this mapping automatically.`);
       {modal && (
         <div className={styles.modalBackdrop} onClick={closeModal}>
           <div
-            className={`${styles.modalCard} ${modal.type !== 'preauth' ? styles.modalCardWide : ''}`}
+            className={`${styles.modalCard} ${['webhooks', 'api', 'filedrop'].includes(modal.type) ? styles.modalCardWide : ''}`}
             onClick={e => e.stopPropagation()}
           >
             <div className={styles.modalClose} onClick={closeModal}>
@@ -719,7 +749,7 @@ against this mapping automatically.`);
                   <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                     <path d="M8 1a4 4 0 00-4 4v3H3a1 1 0 00-1 1v5a1 1 0 001 1h10a1 1 0 001-1V9a1 1 0 00-1-1h-1V5a4 4 0 00-4-4zm-2 4a2 2 0 114 0v3H6V5z" fill="var(--text-tertiary)" />
                   </svg>
-                  <span>Encrypted and secure. Edoo only requests the minimum data required.</span>
+                  <span>Encrypted and secure. Edoo only requests the minimum data required to run your referral strategy.</span>
                 </div>
               </>
             )}
@@ -741,7 +771,7 @@ against this mapping automatically.`);
                   <div className={styles.modalFieldLabel}>Webhook URL</div>
                   <div className={styles.modalFieldBox}>
                     <code className={styles.modalFieldCode}>https://api.edoo.ai/v1/webhooks/tx_9982x...</code>
-                    <button className={styles.modalCopyBtn}>Copy Webhook URL</button>
+                    <button className={styles.modalCopyBtn} onClick={(e) => handleCopy('https://api.edoo.ai/v1/webhooks/tx_9982x...', e)}>Copy Webhook URL</button>
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
@@ -819,14 +849,14 @@ against this mapping automatically.`);
                   <div className={styles.modalFieldLabel}>Secret Key</div>
                   <div className={styles.modalFieldBox}>
                     <code className={styles.modalFieldCode}>edoo_live_*******************</code>
-                    <button className={styles.modalCopyBtn}>Reveal & Copy Key</button>
+                    <button className={styles.modalCopyBtn} onClick={(e) => handleCopy('edoo_live_sk_7f8a3b2c1d9e4f6a', e)}>Reveal & Copy Key</button>
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
                   <div className={styles.modalFieldLabel}>API Endpoint</div>
                   <div className={styles.modalFieldBox}>
                     <code className={styles.modalFieldCode}>POST https://api.edoo.ai/v1/transactions</code>
-                    <button className={styles.modalCopyBtn}>Copy</button>
+                    <button className={styles.modalCopyBtn} onClick={(e) => handleCopy('POST https://api.edoo.ai/v1/transactions', e)}>Copy</button>
                   </div>
                 </div>
                 <hr className={styles.agenticDivider} />
@@ -875,7 +905,7 @@ against this mapping automatically.`);
                   <div className={styles.modalFieldLabel}>S3 Bucket ARN</div>
                   <div className={styles.modalFieldBox}>
                     <code className={styles.modalFieldCode}>arn:aws:s3:::edoo-client-drop-8821</code>
-                    <button className={styles.modalCopyBtn}>Copy Credentials</button>
+                    <button className={styles.modalCopyBtn} onClick={(e) => handleCopy('arn:aws:s3:::edoo-client-drop-8821', e)}>Copy Credentials</button>
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
@@ -933,7 +963,7 @@ usr_117,ord_1002,129.00,USD,2026-03-15'
                   <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                     <path d="M8 1a4 4 0 00-4 4v3H3a1 1 0 00-1 1v5a1 1 0 001 1h10a1 1 0 001-1V9a1 1 0 00-1-1h-1V5a4 4 0 00-4-4zm-2 4a2 2 0 114 0v3H6V5z" fill="var(--text-tertiary)" />
                   </svg>
-                  <span>Encrypted and secure. Share bucket details with your data team.</span>
+                  <span>Encrypted and secure. Share bucket details with your data or infrastructure team.</span>
                 </div>
               </>
             )}
