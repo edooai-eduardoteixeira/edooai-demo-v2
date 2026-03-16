@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Header — Before vs After</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --color-black: #000000;
+      --color-white: #ffffff;
+      --color-gray-100: #f5f5f5;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-tertiary: #94a3b8;
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --radius-md: 10px;
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --transition-base: 200ms ease;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-family);
+      background: #f0f0f0;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      padding: 32px;
+    }
+
+    .comparison {
+      display: flex;
+      gap: 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .panel {
+      flex: 1;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    }
+
+    .panel-label {
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .panel-label.before {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .panel-label.after {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .page {
+      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+      background: var(--color-white);
+    }
+
+    /* ── Logo ── */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--color-black);
+      letter-spacing: -0.02em;
+    }
+
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: black;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    /* ── BEFORE header ── */
+    .header-before {
+      padding: 20px 48px;
+      border-bottom: 1px solid var(--color-gray-100);
+    }
+
+    /* ── AFTER header ── */
+    .header-after {
+      padding: 14px 48px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 48px;
+    }
+
+    .hero-content {
+      text-align: center;
+      max-width: 500px;
+    }
+
+    .hero h1 {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+    }
+
+    .hero p {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 32px;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--color-black);
+      color: var(--color-white);
+      padding: 14px 28px;
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+
+    .footer {
+      padding: 20px 48px;
+      text-align: center;
+    }
+
+    .footer p {
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+
+    /* ── Annotation ── */
+    .note {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .note strong {
+      color: var(--text-primary);
+    }
+
+    @media (max-width: 768px) {
+      .comparison {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="comparison">
+    <!-- BEFORE -->
+    <div class="panel">
+      <div class="panel-label before">Before (current)</div>
+      <div class="page">
+        <div class="header-before">
+          <div class="logo">
+            <div class="logo-icon">E</div>
+            Edoo AI
+          </div>
+        </div>
+        <div class="hero">
+          <div class="hero-content">
+            <h1>AI-powered retention for your customers</h1>
+            <p>Predict churn. Automate win-back. Grow revenue on autopilot.</p>
+            <button class="cta">Get Started</button>
+          </div>
+        </div>
+        <div class="footer">
+          <p>Built for teams who believe keeping customers is the best growth strategy.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFTER -->
+    <div class="panel">
+      <div class="panel-label after">After (proposed)</div>
+      <div class="page">
+        <div class="header-after">
+          <div class="logo">
+            <div class="logo-icon">E</div>
+            Edoo AI
+          </div>
+        </div>
+        <div class="hero">
+          <div class="hero-content">
+            <h1>AI-powered retention for your customers</h1>
+            <p>Predict churn. Automate win-back. Grow revenue on autopilot.</p>
+            <button class="cta">Get Started</button>
+          </div>
+        </div>
+        <div class="footer">
+          <p>Built for teams who believe keeping customers is the best growth strategy.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">
+    <strong>Changes:</strong> Reduced vertical padding (20px &rarr; 14px) and removed bottom border line.<br>
+    The header now feels lighter and more connected to the page content.
+  </p>
+
+</body>
+</html>
