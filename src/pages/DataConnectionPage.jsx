@@ -165,35 +165,9 @@ export default function DataConnectionPage({ config, onNext }) {
   const [agenticInput, setAgenticInput] = useState('');
   const [agenticOutput, setAgenticOutput] = useState('');
   const [collapsedSections, setCollapsedSections] = useState(new Set());
+  const [fadingOutSections, setFadingOutSections] = useState(new Set());
 
   const rightColRef = useRef(null);
-
-  // Custom smooth scroll — duration scales with distance, ease-in-out curve
-  const smoothScrollTo = useCallback((targetEl) => {
-    const container = rightColRef.current;
-    if (!container || !targetEl) return;
-    const scrollMargin = 24; // matches CSS scroll-margin-top
-    const targetTop = targetEl.offsetTop - scrollMargin;
-    const startTop = container.scrollTop;
-    const distance = targetTop - startTop;
-    if (Math.abs(distance) < 2) return;
-
-    // Duration: 350-500ms proportional to distance, capped
-    const baseDuration = 350;
-    const duration = Math.min(baseDuration + Math.abs(distance) * 0.15, 500);
-    const startTime = performance.now();
-
-    // ease-in-out cubic
-    const easeInOut = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
-    const step = (now) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      container.scrollTop = startTop + distance * easeInOut(progress);
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, []);
   const sectionRefs = {
     comms: useRef(null),
     data: useRef(null),
@@ -237,23 +211,37 @@ export default function DataConnectionPage({ config, onNext }) {
     const newlyCompleted = [...currentFulfilledAreas].filter(id => !prevFulfilledRef.current.has(id));
 
     if (newlyCompleted.length > 0) {
+      // Phase 1: Start fade-out after 800ms
       setTimeout(() => {
-        setCollapsedSections(prev => {
+        setFadingOutSections(prev => {
           const next = new Set(prev);
           newlyCompleted.forEach(id => next.add(id));
           return next;
         });
 
-        // Wait for React to re-render after collapse before scrolling
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            const areaKeys = Object.keys(SETUP_AREAS);
-            const nextIncomplete = areaKeys.find(id => !currentFulfilledAreas.has(id));
-            if (nextIncomplete && sectionRefs[nextIncomplete]?.current) {
-              smoothScrollTo(sectionRefs[nextIncomplete].current);
-            }
+        // Phase 2: After fade-out completes (350ms), collapse and scroll
+        setTimeout(() => {
+          setFadingOutSections(prev => {
+            const next = new Set(prev);
+            newlyCompleted.forEach(id => next.delete(id));
+            return next;
           });
-        });
+          setCollapsedSections(prev => {
+            const next = new Set(prev);
+            newlyCompleted.forEach(id => next.add(id));
+            return next;
+          });
+
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              const areaKeys = Object.keys(SETUP_AREAS);
+              const nextIncomplete = areaKeys.find(id => !currentFulfilledAreas.has(id));
+              if (nextIncomplete && sectionRefs[nextIncomplete]?.current) {
+                sectionRefs[nextIncomplete].current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            });
+          });
+        }, 350);
       }, 800);
     }
 
@@ -737,7 +725,7 @@ against this mapping automatically.`);
                 <div
                   key={id}
                   className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
-                  onClick={() => smoothScrollTo(sectionRefs[id]?.current)}
+                  onClick={() => sectionRefs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 >
                   <span className={styles.navItemTitle}>{a.title}</span>
                   {isFulfilled && (
@@ -764,7 +752,7 @@ against this mapping automatically.`);
                 <div
                   key={id}
                   className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
-                  onClick={() => smoothScrollTo(sectionRefs[id]?.current)}
+                  onClick={() => sectionRefs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 >
                   <span className={styles.navItemTitle}>{a.title}</span>
                   {isFulfilled && (
@@ -788,6 +776,7 @@ against this mapping automatically.`);
           {Object.entries(SETUP_AREAS).map(([sectionId, section]) => {
             const isFulfilled = isSectionFulfilled(sectionId);
             const isCollapsed = collapsedSections.has(sectionId);
+            const isFadingOut = fadingOutSections.has(sectionId);
 
             return (
               <div
@@ -854,7 +843,7 @@ against this mapping automatically.`);
                         </svg>
                       </div>
                     )}
-                    <div className={styles.sectionContent}>
+                    <div className={`${styles.sectionContent} ${isFadingOut ? styles.sectionContentFadingOut : ''}`}>
                       {!isFulfilled && (
                         <>
                           <div className={styles.promptQuestion}>
