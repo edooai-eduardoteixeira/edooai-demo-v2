@@ -206,6 +206,17 @@ input[type="range"]::-moz-range-progress {
   display: block;
 }
 
+/* Subheadline break — only on wide screens where sentence fits on one line */
+.br-desktop-wide {
+  display: block;
+}
+
+@media (max-width: 1060px) {
+  .br-desktop-wide {
+    display: none;
+  }
+}
+
 /* Mobile responsive breakpoints */
 @media (max-width: 768px) {
   .br-desktop {

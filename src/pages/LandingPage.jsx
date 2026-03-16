@@ -67,7 +67,7 @@ export default function LandingPage({ config, onNext }) {
             {landing.subheadline.split('. ').length > 1 ? (
               <>
                 {landing.subheadline.split('. ')[0]}.
-                <br className="br-desktop" />{' '}
+                <br className="br-desktop-wide" />{' '}
                 {landing.subheadline.split('. ').slice(1).join('. ')}
               </>
             ) : (

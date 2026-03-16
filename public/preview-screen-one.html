@@ -120,10 +120,10 @@
       line-height: 1.5;
     }
 
-    /* Desktop-only line break */
-    .br-desktop { display: block; }
-    @media (max-width: 768px) {
-      .br-desktop { display: none; }
+    /* Subheadline break — only on wide screens */
+    .br-desktop-wide { display: block; }
+    @media (max-width: 1060px) {
+      .br-desktop-wide { display: none; }
     }
 
     /* ── Mobile ── */
@@ -157,7 +157,7 @@
     <section class="hero-wrapper">
       <main class="hero">
         <h1>Turn your best customers<br>into your growth engine.</h1>
-        <p class="subtitle">Stop competing for expensive ads while your most powerful channel is untapped.<br class="br-desktop"> We operate your referrals end-to-end to deliver active customers at a fraction of your CAC.</p>
+        <p class="subtitle">Stop competing for expensive ads while your most powerful channel is untapped.<br class="br-desktop-wide"> We operate your referrals end-to-end to deliver active customers at a fraction of your CAC.</p>
         <button class="cta-button">Start Now</button>
       </main>
     </section>
