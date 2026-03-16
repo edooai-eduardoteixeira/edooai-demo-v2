@@ -371,10 +371,14 @@ against this mapping automatically.`);
   const commsGrid = getGroupedCommsGrid();
   const dataGrid = getGroupedDataGrid();
 
+  const getCapDirection = (capKey) => capKey.startsWith('write:') ? 'WRITE' : 'READ';
+
   const renderConnectedPlatformRow = (name) => {
     const platform = INTEGRATION_CATALOG[name];
     const isPending = platform?.modalType && ['webhooks', 'api', 'filedrop'].includes(platform.modalType);
     const grantedCaps = fulfilledCapabilities.filter(c => c.source === name);
+    // Deduplicate directions for the scope line
+    const directions = [...new Set(grantedCaps.map(c => getCapDirection(c.key)))];
     const scopeLabels = grantedCaps.map(c => {
       const desc = platform?.scopeDescriptions?.[c.key] || c.key;
       return desc;
@@ -401,6 +405,9 @@ against this mapping automatically.`);
         </span>
         {scopeLabels.length > 0 && (
           <div className={styles.platformRowScopes}>
+            {directions.map(dir => (
+              <span key={dir} className={styles.directionTag}>{dir}</span>
+            ))}
             {scopeLabels.join(' · ')}
           </div>
         )}
@@ -760,6 +767,7 @@ against this mapping automatically.`);
                 <ul className={styles.modalScopes}>
                   {INTEGRATION_CATALOG[modal.platform].capabilities.map(cap => {
                     const desc = INTEGRATION_CATALOG[modal.platform].scopeDescriptions[cap] || cap;
+                    const dir = getCapDirection(cap);
                     return (
                       <li key={cap}>
                         <div className={styles.scopeIcon}>
@@ -767,7 +775,7 @@ against this mapping automatically.`);
                             <path d="M2 5L4 7L8 3" stroke="var(--color-green-600)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         </div>
-                        <span>{desc}</span>
+                        <span><span className={styles.directionTag}>{dir}</span> {desc}</span>
                       </li>
                     );
                   })}
