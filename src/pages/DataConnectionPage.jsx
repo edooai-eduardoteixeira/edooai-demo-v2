@@ -167,6 +167,33 @@ export default function DataConnectionPage({ config, onNext }) {
   const [collapsedSections, setCollapsedSections] = useState(new Set());
 
   const rightColRef = useRef(null);
+
+  // Custom smooth scroll — duration scales with distance, ease-in-out curve
+  const smoothScrollTo = useCallback((targetEl) => {
+    const container = rightColRef.current;
+    if (!container || !targetEl) return;
+    const scrollMargin = 24; // matches CSS scroll-margin-top
+    const targetTop = targetEl.offsetTop - scrollMargin;
+    const startTop = container.scrollTop;
+    const distance = targetTop - startTop;
+    if (Math.abs(distance) < 2) return;
+
+    // Duration: 350-500ms proportional to distance, capped
+    const baseDuration = 350;
+    const duration = Math.min(baseDuration + Math.abs(distance) * 0.15, 500);
+    const startTime = performance.now();
+
+    // ease-in-out cubic
+    const easeInOut = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    const step = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      container.scrollTop = startTop + distance * easeInOut(progress);
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, []);
   const sectionRefs = {
     comms: useRef(null),
     data: useRef(null),
@@ -223,7 +250,7 @@ export default function DataConnectionPage({ config, onNext }) {
             const areaKeys = Object.keys(SETUP_AREAS);
             const nextIncomplete = areaKeys.find(id => !currentFulfilledAreas.has(id));
             if (nextIncomplete && sectionRefs[nextIncomplete]?.current) {
-              sectionRefs[nextIncomplete].current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              smoothScrollTo(sectionRefs[nextIncomplete].current);
             }
           });
         });
@@ -710,7 +737,7 @@ against this mapping automatically.`);
                 <div
                   key={id}
                   className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
-                  onClick={() => sectionRefs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                  onClick={() => smoothScrollTo(sectionRefs[id]?.current)}
                 >
                   <span className={styles.navItemTitle}>{a.title}</span>
                   {isFulfilled && (
@@ -737,7 +764,7 @@ against this mapping automatically.`);
                 <div
                   key={id}
                   className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
-                  onClick={() => sectionRefs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                  onClick={() => smoothScrollTo(sectionRefs[id]?.current)}
                 >
                   <span className={styles.navItemTitle}>{a.title}</span>
                   {isFulfilled && (
