@@ -755,6 +755,7 @@
   padding-bottom: 40px;
   margin-bottom: 40px;
   border-bottom: 1px solid var(--border-light);
+  scroll-margin-top: 24px;
 }
 
 .section:last-of-type {
@@ -763,8 +764,13 @@
 
 /* Collapsed section summary */
 .sectionCollapsed {
-  padding-bottom: 0;
+  padding-bottom: 16px;
   margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.sectionCollapsed:last-of-type {
+  border-bottom: none;
 }
 
 .sectionHeader {
