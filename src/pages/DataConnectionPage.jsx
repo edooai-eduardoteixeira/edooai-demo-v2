@@ -157,33 +157,76 @@ function PlatformSVG({ name, size = 20 }) {
 
 // Main Component
 export default function DataConnectionPage({ config, onNext }) {
-  const [activeSetupArea, setActiveSetupArea] = useState(null);
+  const [activeSetupArea, setActiveSetupArea] = useState('comms');
   const [fulfilledCapabilities, setFulfilledCapabilities] = useState([]);
   const [connectedPlatforms, setConnectedPlatforms] = useState([]);
   const [modal, setModal] = useState(null);
   const [commsExpanded, setCommsExpanded] = useState(false);
   const [agenticInput, setAgenticInput] = useState('');
   const [agenticOutput, setAgenticOutput] = useState('');
+  const [collapsedSections, setCollapsedSections] = useState(new Set());
 
-  // Auto-select first incomplete area on mount
+  const rightColRef = useRef(null);
+  const sectionRefs = {
+    comms: useRef(null),
+    data: useRef(null),
+    support: useRef(null),
+    nps: useRef(null),
+  };
+
+  // Intersection Observer for scroll-spy
   useEffect(() => {
-    if (!activeSetupArea) {
-      const getAutoSelectedArea = () => {
-        const required = Object.entries(SETUP_AREAS).filter(([_, a]) => a.required);
-        const firstIncomplete = required.find(([_, area]) =>
-          !area.capabilities.every(cap => fulfilledCapabilities.some(c => c.key === cap))
-        );
-        if (firstIncomplete) return firstIncomplete[0];
-        const optional = Object.entries(SETUP_AREAS).filter(([_, a]) => !a.required);
-        const firstOptional = optional.find(([_, area]) =>
-          !area.capabilities.every(cap => fulfilledCapabilities.some(c => c.key === cap))
-        );
-        if (firstOptional) return firstOptional[0];
-        return Object.keys(SETUP_AREAS)[0];
-      };
-      setActiveSetupArea(getAutoSelectedArea());
+    if (!rightColRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.dataset.section;
+            if (id) setActiveSetupArea(id);
+          }
+        });
+      },
+      { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
+    );
+
+    Object.entries(sectionRefs).forEach(([id, ref]) => {
+      if (ref.current) observer.observe(ref.current);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Auto-scroll on section completion
+  const prevFulfilledRef = useRef(new Set());
+  useEffect(() => {
+    const currentFulfilledAreas = new Set();
+    Object.entries(SETUP_AREAS).forEach(([id, area]) => {
+      if (area.capabilities.every(cap => fulfilledCapabilities.some(c => c.key === cap))) {
+        currentFulfilledAreas.add(id);
+      }
+    });
+
+    const newlyCompleted = [...currentFulfilledAreas].filter(id => !prevFulfilledRef.current.has(id));
+
+    if (newlyCompleted.length > 0) {
+      setTimeout(() => {
+        setCollapsedSections(prev => {
+          const next = new Set(prev);
+          newlyCompleted.forEach(id => next.add(id));
+          return next;
+        });
+
+        const areaKeys = Object.keys(SETUP_AREAS);
+        const nextIncomplete = areaKeys.find(id => !currentFulfilledAreas.has(id));
+        if (nextIncomplete && sectionRefs[nextIncomplete]?.current) {
+          sectionRefs[nextIncomplete].current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 400);
     }
-  }, [activeSetupArea, fulfilledCapabilities]);
+
+    prevFulfilledRef.current = currentFulfilledAreas;
+  }, [fulfilledCapabilities]);
 
   const connectPlatform = useCallback((name) => {
     const platform = INTEGRATION_CATALOG[name];
@@ -355,23 +398,196 @@ against this mapping automatically.`);
     setTimeout(() => { btn.textContent = original; }, 1500);
   }, []);
 
-  const handleNextArea = useCallback(() => {
-    const areaKeys = Object.keys(SETUP_AREAS);
-    const currentIndex = areaKeys.indexOf(activeSetupArea);
-    if (currentIndex < areaKeys.length - 1) {
-      setActiveSetupArea(areaKeys[currentIndex + 1]);
-    } else {
-      onNext?.();
-    }
-  }, [activeSetupArea, onNext]);
+  const getCapDirection = (capKey) => capKey.startsWith('write:') ? 'WRITE' : 'READ';
 
-  if (!activeSetupArea) return null;
+  // Check which sections are fulfilled
+  const isSectionFulfilled = (sectionId) => {
+    const section = SETUP_AREAS[sectionId];
+    return section.capabilities.every(cap => fulfilledCapabilities.some(c => c.key === cap));
+  };
 
-  const area = SETUP_AREAS[activeSetupArea];
+  // Check if all required sections are fulfilled
+  const allRequiredFulfilled = Object.entries(SETUP_AREAS)
+    .filter(([_, a]) => a.required)
+    .every(([_, a]) => a.capabilities.every(cap =>
+      fulfilledCapabilities.some(c => c.key === cap)
+    ));
+
   const commsGrid = getGroupedCommsGrid();
   const dataGrid = getGroupedDataGrid();
 
-  const getCapDirection = (capKey) => capKey.startsWith('write:') ? 'WRITE' : 'READ';
+  // Helper to render section content
+  const renderSectionContent = (sectionId) => {
+    const area = SETUP_AREAS[sectionId];
+    let gridContent = null;
+
+    if (sectionId === 'comms') {
+      const allUnfulfilled = commsGrid.unfulfilledCaps.length === commsGrid.commsCaps.length;
+      const allFulfilled = commsGrid.unfulfilledCaps.length === 0;
+
+      gridContent = (
+        <div>
+          {commsGrid.connectedComms.length > 0 && (
+            <div className={styles.platformGrid}>
+              {commsGrid.connectedComms.map(renderConnectedPlatformRow)}
+            </div>
+          )}
+
+          {!allFulfilled && allUnfulfilled && (
+            <>
+              {commsGrid.relevantCRMs.length > 0 && (
+                <div className={styles.platformGrid}>
+                  {commsGrid.relevantCRMs.map(renderPlatformRow)}
+                </div>
+              )}
+              {!commsExpanded && (
+                <button
+                  className={styles.skipBtn}
+                  onClick={() => setCommsExpanded(true)}
+                >
+                  See more options
+                </button>
+              )}
+              {commsExpanded && commsGrid.neededSpecialistCats.map(cat => {
+                const platforms = Object.entries(INTEGRATION_CATALOG)
+                  .filter(([name, v]) => v.category === cat && !connectedPlatforms.includes(name))
+                  .map(([name]) => name);
+                if (platforms.length === 0) return null;
+                return (
+                  <div key={cat}>
+                    <div className={styles.groupLabel} style={{ marginTop: '28px' }}>{cat}</div>
+                    <div className={styles.platformGrid}>
+                      {platforms.map(renderPlatformRow)}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
+
+          {!allFulfilled && !allUnfulfilled && (
+            <>
+              {commsGrid.relevantCRMs.length > 0 && (
+                <>
+                  <div className={styles.groupLabel} style={commsGrid.connectedComms.length === 0 ? { marginTop: 0 } : { marginTop: '28px' }}>Platforms</div>
+                  <div className={styles.platformGrid}>
+                    {commsGrid.relevantCRMs.map(renderPlatformRow)}
+                  </div>
+                </>
+              )}
+              {commsGrid.neededSpecialistCats.map(cat => {
+                const platforms = Object.entries(INTEGRATION_CATALOG)
+                  .filter(([name, v]) => v.category === cat && !connectedPlatforms.includes(name))
+                  .map(([name]) => name);
+                if (platforms.length === 0) return null;
+                return (
+                  <div key={cat}>
+                    <div className={styles.groupLabel} style={{ marginTop: '28px' }}>{cat}</div>
+                    <div className={styles.platformGrid}>
+                      {platforms.map(renderPlatformRow)}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
+        </div>
+      );
+    } else if (sectionId === 'data') {
+      const tier1Groups = [
+        { label: 'Payment Platforms', categories: ['Commerce'] },
+        { label: 'Data Pipelines', categories: ['EventStream', 'ReverseETL'] },
+      ];
+      const customCategories = ['Webhooks', 'DevAPI', 'EnterpriseBatch'];
+
+      gridContent = (
+        <div>
+          <div className={styles.platformGrid}>
+            {dataGrid.connectedData.map(renderConnectedPlatformRow)}
+          </div>
+          {!dataGrid.fulfilled && (
+            <>
+              {tier1Groups.map((group, i) => {
+                const platforms = Object.entries(INTEGRATION_CATALOG)
+                  .filter(([_, v]) => group.categories.includes(v.category))
+                  .map(([name]) => name)
+                  .filter(name => !connectedPlatforms.includes(name));
+                return platforms.length > 0 && (
+                  <div key={group.label}>
+                    <div className={styles.groupLabel} style={{ marginTop: i === 0 && dataGrid.connectedData.length === 0 ? '0' : '28px' }}>
+                      {group.label}
+                    </div>
+                    <div className={styles.platformGrid}>
+                      {platforms.map(renderPlatformRow)}
+                    </div>
+                  </div>
+                );
+              })}
+              <div>
+                <div className={styles.groupLabel} style={{ marginTop: '28px' }}>Custom Integration</div>
+                <div className={styles.customIntegrationGroup}>
+                  {['Inbound Webhooks', 'REST API', 'Secure File Drop'].map(name => {
+                    const meta = CUSTOM_INTEGRATION_META[name] || { displayName: name, desc: '', recommended: false };
+                    return (
+                      <div
+                        key={name}
+                        className={styles.customCard}
+                        onClick={() => showModal(name)}
+                      >
+                        <div className={styles.customCardIcon}>
+                          <PlatformSVG name={name} size={24} />
+                        </div>
+                        <div className={styles.customCardContent}>
+                          <div className={styles.customCardName}>
+                            {meta.displayName}
+                            {meta.recommended && <span className={styles.customCardBadge}>Recommended</span>}
+                          </div>
+                          <div className={styles.customCardDesc}>{meta.desc}</div>
+                        </div>
+                        <svg className={styles.customCardChevron} width="14" height="14" viewBox="0 0 16 16" fill="none">
+                          <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      );
+    } else {
+      const connectedInArea = connectedPlatforms.filter(name => {
+        const p = INTEGRATION_CATALOG[name];
+        return p && area.categories.includes(p.category);
+      });
+      const allFulfilled = area.capabilities.every(cap =>
+        fulfilledCapabilities.some(c => c.key === cap)
+      );
+
+      if (!allFulfilled) {
+        const available = Object.entries(INTEGRATION_CATALOG)
+          .filter(([_, v]) => area.categories.includes(v.category))
+          .map(([name]) => name)
+          .filter(name => !connectedPlatforms.includes(name));
+
+        gridContent = (
+          <div className={styles.platformGrid}>
+            {connectedInArea.map(renderConnectedPlatformRow)}
+            {available.map(renderPlatformRow)}
+          </div>
+        );
+      } else {
+        gridContent = (
+          <div className={styles.platformGrid}>
+            {connectedInArea.map(renderConnectedPlatformRow)}
+          </div>
+        );
+      }
+    }
+
+    return gridContent;
+  };
 
   const renderConnectedPlatformRow = (name) => {
     const platform = INTEGRATION_CATALOG[name];
@@ -429,193 +645,28 @@ against this mapping automatically.`);
     );
   };
 
-  // Render content based on active area
-  let gridContent = null;
-  if (activeSetupArea === 'comms') {
-    const allUnfulfilled = commsGrid.unfulfilledCaps.length === commsGrid.commsCaps.length;
-    const allFulfilled = commsGrid.unfulfilledCaps.length === 0;
-
-    gridContent = (
-      <div>
-        {/* Connected platforms inline at top */}
-        {commsGrid.connectedComms.length > 0 && (
-          <div className={styles.platformGrid}>
-            {commsGrid.connectedComms.map(renderConnectedPlatformRow)}
-          </div>
-        )}
-
-        {/* All fulfilled — no more available */}
-        {!allFulfilled && allUnfulfilled && (
-          <>
-            {/* ALL 3 unfulfilled: CRMs first (no label), then expand for specialists */}
-            {commsGrid.relevantCRMs.length > 0 && (
-              <div className={styles.platformGrid}>
-                {commsGrid.relevantCRMs.map(renderPlatformRow)}
-              </div>
-            )}
-            {!commsExpanded && (
-              <button
-                className={styles.skipBtn}
-                onClick={() => setCommsExpanded(true)}
-              >
-                See more options
-              </button>
-            )}
-            {commsExpanded && commsGrid.neededSpecialistCats.map(cat => {
-              const platforms = Object.entries(INTEGRATION_CATALOG)
-                .filter(([name, v]) => v.category === cat && !connectedPlatforms.includes(name))
-                .map(([name]) => name);
-              if (platforms.length === 0) return null;
-              return (
-                <div key={cat}>
-                  <div className={styles.groupLabel} style={{ marginTop: '28px' }}>{cat}</div>
-                  <div className={styles.platformGrid}>
-                    {platforms.map(renderPlatformRow)}
-                  </div>
-                </div>
-              );
-            })}
-          </>
-        )}
-
-        {!allFulfilled && !allUnfulfilled && (
-          <>
-            {/* PARTIAL: CRMs with "Platforms" label + specialists directly */}
-            {commsGrid.relevantCRMs.length > 0 && (
-              <>
-                <div className={styles.groupLabel} style={commsGrid.connectedComms.length === 0 ? { marginTop: 0 } : { marginTop: '28px' }}>Platforms</div>
-                <div className={styles.platformGrid}>
-                  {commsGrid.relevantCRMs.map(renderPlatformRow)}
-                </div>
-              </>
-            )}
-            {commsGrid.neededSpecialistCats.map(cat => {
-              const platforms = Object.entries(INTEGRATION_CATALOG)
-                .filter(([name, v]) => v.category === cat && !connectedPlatforms.includes(name))
-                .map(([name]) => name);
-              if (platforms.length === 0) return null;
-              return (
-                <div key={cat}>
-                  <div className={styles.groupLabel} style={{ marginTop: '28px' }}>{cat}</div>
-                  <div className={styles.platformGrid}>
-                    {platforms.map(renderPlatformRow)}
-                  </div>
-                </div>
-              );
-            })}
-          </>
-        )}
-      </div>
-    );
-  } else if (activeSetupArea === 'data') {
-    const tier1Groups = [
-      { label: 'Payment Platforms', categories: ['Commerce'] },
-      { label: 'Data Pipelines', categories: ['EventStream', 'ReverseETL'] },
-    ];
-    const customCategories = ['Webhooks', 'DevAPI', 'EnterpriseBatch'];
-
-    gridContent = (
-      <div>
-        <div className={styles.platformGrid}>
-          {dataGrid.connectedData.map(renderConnectedPlatformRow)}
-        </div>
-        {!dataGrid.fulfilled && (
-          <>
-            {tier1Groups.map((group, i) => {
-              const platforms = Object.entries(INTEGRATION_CATALOG)
-                .filter(([_, v]) => group.categories.includes(v.category))
-                .map(([name]) => name)
-                .filter(name => !connectedPlatforms.includes(name));
-              return platforms.length > 0 && (
-                <div key={group.label}>
-                  <div className={styles.groupLabel} style={{ marginTop: i === 0 && dataGrid.connectedData.length === 0 ? '0' : '28px' }}>
-                    {group.label}
-                  </div>
-                  <div className={styles.platformGrid}>
-                    {platforms.map(renderPlatformRow)}
-                  </div>
-                </div>
-              );
-            })}
-            <div>
-              <div className={styles.groupLabel} style={{ marginTop: '28px' }}>Custom Integration</div>
-              <div className={styles.customIntegrationGroup}>
-                {['Inbound Webhooks', 'REST API', 'Secure File Drop'].map(name => {
-                  const meta = CUSTOM_INTEGRATION_META[name] || { displayName: name, desc: '', recommended: false };
-                  return (
-                    <div
-                      key={name}
-                      className={styles.customCard}
-                      onClick={() => showModal(name)}
-                    >
-                      <div className={styles.customCardIcon}>
-                        <PlatformSVG name={name} size={24} />
-                      </div>
-                      <div className={styles.customCardContent}>
-                        <div className={styles.customCardName}>
-                          {meta.displayName}
-                          {meta.recommended && <span className={styles.customCardBadge}>Recommended</span>}
-                        </div>
-                        <div className={styles.customCardDesc}>{meta.desc}</div>
-                      </div>
-                      <svg className={styles.customCardChevron} width="14" height="14" viewBox="0 0 16 16" fill="none">
-                        <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    );
-  } else {
-    // Support or NPS
-    const connectedInArea = connectedPlatforms.filter(name => {
+  // Helper to render collapsed section summary
+  const renderCollapsedSectionSummary = (sectionId) => {
+    const section = SETUP_AREAS[sectionId];
+    const connectedNames = connectedPlatforms.filter(name => {
       const p = INTEGRATION_CATALOG[name];
-      return p && area.categories.includes(p.category);
+      return p && section.categories.includes(p.category);
     });
-    const allFulfilled = area.capabilities.every(cap =>
-      fulfilledCapabilities.some(c => c.key === cap)
-    );
+    return connectedNames.join(' · ');
+  };
 
-    if (!allFulfilled) {
-      const available = Object.entries(INTEGRATION_CATALOG)
-        .filter(([_, v]) => area.categories.includes(v.category))
-        .map(([name]) => name)
-        .filter(name => !connectedPlatforms.includes(name));
-
-      gridContent = (
-        <div className={styles.platformGrid}>
-          {connectedInArea.map(renderConnectedPlatformRow)}
-          {available.map(renderPlatformRow)}
-        </div>
-      );
-    } else {
-      gridContent = (
-        <div className={styles.platformGrid}>
-          {connectedInArea.map(renderConnectedPlatformRow)}
-        </div>
-      );
-    }
-  }
-
-  const areaKeys = Object.keys(SETUP_AREAS);
-  const currentIndex = areaKeys.indexOf(activeSetupArea);
-  const isLast = currentIndex === areaKeys.length - 1;
-
-  // Navigation logic: required areas must have all capabilities fulfilled
-  const currentAreaFulfilled = area.capabilities.every(cap =>
-    fulfilledCapabilities.some(c => c.key === cap)
-  );
-  const allRequiredFulfilled = Object.entries(SETUP_AREAS)
-    .filter(([, a]) => a.required)
-    .every(([, a]) => a.capabilities.every(cap =>
-      fulfilledCapabilities.some(c => c.key === cap)
-    ));
-  const canAdvance = area.required ? currentAreaFulfilled : true;
-  const canFinish = allRequiredFulfilled;
+  // Helper to toggle section collapse
+  const toggleSectionCollapse = (sectionId) => {
+    setCollapsedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(sectionId)) {
+        next.delete(sectionId);
+      } else {
+        next.add(sectionId);
+      }
+      return next;
+    });
+  };
 
   return (
     <div className={styles.container}>
@@ -624,13 +675,13 @@ against this mapping automatically.`);
       </header>
 
       <div className={styles.splitContainer}>
-        {/* Sidebar */}
+        {/* Sidebar — scroll-spy nav */}
         <div className={styles.leftCol}>
-          <button className={styles.backBtn} onClick={() => alert('Navigating back')}>
+          <button className={styles.exitBtn} onClick={() => alert('Navigating back')}>
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="M10 4l-4 4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            Back
+            Exit Setup
           </button>
           <div style={{ padding: '0 12px 12px', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
             Integration Setup
@@ -641,18 +692,16 @@ against this mapping automatically.`);
           {Object.entries(SETUP_AREAS)
             .filter(([_, a]) => a.required)
             .map(([id, a]) => {
-              const allFulfilled = a.capabilities.every(cap =>
-                fulfilledCapabilities.some(c => c.key === cap)
-              );
+              const isFulfilled = isSectionFulfilled(id);
               const isActive = activeSetupArea === id;
               return (
                 <div
                   key={id}
                   className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
-                  onClick={() => setActiveSetupArea(id)}
+                  onClick={() => sectionRefs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 >
                   <span className={styles.navItemTitle}>{a.title}</span>
-                  {allFulfilled && (
+                  {isFulfilled && (
                     <svg className={styles.navItemCheck} width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path
                         d="M3 8.5l3.5 3.5 6.5-7"
@@ -670,18 +719,16 @@ against this mapping automatically.`);
           {Object.entries(SETUP_AREAS)
             .filter(([_, a]) => !a.required)
             .map(([id, a]) => {
-              const allFulfilled = a.capabilities.every(cap =>
-                fulfilledCapabilities.some(c => c.key === cap)
-              );
+              const isFulfilled = isSectionFulfilled(id);
               const isActive = activeSetupArea === id;
               return (
                 <div
                   key={id}
                   className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
-                  onClick={() => setActiveSetupArea(id)}
+                  onClick={() => sectionRefs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 >
                   <span className={styles.navItemTitle}>{a.title}</span>
-                  {allFulfilled && (
+                  {isFulfilled && (
                     <svg className={styles.navItemCheck} width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path
                         d="M3 8.5l3.5 3.5 6.5-7"
@@ -697,36 +744,75 @@ against this mapping automatically.`);
             })}
         </div>
 
-        {/* Right Content */}
-        <div className={styles.rightCol}>
-          {!area.required && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-              <span className={styles.optionalBadge}>Optional</span>
-            </div>
-          )}
-          <div className={styles.promptQuestion}>{area.question}</div>
-          <div className={styles.promptSub}>{area.sub}</div>
-          {gridContent}
-          {/* Navigation: required areas need caps fulfilled; optional can skip */}
-          {area.required ? (
-            <button
-              className={`${styles.ctaBtn} ${!currentAreaFulfilled ? styles.ctaBtnDisabled : ''}`}
-              onClick={currentAreaFulfilled ? handleNextArea : undefined}
-              disabled={!currentAreaFulfilled}
-              style={{ marginTop: '32px' }}
-            >
-              {isLast ? 'Finish Setup' : 'Continue'}
-            </button>
-          ) : (
-            <button
-              className={`${styles.ctaBtn} ${isLast && !canFinish ? styles.ctaBtnDisabled : ''}`}
-              onClick={isLast && !canFinish ? undefined : handleNextArea}
-              disabled={isLast && !canFinish}
-              style={{ marginTop: '32px' }}
-            >
-              {isLast ? 'Finish Setup' : (currentAreaFulfilled ? 'Continue' : 'Skip')}
-            </button>
-          )}
+        {/* Right Content — scrollable with all sections */}
+        <div className={styles.rightCol} ref={rightColRef}>
+          {Object.entries(SETUP_AREAS).map(([sectionId, section]) => {
+            const isFulfilled = isSectionFulfilled(sectionId);
+            const isCollapsed = collapsedSections.has(sectionId);
+
+            return (
+              <div
+                key={sectionId}
+                ref={sectionRefs[sectionId]}
+                data-section={sectionId}
+                className={`${styles.section} ${isCollapsed ? styles.sectionCollapsed : ''}`}
+              >
+                {/* Section Header */}
+                <div
+                  className={styles.sectionHeader}
+                  onClick={() => isFulfilled && toggleSectionCollapse(sectionId)}
+                >
+                  {isFulfilled && (
+                    <div className={styles.sectionHeaderCheck}>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 6l3 3 5-5" stroke="var(--color-green-600)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                  )}
+                  <div className={styles.sectionHeaderTitle}>
+                    {section.title}
+                    {!section.required && <span className={styles.optionalBadge} style={{ marginLeft: '8px' }}>Optional</span>}
+                  </div>
+                  {isFulfilled && (
+                    <svg
+                      className={`${styles.sectionChevron} ${isCollapsed ? '' : styles.sectionChevronOpen}`}
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                    >
+                      <path d="M12 6l-4 4-4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </div>
+
+                {isCollapsed && isFulfilled && (
+                  <div className={styles.sectionHeaderSummary}>
+                    {renderCollapsedSectionSummary(sectionId)}
+                  </div>
+                )}
+
+                {/* Section Content */}
+                {!isCollapsed && (
+                  <div className={styles.sectionContent}>
+                    <div className={styles.promptQuestion}>{section.question}</div>
+                    <div className={styles.promptSub}>{section.sub}</div>
+                    {renderSectionContent(sectionId)}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Finish Setup Button */}
+          <button
+            className={`${styles.ctaBtn} ${!allRequiredFulfilled ? styles.ctaBtnDisabled : ''}`}
+            onClick={allRequiredFulfilled ? () => onNext?.() : undefined}
+            disabled={!allRequiredFulfilled}
+            style={{ marginTop: '32px', width: '100%' }}
+          >
+            Finish Setup
+          </button>
         </div>
       </div>
 
