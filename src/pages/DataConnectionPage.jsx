@@ -784,7 +784,6 @@ against this mapping automatically.`);
                       <div className={styles.sectionHeaderTitle}>
                         {section.question}
                         <span className={styles.directionTag} style={{ marginLeft: '8px', verticalAlign: 'middle' }}>{getSectionDirection(sectionId)}</span>
-                        {!section.required && <span className={styles.optionalBadge} style={{ marginLeft: '6px' }}>Optional</span>}
                       </div>
                       <svg
                         className={styles.sectionChevron}
@@ -816,7 +815,6 @@ against this mapping automatically.`);
                         <div className={styles.sectionHeaderTitle}>
                           {section.question}
                           <span className={styles.directionTag} style={{ marginLeft: '8px', verticalAlign: 'middle' }}>{getSectionDirection(sectionId)}</span>
-                          {!section.required && <span className={styles.optionalBadge} style={{ marginLeft: '6px' }}>Optional</span>}
                         </div>
                         <svg
                           className={`${styles.sectionChevron} ${styles.sectionChevronOpen}`}
@@ -835,7 +833,6 @@ against this mapping automatically.`);
                           <div className={styles.promptQuestion}>
                             {section.question}
                             <span className={styles.directionTag} style={{ marginLeft: '12px', verticalAlign: 'middle', fontSize: '10px' }}>{getSectionDirection(sectionId)}</span>
-                            {!section.required && <span className={styles.optionalBadge} style={{ marginLeft: '8px', verticalAlign: 'middle' }}>Optional</span>}
                           </div>
                           <div className={styles.promptSub}>{section.sub}</div>
                         </>
