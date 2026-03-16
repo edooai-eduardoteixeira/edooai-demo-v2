@@ -1,0 +1,720 @@
+/* ═══════════════════════════════════════════
+   DATA CONNECTION PAGE — CSS MODULE
+   ═══════════════════════════════════════════ */
+
+/* ─── Layout ─── */
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 24px 48px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+/* ─── Split screen (sidebar nav + content) ─── */
+.splitContainer {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 0;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.leftCol {
+  display: flex;
+  flex-direction: column;
+  padding: 32px 20px 64px 32px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-right: 1px solid var(--border-light);
+}
+
+.rightCol {
+  padding: 32px 48px 64px;
+  overflow-y: auto;
+}
+
+/* ─── Sidebar nav items ─── */
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-bottom: 2px;
+  border-left: 3px solid transparent;
+}
+
+.navItem:hover {
+  background: var(--color-gray-50);
+}
+
+.navItemActive {
+  background: var(--color-gray-50);
+  border-left-color: var(--color-black);
+}
+
+.navItemTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.navItemActive .navItemTitle {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.navItemCheck {
+  margin-left: auto;
+  color: var(--color-green-500);
+  flex-shrink: 0;
+}
+
+.navSectionLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  padding: 16px 12px 6px;
+}
+
+/* ─── AI Prompt Card ─── */
+.promptQuestion {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.promptSub {
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.optionalBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  background: var(--color-gray-100);
+  border-radius: var(--radius-full);
+}
+
+/* ─── Platform row: connected state ─── */
+.platformRowConnected {
+  display: flex;
+  width: 100%;
+  cursor: default;
+  opacity: 1;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  padding: 12px 0;
+  align-items: center;
+}
+
+.platformRowConnected:hover {
+  opacity: 1;
+}
+
+.platformRowStatus {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-green-600);
+  margin-left: auto;
+}
+
+.platformRowStatus.pending {
+  color: var(--warn);
+}
+
+.platformRowStatusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-green-500);
+  flex-shrink: 0;
+}
+
+.platformRowStatus.pending .platformRowStatusDot {
+  background: var(--warn);
+}
+
+.platformRowDisconnect {
+  color: var(--text-tertiary);
+  cursor: pointer;
+  opacity: 0;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.platformRowConnected:hover .platformRowDisconnect {
+  opacity: 1;
+}
+
+.platformRowDisconnect:hover {
+  color: var(--danger);
+}
+
+.platformRowScopes {
+  width: 100%;
+  padding-left: 30px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+
+/* ─── Platform grid ─── */
+.platformGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.platformRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  cursor: pointer;
+  width: fit-content;
+  transition: opacity 0.15s ease;
+}
+
+.platformRow:hover {
+  opacity: 0.55;
+}
+
+.platformRow:active {
+  opacity: 0.4;
+}
+
+.platformRowIcon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.platformRowName {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.platformRowChevron {
+  color: var(--color-gray-300);
+  flex-shrink: 0;
+}
+
+.groupLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 6px;
+}
+
+.groupLabel:not(:first-of-type) {
+  margin-top: 28px;
+}
+
+.skipBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 20px;
+  padding: 14px 32px;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-black);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  line-height: 1.4;
+}
+
+.skipBtn:hover {
+  background: var(--color-gray-50);
+}
+
+/* ─── Custom integration cards (Tier 2 technical paths) ─── */
+.customIntegrationGroup {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.customCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background: var(--color-white);
+}
+
+.customCard:hover {
+  border-color: var(--color-gray-400);
+  background: var(--color-gray-50);
+}
+
+.customCard:active {
+  background: var(--color-gray-100);
+}
+
+.customCardIcon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.customCardContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.customCardName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.customCardDesc {
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.customCardChevron {
+  color: var(--color-gray-300);
+  flex-shrink: 0;
+}
+
+.customCardBadge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-green-600);
+  background: var(--color-green-50);
+  border-radius: var(--radius-full);
+  letter-spacing: 0.01em;
+  vertical-align: middle;
+}
+
+/* ─── Agentic Builder (modal bottom section) ─── */
+.agenticDivider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 20px 0;
+}
+
+.agenticHeader {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sparkle {
+  color: var(--warn);
+}
+
+.agenticSub {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.agenticTextarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: 'SF Mono', 'Fira Code', Menlo, Consolas, monospace;
+  color: var(--text-primary);
+  background: var(--color-gray-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+  line-height: 1.5;
+  transition: border-color var(--transition-fast);
+}
+
+.agenticTextarea:focus {
+  outline: none;
+  border-color: var(--color-gray-400);
+}
+
+.agenticTextarea::placeholder {
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+  font-style: normal;
+  font-size: 12.5px;
+}
+
+.agenticGenerateBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-black);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.agenticGenerateBtn:hover {
+  background: var(--color-gray-50);
+  border-color: var(--color-gray-400);
+}
+
+.agenticGenerateBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.agenticSectionBox {
+  background: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-top: 4px;
+}
+
+.agenticOutput {
+  width: 100%;
+  margin-top: 12px;
+  padding: 14px 16px;
+  font-size: 12px;
+  font-family: 'SF Mono', 'Fira Code', Menlo, Consolas, monospace;
+  color: #e2e8f0;
+  background: #1e293b;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  line-height: 1.6;
+  white-space: pre;
+  animation: fadeIn 0.3s ease;
+}
+
+/* ─── CTA Button ─── */
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 32px;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  background: var(--color-black);
+  color: var(--color-white);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  line-height: 1.4;
+}
+
+.ctaBtn:hover {
+  background: var(--color-gray-800);
+}
+
+/* ─── Back Button ─── */
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  margin-bottom: 24px;
+  transition: color var(--transition-fast);
+}
+
+.backBtn:hover {
+  color: var(--text-primary);
+}
+
+/* ─── Modal overlay ─── */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeInSimple 0.2s ease;
+}
+
+.modalCard {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  max-width: 440px;
+  width: calc(100% - 32px);
+  box-shadow: var(--shadow-lg);
+  animation: modalSlide 0.25s ease;
+  position: relative;
+}
+
+.modalCardWide {
+  max-width: 680px;
+}
+
+.modalTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.modalScopes {
+  list-style: none;
+  margin-bottom: 20px;
+}
+
+.modalScopes li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.modalScopes li + li {
+  border-top: 1px solid var(--border-light);
+}
+
+.scopeIcon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-green-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.modalFooter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+}
+
+.modalClose {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-tertiary);
+  transition: all var(--transition-fast);
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.modalClose:hover {
+  background: var(--accent-subtle);
+  color: var(--text-primary);
+}
+
+.modalConnectBtn {
+  width: 100%;
+  padding: 12px;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  margin-top: 16px;
+  background: var(--color-black);
+  color: var(--color-white);
+}
+
+.modalConnectBtn:hover {
+  background: var(--color-gray-800);
+}
+
+/* ─── Modal field elements ─── */
+.modalFieldLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+
+.modalFieldBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-gray-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.modalFieldCode {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, Consolas, monospace;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.modalCopyBtn {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--color-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.modalCopyBtn:hover {
+  background: var(--color-gray-100);
+  color: var(--text-primary);
+}
+
+/* ─── Validation states ─── */
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-gray-200);
+  border-top-color: var(--color-gray-700);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 16px;
+}
+
+.validationTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.validationSub {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+/* ─── Animations ─── */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInSimple {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes modalSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
