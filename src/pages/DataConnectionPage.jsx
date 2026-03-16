@@ -637,17 +637,12 @@ against this mapping automatically.`);
   };
 
   const renderPlatformRow = (name) => {
-    const platform = INTEGRATION_CATALOG[name];
-    const directions = platform ? [...new Set(platform.capabilities.map(c => getCapDirection(c)))] : [];
     return (
       <div key={name} className={styles.platformRow} onClick={() => showModal(name)}>
         <div className={styles.platformRowIcon}>
           <PlatformSVG name={name} size={20} />
         </div>
         <span className={styles.platformRowName}>{name}</span>
-        {directions.map(dir => (
-          <span key={dir} className={styles.directionTag}>{dir}</span>
-        ))}
         <svg className={styles.platformRowChevron} width="14" height="14" viewBox="0 0 16 16" fill="none">
           <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
