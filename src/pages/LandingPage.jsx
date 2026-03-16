@@ -30,7 +30,7 @@ export default function LandingPage({ config, onNext }) {
         <main
           style={{
             textAlign: 'center',
-            maxWidth: '920px',
+            maxWidth: '960px',
             width: '100%',
           }}
         >
