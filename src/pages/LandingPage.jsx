@@ -30,7 +30,7 @@ export default function LandingPage({ config, onNext }) {
         <main
           style={{
             textAlign: 'center',
-            maxWidth: '830px',
+            maxWidth: '920px',
             width: '100%',
           }}
         >
@@ -64,15 +64,7 @@ export default function LandingPage({ config, onNext }) {
               marginBottom: '56px',
             }}
           >
-            {landing.subheadline.split('. ').length > 1 ? (
-              <>
-                {landing.subheadline.split('. ')[0]}.
-                <br className="br-desktop" />{' '}
-                {landing.subheadline.split('. ').slice(1).join('. ')}
-              </>
-            ) : (
-              landing.subheadline
-            )}
+            {landing.subheadline}
           </p>
           <CTAButton onClick={onNext}>{landing.ctaText}</CTAButton>
         </main>
