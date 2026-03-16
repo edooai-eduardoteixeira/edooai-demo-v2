@@ -264,8 +264,9 @@ export default function DataConnectionPage({ config, onNext }) {
 
   const showModal = useCallback((platform) => {
     const p = INTEGRATION_CATALOG[platform];
-    const modalType = p?.modalType || 'oauth';
-    setModal({ type: modalType, platform });
+    const modalType = p?.modalType || 'preauth';
+    const type = modalType === 'oauth' ? 'preauth' : modalType;
+    setModal({ type, platform });
   }, []);
 
   const closeModal = useCallback(() => {
@@ -415,57 +416,78 @@ against this mapping automatically.`);
   // Render content based on active area
   let gridContent = null;
   if (activeSetupArea === 'comms') {
+    const allUnfulfilled = commsGrid.unfulfilledCaps.length === commsGrid.commsCaps.length;
+    const allFulfilled = commsGrid.unfulfilledCaps.length === 0;
+
     gridContent = (
-      <div className={styles.platformGrid}>
-        {commsGrid.connectedComms.map(renderConnectedPlatformRow)}
-        {commsGrid.unfulfilledCaps.length > 0 && commsGrid.relevantCRMs.length > 0 && (
+      <div>
+        {/* Connected platforms inline at top */}
+        {commsGrid.connectedComms.length > 0 && (
+          <div className={styles.platformGrid}>
+            {commsGrid.connectedComms.map(renderConnectedPlatformRow)}
+          </div>
+        )}
+
+        {/* All fulfilled — no more available */}
+        {!allFulfilled && allUnfulfilled && (
           <>
-            {commsGrid.connectedComms.length === 0 && (
-              <div className={styles.groupLabel} style={{ gridColumn: '1 / -1' }}>
-                Platforms
+            {/* ALL 3 unfulfilled: CRMs first (no label), then expand for specialists */}
+            {commsGrid.relevantCRMs.length > 0 && (
+              <div className={styles.platformGrid}>
+                {commsGrid.relevantCRMs.map(renderPlatformRow)}
               </div>
             )}
-            {commsGrid.relevantCRMs.map(renderPlatformRow)}
+            {!commsExpanded && (
+              <button
+                className={styles.skipBtn}
+                onClick={() => setCommsExpanded(true)}
+              >
+                See more options
+              </button>
+            )}
+            {commsExpanded && commsGrid.neededSpecialistCats.map(cat => {
+              const platforms = Object.entries(INTEGRATION_CATALOG)
+                .filter(([name, v]) => v.category === cat && !connectedPlatforms.includes(name))
+                .map(([name]) => name);
+              if (platforms.length === 0) return null;
+              return (
+                <div key={cat}>
+                  <div className={styles.groupLabel}>{cat}</div>
+                  <div className={styles.platformGrid}>
+                    {platforms.map(renderPlatformRow)}
+                  </div>
+                </div>
+              );
+            })}
           </>
         )}
-        {commsGrid.unfulfilledCaps.length > 0 && !commsExpanded && commsGrid.relevantCRMs.length > 0 && (
-          <button
-            className={styles.skipBtn}
-            onClick={() => setCommsExpanded(true)}
-            style={{ gridColumn: '1 / -1' }}
-          >
-            See more options
-          </button>
-        )}
-        {commsExpanded && commsGrid.unfulfilledCaps.length === commsGrid.commsCaps.length && (
-          commsGrid.neededSpecialistCats.map(cat => {
-            const platforms = Object.entries(INTEGRATION_CATALOG)
-              .filter(([name, v]) => v.category === cat && !connectedPlatforms.includes(name))
-              .map(([name]) => name);
-            return platforms.length > 0 && (
-              <div key={cat} style={{ gridColumn: '1 / -1' }}>
-                <div className={styles.groupLabel}>{cat}</div>
+
+        {!allFulfilled && !allUnfulfilled && (
+          <>
+            {/* PARTIAL: CRMs with "Platforms" label + specialists directly */}
+            {commsGrid.relevantCRMs.length > 0 && (
+              <>
+                <div className={styles.groupLabel} style={commsGrid.connectedComms.length === 0 ? { marginTop: 0 } : undefined}>Platforms</div>
                 <div className={styles.platformGrid}>
-                  {platforms.map(renderPlatformRow)}
+                  {commsGrid.relevantCRMs.map(renderPlatformRow)}
                 </div>
-              </div>
-            );
-          })
-        )}
-        {commsExpanded && commsGrid.unfulfilledCaps.length < commsGrid.commsCaps.length && (
-          commsGrid.neededSpecialistCats.map(cat => {
-            const platforms = Object.entries(INTEGRATION_CATALOG)
-              .filter(([name, v]) => v.category === cat && !connectedPlatforms.includes(name))
-              .map(([name]) => name);
-            return platforms.length > 0 && (
-              <div key={cat} style={{ gridColumn: '1 / -1' }}>
-                <div className={styles.groupLabel}>{cat}</div>
-                <div className={styles.platformGrid}>
-                  {platforms.map(renderPlatformRow)}
+              </>
+            )}
+            {commsGrid.neededSpecialistCats.map(cat => {
+              const platforms = Object.entries(INTEGRATION_CATALOG)
+                .filter(([name, v]) => v.category === cat && !connectedPlatforms.includes(name))
+                .map(([name]) => name);
+              if (platforms.length === 0) return null;
+              return (
+                <div key={cat}>
+                  <div className={styles.groupLabel}>{cat}</div>
+                  <div className={styles.platformGrid}>
+                    {platforms.map(renderPlatformRow)}
+                  </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            })}
+          </>
         )}
       </div>
     );
@@ -667,7 +689,7 @@ against this mapping automatically.`);
       {modal && (
         <div className={styles.modalBackdrop} onClick={closeModal}>
           <div
-            className={`${styles.modalCard} ${modal.type !== 'preauth' ? styles.modalCardWide : ''}`}
+            className={`${styles.modalCard} ${['webhooks', 'api', 'filedrop'].includes(modal.type) ? styles.modalCardWide : ''}`}
             onClick={e => e.stopPropagation()}
           >
             <div className={styles.modalClose} onClick={closeModal}>
