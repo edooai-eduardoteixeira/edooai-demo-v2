@@ -743,3 +743,94 @@
     transform: translateY(0);
   }
 }
+
+/* ─── New Single-Scroll Layout Styles ─── */
+
+/* Section block within scrollable right column */
+.section {
+  padding-bottom: 40px;
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.section:last-of-type {
+  border-bottom: none;
+}
+
+/* Collapsed section summary */
+.sectionCollapsed {
+  padding-bottom: 0;
+  margin-bottom: 24px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 16px 0;
+  transition: opacity var(--transition-fast);
+}
+
+.sectionHeader:hover {
+  opacity: 0.7;
+}
+
+.sectionHeaderTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.sectionHeaderCheck {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-green-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sectionHeaderSummary {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-left: 32px;
+  margin-bottom: 16px;
+}
+
+.sectionChevron {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  transition: transform var(--transition-fast);
+}
+
+.sectionChevronOpen {
+  transform: rotate(180deg);
+}
+
+.sectionContent {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Exit setup button (replaces back) */
+.exitBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  margin-bottom: 24px;
+  transition: color var(--transition-fast);
+}
+
+.exitBtn:hover {
+  color: var(--text-primary);
+}
