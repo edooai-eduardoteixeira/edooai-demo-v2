@@ -165,6 +165,7 @@ export default function DataConnectionPage({ config, onNext }) {
   const [agenticInput, setAgenticInput] = useState('');
   const [agenticOutput, setAgenticOutput] = useState('');
   const [collapsedSections, setCollapsedSections] = useState(new Set());
+  const [fadingOutSections, setFadingOutSections] = useState(new Set());
 
   const rightColRef = useRef(null);
   const sectionRefs = {
@@ -210,23 +211,37 @@ export default function DataConnectionPage({ config, onNext }) {
     const newlyCompleted = [...currentFulfilledAreas].filter(id => !prevFulfilledRef.current.has(id));
 
     if (newlyCompleted.length > 0) {
+      // Phase 1: Start fade-out after 800ms
       setTimeout(() => {
-        setCollapsedSections(prev => {
+        setFadingOutSections(prev => {
           const next = new Set(prev);
           newlyCompleted.forEach(id => next.add(id));
           return next;
         });
 
-        // Wait for React to re-render after collapse before scrolling
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            const areaKeys = Object.keys(SETUP_AREAS);
-            const nextIncomplete = areaKeys.find(id => !currentFulfilledAreas.has(id));
-            if (nextIncomplete && sectionRefs[nextIncomplete]?.current) {
-              sectionRefs[nextIncomplete].current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+        // Phase 2: After fade-out completes (350ms), collapse and scroll
+        setTimeout(() => {
+          setFadingOutSections(prev => {
+            const next = new Set(prev);
+            newlyCompleted.forEach(id => next.delete(id));
+            return next;
           });
-        });
+          setCollapsedSections(prev => {
+            const next = new Set(prev);
+            newlyCompleted.forEach(id => next.add(id));
+            return next;
+          });
+
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              const areaKeys = Object.keys(SETUP_AREAS);
+              const nextIncomplete = areaKeys.find(id => !currentFulfilledAreas.has(id));
+              if (nextIncomplete && sectionRefs[nextIncomplete]?.current) {
+                sectionRefs[nextIncomplete].current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            });
+          });
+        }, 350);
       }, 800);
     }
 
@@ -761,6 +776,7 @@ against this mapping automatically.`);
           {Object.entries(SETUP_AREAS).map(([sectionId, section]) => {
             const isFulfilled = isSectionFulfilled(sectionId);
             const isCollapsed = collapsedSections.has(sectionId);
+            const isFadingOut = fadingOutSections.has(sectionId);
 
             return (
               <div
@@ -827,7 +843,7 @@ against this mapping automatically.`);
                         </svg>
                       </div>
                     )}
-                    <div className={styles.sectionContent}>
+                    <div className={`${styles.sectionContent} ${isFadingOut ? styles.sectionContentFadingOut : ''}`}>
                       {!isFulfilled && (
                         <>
                           <div className={styles.promptQuestion}>

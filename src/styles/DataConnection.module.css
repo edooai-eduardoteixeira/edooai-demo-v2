@@ -808,6 +808,7 @@
 .sectionHeaderSummary {
   margin-left: 32px;
   margin-bottom: 16px;
+  animation: fadeIn 0.4s ease;
 }
 
 .sectionChevron {
@@ -822,6 +823,14 @@
 
 .sectionContent {
   animation: fadeIn 0.3s ease;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.sectionContentFadingOut {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
 /* Exit setup button (replaces back) */
