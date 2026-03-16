@@ -708,7 +708,7 @@ against this mapping automatically.`);
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="M10 4l-4 4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            Exit Setup
+            Save & Exit
           </button>
           <div style={{ padding: '0 12px 12px', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
             Integration Setup
@@ -865,14 +865,15 @@ against this mapping automatically.`);
           })}
 
           {/* Finish Setup Button */}
-          <button
-            className={`${styles.ctaBtn} ${!allRequiredFulfilled ? styles.ctaBtnDisabled : ''}`}
-            onClick={allRequiredFulfilled ? () => onNext?.() : undefined}
-            disabled={!allRequiredFulfilled}
-            style={{ marginTop: '32px', width: '100%' }}
-          >
-            Finish Setup
-          </button>
+          <div style={{ marginTop: '32px' }}>
+            <CTAButton
+              onClick={() => onNext?.()}
+              disabled={!allRequiredFulfilled}
+              style={{ width: '100%' }}
+            >
+              Finish Setup
+            </CTAButton>
+          </div>
         </div>
       </div>
 
