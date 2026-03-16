@@ -461,7 +461,7 @@ against this mapping automatically.`);
               if (platforms.length === 0) return null;
               return (
                 <div key={cat}>
-                  <div className={styles.groupLabel}>{cat}</div>
+                  <div className={styles.groupLabel} style={{ marginTop: '28px' }}>{cat}</div>
                   <div className={styles.platformGrid}>
                     {platforms.map(renderPlatformRow)}
                   </div>
@@ -476,7 +476,7 @@ against this mapping automatically.`);
             {/* PARTIAL: CRMs with "Platforms" label + specialists directly */}
             {commsGrid.relevantCRMs.length > 0 && (
               <>
-                <div className={styles.groupLabel} style={commsGrid.connectedComms.length === 0 ? { marginTop: 0 } : undefined}>Platforms</div>
+                <div className={styles.groupLabel} style={commsGrid.connectedComms.length === 0 ? { marginTop: 0 } : { marginTop: '28px' }}>Platforms</div>
                 <div className={styles.platformGrid}>
                   {commsGrid.relevantCRMs.map(renderPlatformRow)}
                 </div>
@@ -489,7 +489,7 @@ against this mapping automatically.`);
               if (platforms.length === 0) return null;
               return (
                 <div key={cat}>
-                  <div className={styles.groupLabel}>{cat}</div>
+                  <div className={styles.groupLabel} style={{ marginTop: '28px' }}>{cat}</div>
                   <div className={styles.platformGrid}>
                     {platforms.map(renderPlatformRow)}
                   </div>
@@ -521,7 +521,7 @@ against this mapping automatically.`);
                 .filter(name => !connectedPlatforms.includes(name));
               return platforms.length > 0 && (
                 <div key={group.label}>
-                  <div className={styles.groupLabel} style={{ marginTop: i === 0 && dataGrid.connectedData.length === 0 ? '0' : undefined }}>
+                  <div className={styles.groupLabel} style={{ marginTop: i === 0 && dataGrid.connectedData.length === 0 ? '0' : '28px' }}>
                     {group.label}
                   </div>
                   <div className={styles.platformGrid}>
@@ -531,7 +531,7 @@ against this mapping automatically.`);
               );
             })}
             <div>
-              <div className={styles.groupLabel}>Custom Integration</div>
+              <div className={styles.groupLabel} style={{ marginTop: '28px' }}>Custom Integration</div>
               <div className={styles.customIntegrationGroup}>
                 {['Inbound Webhooks', 'REST API', 'Secure File Drop'].map(name => {
                   const meta = CUSTOM_INTEGRATION_META[name] || { displayName: name, desc: '', recommended: false };
