@@ -93,7 +93,7 @@ const INTEGRATION_CATALOG = {
 
 const SETUP_AREAS = {
   comms: {
-    title: 'Communications',
+    title: 'Marketing Channels',
     question: 'Connect your marketing channels',
     sub: 'All customer communications are delivered through your own channels: email, SMS and push notification.',
     capabilities: ['write:email', 'write:sms', 'write:push'],
@@ -101,7 +101,7 @@ const SETUP_AREAS = {
     required: true,
   },
   data: {
-    title: 'Transaction Data',
+    title: 'Customer Transactions',
     question: 'Connect your customer transactions',
     sub: 'Track the events that trigger timely referral invites and reward payouts.',
     capabilities: ['read:transactions'],
@@ -117,7 +117,7 @@ const SETUP_AREAS = {
     required: false,
   },
   nps: {
-    title: 'NPS / Sentiment',
+    title: 'Net Promoter Score (NPS)',
     question: 'Connect your NPS',
     sub: 'Your happiest customers are the most likely to refer.',
     capabilities: ['read:customer_ratings'],
