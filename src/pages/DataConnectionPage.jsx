@@ -211,38 +211,23 @@ export default function DataConnectionPage({ config, onNext }) {
     const newlyCompleted = [...currentFulfilledAreas].filter(id => !prevFulfilledRef.current.has(id));
 
     if (newlyCompleted.length > 0) {
-      // Phase 1: Start fade-out after 800ms
+      // Collapse immediately — the expanded-fulfilled state already
+      // looks identical (description and grid are hidden), so there's
+      // nothing to animate. Just flip to collapsed on the same render.
+      setCollapsedSections(prev => {
+        const next = new Set(prev);
+        newlyCompleted.forEach(id => next.add(id));
+        return next;
+      });
+
+      // Scroll to next section after a brief pause
       setTimeout(() => {
-        setFadingOutSections(prev => {
-          const next = new Set(prev);
-          newlyCompleted.forEach(id => next.add(id));
-          return next;
-        });
-
-        // Phase 2: After fade-out completes (350ms), collapse and scroll
-        setTimeout(() => {
-          setFadingOutSections(prev => {
-            const next = new Set(prev);
-            newlyCompleted.forEach(id => next.delete(id));
-            return next;
-          });
-          setCollapsedSections(prev => {
-            const next = new Set(prev);
-            newlyCompleted.forEach(id => next.add(id));
-            return next;
-          });
-
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              const areaKeys = Object.keys(SETUP_AREAS);
-              const nextIncomplete = areaKeys.find(id => !currentFulfilledAreas.has(id));
-              if (nextIncomplete && sectionRefs[nextIncomplete]?.current) {
-                sectionRefs[nextIncomplete].current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }
-            });
-          });
-        }, 350);
-      }, 800);
+        const areaKeys = Object.keys(SETUP_AREAS);
+        const nextIncomplete = areaKeys.find(id => !currentFulfilledAreas.has(id));
+        if (nextIncomplete && sectionRefs[nextIncomplete]?.current) {
+          sectionRefs[nextIncomplete].current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 600);
     }
 
     prevFulfilledRef.current = currentFulfilledAreas;
@@ -342,11 +327,8 @@ export default function DataConnectionPage({ config, onNext }) {
   const handlePlatformConnect = useCallback((platform) => {
     setModal({ type: 'validating', platform });
     setTimeout(() => {
+      connectPlatform(platform);
       setModal(null);
-      // Let modal close render first, then show connected row
-      requestAnimationFrame(() => {
-        connectPlatform(platform);
-      });
     }, 900);
   }, [connectPlatform]);
 
