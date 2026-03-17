@@ -342,11 +342,8 @@ export default function DataConnectionPage({ config, onNext }) {
   const handlePlatformConnect = useCallback((platform) => {
     setModal({ type: 'validating', platform });
     setTimeout(() => {
+      connectPlatform(platform);
       setModal(null);
-      // Let modal close render first, then show connected row
-      requestAnimationFrame(() => {
-        connectPlatform(platform);
-      });
     }, 900);
   }, [connectPlatform]);
 
