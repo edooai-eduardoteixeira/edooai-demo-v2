@@ -844,18 +844,25 @@ against this mapping automatically.`);
                       </div>
                     )}
                     <div className={`${styles.sectionContent} ${isFadingOut ? styles.sectionContentFadingOut : ''}`}>
-                      {!isFulfilled && (
-                        <>
-                          <div className={styles.promptQuestion}>
-                            {section.question}
-                            <span className={styles.directionTag} style={{ marginLeft: '12px', verticalAlign: 'middle', fontSize: '10px' }}>{getSectionDirection(sectionId)}</span>
-                          </div>
-                          <div className={styles.promptSub}>{section.sub}</div>
-                        </>
-                      )}
-                      {isFulfilled && (
-                        <div className={styles.promptSub} style={{ marginTop: 0 }}>{section.sub}</div>
-                      )}
+                      {(() => {
+                        const hasConnections = connectedPlatforms.some(name => {
+                          const p = INTEGRATION_CATALOG[name];
+                          return p && section.categories.includes(p.category);
+                        });
+                        return (
+                          <>
+                            {!isFulfilled && (
+                              <div className={styles.promptQuestion}>
+                                {section.question}
+                                <span className={styles.directionTag} style={{ marginLeft: '12px', verticalAlign: 'middle', fontSize: '10px' }}>{getSectionDirection(sectionId)}</span>
+                              </div>
+                            )}
+                            {!hasConnections && (
+                              <div className={styles.promptSub}>{section.sub}</div>
+                            )}
+                          </>
+                        );
+                      })()}
                       {renderSectionContent(sectionId)}
                     </div>
                   </>
