@@ -568,7 +568,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     { key: 'convRate', label: 'Conv rate', value: `${typeof convRate === 'number' ? convRate.toFixed(1) : convRate}%`, curve: dailyKPIs?.convRate, invertGood: false, refValue: convRate,
                       desc: 'Conversion Rate — percentage of contacted users who completed the referral journey.' },
                     { key: 'fraudSaved', label: 'Fraud saved', value: `$${Math.round((fraudSaved || 0) / 1000)}K`, curve: dailyKPIs?.fraudSaved, invertGood: false, refValue: (fraudSaved || 0) / 30,
-                      desc: "Estimated fraud prevention savings from EdooAI's verification layer." },
+                      desc: "Estimated fraud prevention savings from VincorAI's verification layer." },
                   ].map((kpi) => {
                     const pts = kpi.curve ? sparkPointsData(kpi.curve, td) : null;
                     const last = pts ? pts[pts.length - 1] : null;

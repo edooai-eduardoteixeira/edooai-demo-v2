@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Edoo AI — Data Connection v7</title>
+<title>Vincor AI — Data Connection v7</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -687,8 +687,8 @@ const SETUP_AREAS = {
 // ═══════════════════════════════════════════
 const HEADER_HTML = `<header>
   <div class="logo">
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="black"/><text x="14" y="19" text-anchor="middle" fill="white" font-size="14" font-weight="700" font-family="Inter, sans-serif">E</text></svg>
-    Edoo AI
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="black"/><text x="14" y="19" text-anchor="middle" fill="white" font-size="14" font-weight="700" font-family="Inter, sans-serif">V</text></svg>
+    Vincor AI
   </div>
 </header>`;
 // ─── Auto-select first incomplete required area ───
@@ -854,7 +854,7 @@ function renderModal() {
           <button class="modal-connect-btn primary" onclick="initiateOAuth('${m.platform}')">Connect ${m.platform}</button>
           <div class="modal-footer">
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1a4 4 0 00-4 4v3H3a1 1 0 00-1 1v5a1 1 0 001 1h10a1 1 0 001-1V9a1 1 0 00-1-1h-1V5a4 4 0 00-4-4zm-2 4a2 2 0 114 0v3H6V5z" fill="var(--text-tertiary)"/></svg>
-            <span>Encrypted and secure. Edoo only requests the minimum data required to run your referral strategy.</span>
+            <span>Encrypted and secure. Vincor only requests the minimum data required to run your referral strategy.</span>
           </div>
         </div>
       </div>
@@ -875,7 +875,7 @@ function renderModal() {
           <div style="margin-bottom:16px;">
             <div class="modal-field-label">Webhook URL</div>
             <div class="modal-field-box">
-              <code class="modal-field-code">https://api.edoo.ai/v1/webhooks/tx_9982x...</code>
+              <code class="modal-field-code">https://api.vincor.ai/v1/webhooks/tx_9982x...</code>
               <button class="modal-copy-btn" onclick="this.textContent='Copied!';setTimeout(()=>this.textContent='Copy Webhook URL',1500)">Copy Webhook URL</button>
             </div>
           </div>
@@ -919,14 +919,14 @@ function renderModal() {
           <div style="margin-bottom:16px;">
             <div class="modal-field-label">Secret Key</div>
             <div class="modal-field-box">
-              <code class="modal-field-code">edoo_live_*******************</code>
+              <code class="modal-field-code">vincor_live_*******************</code>
               <button class="modal-copy-btn" onclick="this.textContent='Copied!';setTimeout(()=>this.textContent='Reveal & Copy Key',1500)">Reveal & Copy Key</button>
             </div>
           </div>
           <div style="margin-bottom:16px;">
             <div class="modal-field-label">API Endpoint</div>
             <div class="modal-field-box">
-              <code class="modal-field-code">POST https://api.edoo.ai/v1/transactions</code>
+              <code class="modal-field-code">POST https://api.vincor.ai/v1/transactions</code>
               <button class="modal-copy-btn" onclick="this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
             </div>
           </div>
@@ -956,13 +956,13 @@ function renderModal() {
             ${platformSVG(m.platform, 32)}
             <div>
               <div class="modal-title" style="margin-bottom:0">Secure Bucket Provisioned</div>
-              <div style="font-size:12px;color:var(--text-tertiary)">Edoo has provisioned an isolated AWS S3 bucket for your daily batch uploads.</div>
+              <div style="font-size:12px;color:var(--text-tertiary)">Vincor has provisioned an isolated AWS S3 bucket for your daily batch uploads.</div>
             </div>
           </div>
           <div style="margin-bottom:16px;">
             <div class="modal-field-label">S3 Bucket ARN</div>
             <div class="modal-field-box">
-              <code class="modal-field-code">arn:aws:s3:::edoo-client-drop-8821</code>
+              <code class="modal-field-code">arn:aws:s3:::vincor-client-drop-8821</code>
               <button class="modal-copy-btn" onclick="this.textContent='Copied!';setTimeout(()=>this.textContent='Copy Credentials',1500)">Copy Credentials</button>
             </div>
           </div>
@@ -1048,7 +1048,7 @@ window.generateWebhookMapping = function() {
   setTimeout(() => {
     output.innerHTML = `<div class="agentic-output">✓ Field mapping complete
 
-  Your payload              →  Edoo schema
+  Your payload              →  Vincor schema
   ─────────────────────────────────────────
   data.id                   →  transaction_id
   data.amount (÷ 100)       →  amount
@@ -1072,8 +1072,8 @@ window.generateAPIScript = function() {
   setTimeout(() => {
     output.innerHTML = `<div class="agentic-output">import requests
 
-EDOO_API_KEY = "edoo_live_*******************"
-EDOO_ENDPOINT = "https://api.edoo.ai/v1/transactions"
+VINCOR_API_KEY = "vincor_live_*******************"
+VINCOR_ENDPOINT = "https://api.vincor.ai/v1/transactions"
 
 def send_transaction(row):
     payload = {
@@ -1084,9 +1084,9 @@ def send_transaction(row):
         "timestamp": row["created_at"],
     }
     resp = requests.post(
-        EDOO_ENDPOINT,
+        VINCOR_ENDPOINT,
         json=payload,
-        headers={"Authorization": f"Bearer {EDOO_API_KEY}"},
+        headers={"Authorization": f"Bearer {VINCOR_API_KEY}"},
         timeout=10,
     )
     resp.raise_for_status()
@@ -1105,7 +1105,7 @@ window.generateFileMapping = function() {
   setTimeout(() => {
     output.innerHTML = `<div class="agentic-output">✓ Schema detected — 5 columns, 2 rows
 
-  Your column       Type       →  Edoo field
+  Your column       Type       →  Vincor field
   ─────────────────────────────────────────
   user_id           string     →  customer_external_id
   order_id          string     →  transaction_id

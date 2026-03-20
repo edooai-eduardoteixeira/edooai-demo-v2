@@ -1,7 +1,7 @@
 {
-  "name": "edooai-demo-v2",
+  "name": "vincorai-demo-v2",
   "version": "1.0.0",
-  "description": "Edoo AI Demo v2",
+  "description": "Vincor AI Demo v2",
   "type": "module",
   "scripts": {
     "dev": "vite",

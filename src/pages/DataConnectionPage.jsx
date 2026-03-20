@@ -337,7 +337,7 @@ export default function DataConnectionPage({ config, onNext }) {
     setTimeout(() => {
       setAgenticOutput(`✓ Field mapping complete
 
-Your payload              →  Edoo schema
+Your payload              →  Vincor schema
 ─────────────────────────────────────────
 data.id                   →  transaction_id
 data.amount (÷ 100)       →  amount
@@ -355,8 +355,8 @@ Ready to receive events at your endpoint.`);
     setTimeout(() => {
       setAgenticOutput(`import requests
 
-EDOO_API_KEY = "edoo_live_*******************"
-EDOO_ENDPOINT = "https://api.edoo.ai/v1/transactions"
+VINCOR_API_KEY = "vincor_live_*******************"
+VINCOR_ENDPOINT = "https://api.vincor.ai/v1/transactions"
 
 def send_transaction(row):
     payload = {
@@ -367,9 +367,9 @@ def send_transaction(row):
         "timestamp": row["created_at"],
     }
     resp = requests.post(
-        EDOO_ENDPOINT,
+        VINCOR_ENDPOINT,
         json=payload,
-        headers={"Authorization": f"Bearer {EDOO_API_KEY}"},
+        headers={"Authorization": f"Bearer {VINCOR_API_KEY}"},
         timeout=10,
     )
     resp.raise_for_status()
@@ -382,7 +382,7 @@ def send_transaction(row):
     setTimeout(() => {
       setAgenticOutput(`✓ Schema detected — 5 columns, 2 rows
 
-Your column       Type       →  Edoo field
+Your column       Type       →  Vincor field
 ─────────────────────────────────────────
 user_id           string     →  customer_external_id
 order_id          string     →  transaction_id
@@ -926,7 +926,7 @@ against this mapping automatically.`);
                   <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                     <path d="M8 1a4 4 0 00-4 4v3H3a1 1 0 00-1 1v5a1 1 0 001 1h10a1 1 0 001-1V9a1 1 0 00-1-1h-1V5a4 4 0 00-4-4zm-2 4a2 2 0 114 0v3H6V5z" fill="var(--text-tertiary)" />
                   </svg>
-                  <span>Encrypted and secure. Edoo only requests the minimum data required to run your referral strategy.</span>
+                  <span>Encrypted and secure. Vincor only requests the minimum data required to run your referral strategy.</span>
                 </div>
               </>
             )}
@@ -947,8 +947,8 @@ against this mapping automatically.`);
                 <div style={{ marginBottom: '16px' }}>
                   <div className={styles.modalFieldLabel}>Webhook URL</div>
                   <div className={styles.modalFieldBox}>
-                    <code className={styles.modalFieldCode}>https://api.edoo.ai/v1/webhooks/tx_9982x...</code>
-                    <button className={styles.modalCopyBtn} onClick={(e) => handleCopy('https://api.edoo.ai/v1/webhooks/tx_9982x...', e)}>Copy Webhook URL</button>
+                    <code className={styles.modalFieldCode}>https://api.vincor.ai/v1/webhooks/tx_9982x...</code>
+                    <button className={styles.modalCopyBtn} onClick={(e) => handleCopy('https://api.vincor.ai/v1/webhooks/tx_9982x...', e)}>Copy Webhook URL</button>
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
@@ -1025,15 +1025,15 @@ against this mapping automatically.`);
                 <div style={{ marginBottom: '16px' }}>
                   <div className={styles.modalFieldLabel}>Secret Key</div>
                   <div className={styles.modalFieldBox}>
-                    <code className={styles.modalFieldCode}>edoo_live_*******************</code>
-                    <button className={styles.modalCopyBtn} onClick={(e) => handleCopy('edoo_live_sk_7f8a3b2c1d9e4f6a', e)}>Reveal & Copy Key</button>
+                    <code className={styles.modalFieldCode}>vincor_live_*******************</code>
+                    <button className={styles.modalCopyBtn} onClick={(e) => handleCopy('vincor_live_sk_7f8a3b2c1d9e4f6a', e)}>Reveal & Copy Key</button>
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
                   <div className={styles.modalFieldLabel}>API Endpoint</div>
                   <div className={styles.modalFieldBox}>
-                    <code className={styles.modalFieldCode}>POST https://api.edoo.ai/v1/transactions</code>
-                    <button className={styles.modalCopyBtn} onClick={(e) => handleCopy('POST https://api.edoo.ai/v1/transactions', e)}>Copy</button>
+                    <code className={styles.modalFieldCode}>POST https://api.vincor.ai/v1/transactions</code>
+                    <button className={styles.modalCopyBtn} onClick={(e) => handleCopy('POST https://api.vincor.ai/v1/transactions', e)}>Copy</button>
                   </div>
                 </div>
                 <hr className={styles.agenticDivider} />
@@ -1074,15 +1074,15 @@ against this mapping automatically.`);
                       Secure Bucket Provisioned
                     </div>
                     <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-                      Edoo has provisioned an isolated AWS S3 bucket for your daily batch uploads.
+                      Vincor has provisioned an isolated AWS S3 bucket for your daily batch uploads.
                     </div>
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
                   <div className={styles.modalFieldLabel}>S3 Bucket ARN</div>
                   <div className={styles.modalFieldBox}>
-                    <code className={styles.modalFieldCode}>arn:aws:s3:::edoo-client-drop-8821</code>
-                    <button className={styles.modalCopyBtn} onClick={(e) => handleCopy('arn:aws:s3:::edoo-client-drop-8821', e)}>Copy Credentials</button>
+                    <code className={styles.modalFieldCode}>arn:aws:s3:::vincor-client-drop-8821</code>
+                    <button className={styles.modalCopyBtn} onClick={(e) => handleCopy('arn:aws:s3:::vincor-client-drop-8821', e)}>Copy Credentials</button>
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>

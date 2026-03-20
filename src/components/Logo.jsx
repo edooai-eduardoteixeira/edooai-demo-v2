@@ -26,10 +26,10 @@ export default function Logo({ size = 'default' }) {
           fontWeight="700"
           fontFamily="Inter, sans-serif"
         >
-          E
+          V
         </text>
       </svg>
-      Edoo AI
+      Vincor AI
     </div>
   );
 }
