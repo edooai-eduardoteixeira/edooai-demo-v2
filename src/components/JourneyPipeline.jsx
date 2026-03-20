@@ -247,7 +247,7 @@ export default function JourneyPipeline({
             color: 'var(--text-secondary)',
           }}
         >
-          Edoo AI manages the referred user's journey end-to-end through this window.
+          Vincor AI manages the referred user's journey end-to-end through this window.
         </div>
       )}
     </div>

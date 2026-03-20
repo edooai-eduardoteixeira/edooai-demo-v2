@@ -87,5 +87,5 @@ app.get('/{*splat}', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Edoo AI Demo server running on port ${PORT}`);
+  console.log(`Vincor AI Demo server running on port ${PORT}`);
 });

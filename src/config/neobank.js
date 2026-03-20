@@ -272,7 +272,7 @@ const neobank = {
 
   // Execution — daily operations cycle
   operationsCycle: {
-    summary: 'Edoo runs a continuous daily cycle to acquire new active users within your budget.',
+    summary: 'Vincor runs a continuous daily cycle to acquire new active users within your budget.',
     steps: [
       {
         name: 'Rank',
@@ -308,7 +308,7 @@ const neobank = {
 
   // Approval scope
   approvalScope:
-    'You\u2019re approving the budget and the goal. Edoo handles customer selection, timing, channel, messaging, and rewards autonomously.',
+    'You\u2019re approving the budget and the goal. Vincor handles customer selection, timing, channel, messaging, and rewards autonomously.',
 
   // ─── Screen 4 — Dashboard (30-day projected results) ───
 
