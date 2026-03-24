@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Preview — Reasoning Animation</title>
+  <title>Preview — Reasoning Animation v2</title>
   <style>
     :root {
       --text-primary: #0f172a;
       --text-secondary: #475569;
       --text-tertiary: #94a3b8;
       --bg: #ffffff;
-      --font-size-base: 1rem;
+      --radius-full: 9999px;
       --transition-slow: 300ms ease;
     }
 
@@ -25,9 +25,7 @@
       flex-direction: column;
     }
 
-    header {
-      padding: 14px 48px;
-    }
+    header { padding: 14px 48px; }
 
     .logo {
       font-size: 18px;
@@ -48,53 +46,61 @@
     .reasoning {
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      min-height: 40vh;
-      padding: 64px 0;
+      padding-top: 32px;
       opacity: 1;
       transition: opacity 0.4s ease;
     }
 
-    .reasoning.fade-out {
-      opacity: 0;
-    }
+    .reasoning.fade-out { opacity: 0; }
 
     .reasoning-line {
-      font-size: var(--font-size-base);
-      line-height: 1.6;
+      font-size: 20px;
+      font-weight: 500;
+      line-height: 1.5;
       color: var(--text-secondary);
-      padding: 6px 0;
-      opacity: 0.4;
+      padding: 8px 0;
+      opacity: 0;
+      transform: translateY(8px);
       transition: opacity 300ms ease;
     }
 
-    .reasoning-line.active {
-      color: var(--text-primary);
-      opacity: 1;
+    .reasoning-line.visible {
+      animation: reasonLineIn 0.4s ease forwards;
     }
 
-    .reasoning-line.complete-moment {
-      opacity: 1;
-    }
+    .reasoning-line.dimmed { opacity: 0.5; }
+    .reasoning-line.complete { opacity: 1; }
 
-    .reasoning-line.hidden {
-      display: none;
+    @keyframes reasonLineIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     @keyframes pulse {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
+      50% { opacity: 0.3; }
     }
 
-    .cursor {
-      animation: pulse 1s infinite;
-      margin-left: 2px;
+    .dots {
+      display: inline-flex;
+      gap: 4px;
+      margin-left: 10px;
+      vertical-align: middle;
     }
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: var(--radius-full);
+      background-color: var(--text-tertiary);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    .dot:nth-child(2) { animation-delay: 200ms; }
+    .dot:nth-child(3) { animation-delay: 400ms; }
 
     /* Strategy content (phase 2) */
-    .strategy-content {
-      display: none;
-    }
+    .strategy-content { display: none; }
 
     .strategy-content.visible {
       display: block;
@@ -141,9 +147,7 @@
       cursor: pointer;
     }
 
-    .controls button:hover {
-      background: #000;
-    }
+    .controls button:hover { background: #000; }
   </style>
 </head>
 <body>
@@ -154,10 +158,10 @@
   <main>
     <!-- Phase 1: Reasoning -->
     <div class="reasoning" id="reasoning">
-      <p class="reasoning-line hidden" id="line0">Scanning your CRM and transaction data to find natural referrers</p>
-      <p class="reasoning-line hidden" id="line1">Filtering out anyone who shouldn't be asked right now</p>
-      <p class="reasoning-line hidden" id="line2">Matching the right reward to each segment</p>
-      <p class="reasoning-line hidden" id="line3">Placing the reward at the right step in the journey</p>
+      <p class="reasoning-line" id="line0">Scanning your CRM and transaction data to find natural referrers</p>
+      <p class="reasoning-line" id="line1">Filtering out anyone who shouldn&rsquo;t be asked right now</p>
+      <p class="reasoning-line" id="line2">Matching the right reward to each segment</p>
+      <p class="reasoning-line" id="line3">Placing the reward at the right step in the journey</p>
     </div>
 
     <!-- Phase 2: Strategy (placeholder) -->
@@ -174,41 +178,27 @@
   </div>
 
   <script>
-    const LINES = [
-      'Scanning your CRM and transaction data to find natural referrers',
-      'Filtering out anyone who shouldn\u2019t be asked right now',
-      'Matching the right reward to each segment',
-      'Placing the reward at the right step in the journey',
-    ];
-
-    const LINE_DURATION = 800;   // ms per line streaming
-    const PAUSE_BETWEEN = 150;   // ms pause between lines
-    const COMPLETE_MOMENT = 300;  // ms all lines at full opacity
-    const FADE_OUT = 400;        // ms container fade
+    const STEP_INTERVAL = 700;
+    const READING_PAUSE = 800;
+    const COMPLETE_MOMENT = 300;
+    const FADE_OUT = 400;
 
     function sleep(ms) {
       return new Promise(r => setTimeout(r, ms));
     }
 
-    async function streamLine(el, text, duration) {
-      el.classList.remove('hidden');
-      el.classList.add('active');
-      el.textContent = '';
+    function addDots(el) {
+      const existing = el.querySelector('.dots');
+      if (existing) return;
+      const dots = document.createElement('span');
+      dots.className = 'dots';
+      dots.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+      el.appendChild(dots);
+    }
 
-      const charDelay = duration / text.length;
-      for (let i = 0; i < text.length; i++) {
-        el.textContent = text.slice(0, i + 1);
-        if (i < text.length - 1) {
-          // Add cursor to partial text
-          el.innerHTML = text.slice(0, i + 1) + '<span class="cursor">|</span>';
-        } else {
-          el.textContent = text.slice(0, i + 1);
-        }
-        await sleep(charDelay);
-      }
-
-      // Line complete: dim it
-      el.classList.remove('active');
+    function removeDots(el) {
+      const dots = el.querySelector('.dots');
+      if (dots) dots.remove();
     }
 
     async function runAnimation() {
@@ -222,38 +212,55 @@
 
       for (let i = 0; i < 4; i++) {
         const el = document.getElementById('line' + i);
-        el.classList.add('hidden');
-        el.classList.remove('active', 'complete-moment');
-        el.textContent = '';
+        el.classList.remove('visible', 'dimmed', 'complete');
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(8px)';
+        removeDots(el);
       }
 
-      // Stream each line
-      for (let i = 0; i < LINES.length; i++) {
-        const el = document.getElementById('line' + i);
-        await streamLine(el, LINES[i], LINE_DURATION);
-        if (i < LINES.length - 1) {
-          await sleep(PAUSE_BETWEEN);
-        }
-      }
+      await sleep(200);
 
-      // "Complete" moment: all lines at full opacity
+      // Show lines one by one
       for (let i = 0; i < 4; i++) {
-        document.getElementById('line' + i).classList.add('complete-moment');
+        const el = document.getElementById('line' + i);
+
+        // Dim previous line
+        if (i > 0) {
+          const prev = document.getElementById('line' + (i - 1));
+          removeDots(prev);
+          prev.classList.add('dimmed');
+        }
+
+        // Show current line
+        el.style.opacity = '';
+        el.style.transform = '';
+        el.classList.add('visible');
+        addDots(el);
+
+        await sleep(STEP_INTERVAL);
+      }
+
+      // Remove dots from last line, reading pause
+      removeDots(document.getElementById('line3'));
+      await sleep(READING_PAUSE);
+
+      // "Complete" moment: all lines full opacity
+      for (let i = 0; i < 4; i++) {
+        const el = document.getElementById('line' + i);
+        el.classList.remove('dimmed');
+        el.classList.add('complete');
       }
       await sleep(COMPLETE_MOMENT);
 
-      // Fade out reasoning container
+      // Fade out
       reasoning.classList.add('fade-out');
       await sleep(FADE_OUT);
 
-      // Hide reasoning, show strategy
       reasoning.style.display = 'none';
       strategy.classList.add('visible');
     }
 
-    function replay() {
-      runAnimation();
-    }
+    function replay() { runAnimation(); }
 
     // Auto-start
     runAnimation();
