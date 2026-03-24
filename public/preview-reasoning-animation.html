@@ -84,8 +84,8 @@
     }
 
     .reasoning-line .text {
-      font-size: 20px;
-      font-weight: 500;
+      font-size: 18px;
+      font-weight: 400;
       line-height: 1.5;
       color: var(--text-primary);
       transition: color 300ms ease;
@@ -106,24 +106,6 @@
     .check-icon {
       animation: reasonCheckIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
-
-    .dots {
-      display: inline-flex;
-      gap: 3px;
-      margin-left: 2px;
-      flex-shrink: 0;
-    }
-
-    .dot {
-      width: 3px;
-      height: 3px;
-      border-radius: var(--radius-full);
-      background-color: var(--text-tertiary);
-      animation: pulse 1.2s ease-in-out infinite;
-    }
-
-    .dot:nth-child(2) { animation-delay: 200ms; }
-    .dot:nth-child(3) { animation-delay: 400ms; }
 
     @keyframes reasonLineIn {
       from { opacity: 0; transform: translateY(8px); }
@@ -239,7 +221,6 @@
 
     const CHECK_SVG = '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     const PROCESSING_DOT = '<span class="processing-dot"></span>';
-    const DOTS_HTML = '<span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>';
 
     function sleep(ms) {
       return new Promise(r => setTimeout(r, ms));
@@ -261,9 +242,6 @@
         line.style.opacity = '0';
         line.style.transform = 'translateY(8px)';
         icon.innerHTML = '';
-        // Remove any dots
-        const dots = line.querySelector('.dots');
-        if (dots) dots.remove();
       }
 
       await sleep(200);
@@ -279,8 +257,6 @@
           const prevIcon = document.getElementById('icon' + (i - 1));
           prevLine.classList.add('completed');
           prevIcon.innerHTML = CHECK_SVG;
-          const prevDots = prevLine.querySelector('.dots');
-          if (prevDots) prevDots.remove();
         }
 
         // Show current line with processing indicator
@@ -288,9 +264,6 @@
         line.style.transform = '';
         line.classList.add('visible');
         icon.innerHTML = PROCESSING_DOT;
-
-        // Add dots after text
-        line.insertAdjacentHTML('beforeend', DOTS_HTML);
 
         await sleep(STEP_INTERVAL);
       }
@@ -301,8 +274,6 @@
         const icon = document.getElementById('icon' + i);
         line.classList.add('completed');
         icon.innerHTML = CHECK_SVG;
-        const dots = line.querySelector('.dots');
-        if (dots) dots.remove();
       }
 
       // Reading pause
