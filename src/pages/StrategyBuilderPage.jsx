@@ -375,8 +375,8 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     {/* Text */}
                     <span
                       style={{
-                        fontSize: 20,
-                        fontWeight: 500,
+                        fontSize: 18,
+                        fontWeight: 400,
                         lineHeight: 1.5,
                         color: isActive && !isAllDone ? 'var(--text-primary)' : 'var(--text-tertiary)',
                         transition: 'color var(--transition-slow) ease',
@@ -384,15 +384,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     >
                       {text}
                     </span>
-
-                    {/* Processing dots (active line only) */}
-                    {isActive && !isAllDone && (
-                      <span style={{ display: 'inline-flex', gap: 3, marginLeft: 2, flexShrink: 0 }}>
-                        <span style={{ width: 3, height: 3, borderRadius: 'var(--radius-full)', backgroundColor: 'var(--text-tertiary)', animation: 'pulse 1.2s ease-in-out infinite', animationDelay: '0ms' }} />
-                        <span style={{ width: 3, height: 3, borderRadius: 'var(--radius-full)', backgroundColor: 'var(--text-tertiary)', animation: 'pulse 1.2s ease-in-out infinite', animationDelay: '200ms' }} />
-                        <span style={{ width: 3, height: 3, borderRadius: 'var(--radius-full)', backgroundColor: 'var(--text-tertiary)', animation: 'pulse 1.2s ease-in-out infinite', animationDelay: '400ms' }} />
-                      </span>
-                    )}
                   </div>
                 );
               })}
