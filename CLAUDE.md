@@ -17,7 +17,7 @@ Quando o usuário pedir mudanças visuais em um componente:
 
 2. **Fazer push para a branch** e fornecer o link de visualização:
    ```
-   https://htmlpreview.github.io/?https://github.com/edooai-eduardoteixeira/edooai-demo-v2/blob/<branch>/public/preview-<nome>.html
+   https://htmlpreview.github.io/?https://github.com/eduardofteixeira/demo-v2/blob/<branch>/public/preview-<nome>.html
    ```
 
 3. **Iterar no preview** até o usuário aprovar o visual
