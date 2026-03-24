@@ -6,7 +6,6 @@ import Tooltip from '../components/Tooltip.jsx';
 import { useProjections } from '../hooks/useProjections.js';
 import StrategyCards from '../components/StrategyCards.jsx';
 import WhatUsersSee from '../components/WhatUsersSee.jsx';
-import { useStreamingText } from '../hooks/useStreamingText.js';
 
 /* ───────── Sparkline helpers ───────── */
 
@@ -237,49 +236,42 @@ export default function StrategyBuilderPage({ config, onNext }) {
   }, []);
 
   /* ── Reasoning animation (Phase 1 → Phase 2 transition) ── */
-  const [phase, setPhase] = useState('reasoning'); // 'reasoning' | 'fadeout' | 'strategy'
-
-  const {
-    lines: reasoningLines,
-    currentText: reasoningCurrentText,
-    actionTrigger,
-    streamSequence,
-    reset: resetStreaming,
-  } = useStreamingText();
-
-  const reasoningSequence = useMemo(() => [
-    { type: 'text', text: 'Scanning your CRM and transaction data to find natural referrers', duration: 800 },
-    { type: 'pause', duration: 150 },
-    { type: 'text', text: 'Filtering out anyone who shouldn\u2019t be asked right now', duration: 800 },
-    { type: 'pause', duration: 150 },
-    { type: 'text', text: 'Matching the right reward to each segment', duration: 800 },
-    { type: 'pause', duration: 150 },
-    { type: 'text', text: 'Placing the reward at the right step in the journey', duration: 800 },
-    { type: 'action', action: 'reasoning-done' },
+  const REASONING_STEPS = useMemo(() => [
+    'Scanning your CRM and transaction data to find natural referrers',
+    'Filtering out anyone who shouldn\u2019t be asked right now',
+    'Matching the right reward to each segment',
+    'Placing the reward at the right step in the journey',
   ], []);
 
-  // Start reasoning on mount (replaces direct runReveal call)
+  const [phase, setPhase] = useState('reasoning'); // 'reasoning' | 'fadeout' | 'strategy'
+  const [visibleLines, setVisibleLines] = useState(0);
+
+  // Run reasoning sequence on mount, then transition to strategy
   useEffect(() => {
     if (hasStartedRef.current) return;
     hasStartedRef.current = true;
     cancelRef.current = false;
-    streamSequence(reasoningSequence);
-    return () => {
-      cancelRef.current = true;
-      resetStreaming();
-    };
-  }, []);
 
-  // Transition: reasoning done → fadeout → strategy
-  useEffect(() => {
-    if (actionTrigger !== 'reasoning-done') return;
-    // "Complete" moment: all lines at full opacity
-    setPhase('fadeout');
-    const timer = setTimeout(() => {
+    const run = async () => {
+      for (let i = 1; i <= 4; i++) {
+        if (cancelRef.current) return;
+        setVisibleLines(i);
+        await sleep(700);
+      }
+      // Reading pause — user sees all 4 lines
+      if (cancelRef.current) return;
+      await sleep(800);
+      // "Complete" moment + fade out
+      if (cancelRef.current) return;
+      setPhase('fadeout');
+      await sleep(700); // 300ms complete + 400ms fade
+      if (cancelRef.current) return;
       setPhase('strategy');
-    }, 700); // 300ms full-opacity + 400ms fade-out
-    return () => clearTimeout(timer);
-  }, [actionTrigger]);
+    };
+    run();
+
+    return () => { cancelRef.current = true; };
+  }, []);
 
   // Start strategy reveal when phase transitions
   useEffect(() => {
@@ -320,44 +312,43 @@ export default function StrategyBuilderPage({ config, onNext }) {
             style={{
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'center',
-              minHeight: '40vh',
-              padding: '64px 0',
+              paddingTop: 32,
               opacity: phase === 'fadeout' ? 0 : 1,
               transition: 'opacity 0.4s ease',
             }}
           >
-            {reasoningLines.map((line, i) => (
-              <p
-                key={i}
-                style={{
-                  fontSize: 'var(--font-size-base)',
-                  lineHeight: 1.6,
-                  color: 'var(--text-secondary)',
-                  margin: 0,
-                  padding: '6px 0',
-                  opacity: phase === 'fadeout' ? 1 : 0.4,
-                  transition: 'opacity var(--transition-slow) ease',
-                }}
-              >
-                {line}
-              </p>
+            {REASONING_STEPS.map((text, i) => (
+              i < visibleLines && (
+                <p
+                  key={i}
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 500,
+                    color: 'var(--text-secondary)',
+                    lineHeight: 1.5,
+                    margin: 0,
+                    padding: '8px 0',
+                    opacity: phase === 'fadeout' ? 1 : (i === visibleLines - 1 ? 1 : 0.5),
+                    animation: 'reasonLineIn 0.4s ease forwards',
+                    transition: 'opacity var(--transition-slow) ease',
+                  }}
+                >
+                  {text}
+                  {i === visibleLines - 1 && phase === 'reasoning' && visibleLines <= 4 && (
+                    <span style={{
+                      display: 'inline-flex',
+                      gap: 4,
+                      marginLeft: 10,
+                      verticalAlign: 'middle',
+                    }}>
+                      <span style={{ width: 4, height: 4, borderRadius: 'var(--radius-full)', backgroundColor: 'var(--text-tertiary)', animation: 'pulse 1.2s ease-in-out infinite', animationDelay: '0ms' }} />
+                      <span style={{ width: 4, height: 4, borderRadius: 'var(--radius-full)', backgroundColor: 'var(--text-tertiary)', animation: 'pulse 1.2s ease-in-out infinite', animationDelay: '200ms' }} />
+                      <span style={{ width: 4, height: 4, borderRadius: 'var(--radius-full)', backgroundColor: 'var(--text-tertiary)', animation: 'pulse 1.2s ease-in-out infinite', animationDelay: '400ms' }} />
+                    </span>
+                  )}
+                </p>
+              )
             ))}
-            {reasoningCurrentText && (
-              <p
-                style={{
-                  fontSize: 'var(--font-size-base)',
-                  lineHeight: 1.6,
-                  color: 'var(--text-primary)',
-                  margin: 0,
-                  padding: '6px 0',
-                  opacity: 1,
-                }}
-              >
-                {reasoningCurrentText}
-                <span style={{ animation: 'pulse 1s infinite', marginLeft: 2 }}>|</span>
-              </p>
-            )}
           </div>
         )}
 
@@ -939,6 +930,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
       <style>{`
         @keyframes blink { 50% { opacity: 0; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes reasonLineIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
     </div>
   );
