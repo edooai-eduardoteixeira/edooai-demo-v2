@@ -6,6 +6,7 @@ import Tooltip from '../components/Tooltip.jsx';
 import { useProjections } from '../hooks/useProjections.js';
 import StrategyCards from '../components/StrategyCards.jsx';
 import WhatUsersSee from '../components/WhatUsersSee.jsx';
+import { useStreamingText } from '../hooks/useStreamingText.js';
 
 /* ───────── Sparkline helpers ───────── */
 
@@ -235,15 +236,57 @@ export default function StrategyBuilderPage({ config, onNext }) {
     setShowCTA(true);
   }, []);
 
+  /* ── Reasoning animation (Phase 1 → Phase 2 transition) ── */
+  const [phase, setPhase] = useState('reasoning'); // 'reasoning' | 'fadeout' | 'strategy'
+
+  const {
+    lines: reasoningLines,
+    currentText: reasoningCurrentText,
+    actionTrigger,
+    streamSequence,
+    reset: resetStreaming,
+  } = useStreamingText();
+
+  const reasoningSequence = useMemo(() => [
+    { type: 'text', text: 'Scanning your CRM and transaction data to find natural referrers', duration: 800 },
+    { type: 'pause', duration: 150 },
+    { type: 'text', text: 'Filtering out anyone who shouldn\u2019t be asked right now', duration: 800 },
+    { type: 'pause', duration: 150 },
+    { type: 'text', text: 'Matching the right reward to each segment', duration: 800 },
+    { type: 'pause', duration: 150 },
+    { type: 'text', text: 'Placing the reward at the right step in the journey', duration: 800 },
+    { type: 'action', action: 'reasoning-done' },
+  ], []);
+
+  // Start reasoning on mount (replaces direct runReveal call)
   useEffect(() => {
     if (hasStartedRef.current) return;
     hasStartedRef.current = true;
     cancelRef.current = false;
-    runReveal();
+    streamSequence(reasoningSequence);
     return () => {
       cancelRef.current = true;
+      resetStreaming();
     };
   }, []);
+
+  // Transition: reasoning done → fadeout → strategy
+  useEffect(() => {
+    if (actionTrigger !== 'reasoning-done') return;
+    // "Complete" moment: all lines at full opacity
+    setPhase('fadeout');
+    const timer = setTimeout(() => {
+      setPhase('strategy');
+    }, 700); // 300ms full-opacity + 400ms fade-out
+    return () => clearTimeout(timer);
+  }, [actionTrigger]);
+
+  // Start strategy reveal when phase transitions
+  useEffect(() => {
+    if (phase === 'strategy') {
+      runReveal();
+    }
+  }, [phase, runReveal]);
 
   const formatCurrency = (val) => '$' + val.toLocaleString('en-US');
 
@@ -269,6 +312,59 @@ export default function StrategyBuilderPage({ config, onNext }) {
           width: '100%',
         }}
       >
+        {/* ════════════════════════════════════════════
+            PHASE 1 — Reasoning animation
+            ════════════════════════════════════════════ */}
+        {phase !== 'strategy' && (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              minHeight: '40vh',
+              padding: '64px 0',
+              opacity: phase === 'fadeout' ? 0 : 1,
+              transition: 'opacity 0.4s ease',
+            }}
+          >
+            {reasoningLines.map((line, i) => (
+              <p
+                key={i}
+                style={{
+                  fontSize: 'var(--font-size-base)',
+                  lineHeight: 1.6,
+                  color: 'var(--text-secondary)',
+                  margin: 0,
+                  padding: '6px 0',
+                  opacity: phase === 'fadeout' ? 1 : 0.4,
+                  transition: 'opacity var(--transition-slow) ease',
+                }}
+              >
+                {line}
+              </p>
+            ))}
+            {reasoningCurrentText && (
+              <p
+                style={{
+                  fontSize: 'var(--font-size-base)',
+                  lineHeight: 1.6,
+                  color: 'var(--text-primary)',
+                  margin: 0,
+                  padding: '6px 0',
+                  opacity: 1,
+                }}
+              >
+                {reasoningCurrentText}
+                <span style={{ animation: 'pulse 1s infinite', marginLeft: 2 }}>|</span>
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ════════════════════════════════════════════
+            PHASE 2 — Strategy UI (existing content)
+            ════════════════════════════════════════════ */}
+        {phase === 'strategy' && (<>
         {/* ════════════════════════════════════════════
             SECTION 1 — Your Referral Strategy (open surface)
             ════════════════════════════════════════════ */}
@@ -837,6 +933,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
             onRewardsChange={setRewardTiers}
           />
         )}
+        </>)}
       </main>
 
       <style>{`
