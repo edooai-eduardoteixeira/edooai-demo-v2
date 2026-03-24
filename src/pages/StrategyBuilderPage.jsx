@@ -243,7 +243,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
     'Placing the reward at the right step in the journey',
   ], []);
 
-  const [phase, setPhase] = useState('reasoning'); // 'reasoning' | 'fadeout' | 'strategy'
+  const [phase, setPhase] = useState('reasoning'); // 'reasoning' | 'complete' | 'fadeout' | 'strategy'
   const [visibleLines, setVisibleLines] = useState(0);
 
   // Run reasoning sequence on mount, then transition to strategy
@@ -258,13 +258,15 @@ export default function StrategyBuilderPage({ config, onNext }) {
         setVisibleLines(i);
         await sleep(700);
       }
-      // Reading pause — user sees all 4 lines
+      // "Complete" moment — all checkmarks, no dots
       if (cancelRef.current) return;
+      setPhase('complete');
+      // Reading pause — user sees all 4 lines with checkmarks
       await sleep(800);
-      // "Complete" moment + fade out
+      // Fade out
       if (cancelRef.current) return;
       setPhase('fadeout');
-      await sleep(700); // 300ms complete + 400ms fade
+      await sleep(700);
       if (cancelRef.current) return;
       setPhase('strategy');
     };
@@ -317,38 +319,84 @@ export default function StrategyBuilderPage({ config, onNext }) {
               transition: 'opacity 0.4s ease',
             }}
           >
-            {REASONING_STEPS.map((text, i) => (
-              i < visibleLines && (
-                <p
-                  key={i}
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 500,
-                    color: 'var(--text-secondary)',
-                    lineHeight: 1.5,
-                    margin: 0,
-                    padding: '8px 0',
-                    opacity: phase === 'fadeout' ? 1 : (i === visibleLines - 1 ? 1 : 0.5),
-                    animation: 'reasonLineIn 0.4s ease forwards',
-                    transition: 'opacity var(--transition-slow) ease',
-                  }}
-                >
-                  {text}
-                  {i === visibleLines - 1 && phase === 'reasoning' && visibleLines <= 4 && (
-                    <span style={{
-                      display: 'inline-flex',
-                      gap: 4,
-                      marginLeft: 10,
-                      verticalAlign: 'middle',
-                    }}>
-                      <span style={{ width: 4, height: 4, borderRadius: 'var(--radius-full)', backgroundColor: 'var(--text-tertiary)', animation: 'pulse 1.2s ease-in-out infinite', animationDelay: '0ms' }} />
-                      <span style={{ width: 4, height: 4, borderRadius: 'var(--radius-full)', backgroundColor: 'var(--text-tertiary)', animation: 'pulse 1.2s ease-in-out infinite', animationDelay: '200ms' }} />
-                      <span style={{ width: 4, height: 4, borderRadius: 'var(--radius-full)', backgroundColor: 'var(--text-tertiary)', animation: 'pulse 1.2s ease-in-out infinite', animationDelay: '400ms' }} />
+            <div
+              style={{
+                background: 'rgba(248, 250, 252, 0.6)',
+                borderLeft: '3px solid rgba(26, 26, 26, 0.12)',
+                borderRadius: 'var(--radius-md)',
+                padding: '20px 24px',
+              }}
+            >
+              {REASONING_STEPS.map((text, i) => {
+                const isVisible = i < visibleLines;
+                const isActive = i === visibleLines - 1;
+                const isCompleted = i < visibleLines - 1;
+                const isAllDone = phase === 'complete' || phase === 'fadeout';
+
+                if (!isVisible) return null;
+
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '10px 0',
+                      animation: 'reasonLineIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    }}
+                  >
+                    {/* Checkmark or processing dot */}
+                    <span
+                      style={{
+                        flexShrink: 0,
+                        width: 20,
+                        height: 20,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      {isCompleted || isAllDone ? (
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ animation: 'reasonCheckIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}>
+                          <path d="M3 8.5L6.5 12L13 4" stroke="var(--text-tertiary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      ) : (
+                        <span style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: 'var(--radius-full)',
+                          backgroundColor: 'var(--text-primary)',
+                          animation: 'pulse 1.4s ease-in-out infinite',
+                        }} />
+                      )}
                     </span>
-                  )}
-                </p>
-              )
-            ))}
+
+                    {/* Text */}
+                    <span
+                      style={{
+                        fontSize: 20,
+                        fontWeight: 500,
+                        lineHeight: 1.5,
+                        color: isActive && !isAllDone ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                        transition: 'color var(--transition-slow) ease',
+                      }}
+                    >
+                      {text}
+                    </span>
+
+                    {/* Processing dots (active line only) */}
+                    {isActive && !isAllDone && (
+                      <span style={{ display: 'inline-flex', gap: 3, marginLeft: 2, flexShrink: 0 }}>
+                        <span style={{ width: 3, height: 3, borderRadius: 'var(--radius-full)', backgroundColor: 'var(--text-tertiary)', animation: 'pulse 1.2s ease-in-out infinite', animationDelay: '0ms' }} />
+                        <span style={{ width: 3, height: 3, borderRadius: 'var(--radius-full)', backgroundColor: 'var(--text-tertiary)', animation: 'pulse 1.2s ease-in-out infinite', animationDelay: '200ms' }} />
+                        <span style={{ width: 3, height: 3, borderRadius: 'var(--radius-full)', backgroundColor: 'var(--text-tertiary)', animation: 'pulse 1.2s ease-in-out infinite', animationDelay: '400ms' }} />
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -931,6 +979,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
         @keyframes blink { 50% { opacity: 0; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes reasonLineIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes reasonCheckIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
       `}</style>
     </div>
   );
