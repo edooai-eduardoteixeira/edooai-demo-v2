@@ -367,7 +367,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           width: 6,
                           height: 6,
                           borderRadius: 'var(--radius-full)',
-                          backgroundColor: 'var(--text-primary)',
+                          backgroundColor: 'var(--success)',
                           animation: 'pulse 1.4s ease-in-out infinite',
                         }} />
                       )}
