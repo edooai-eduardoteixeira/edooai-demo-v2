@@ -321,10 +321,11 @@ export default function StrategyBuilderPage({ config, onNext }) {
           >
             <div
               style={{
-                background: 'rgba(248, 250, 252, 0.6)',
+                background: 'rgba(248, 250, 252, 0.8)',
                 borderLeft: '3px solid rgba(26, 26, 26, 0.12)',
                 borderRadius: 'var(--radius-md)',
                 padding: '20px 24px',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
               }}
             >
               {REASONING_STEPS.map((text, i) => {
@@ -366,7 +367,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           width: 6,
                           height: 6,
                           borderRadius: 'var(--radius-full)',
-                          backgroundColor: 'var(--text-primary)',
+                          backgroundColor: 'var(--success)',
                           animation: 'pulse 1.4s ease-in-out infinite',
                         }} />
                       )}
