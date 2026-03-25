@@ -15,6 +15,11 @@ const ChevronRight = ({ className }) => (
     <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
+const ChevronLeft = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <path d="M9 4L6 7L9 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
 const CloseIcon = () => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
     <path d="M11 3L3 11M3 3L11 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -25,6 +30,12 @@ const ChevronUp = () => (
 );
 const ChevronDown = () => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 5L7 8L10 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+);
+const GearIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+    <circle cx="8" cy="8" r="2.25" stroke="currentColor" strokeWidth="1.4"/>
+    <path d="M6.94 1.5h2.12l.3 1.76a5.22 5.22 0 011.3.75l1.68-.67.97 1.68-1.4 1.1c.08.28.12.57.12.88s-.04.6-.12.88l1.4 1.1-.97 1.68-1.68-.67a5.22 5.22 0 01-1.3.75l-.3 1.76H6.94l-.3-1.76a5.22 5.22 0 01-1.3-.75l-1.68.67-.97-1.68 1.4-1.1A3.6 3.6 0 013.97 8c0-.31.04-.6.12-.88l-1.4-1.1.97-1.68 1.68.67a5.22 5.22 0 011.3-.75l.3-1.76z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+  </svg>
 );
 const Sparkle = () => (
   <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="#3b5bdb"/></svg>
@@ -38,6 +49,16 @@ const XSmall = () => (
 const PlusSmall = () => (
   <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 2V8M2 5H8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
 );
+
+/* ── Index view data ── */
+const RULES_INDEX = [
+  { key: 'invite', label: 'Invite', subtopics: 'Audience, Triggers, Channels' },
+  { key: 'rewards', label: 'Reward', subtopics: 'Payment Method, Reward Tiers' },
+  { key: 'redemption', label: 'Redemption', subtopics: 'New User Journey, Reward Trigger' },
+  { key: 'fatigue', label: 'Communication Controls', subtopics: 'Reminder Frequency, Rest Period, Expiration Date' },
+  { key: 'budget', label: 'Budget Protection', subtopics: 'Spend Pace, Invite Stop' },
+  { key: 'fraud', label: 'Fraud Prevention', subtopics: 'Link Hijacking Limit, Self-Referral, Bot Shield, Payment Hold' },
+];
 
 /* ══════════════════════════════════════
    Primitive Components
@@ -363,6 +384,20 @@ const BudgetPacing = ({ section }) => {
   );
 };
 
+/* ── ChannelsSection ── */
+const ChannelsSection = ({ section }) => (
+  <div>
+    {section.groups.map((group, gi) => (
+      <div key={gi} style={{ marginBottom: gi < section.groups.length - 1 ? 14 : 0 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 6 }}>
+          {group.label}
+        </div>
+        <MultiSelect items={group.items} />
+      </div>
+    ))}
+  </div>
+);
+
 /* ── AudienceSection ── */
 const AudienceSection = ({ section }) => {
   const [rows, setRows] = useState(section.rows);
@@ -409,7 +444,6 @@ const AudienceSection = ({ section }) => {
 const drawerContent = {
   invite: {
     title: 'Invite',
-    subtitle: 'Referral Rules',
     sections: [
       {
         title: 'Audience',
@@ -428,15 +462,31 @@ const drawerContent = {
         title: 'Triggers',
         type: 'activation-modes',
         modes: [
-          { key: 'transactional', label: 'Transactional', on: true, description: 'Referral ask is embedded in post-transaction moments.' },
-          { key: 'promotional', label: 'Promotional', on: true, description: 'AI-initiated outreach using Timing Insights — 1:1, not scheduled blasts.' },
+          { key: 'transactional', label: 'Transactional', on: true, description: 'Referral ask is triggered in post-transaction moments.' },
+          { key: 'promotional', label: 'Promotional', on: true, description: 'Referral ask is AI-initiated via selected channels.' },
+        ]
+      },
+      {
+        title: 'Channels',
+        type: 'channels',
+        groups: [
+          { label: 'Active CRM', items: [
+            { label: 'Email', on: true },
+            { label: 'SMS / Push Notification', on: true },
+          ]},
+          { label: 'In-App Placement', items: [
+            { label: 'Home Screen', on: true },
+            { label: 'Post-Transaction', on: true },
+            { label: 'Onboarding Success', on: true },
+            { label: 'Invite Menu', on: true },
+            { label: 'AI Chat', on: true },
+          ]},
         ]
       }
     ]
   },
   rewards: {
     title: 'Rewards Offered',
-    subtitle: 'Referral Rules',
     sections: [
       {
         title: 'Referrer reward',
@@ -479,10 +529,9 @@ const drawerContent = {
   },
   redemption: {
     title: 'Redemption',
-    subtitle: 'Referral Rules',
     sections: [
       {
-        title: 'Referee journey',
+        title: 'New User Journey',
         type: 'journey',
         steps: [
           { label: 'Sign Up', fixed: true },
@@ -490,32 +539,38 @@ const drawerContent = {
           { label: '1st Transaction', trigger: true },
         ],
         available: ['Email Verified', 'Phone Verified', 'Profile Complete', 'Card Linked', '2nd Transaction', '3rd Transaction'],
-        note: 'Steps from your data pipeline. Last step triggers the reward payout.'
+        note: 'Steps from your data pipeline. Last step is the Reward Trigger.'
       }
     ]
   },
   fatigue: {
-    title: 'Customer Fatigue',
-    subtitle: 'Guardrails',
+    title: 'Communication Controls',
     sections: [
       {
         title: 'Limits',
         type: 'rows',
         rows: [
-          { label: 'Max touchpoints per stage', tip: 'Limits contact attempts per customer, per stage of the funnel', value: '2', choices: ['1', '2', '3', '4', '5'] },
-          { label: 'Minimum rest period', tip: 'Cool-down between consecutive touchpoints within a stage', stepper: { value: 2, min: 1, max: 7, suffix: 'days' } },
-          { label: 'Offer window', tip: 'How long each customer is "in play" before the offer expires', stepper: { value: 30, min: 1, max: 30, suffix: 'days' } },
+          { label: 'Maximum Reminder Frequency', tip: 'Limits contact attempts per customer, per stage of the funnel', value: '2', choices: ['1', '2', '3', '4', '5'] },
+          { label: 'Rest Period', tip: 'Cool-down between consecutive touchpoints within a stage', stepper: { value: 2, min: 1, max: 7, suffix: 'days' } },
         ],
         note: 'Touchpoint count refreshes when the user progresses to the next stage.'
+      },
+      {
+        title: 'Expiration Date',
+        type: 'rows',
+        rows: [
+          { label: 'Campaign ends every', tip: 'How often the campaign cycle resets', stepper: { value: 30, min: 1, max: 365, suffix: 'days' } },
+          { label: 'Friend must qualify within', tip: 'Time window for the referred friend to complete qualification', stepper: { value: 7, min: 1, max: 90, suffix: 'days' } },
+          { label: 'Earned reward expires in', tip: 'How long before an unclaimed reward expires', stepper: { value: 60, min: 1, max: 365, suffix: 'days' } },
+        ]
       }
     ]
   },
   budget: {
     title: 'Budget Protection',
-    subtitle: 'Guardrails',
     sections: [
       {
-        title: 'Pacing',
+        title: 'Spend Pace',
         type: 'budget-pacing',
         conversionRate: '2.3%',
         baseCap: 1500,
@@ -526,32 +581,30 @@ const drawerContent = {
         title: 'Safeguards',
         type: 'multiplier-rows',
         rows: [
-          { label: 'Max outstanding offers', tip: 'Total uncommitted reward liability. If hit, engine pauses new outreach.', multiplier: '2.0x', choices: ['1.5x', '2.0x', '2.5x', '3.0x', '4.0x'], ref: 'budget', result: '$300,000' },
-          { label: 'Spend anomaly pause', tip: 'Auto-pause if actual paid conversions spike massively in one day.', multiplier: '5.0x', choices: ['3.0x', '5.0x', '7.0x', '10.0x'], ref: 'daily pace', result: '$25,000/day' },
+          { label: 'Invite Stop', tip: 'Auto-pause if actual paid conversions spike massively in one day.', multiplier: '5.0x', choices: ['3.0x', '5.0x', '7.0x', '10.0x'], ref: 'daily pace', result: '$25,000/day' },
         ]
       }
     ]
   },
   fraud: {
     title: 'Fraud Prevention',
-    subtitle: 'Guardrails',
     sections: [
       {
         title: 'Detection',
         type: 'detection-cards',
         rows: [
-          { label: 'Self-referral blocker', tip: 'Detects users referring themselves', value: 'Standard', choices: [
+          { label: 'Self-Referral Blocker', tip: 'Detects users referring themselves', value: 'Standard', choices: [
             { value: 'Standard', desc: 'Rejects identical IP addresses.' },
-            { value: 'Aggressive', desc: 'Adds shared device and Wi-Fi detection.' }
+            { value: 'Aggressive', desc: 'Adds device fingerprint via SDK.' }
           ]},
-          { label: 'Network & botnet shield', tip: 'Detects coordinated fraud networks', value: 'Aggressive', choices: [
-            { value: 'Standard', desc: 'Blocks datacenters, TOR, and high-risk proxies.' },
-            { value: 'Aggressive', desc: 'Adds behavioral cluster detection.' }
+          { label: 'Bot Shield', tip: 'Detects coordinated fraud networks', value: 'Aggressive', choices: [
+            { value: 'Standard', desc: 'Blocks known bad IPs.' },
+            { value: 'Aggressive', desc: 'Adds velocity and behavior checks.' }
           ]},
         ]
       },
       {
-        title: 'Suspicious escrow',
+        title: 'Payment Hold',
         type: 'conditional',
         ifRow: { label: 'Conversions', value: '3.0x', choices: ['2.5x', '3.0x', '3.5x', '4.0x', '4.5x', '5.0x'], suffix: 'in 24h' },
         thenRow: { label: 'Hold period', stepper: { value: 7, min: 1, max: 30, suffix: 'days' } },
@@ -560,7 +613,7 @@ const drawerContent = {
         title: 'Limits',
         type: 'rows',
         rows: [
-          { label: 'Link hijacking limit', tip: 'Max payouts per referral link. Link auto-invalidates after cap.', stepper: { value: 5, min: 1, max: 20, suffix: 'payouts/link' } },
+          { label: 'Link Hijacking Limit', tip: 'Max payouts per referral link. Link auto-invalidates after cap.', stepper: { value: 5, min: 1, max: 20, suffix: 'payouts/link' } },
         ]
       }
     ]
@@ -571,9 +624,10 @@ const drawerContent = {
    Drawer Component
    ══════════════════════════════════════ */
 
-const Drawer = ({ blockKey, onClose, onNavigate }) => {
-  const data = blockKey ? drawerContent[blockKey] : null;
-  const isOpen = !!data;
+const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
+  const isIndex = blockKey === 'index';
+  const data = (!isIndex && blockKey) ? drawerContent[blockKey] : null;
+  const isOpen = isIndex || !!data;
   const currentIdx = DRAWER_ORDER.indexOf(blockKey);
   const canPrev = currentIdx > 0;
   const canNext = currentIdx < DRAWER_ORDER.length - 1;
@@ -585,13 +639,36 @@ const Drawer = ({ blockKey, onClose, onNavigate }) => {
     <>
       <div className={`${s.drawerBackdrop} ${isOpen ? s.open : ''}`} onClick={onClose} />
       <div className={`${s.drawerPanel} ${isOpen ? s.open : ''}`}>
+        {isIndex && (
+          <>
+            <div className={s.drawerHeader}>
+              <div className={s.drawerHeaderTop}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>Rules and Guardrails</div>
+                <div className={s.drawerClose} onClick={onClose}><CloseIcon /></div>
+              </div>
+            </div>
+            <div className={s.drawerBody}>
+              {RULES_INDEX.map((cat) => (
+                <div key={cat.key} className={s.indexCard} onClick={() => onNavigate(cat.key)}>
+                  <div>
+                    <div className={s.indexCardLabel}>{cat.label}</div>
+                    <div className={s.indexCardSub}>{cat.subtopics}</div>
+                  </div>
+                  <ChevronRight className={s.configRowChevron} />
+                </div>
+              ))}
+            </div>
+          </>
+        )}
         {data && (
           <>
             <div className={s.drawerHeader}>
               <div className={s.drawerHeaderTop}>
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{data.title}</div>
-                  <div className={s.drawerHeaderSub}>{data.subtitle}</div>
+                  <button className={s.drawerBack} onClick={() => onNavigate('index')}>
+                    <ChevronLeft /> Rules
+                  </button>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginTop: 4 }}>{data.title}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <div className={s.drawerNav}>
@@ -615,6 +692,10 @@ const Drawer = ({ blockKey, onClose, onNavigate }) => {
 
                   {section.type === 'activation-modes' && (
                     <ActivationModes modes={section.modes} />
+                  )}
+
+                  {section.type === 'channels' && (
+                    <ChannelsSection section={section} />
                   )}
 
                   {section.type === 'budget-pacing' && (
@@ -685,7 +766,7 @@ const Drawer = ({ blockKey, onClose, onNavigate }) => {
                       })}
                       {section.paidAs && (
                         <div className={s.drawerRow} style={{ marginTop: 4 }}>
-                          <span className={s.drawerRowLabel} style={{ fontSize: 10, color: 'var(--text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600 }}>Paid as</span>
+                          <span className={s.drawerRowLabel} style={{ fontSize: 10, color: 'var(--text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600 }}>Payment Method</span>
                           <MultiSelect items={section.paidAs} />
                         </div>
                       )}
@@ -745,21 +826,12 @@ const Drawer = ({ blockKey, onClose, onNavigate }) => {
 };
 
 /* ══════════════════════════════════════
-   CardRow + StrategyCards (exported)
+   StrategyCards (exported) — Drawer only
    ══════════════════════════════════════ */
 
-const ConfigRow = ({ title, onClick }) => (
-  <div className={s.configRow} onClick={onClick}>
-    <span className={s.configRowTitle}>{title}</span>
-    <ChevronRight className={s.configRowChevron} />
-  </div>
-);
+export { GearIcon };
 
-export default function StrategyCards({ ctaButton, ctaSubtitle, onRewardsChange }) {
-  const [activeDrawer, setActiveDrawer] = useState(null);
-  const open = (key) => setActiveDrawer(key);
-  const close = () => setActiveDrawer(null);
-
+export default function StrategyCards({ activeDrawer, onClose, onNavigate, onRewardsChange }) {
   // Track reward tier values — parse "$75" → 75
   const parseDollar = (v) => Number(String(v).replace(/[^0-9.]/g, '')) || 0;
   const [referrerTiers, setReferrerTiers] = useState([0, 20, 50, 75]);
@@ -785,41 +857,11 @@ export default function StrategyCards({ ctaButton, ctaSubtitle, onRewardsChange 
   };
 
   return (
-    <>
-      <div className={s.section3Zone}>
-        <div className={s.section3Inner}>
-          {/* Referral Rules */}
-          <div className={s.group}>
-            <div className={s.groupLabel}>Referral Rules</div>
-            <div className={s.configRows}>
-              <ConfigRow title="Invite" onClick={() => open('invite')} />
-              <ConfigRow title="Rewards Offered" onClick={() => open('rewards')} />
-              <ConfigRow title="Redemption" onClick={() => open('redemption')} />
-            </div>
-          </div>
-
-          {/* Guardrails */}
-          <div className={s.group}>
-            <div className={s.groupLabel}>Guardrails</div>
-            <div className={s.configRows}>
-              <ConfigRow title="Customer Fatigue" onClick={() => open('fatigue')} />
-              <ConfigRow title="Budget Protection" onClick={() => open('budget')} />
-              <ConfigRow title="Fraud Prevention" onClick={() => open('fraud')} />
-            </div>
-          </div>
-
-          {/* CTA inside zone */}
-          {ctaButton && (
-            <div className={s.ctaWrap}>
-              {ctaSubtitle && <div className={s.ctaSubtitle}>{ctaSubtitle}</div>}
-              {ctaButton}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Drawer */}
-      <Drawer blockKey={activeDrawer} onClose={close} onNavigate={open} />
-    </>
+    <Drawer
+      blockKey={activeDrawer}
+      onClose={onClose}
+      onNavigate={onNavigate}
+      handleRewardChange={handleRewardChange}
+    />
   );
 }

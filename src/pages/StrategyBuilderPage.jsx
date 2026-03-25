@@ -4,8 +4,9 @@ import CTAButton from '../components/CTAButton.jsx';
 import AnimatedNumber from '../components/AnimatedNumber.jsx';
 import Tooltip from '../components/Tooltip.jsx';
 import { useProjections } from '../hooks/useProjections.js';
-import StrategyCards from '../components/StrategyCards.jsx';
+import StrategyCards, { GearIcon } from '../components/StrategyCards.jsx';
 import WhatUsersSee from '../components/WhatUsersSee.jsx';
+import sDrawer from '../styles/StrategyDrawer.module.css';
 
 /* ───────── Sparkline helpers ───────── */
 
@@ -208,6 +209,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
   const [showJourney, setShowJourney] = useState(false);
   const [showRisk, setShowRisk] = useState(false);
   const [showCTA, setShowCTA] = useState(false);
+  const [activeDrawer, setActiveDrawer] = useState(null);
 
   const [hoveredDay, setHoveredDay] = useState(null);
   const [hoveredSparkline, setHoveredSparkline] = useState(null);
@@ -399,13 +401,20 @@ export default function StrategyBuilderPage({ config, onNext }) {
         {/* ════════════════════════════════════════════
             SECTION 1 — Your Referral Strategy (open surface)
             ════════════════════════════════════════════ */}
-        <h3 style={{
-          fontSize: 32,
-          fontWeight: 600,
-          letterSpacing: '-0.02em',
-          color: 'var(--text-primary)',
-          marginBottom: 32,
-        }}>Your Referral Strategy</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+          <h3 style={{
+            fontSize: 32,
+            fontWeight: 600,
+            letterSpacing: '-0.02em',
+            color: 'var(--text-primary)',
+            margin: 0,
+          }}>Your Referral Strategy</h3>
+          {showResult && (
+            <button className={sDrawer.rulesButton} onClick={() => setActiveDrawer('index')}>
+              <GearIcon /> Referral Rules
+            </button>
+          )}
+        </div>
 
         {showResult && (
           <section
@@ -955,15 +964,22 @@ export default function StrategyBuilderPage({ config, onNext }) {
         )}
 
         {/* ════════════════════════════════════════════
-            SECTION 3 — Strategy & Guardrails Cards
+            CTA — Launch Campaigns
             ════════════════════════════════════════════ */}
-        {showRisk && (
-          <StrategyCards
-            ctaButton={showCTA ? <CTAButton onClick={onNext}>Launch Campaigns</CTAButton> : null}
-            ctaSubtitle={showCTA ? approvalScope : null}
-            onRewardsChange={setRewardTiers}
-          />
+        {showCTA && (
+          <div style={{ textAlign: 'center', marginTop: 32, animation: 'fadeIn 0.4s ease forwards' }}>
+            {approvalScope && <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 32, lineHeight: 1.5 }}>{approvalScope}</div>}
+            <CTAButton onClick={onNext}>Launch Campaigns</CTAButton>
+          </div>
         )}
+
+        {/* Strategy Rules Drawer */}
+        <StrategyCards
+          activeDrawer={activeDrawer}
+          onClose={() => setActiveDrawer(null)}
+          onNavigate={setActiveDrawer}
+          onRewardsChange={setRewardTiers}
+        />
         </>)}
       </main>
 
