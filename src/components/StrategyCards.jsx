@@ -32,9 +32,9 @@ const ChevronDown = () => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 5L7 8L10 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
 );
 const GearIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-    <circle cx="8" cy="8" r="2.25" stroke="currentColor" strokeWidth="1.4"/>
-    <path d="M6.94 1.5h2.12l.3 1.76a5.22 5.22 0 011.3.75l1.68-.67.97 1.68-1.4 1.1c.08.28.12.57.12.88s-.04.6-.12.88l1.4 1.1-.97 1.68-1.68-.67a5.22 5.22 0 01-1.3.75l-.3 1.76H6.94l-.3-1.76a5.22 5.22 0 01-1.3-.75l-1.68.67-.97-1.68 1.4-1.1A3.6 3.6 0 013.97 8c0-.31.04-.6.12-.88l-1.4-1.1.97-1.68 1.68.67a5.22 5.22 0 011.3-.75l.3-1.76z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 8.82a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 const Sparkle = () => (
@@ -822,7 +822,7 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
    StrategyCards (exported) — Drawer only
    ══════════════════════════════════════ */
 
-export { GearIcon };
+export { GearIcon, ChevronRight };
 
 export default function StrategyCards({ activeDrawer, onClose, onNavigate, onRewardsChange }) {
   // Track reward tier values — parse "$75" → 75
