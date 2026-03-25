@@ -802,12 +802,12 @@
 .rulesButton {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   padding: 0;
-  margin-top: 16px;
+  margin-top: auto;
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   background: none;
   border: none;
   border-radius: 0;
@@ -817,7 +817,7 @@
 }
 
 .rulesButton:hover {
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 /* ── Index view category card ── */
