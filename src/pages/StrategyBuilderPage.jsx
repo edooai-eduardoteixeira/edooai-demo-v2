@@ -141,9 +141,9 @@ function SkeletonBar({ width, height = 14, style }) {
 function getGuidanceMessage(guidanceState, { reachPct }) {
   const messages = {
     belowFloor: 'Below minimum delivery threshold. Not enough signal to optimize — CPA stays flat.',
-    belowRec: `Targeting ${reachPct}% of your eligible customers — only the highest-propensity referrers. Best cost per acquisition, leaving volume on the table.`,
-    atRec: `Targeting ${reachPct}% of your eligible customers — expanding to customers who convert with the right nudge. Full referral potential, optimized cost per acquisition.`,
-    aboveRec: `Targeting ${reachPct}% of your eligible customers — activating your full referral potential. Maximum total return, higher cost per acquisition.`,
+    belowRec: `Best CAC, leaving volume on the table. Only top referrers — ${reachPct}% of eligible customers.`,
+    atRec: `Full customer potential, optimized CAC. Expanding past top referrers — ${reachPct}% of eligible customers.`,
+    aboveRec: `Maximum total return, higher CAC. Full referral engine activated — ${reachPct}% of eligible customers.`,
   };
   return messages[guidanceState] || '';
 }
