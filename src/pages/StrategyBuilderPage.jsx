@@ -401,20 +401,13 @@ export default function StrategyBuilderPage({ config, onNext }) {
         {/* ════════════════════════════════════════════
             SECTION 1 — Your Referral Strategy (open surface)
             ════════════════════════════════════════════ */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
-          <h3 style={{
-            fontSize: 32,
-            fontWeight: 600,
-            letterSpacing: '-0.02em',
-            color: 'var(--text-primary)',
-            margin: 0,
-          }}>Your Referral Strategy</h3>
-          {showResult && (
-            <button className={sDrawer.rulesButton} onClick={() => setActiveDrawer('index')}>
-              <GearIcon /> Referral Rules
-            </button>
-          )}
-        </div>
+        <h3 style={{
+          fontSize: 32,
+          fontWeight: 600,
+          letterSpacing: '-0.02em',
+          color: 'var(--text-primary)',
+          marginBottom: 32,
+        }}>Your Referral Strategy</h3>
 
         {showResult && (
           <section
@@ -426,7 +419,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
             {/* ── Open surface grid: budget | results ── */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: '340px 1fr',
+              gridTemplateColumns: '340px 1fr auto',
             }}>
 
               {/* ── Budget column ── */}
@@ -786,6 +779,13 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* ── Rules button — third column, top-aligned ── */}
+              <div style={{ paddingLeft: 24 }}>
+                <button className={sDrawer.rulesButton} onClick={() => setActiveDrawer('index')}>
+                  <GearIcon /> Referral Rules
+                </button>
               </div>
             </div>
 

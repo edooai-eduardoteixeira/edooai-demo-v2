@@ -798,27 +798,26 @@
   padding: 0 2px;
 }
 
-/* ── Ghost button for outcomes header ── */
+/* ── Referral Rules text-link button ── */
 .rulesButton {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
+  gap: 4px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
   background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: none;
+  border-radius: 0;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: color var(--transition-fast);
   font-family: inherit;
 }
 
 .rulesButton:hover {
-  background: var(--accent-light);
-  color: var(--text-primary);
-  border-color: var(--text-tertiary);
+  color: var(--text-secondary);
+  text-decoration: underline;
 }
 
 /* ── Index view category card ── */
