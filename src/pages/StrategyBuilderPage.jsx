@@ -273,13 +273,13 @@ export default function StrategyBuilderPage({ config, onNext }) {
       for (let i = 1; i <= 4; i++) {
         if (cancelRef.current) return;
         setVisibleLines(i);
-        await sleep(700);
+        await sleep(1400);
       }
       // "Complete" moment — all checkmarks, no dots
       if (cancelRef.current) return;
       setPhase('complete');
       // Reading pause — user sees all 4 lines with checkmarks
-      await sleep(800);
+      await sleep(1200);
       // Reveal — reasoning collapses, skeletons swap to real values
       if (cancelRef.current) return;
       setPhase('revealing');
