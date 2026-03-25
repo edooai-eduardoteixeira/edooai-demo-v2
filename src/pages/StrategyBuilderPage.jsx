@@ -138,7 +138,7 @@ function SkeletonBar({ width, height = 14, style }) {
 }
 
 /* ── Dynamic guidance message builder ── */
-function getGuidanceMessage(guidanceState, { reachPct, totalCustomersK, thresholdDay }) {
+function getGuidanceMessage(guidanceState, { reachPct }) {
   const messages = {
     belowFloor: 'Below minimum delivery threshold. Not enough signal to optimize — CPA stays flat.',
     belowRec: `Targeting ${reachPct}% of your customer base — only the most likely referrers. Best cost per user, leaving potential untapped.`,
@@ -214,17 +214,12 @@ export default function StrategyBuilderPage({ config, onNext }) {
   };
 
   /* ── Guidance message from engine state ── */
-  const totalCustomersK = Math.round(totalCustomers / 1000);
   const reachPct = proj?.totalJourneysStarted
-    ? Math.round((proj.totalJourneysStarted / (totalCustomers * engineParams.eligibilityRate)) * 100)
+    ? Math.round((proj.totalJourneysStarted / totalCustomers) * 100)
     : 0;
 
   const guidanceMessage = guidanceState
-    ? getGuidanceMessage(guidanceState, {
-        reachPct,
-        totalCustomersK,
-        thresholdDay: proj?.thresholdDay,
-      })
+    ? getGuidanceMessage(guidanceState, { reachPct })
     : (budgetGuidance?.[guidanceState] || '');
 
   /* ── Recommended zone position on slider (%) ── */
