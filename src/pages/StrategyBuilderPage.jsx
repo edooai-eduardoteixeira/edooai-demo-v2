@@ -643,6 +643,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       fontSize: 12.5,
                       color: 'var(--text-secondary)',
                       lineHeight: 1.5,
+                      minHeight: 57,
                     }}>
                       {guidanceMessage}
                     </div>
