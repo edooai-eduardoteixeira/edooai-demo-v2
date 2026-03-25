@@ -137,6 +137,17 @@ function SkeletonBar({ width, height = 14, style }) {
   );
 }
 
+/* ── Dynamic guidance message builder ── */
+function getGuidanceMessage(guidanceState, { reachPct }) {
+  const messages = {
+    belowFloor: 'Below minimum delivery threshold. Not enough signal to optimize — CPA stays flat.',
+    belowRec: `Targeting ${reachPct}% of your customer base — only the most likely referrers. Best cost per user, leaving potential untapped.`,
+    atRec: `Targeting ${reachPct}% of your customer base — including those who need a nudge. Full customer potential with optimized cost per user.`,
+    aboveRec: `Targeting ${reachPct}% of your customer base — activating your full referral potential. Maximum total return, higher cost per user.`,
+  };
+  return messages[guidanceState] || '';
+}
+
 /* ═════════════════════════════════════════════════════════
    Main Page Component
    ═════════════════════════════════════════════════════════ */
@@ -203,9 +214,13 @@ export default function StrategyBuilderPage({ config, onNext }) {
   };
 
   /* ── Guidance message from engine state ── */
-  const guidanceMessage = budgetGuidance && guidanceState
-    ? budgetGuidance[guidanceState] || ''
-    : '';
+  const reachPct = proj?.totalJourneysStarted
+    ? Math.round((proj.totalJourneysStarted / totalCustomers) * 100)
+    : 0;
+
+  const guidanceMessage = guidanceState
+    ? getGuidanceMessage(guidanceState, { reachPct })
+    : (budgetGuidance?.[guidanceState] || '');
 
   /* ── Recommended zone position on slider (%) ── */
   const recZoneLeft = recommendedBudget?.min
