@@ -141,9 +141,9 @@ function SkeletonBar({ width, height = 14, style }) {
 function getGuidanceMessage(guidanceState, { reachPct }) {
   const messages = {
     belowFloor: 'Below minimum delivery threshold. Not enough signal to optimize — CPA stays flat.',
-    belowRec: `Targeting ${reachPct}% of your customer base — only the most likely referrers. Best cost per user, leaving potential untapped.`,
-    atRec: `Targeting ${reachPct}% of your customer base — including those who need a nudge. Full customer potential with optimized cost per user.`,
-    aboveRec: `Targeting ${reachPct}% of your customer base — activating your full referral potential. Maximum total return, higher cost per user.`,
+    belowRec: `Targeting ${reachPct}% of your eligible customers — only the highest-propensity referrers. Best cost per acquisition, leaving volume on the table.`,
+    atRec: `Targeting ${reachPct}% of your eligible customers — expanding to customers who convert with the right nudge. Full referral potential, optimized cost per acquisition.`,
+    aboveRec: `Targeting ${reachPct}% of your eligible customers — activating your full referral potential. Maximum total return, higher cost per acquisition.`,
   };
   return messages[guidanceState] || '';
 }
@@ -215,7 +215,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
   /* ── Guidance message from engine state ── */
   const reachPct = proj?.totalJourneysStarted
-    ? Math.round((proj.totalJourneysStarted / totalCustomers) * 100)
+    ? Math.round((proj.totalJourneysStarted / (totalCustomers * engineParams.eligibilityRate)) * 100)
     : 0;
 
   const guidanceMessage = guidanceState
