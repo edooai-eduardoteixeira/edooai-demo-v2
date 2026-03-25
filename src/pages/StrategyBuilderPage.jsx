@@ -331,7 +331,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
           fontWeight: 600,
           letterSpacing: '-0.02em',
           color: 'var(--text-primary)',
-          marginBottom: 0,
+          marginBottom: 32,
         }}>Your Referral Strategy</h3>
 
         {/* ════════════════════════════════════════════
