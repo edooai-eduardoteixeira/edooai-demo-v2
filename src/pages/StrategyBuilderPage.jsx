@@ -827,8 +827,14 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       return (
                         <>
                           <defs>
-                            {/* Area fill: dark grey fading to transparent */}
-                            <linearGradient id="areaFill" x1="0" y1={chartTop} x2="0" y2={chartBottom} gradientUnits="userSpaceOnUse">
+                            {/* Pre-threshold area fill: slate accent */}
+                            <linearGradient id="areaFillPre" x1="0" y1={chartTop} x2="0" y2={chartBottom} gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stopColor="#64748b" stopOpacity="0.12" />
+                              <stop offset="60%" stopColor="#64748b" stopOpacity="0.05" />
+                              <stop offset="100%" stopColor="#64748b" stopOpacity="0" />
+                            </linearGradient>
+                            {/* Post-threshold area fill: dark grey */}
+                            <linearGradient id="areaFillPost" x1="0" y1={chartTop} x2="0" y2={chartBottom} gradientUnits="userSpaceOnUse">
                               <stop offset="0%" stopColor="#1e293b" stopOpacity="0.10" />
                               <stop offset="60%" stopColor="#1e293b" stopOpacity="0.04" />
                               <stop offset="100%" stopColor="#1e293b" stopOpacity="0" />
@@ -847,9 +853,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
                             </clipPath>
                           </defs>
 
-                          {/* Learning phase shaded zone */}
-                          <rect x={chartLeft} y={chartTop} width={threshX - chartLeft} height={chartH} fill="#f1f5f9" />
-
                           {/* Light gridlines — after learning zone only */}
                           <line x1={threshX} y1={chartTop + chartH * 0.33} x2={chartRight} y2={chartTop + chartH * 0.33} stroke="var(--border-light)" strokeWidth="1" strokeDasharray="4,4" />
                           <line x1={threshX} y1={chartTop + chartH * 0.66} x2={chartRight} y2={chartTop + chartH * 0.66} stroke="var(--border-light)" strokeWidth="1" strokeDasharray="4,4" />
@@ -865,18 +868,23 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           <text x={chartLeft} y="190" fontSize="11" fill="var(--text-tertiary)" textAnchor="start" fontFamily="var(--font-family)">Day 1</text>
                           <text x={chartRight} y="190" fontSize="11" fill="var(--text-tertiary)" textAnchor="end" fontFamily="var(--font-family)">Day 30</text>
 
-                          {/* Area fill */}
-                          <path d={areaD} fill="url(#areaFill)" />
+                          {/* Area fill — pre-threshold (slate) */}
+                          <path d={areaD} fill="url(#areaFillPre)" clipPath="url(#clipPre)" />
+                          {/* Area fill — post-threshold (dark grey) */}
+                          <path d={areaD} fill="url(#areaFillPost)" clipPath="url(#clipPost)" />
 
-                          {/* Pre-threshold curve — light */}
-                          <path d={pathD} fill="none" stroke="var(--color-gray-300)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#clipPre)" />
+                          {/* Pre-threshold curve — dashed, unified slate */}
+                          <path d={pathD} fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="6,4" opacity="0.5" clipPath="url(#clipPre)" />
 
                           {/* Post-threshold curve — confident dark gradient */}
                           <path d={pathD} fill="none" stroke="url(#strokeGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#clipPost)" />
 
-                          {/* Learning phase label */}
-                          <text x={chartLeft + 8} y={chartTop + 16} fontSize="10" fill="var(--text-secondary)" fontFamily="var(--font-family)" fontWeight="600">Learning phase</text>
-                          <text x={chartLeft + 8} y={chartTop + 28} fontSize="9" fill="var(--text-tertiary)" fontFamily="var(--font-family)">AI calibrating signals</text>
+                          {/* Threshold dashed line — unified slate */}
+                          <line x1={threshX} y1={chartTop} x2={threshX} y2={chartBottom} stroke="#64748b" strokeWidth="1" strokeDasharray="4,4" opacity="0.6" />
+
+                          {/* Learning phase label — anchored near dashed line */}
+                          <text x={threshX - 8} y={chartTop + 16} fontSize="10" fill="#64748b" fontFamily="var(--font-family)" fontWeight="600" textAnchor="end">Learning phase</text>
+                          <text x={threshX - 8} y={chartTop + 28} fontSize="9" fill="#64748b" fontFamily="var(--font-family)" opacity="0.65" textAnchor="end">AI calibrating signals</text>
 
                           {/* Hover overlay */}
                           <rect
