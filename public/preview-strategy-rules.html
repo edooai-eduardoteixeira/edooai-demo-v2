@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview — Strategy Rules</title>
+<style>
+  :root {
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #94a3b8;
+    --bg: #fff;
+    --surface: white;
+    --accent-subtle: #fafafa;
+    --accent-light: #f5f5f5;
+    --border: #e2e8f0;
+    --border-light: #f1f5f9;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--accent-subtle);
+    color: var(--text-primary);
+    min-height: 100vh;
+  }
+
+  /* ── Main page content (behind panel) ── */
+  .page {
+    padding: 32px 48px;
+    max-width: 960px;
+  }
+
+  .heading-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .heading-row h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+
+  .ghost-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 150ms ease;
+    line-height: 1;
+  }
+
+  .ghost-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--text-tertiary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .ghost-btn svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  /* ── Backdrop ── */
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.12);
+    z-index: 90;
+  }
+
+  /* ── Side panel ── */
+  .panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 420px;
+    height: 100vh;
+    background: var(--bg);
+    z-index: 100;
+    box-shadow: -4px 0 24px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-light);
+    flex-shrink: 0;
+  }
+
+  .panel-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: all 150ms ease;
+  }
+
+  .close-btn:hover {
+    background: var(--accent-light);
+    color: var(--text-secondary);
+  }
+
+  .close-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* ── Category cards ── */
+  .panel-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .category-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 150ms ease;
+  }
+
+  .category-card:hover {
+    border-color: var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .category-card:hover .chevron {
+    color: var(--text-secondary);
+  }
+
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .card-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .card-subs {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    line-height: 1.4;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-tertiary);
+    padding: 12px 16px 4px;
+  }
+
+  .chevron {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    color: var(--border);
+    transition: color 150ms ease;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Page content ── -->
+<div class="page">
+  <div class="heading-row">
+    <h2>Your Referral Strategy</h2>
+    <button class="ghost-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+      Referral Rules
+    </button>
+  </div>
+</div>
+
+<!-- ── Backdrop overlay ── -->
+<div class="backdrop"></div>
+
+<!-- ── Right-side panel ── -->
+<div class="panel">
+  <div class="panel-header">
+    <h3>Rules and Guardrails</h3>
+    <button class="close-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="panel-body">
+    <!-- Section: Invite -->
+    <div class="section-label">Invite</div>
+
+    <div class="category-card">
+      <div class="card-content">
+        <span class="card-label">Audience</span>
+        <span class="card-subs">Who can participate in referrals</span>
+      </div>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <div class="category-card">
+      <div class="card-content">
+        <span class="card-label">Triggers</span>
+        <span class="card-subs">When referral invites are sent</span>
+      </div>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <div class="category-card">
+      <div class="card-content">
+        <span class="card-label">Channels</span>
+        <span class="card-subs">Email, SMS, link sharing</span>
+      </div>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <!-- Section: Reward -->
+    <div class="section-label">Reward</div>
+
+    <div class="category-card">
+      <div class="card-content">
+        <span class="card-label">Payment Method</span>
+        <span class="card-subs">How rewards are delivered</span>
+      </div>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <div class="category-card">
+      <div class="card-content">
+        <span class="card-label">Reward Tiers</span>
+        <span class="card-subs">Milestone-based reward levels</span>
+      </div>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <!-- Section: Redemption -->
+    <div class="section-label">Redemption</div>
+
+    <div class="category-card">
+      <div class="card-content">
+        <span class="card-label">New User Journey</span>
+        <span class="card-subs">Onboarding flow for referred users</span>
+      </div>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <div class="category-card">
+      <div class="card-content">
+        <span class="card-label">Reward Trigger</span>
+        <span class="card-subs">Action that unlocks the reward</span>
+      </div>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <!-- Section: Communication Controls -->
+    <div class="section-label">Communication Controls</div>
+
+    <div class="category-card">
+      <div class="card-content">
+        <span class="card-label">Reminder Frequency</span>
+        <span class="card-subs">How often reminders are sent</span>
+      </div>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <div class="category-card">
+      <div class="card-content">
+        <span class="card-label">Rest Period</span>
+        <span class="card-subs">Cooldown between messages</span>
+      </div>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <div class="category-card">
+      <div class="card-content">
+        <span class="card-label">Expiration Date</span>
+        <span class="card-subs">When referral links expire</span>
+      </div>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <!-- Section: Budget Protection -->
+    <div class="section-label">Budget Protection</div>
+
+    <div class="category-card">
+      <div class="card-content">
+        <span class="card-label">Spend Pace</span>
+        <span class="card-subs">Daily and monthly spend limits</span>
+      </div>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <div class="category-card">
+      <div class="card-content">
+        <span class="card-label">Invite Stop</span>
+        <span class="card-subs">Auto-pause when budget is hit</span>
+      </div>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <!-- Section: Fraud Prevention -->
+    <div class="section-label">Fraud Prevention</div>
+
+    <div class="category-card">
+      <div class="card-content">
+        <span class="card-label">Link Hijacking Limit</span>
+        <span class="card-subs">Max uses per referral link</span>
+      </div>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <div class="category-card">
+      <div class="card-content">
+        <span class="card-label">Self-Referral</span>
+        <span class="card-subs">Block users from referring themselves</span>
+      </div>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <div class="category-card">
+      <div class="card-content">
+        <span class="card-label">Bot Shield</span>
+        <span class="card-subs">Automated sign-up detection</span>
+      </div>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <div class="category-card">
+      <div class="card-content">
+        <span class="card-label">Payment Hold</span>
+        <span class="card-subs">Delay payout for verification</span>
+      </div>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
