@@ -623,29 +623,43 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   </div>
                 </div>
 
-                {/* AI insight */}
+                {/* Strategy context — AI insight + rules access */}
                 <div style={{
                   marginTop: 24,
-                  display: 'flex',
-                  gap: 8,
-                  alignItems: 'flex-start',
+                  background: 'var(--accent-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '14px 16px',
                 }}>
-                  <svg style={{ flexShrink: 0, marginTop: 1 }} width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="var(--text-tertiary)"/>
-                  </svg>
+                  {/* AI insight */}
                   <div style={{
-                    fontSize: 12.5,
-                    color: 'var(--text-secondary)',
-                    lineHeight: 1.5,
+                    display: 'flex',
+                    gap: 8,
+                    alignItems: 'flex-start',
                   }}>
-                    {guidanceMessage}
+                    <svg style={{ flexShrink: 0, marginTop: 1 }} width="14" height="14" viewBox="0 0 16 16" fill="none">
+                      <path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="var(--text-tertiary)"/>
+                    </svg>
+                    <div style={{
+                      fontSize: 12.5,
+                      color: 'var(--text-secondary)',
+                      lineHeight: 1.5,
+                    }}>
+                      {guidanceMessage}
+                    </div>
                   </div>
-                </div>
 
-                {/* Rules trigger — below AI signal */}
-                <button className={sDrawer.rulesButton} onClick={() => setActiveDrawer('index')}>
-                  <GearIcon /> <span>Referral Rules</span> <ChevronRight />
-                </button>
+                  {/* Divider */}
+                  <div style={{
+                    height: 1,
+                    background: 'var(--border-light)',
+                    margin: '12px 0',
+                  }} />
+
+                  {/* Rules trigger */}
+                  <button className={sDrawer.rulesButton} onClick={() => setActiveDrawer('index')}>
+                    <GearIcon /> <span>Referral Rules</span> <ChevronRight />
+                  </button>
+                </div>
               </div>
 
               {/* ── Results column ── */}
