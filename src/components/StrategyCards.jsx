@@ -32,7 +32,7 @@ const ChevronDown = () => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 5L7 8L10 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
 );
 const GearIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+  <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
     <circle cx="8" cy="8" r="2.25" stroke="currentColor" strokeWidth="1.4"/>
     <path d="M6.94 1.5h2.12l.3 1.76a5.22 5.22 0 011.3.75l1.68-.67.97 1.68-1.4 1.1c.08.28.12.57.12.88s-.04.6-.12.88l1.4 1.1-.97 1.68-1.68-.67a5.22 5.22 0 01-1.3.75l-.3 1.76H6.94l-.3-1.76a5.22 5.22 0 01-1.3-.75l-1.68.67-.97-1.68 1.4-1.1A3.6 3.6 0 013.97 8c0-.31.04-.6.12-.88l-1.4-1.1.97-1.68 1.68.67a5.22 5.22 0 011.3-.75l.3-1.76z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
   </svg>
