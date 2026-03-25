@@ -384,19 +384,6 @@ const BudgetPacing = ({ section }) => {
   );
 };
 
-/* ── ChannelsSection ── */
-const ChannelsSection = ({ section }) => (
-  <div>
-    {section.groups.map((group, gi) => (
-      <div key={gi} style={{ marginBottom: gi < section.groups.length - 1 ? 14 : 0 }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 6 }}>
-          {group.label}
-        </div>
-        <MultiSelect items={group.items} />
-      </div>
-    ))}
-  </div>
-);
 
 /* ── AudienceSection ── */
 const AudienceSection = ({ section }) => {
@@ -468,8 +455,8 @@ const drawerContent = {
       },
       {
         title: 'Channels',
-        type: 'channels',
-        groups: [
+        type: 'multiselect-rows',
+        rows: [
           { label: 'Active CRM', items: [
             { label: 'Email', on: true },
             { label: 'SMS / Push Notification', on: true },
@@ -694,8 +681,13 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                     <ActivationModes modes={section.modes} />
                   )}
 
-                  {section.type === 'channels' && (
-                    <ChannelsSection section={section} />
+                  {section.type === 'multiselect-rows' && section.rows && (
+                    section.rows.map((row, ri) => (
+                      <div className={s.drawerRow} key={ri}>
+                        <span className={s.drawerRowLabel}>{row.label}</span>
+                        <MultiSelect items={row.items} />
+                      </div>
+                    ))
                   )}
 
                   {section.type === 'budget-pacing' && (
@@ -766,7 +758,7 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                       })}
                       {section.paidAs && (
                         <div className={s.drawerRow} style={{ marginTop: 4 }}>
-                          <span className={s.drawerRowLabel} style={{ fontSize: 10, color: 'var(--text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600 }}>Payment Method</span>
+                          <span className={s.drawerRowLabel}>Payment Method</span>
                           <MultiSelect items={section.paidAs} />
                         </div>
                       )}
