@@ -123,6 +123,20 @@ function KPICard({ label, children }) {
 }
 
 /* ───────── Operations Cycle Step ───────── */
+/* ───────── Skeleton loading bar ───────── */
+function SkeletonBar({ width, height = 14, style }) {
+  return (
+    <span style={{
+      display: 'inline-block', width, height, borderRadius: 4,
+      background: 'linear-gradient(90deg, var(--color-gray-200) 25%, var(--color-gray-100) 50%, var(--color-gray-200) 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'shimmer 1.8s infinite linear',
+      verticalAlign: 'middle',
+      ...style,
+    }} />
+  );
+}
+
 /* ═════════════════════════════════════════════════════════
    Main Page Component
    ═════════════════════════════════════════════════════════ */
@@ -245,8 +259,9 @@ export default function StrategyBuilderPage({ config, onNext }) {
     'Placing the reward at the right step in the journey',
   ], []);
 
-  const [phase, setPhase] = useState('reasoning'); // 'reasoning' | 'complete' | 'fadeout' | 'strategy'
+  const [phase, setPhase] = useState('reasoning'); // 'reasoning' | 'complete' | 'revealing' | 'done'
   const [visibleLines, setVisibleLines] = useState(0);
+  const isRevealed = phase === 'revealing' || phase === 'done';
 
   // Run reasoning sequence on mount, then transition to strategy
   useEffect(() => {
@@ -265,12 +280,12 @@ export default function StrategyBuilderPage({ config, onNext }) {
       setPhase('complete');
       // Reading pause — user sees all 4 lines with checkmarks
       await sleep(800);
-      // Fade out
+      // Reveal — reasoning collapses, skeletons swap to real values
       if (cancelRef.current) return;
-      setPhase('fadeout');
-      await sleep(700);
+      setPhase('revealing');
+      await sleep(600);
       if (cancelRef.current) return;
-      setPhase('strategy');
+      setPhase('done');
     };
     run();
 
@@ -279,7 +294,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
   // Start strategy reveal when phase transitions
   useEffect(() => {
-    if (phase === 'strategy') {
+    if (phase === 'revealing') {
       runReveal();
     }
   }, [phase, runReveal]);
@@ -309,113 +324,102 @@ export default function StrategyBuilderPage({ config, onNext }) {
         }}
       >
         {/* ════════════════════════════════════════════
-            PHASE 1 — Reasoning animation
-            ════════════════════════════════════════════ */}
-        {phase !== 'strategy' && (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              paddingTop: 32,
-              opacity: phase === 'fadeout' ? 0 : 1,
-              transition: 'opacity 0.4s ease',
-            }}
-          >
-            <div
-              style={{
-                background: 'rgba(248, 250, 252, 0.8)',
-                borderLeft: '3px solid rgba(26, 26, 26, 0.12)',
-                borderRadius: 'var(--radius-md)',
-                padding: '20px 24px',
-                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
-              }}
-            >
-              {REASONING_STEPS.map((text, i) => {
-                const isVisible = i < visibleLines;
-                const isActive = i === visibleLines - 1;
-                const isCompleted = i < visibleLines - 1;
-                const isAllDone = phase === 'complete' || phase === 'fadeout';
-
-                if (!isVisible) return null;
-
-                return (
-                  <div
-                    key={i}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      padding: '10px 0',
-                      animation: 'reasonLineIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                    }}
-                  >
-                    {/* Checkmark or processing dot */}
-                    <span
-                      style={{
-                        flexShrink: 0,
-                        width: 20,
-                        height: 20,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      {isCompleted || isAllDone ? (
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ animation: 'reasonCheckIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}>
-                          <path d="M3 8.5L6.5 12L13 4" stroke="var(--text-tertiary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      ) : (
-                        <span style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: 'var(--radius-full)',
-                          backgroundColor: 'var(--success)',
-                          animation: 'pulse 1.4s ease-in-out infinite',
-                        }} />
-                      )}
-                    </span>
-
-                    {/* Text */}
-                    <span
-                      style={{
-                        fontSize: 18,
-                        fontWeight: 400,
-                        lineHeight: 1.5,
-                        color: isActive && !isAllDone ? 'var(--text-primary)' : 'var(--text-tertiary)',
-                        transition: 'color var(--transition-slow) ease',
-                      }}
-                    >
-                      {text}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* ════════════════════════════════════════════
-            PHASE 2 — Strategy UI (existing content)
-            ════════════════════════════════════════════ */}
-        {phase === 'strategy' && (<>
-        {/* ════════════════════════════════════════════
-            SECTION 1 — Your Referral Strategy (open surface)
+            HEADING — visible from frame 1
             ════════════════════════════════════════════ */}
         <h3 style={{
           fontSize: 32,
           fontWeight: 600,
           letterSpacing: '-0.02em',
           color: 'var(--text-primary)',
-          marginBottom: 32,
+          marginBottom: 0,
         }}>Your Referral Strategy</h3>
 
-        {showResult && (
-          <section
-            style={{
-              marginBottom: 48,
-              animation: 'fadeIn 0.4s ease forwards',
-            }}
-          >
+        {/* ════════════════════════════════════════════
+            REASONING BLOCK — collapses after complete
+            ════════════════════════════════════════════ */}
+        <div
+          style={{
+            overflow: 'hidden',
+            transition: 'max-height 0.5s ease, opacity 0.4s ease',
+            maxHeight: isRevealed ? 0 : 500,
+            opacity: isRevealed ? 0 : 1,
+            ...(phase === 'done' ? { display: 'none' } : {}),
+            marginTop: 24,
+            marginBottom: 32,
+          }}
+        >
+          {REASONING_STEPS.map((text, i) => {
+            const isVisible = i < visibleLines;
+            const isActive = i === visibleLines - 1;
+            const isCompleted = i < visibleLines - 1;
+            const isAllDone = phase === 'complete' || phase === 'revealing';
+
+            if (!isVisible) return null;
+
+            return (
+              <div
+                key={i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '8px 0',
+                  animation: 'reasonLineIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                }}
+              >
+                {/* Checkmark or spinner */}
+                <span
+                  style={{
+                    flexShrink: 0,
+                    width: 20,
+                    height: 20,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {isCompleted || isAllDone ? (
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ animation: 'reasonCheckIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}>
+                      <path d="M3 8.5L6.5 12L13 4" stroke="var(--text-tertiary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : (
+                    <span style={{
+                      display: 'inline-block',
+                      width: 12,
+                      height: 12,
+                      border: '1.5px solid var(--border)',
+                      borderTopColor: 'var(--text-tertiary)',
+                      borderRadius: '50%',
+                      animation: 'spin 0.8s linear infinite',
+                    }} />
+                  )}
+                </span>
+
+                {/* Text */}
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 400,
+                    lineHeight: 1.5,
+                    color: isActive && !isAllDone ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                    transition: 'color var(--transition-slow) ease',
+                  }}
+                >
+                  {text}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ════════════════════════════════════════════
+            SECTION 1 — Strategy content (skeleton → real)
+            ════════════════════════════════════════════ */}
+        <section
+          style={{
+            marginBottom: 48,
+          }}
+        >
             {/* ── Open surface grid: budget | results ── */}
             <div style={{
               display: 'grid',
@@ -445,9 +449,9 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     display: 'inline-flex',
                     alignItems: 'baseline',
                     marginTop: 8,
-                    cursor: 'text',
+                    cursor: isRevealed ? 'text' : 'default',
                   }}
-                  onClick={!editingBudget ? startEditBudget : undefined}
+                  onClick={isRevealed && !editingBudget ? startEditBudget : undefined}
                 >
                   <span style={{
                     fontSize: 40,
@@ -455,7 +459,9 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     color: 'var(--text-primary)',
                     lineHeight: 1,
                   }}>$</span>
-                  {editingBudget ? (
+                  {!isRevealed ? (
+                    <SkeletonBar width={80} height={40} style={{ margin: '0 2px' }} />
+                  ) : editingBudget ? (
                     <input
                       ref={budgetInputRef}
                       type="text"
@@ -507,26 +513,48 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       textDecorationColor: 'var(--color-gray-400)',
                       textDecorationThickness: '2px',
                       textUnderlineOffset: '4px',
+                      animation: 'fadeIn 0.3s ease-out',
                     }}>
                       {Math.round(budget / 1000)}
                     </span>
                   )}
-                  <span style={{
-                    fontSize: 40,
-                    fontWeight: 500,
-                    color: 'var(--text-primary)',
-                    lineHeight: 1,
-                  }}>K</span>
-                  <span style={{
-                    fontSize: 15,
-                    color: 'var(--text-tertiary)',
-                    fontWeight: 500,
-                    marginLeft: 6,
-                  }}>/mo</span>
+                  {isRevealed ? (
+                    <>
+                      <span style={{
+                        fontSize: 40,
+                        fontWeight: 500,
+                        color: 'var(--text-primary)',
+                        lineHeight: 1,
+                        animation: 'fadeIn 0.3s ease-out',
+                      }}>K</span>
+                      <span style={{
+                        fontSize: 15,
+                        color: 'var(--text-tertiary)',
+                        fontWeight: 500,
+                        marginLeft: 6,
+                        animation: 'fadeIn 0.3s ease-out',
+                      }}>/mo</span>
+                    </>
+                  ) : (
+                    <>
+                      <span style={{
+                        fontSize: 40,
+                        fontWeight: 500,
+                        color: 'var(--text-primary)',
+                        lineHeight: 1,
+                      }}>K</span>
+                      <span style={{
+                        fontSize: 15,
+                        color: 'var(--text-tertiary)',
+                        fontWeight: 500,
+                        marginLeft: 6,
+                      }}>/mo</span>
+                    </>
+                  )}
                 </div>
 
                 {/* Slider — tight spacing */}
-                <div style={{ marginTop: 12 }}>
+                <div style={{ marginTop: 12, pointerEvents: isRevealed ? 'auto' : 'none' }}>
                   <div style={{ position: 'relative', height: 20 }}>
                     {/* Track background */}
                     <div style={{
@@ -566,17 +594,18 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       position: 'absolute',
                       left: 0,
                       top: 7,
-                      width: `${sliderPercent}%`,
+                      width: `${isRevealed ? sliderPercent : 50}%`,
                       height: 6,
-                      background: 'var(--accent)',
+                      background: isRevealed ? 'var(--accent)' : 'var(--color-gray-300)',
                       borderRadius: 3,
                       zIndex: 1,
+                      transition: isRevealed ? 'width 0.3s ease' : 'none',
                     }} />
 
                     {/* Thumb */}
                     <div style={{
                       position: 'absolute',
-                      left: `${sliderPercent}%`,
+                      left: `${isRevealed ? sliderPercent : 50}%`,
                       top: '50%',
                       transform: 'translate(-50%, -50%)',
                       width: 20,
@@ -630,36 +659,48 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   borderRadius: 'var(--radius-md)',
                   padding: '14px 16px',
                 }}>
-                  {/* AI insight */}
-                  <div style={{
-                    display: 'flex',
-                    gap: 8,
-                    alignItems: 'flex-start',
-                  }}>
-                    <svg style={{ flexShrink: 0, marginTop: 1 }} width="14" height="14" viewBox="0 0 16 16" fill="none">
-                      <path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="var(--text-tertiary)"/>
-                    </svg>
-                    <div style={{
-                      fontSize: 12.5,
-                      color: 'var(--text-secondary)',
-                      lineHeight: 1.5,
-                      minHeight: 57,
-                    }}>
-                      {guidanceMessage}
+                  {!isRevealed ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <SkeletonBar width="100%" height={12} />
+                      <SkeletonBar width="70%" height={12} />
                     </div>
-                  </div>
+                  ) : (
+                    <>
+                      {/* AI insight */}
+                      <div style={{
+                        display: 'flex',
+                        gap: 8,
+                        alignItems: 'flex-start',
+                        animation: 'fadeIn 0.3s ease-out',
+                        animationDelay: '400ms',
+                        animationFillMode: 'both',
+                      }}>
+                        <svg style={{ flexShrink: 0, marginTop: 1 }} width="14" height="14" viewBox="0 0 16 16" fill="none">
+                          <path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="var(--text-tertiary)"/>
+                        </svg>
+                        <div style={{
+                          fontSize: 12.5,
+                          color: 'var(--text-secondary)',
+                          lineHeight: 1.5,
+                          minHeight: 57,
+                        }}>
+                          {guidanceMessage}
+                        </div>
+                      </div>
 
-                  {/* Divider */}
-                  <div style={{
-                    height: 1,
-                    background: 'var(--border-light)',
-                    margin: '12px 0',
-                  }} />
+                      {/* Divider */}
+                      <div style={{
+                        height: 1,
+                        background: 'var(--border-light)',
+                        margin: '12px 0',
+                      }} />
 
-                  {/* Rules trigger */}
-                  <button className={sDrawer.rulesButton} onClick={() => setActiveDrawer('index')}>
-                    <GearIcon /> <span>Referral Rules</span> <ChevronRight />
-                  </button>
+                      {/* Rules trigger */}
+                      <button className={sDrawer.rulesButton} onClick={() => setActiveDrawer('index')} style={{ animation: 'fadeIn 0.3s ease-out', animationDelay: '400ms', animationFillMode: 'both' }}>
+                        <GearIcon /> <span>Referral Rules</span> <ChevronRight />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -689,7 +730,13 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     lineHeight: 1,
                     marginTop: 6,
                   }}>
-                    <AnimatedNumber value={activeUsers} duration={300} />
+                    {!isRevealed ? (
+                      <SkeletonBar width={120} height={48} />
+                    ) : (
+                      <span style={{ animation: 'fadeIn 0.3s ease-out', animationDelay: '100ms', animationFillMode: 'both', display: 'inline-block' }}>
+                        <AnimatedNumber value={activeUsers} duration={300} />
+                      </span>
+                    )}
                   </div>
 
                   <div style={{
@@ -751,48 +798,57 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         gap: 6,
                         marginTop: 2,
                       }}>
-                        <span style={{
-                          fontSize: 16,
-                          fontWeight: 600,
-                          color: 'var(--text-primary)',
-                        }}>
-                          {kpi.value}
-                        </span>
-                        {pts && last && (
-                          <span
-                            onMouseEnter={() => setHoveredSparkline(kpi.key)}
-                            onMouseLeave={() => setHoveredSparkline(null)}
-                            style={{ display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
-                          >
-                            <svg width="60" height="16" viewBox="0 0 60 16">
-                              {(() => {
-                                const refY = sparkRefY(kpi.curve, kpi.refValue, td);
-                                return refY != null ? (
-                                  <line x1="2" y1={refY} x2="58" y2={refY}
-                                    stroke="var(--text-tertiary)" strokeWidth="0.5"
-                                    strokeDasharray="2 2" opacity="0.45" />
-                                ) : null;
-                              })()}
-                              <polyline
-                                points={pts.map(p => `${p.x},${p.y}`).join(' ')}
-                                fill="none"
-                                stroke={color}
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                              <circle cx={last.x} cy={last.y} r="2" fill={color} />
-                            </svg>
-                          </span>
-                        )}
-                        {hoveredSparkline === kpi.key && trendLabel && (
-                          <span style={{
-                            fontSize: 11,
-                            fontWeight: 500,
-                            color: 'var(--text-tertiary)',
-                          }}>
-                            {trendLabel}
-                          </span>
+                        {!isRevealed ? (
+                          <SkeletonBar width={48} height={18} />
+                        ) : (
+                          <>
+                            <span style={{
+                              fontSize: 16,
+                              fontWeight: 600,
+                              color: 'var(--text-primary)',
+                              animation: 'fadeIn 0.3s ease-out',
+                              animationDelay: '200ms',
+                              animationFillMode: 'both',
+                            }}>
+                              {kpi.value}
+                            </span>
+                            {pts && last && (
+                              <span
+                                onMouseEnter={() => setHoveredSparkline(kpi.key)}
+                                onMouseLeave={() => setHoveredSparkline(null)}
+                                style={{ display: 'inline-flex', alignItems: 'center', cursor: 'default', animation: 'fadeIn 0.3s ease-out', animationDelay: '200ms', animationFillMode: 'both' }}
+                              >
+                                <svg width="60" height="16" viewBox="0 0 60 16">
+                                  {(() => {
+                                    const refY = sparkRefY(kpi.curve, kpi.refValue, td);
+                                    return refY != null ? (
+                                      <line x1="2" y1={refY} x2="58" y2={refY}
+                                        stroke="var(--text-tertiary)" strokeWidth="0.5"
+                                        strokeDasharray="2 2" opacity="0.45" />
+                                    ) : null;
+                                  })()}
+                                  <polyline
+                                    points={pts.map(p => `${p.x},${p.y}`).join(' ')}
+                                    fill="none"
+                                    stroke={color}
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                  <circle cx={last.x} cy={last.y} r="2" fill={color} />
+                                </svg>
+                              </span>
+                            )}
+                            {hoveredSparkline === kpi.key && trendLabel && (
+                              <span style={{
+                                fontSize: 11,
+                                fontWeight: 500,
+                                color: 'var(--text-tertiary)',
+                              }}>
+                                {trendLabel}
+                              </span>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
@@ -805,8 +861,12 @@ export default function StrategyBuilderPage({ config, onNext }) {
             </div>
 
             {/* ── Chart: daily forecast with learning zone + area fill ── */}
-            {dailyCurve && (
+            {!isRevealed ? (
               <div style={{ marginTop: 32 }}>
+                <SkeletonBar width="100%" height={200} style={{ borderRadius: 'var(--radius-md)', display: 'block' }} />
+              </div>
+            ) : dailyCurve && (
+              <div style={{ marginTop: 32, animation: 'fadeIn 0.3s ease-out', animationDelay: '300ms', animationFillMode: 'both' }}>
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -960,7 +1020,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
               </div>
             )}
           </section>
-        )}
 
         {/* ════════════════════════════════════════════
             SECTION 2 — What Users See (grey background zone)
@@ -1003,12 +1062,10 @@ export default function StrategyBuilderPage({ config, onNext }) {
           onNavigate={setActiveDrawer}
           onRewardsChange={setRewardTiers}
         />
-        </>)}
       </main>
 
       <style>{`
         @keyframes blink { 50% { opacity: 0; } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes reasonLineIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes reasonCheckIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
       `}</style>

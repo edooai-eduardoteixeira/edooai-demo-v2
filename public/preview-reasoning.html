@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Preview — Reasoning Animation Redesign</title>
+<style>
+  :root {
+    --color-gray-100: #f5f5f5;
+    --color-gray-200: #e5e5e5;
+    --color-gray-300: #d4d4d4;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #94a3b8;
+    --border: #e2e8f0;
+    --border-light: #f1f5f9;
+    --accent-subtle: #f8fafc;
+    --radius-md: 10px;
+    --surface: #ffffff;
+    --accent: #0f172a;
+    --transition-slow: 300ms ease;
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font-family); background: #fff; color: var(--text-primary); }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes shimmer { from { background-position: -200% 0; } to { background-position: 200% 0; } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes reasonLineIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes reasonCheckIn {
+    from { opacity: 0; transform: scale(0.5); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* Logo placeholder */
+  .logo { padding: 14px 48px; font-size: 18px; font-weight: 700; color: var(--text-primary); }
+
+  /* Main container */
+  .main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 3rem 6rem;
+  }
+
+  /* Heading */
+  .heading {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    margin-bottom: 0;
+  }
+
+  /* Reasoning block */
+  .reasoning-block {
+    overflow: hidden;
+    margin-top: 24px;
+    margin-bottom: 32px;
+    transition: max-height 0.5s ease, opacity 0.4s ease;
+  }
+  .reasoning-block.collapsed {
+    max-height: 0 !important;
+    opacity: 0 !important;
+  }
+  .reasoning-block.done {
+    display: none;
+  }
+
+  .reason-line {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  .reason-line.visible {
+    animation: reasonLineIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .reason-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid var(--border);
+    border-top-color: var(--text-tertiary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .checkmark { animation: reasonCheckIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+  .reason-text {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    transition: color var(--transition-slow);
+  }
+  .reason-text.active { color: var(--text-primary); }
+  .reason-text.completed { color: var(--text-tertiary); }
+
+  /* Skeleton bar */
+  .skeleton {
+    display: inline-block;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--color-gray-200) 25%, var(--color-gray-100) 50%, var(--color-gray-200) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s infinite linear;
+    vertical-align: middle;
+  }
+
+  /* Strategy grid */
+  .strategy-grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+  }
+
+  .budget-col {
+    padding: 0 32px 0 0;
+    border-right: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .results-col {
+    padding-left: 32px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  .budget-display {
+    display: inline-flex;
+    align-items: baseline;
+    margin-top: 8px;
+  }
+  .budget-prefix, .budget-suffix {
+    font-size: 40px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+  .budget-mo {
+    font-size: 15px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    margin-left: 6px;
+  }
+
+  /* Slider skeleton */
+  .slider-track {
+    position: relative;
+    height: 20px;
+    margin-top: 12px;
+  }
+  .slider-track-bg {
+    position: absolute; top: 7px; left: 0; right: 0;
+    height: 6px; background: var(--color-gray-200); border-radius: 3px;
+  }
+  .slider-fill {
+    position: absolute; left: 0; top: 7px;
+    width: 50%; height: 6px;
+    background: var(--color-gray-300); border-radius: 3px; z-index: 1;
+    transition: background 0.3s ease, width 0.3s ease;
+  }
+  .slider-fill.revealed { background: var(--accent); width: 65%; }
+  .slider-thumb {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px; height: 20px;
+    background: var(--color-gray-300); border: 3px solid var(--surface);
+    border-radius: 50%; z-index: 3;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: background 0.3s ease, left 0.3s ease;
+  }
+  .slider-thumb.revealed { background: var(--accent); left: 65%; }
+  .slider-bounds {
+    display: flex; justify-content: space-between;
+    margin-top: 6px; font-size: 10px; color: var(--color-gray-300);
+  }
+
+  /* AI insight box */
+  .insight-box {
+    margin-top: 24px;
+    background: var(--accent-subtle);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+  }
+
+  /* KPI grid */
+  .kpi-grid {
+    padding-top: 14px;
+    border-top: 1px solid var(--border-light);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 20px;
+  }
+
+  /* Chart skeleton */
+  .chart-area { margin-top: 32px; }
+
+  /* Reveal fade */
+  .reveal-fade {
+    animation: fadeIn 0.3s ease-out both;
+  }
+
+  /* Replay button */
+  .replay-btn {
+    position: fixed; top: 16px; right: 16px; z-index: 100;
+    padding: 8px 16px; font-size: 13px; font-weight: 600;
+    background: var(--text-primary); color: #fff;
+    border: none; border-radius: 6px; cursor: pointer;
+  }
+  .replay-btn:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+
+<button class="replay-btn" onclick="location.reload()">↻ Replay</button>
+
+<div class="logo">VincorAI</div>
+
+<div class="main">
+  <!-- Heading — visible from frame 1 -->
+  <h3 class="heading">Your Referral Strategy</h3>
+
+  <!-- Reasoning block -->
+  <div class="reasoning-block" id="reasoning" style="max-height: 500px; opacity: 1;">
+    <div class="reason-line" id="line0">
+      <span class="reason-icon" id="icon0"><span class="spinner"></span></span>
+      <span class="reason-text active" id="text0">Scanning your CRM and transaction data to find natural referrers</span>
+    </div>
+    <div class="reason-line" id="line1">
+      <span class="reason-icon" id="icon1"><span class="spinner"></span></span>
+      <span class="reason-text active" id="text1">Filtering out anyone who shouldn't be asked right now</span>
+    </div>
+    <div class="reason-line" id="line2">
+      <span class="reason-icon" id="icon2"><span class="spinner"></span></span>
+      <span class="reason-text active" id="text2">Matching the right reward to each segment</span>
+    </div>
+    <div class="reason-line" id="line3">
+      <span class="reason-icon" id="icon3"><span class="spinner"></span></span>
+      <span class="reason-text active" id="text3">Placing the reward at the right step in the journey</span>
+    </div>
+  </div>
+
+  <!-- Strategy content — skeleton state initially -->
+  <section style="margin-bottom: 48px;">
+    <div class="strategy-grid">
+      <!-- Budget column -->
+      <div class="budget-col">
+        <div class="label">Monthly budget</div>
+        <div class="budget-display">
+          <span class="budget-prefix">$</span>
+          <span id="budgetValue"><span class="skeleton" style="width: 80px; height: 40px;"></span></span>
+          <span class="budget-suffix">K</span>
+          <span class="budget-mo">/mo</span>
+        </div>
+
+        <div class="slider-track">
+          <div class="slider-track-bg"></div>
+          <div class="slider-fill" id="sliderFill"></div>
+          <div class="slider-thumb" id="sliderThumb"></div>
+        </div>
+        <div class="slider-bounds">
+          <span>$50K</span><span>$500K</span>
+        </div>
+
+        <div class="insight-box" id="insightBox">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <span class="skeleton" style="width: 100%; height: 12px;"></span>
+            <span class="skeleton" style="width: 70%; height: 12px;"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results column -->
+      <div class="results-col">
+        <div style="padding-bottom: 16px;">
+          <div class="label">First 30 days</div>
+          <div style="font-size: 64px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; margin-top: 6px;" id="activeUsers">
+            <span class="skeleton" style="width: 120px; height: 48px;"></span>
+          </div>
+          <div style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">new active users</div>
+        </div>
+
+        <div class="kpi-grid" id="kpiGrid">
+          <div>
+            <div class="label">Avg CAC</div>
+            <div style="margin-top: 2px;" id="kpi0"><span class="skeleton" style="width: 48px; height: 18px;"></span></div>
+          </div>
+          <div>
+            <div class="label">ROI</div>
+            <div style="margin-top: 2px;" id="kpi1"><span class="skeleton" style="width: 48px; height: 18px;"></span></div>
+          </div>
+          <div>
+            <div class="label">Conv rate</div>
+            <div style="margin-top: 2px;" id="kpi2"><span class="skeleton" style="width: 48px; height: 18px;"></span></div>
+          </div>
+          <div>
+            <div class="label">Fraud saved</div>
+            <div style="margin-top: 2px;" id="kpi3"><span class="skeleton" style="width: 48px; height: 18px;"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-area" id="chartArea">
+      <span class="skeleton" style="width: 100%; height: 200px; border-radius: var(--radius-md); display: block;"></span>
+    </div>
+  </section>
+</div>
+
+<script>
+const LINES = [
+  'Scanning your CRM and transaction data to find natural referrers',
+  "Filtering out anyone who shouldn't be asked right now",
+  'Matching the right reward to each segment',
+  'Placing the reward at the right step in the journey',
+];
+
+const CHECKMARK_SVG = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="checkmark"><path d="M3 8.5L6.5 12L13 4" stroke="var(--text-tertiary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+const KPI_VALUES = ['$79', '1.7x', '4.2%', '$12K'];
+
+let phase = 'reasoning';
+let visibleLines = 0;
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function run() {
+  // Phase: reasoning — show lines one by one
+  for (let i = 0; i < 4; i++) {
+    visibleLines = i + 1;
+    const line = document.getElementById(`line${i}`);
+    line.classList.add('visible');
+
+    // Mark previous line as completed
+    if (i > 0) {
+      document.getElementById(`icon${i-1}`).innerHTML = CHECKMARK_SVG;
+      document.getElementById(`text${i-1}`).className = 'reason-text completed';
+    }
+
+    await sleep(700);
+  }
+
+  // Phase: complete — all checkmarks
+  phase = 'complete';
+  for (let i = 0; i < 4; i++) {
+    document.getElementById(`icon${i}`).innerHTML = CHECKMARK_SVG;
+    document.getElementById(`text${i}`).className = 'reason-text completed';
+  }
+  await sleep(800);
+
+  // Phase: revealing — collapse reasoning, reveal values
+  phase = 'revealing';
+  document.getElementById('reasoning').classList.add('collapsed');
+
+  // Budget number — immediate
+  document.getElementById('budgetValue').innerHTML = '<span class="reveal-fade" style="font-size:40px;font-weight:500;letter-spacing:-0.02em;color:var(--text-primary);line-height:1;">150</span>';
+
+  // Slider fill + thumb
+  document.getElementById('sliderFill').classList.add('revealed');
+  document.getElementById('sliderThumb').classList.add('revealed');
+
+  // Active users — +100ms
+  await sleep(100);
+  document.getElementById('activeUsers').innerHTML = '<span class="reveal-fade" style="animation-delay:100ms">1,363</span>';
+
+  // KPI values — +200ms
+  await sleep(100);
+  KPI_VALUES.forEach((val, i) => {
+    document.getElementById(`kpi${i}`).innerHTML = `<span class="reveal-fade" style="animation-delay:200ms;font-size:16px;font-weight:600;color:var(--text-primary);">${val}</span>`;
+  });
+
+  // Chart — +300ms
+  await sleep(100);
+  document.getElementById('chartArea').innerHTML = `
+    <div class="reveal-fade" style="animation-delay:300ms">
+      <span style="font-size:12px;font-weight:600;color:var(--text-secondary);">Daily forecast: new active users</span>
+      <div style="margin-top:8px;background:var(--color-gray-100);border-radius:var(--radius-md);height:200px;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:13px;">[Chart renders here in production]</div>
+    </div>`;
+
+  // AI insight — +400ms
+  await sleep(100);
+  document.getElementById('insightBox').innerHTML = `
+    <div class="reveal-fade" style="animation-delay:400ms;display:flex;gap:8px;align-items:flex-start;">
+      <svg style="flex-shrink:0;margin-top:1px" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="var(--text-tertiary)"/></svg>
+      <div style="font-size:12.5px;color:var(--text-secondary);line-height:1.5;">Your budget of $150K/mo targets the recommended zone. At this level, the model expects strong ROI with manageable risk. Consider starting here and adjusting based on early results.</div>
+    </div>`;
+
+  await sleep(600);
+
+  // Phase: done
+  phase = 'done';
+  document.getElementById('reasoning').classList.add('done');
+}
+
+run();
+</script>
+</body>
+</html>
