@@ -4,7 +4,7 @@ import CTAButton from '../components/CTAButton.jsx';
 import AnimatedNumber from '../components/AnimatedNumber.jsx';
 import Tooltip from '../components/Tooltip.jsx';
 import { useProjections } from '../hooks/useProjections.js';
-import StrategyCards, { GearIcon } from '../components/StrategyCards.jsx';
+import StrategyCards, { GearIcon, ChevronRight } from '../components/StrategyCards.jsx';
 import WhatUsersSee from '../components/WhatUsersSee.jsx';
 import sDrawer from '../styles/StrategyDrawer.module.css';
 
@@ -419,7 +419,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
             {/* ── Open surface grid: budget | results ── */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: '340px 1fr auto',
+              gridTemplateColumns: '340px 1fr',
             }}>
 
               {/* ── Budget column ── */}
@@ -641,6 +641,11 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     {guidanceMessage}
                   </div>
                 </div>
+
+                {/* Rules trigger — below AI signal */}
+                <button className={sDrawer.rulesButton} onClick={() => setActiveDrawer('index')}>
+                  <GearIcon /> <span>Referral Rules</span> <ChevronRight />
+                </button>
               </div>
 
               {/* ── Results column ── */}
@@ -781,12 +786,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 </div>
               </div>
 
-              {/* ── Rules button — third column, top-aligned ── */}
-              <div style={{ paddingLeft: 24 }}>
-                <button className={sDrawer.rulesButton} onClick={() => setActiveDrawer('index')}>
-                  <GearIcon /> Referral Rules
-                </button>
-              </div>
+              {/* third column removed — rules button moved to budget column */}
             </div>
 
             {/* ── Chart: daily forecast with learning zone + area fill ── */}
