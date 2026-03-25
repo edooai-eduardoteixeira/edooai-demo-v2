@@ -183,7 +183,7 @@ const neobank = {
     baseRevenuePerUser: 100,           // Revenue per user when engine is untrained (random targeting)
     premiumRevenuePerUser: 280,        // Revenue per user when engine is fully optimized (super referrers)
     fraudRate: 0.07,                   // Fraction of spend saved by fraud detection
-    minSignalVolume: 40,               // Resolved conversions for statistical significance
+    minSignalVolume: 100,              // Resolved conversions for statistical significance
 
     // Budget guidance thresholds
     budget: {
