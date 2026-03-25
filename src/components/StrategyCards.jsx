@@ -459,7 +459,8 @@ const drawerContent = {
         rows: [
           { label: 'Active CRM', items: [
             { label: 'Email', on: true },
-            { label: 'SMS / Push Notification', on: true },
+            { label: 'SMS', on: true },
+            { label: 'Push Notification', on: true },
           ]},
           { label: 'In-App Placement', items: [
             { label: 'Home Screen', on: true },
