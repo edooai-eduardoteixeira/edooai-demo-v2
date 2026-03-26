@@ -94,7 +94,7 @@ const neobank = {
     min: 50000,
     max: 300000,
     step: 5000,
-    default: 150000,
+    default: 200000,
   },
 
   // Recommended budget range — personalized per customer base
