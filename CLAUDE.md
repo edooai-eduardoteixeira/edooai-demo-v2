@@ -5,28 +5,38 @@
 - **Frontend**: React 18, Vite, React Router DOM 7
 - **Backend**: Express.js with SSE streaming
 - **Language**: JavaScript (no TypeScript)
-- **Styling**: CSS Modules + CSS custom properties (global.css)
+- **Styling**: Tailwind CSS v4 + CSS Modules (hybrid — see Styling section below)
+- **UI Utilities**: class-variance-authority (CVA), clsx, tailwind-merge, lucide-react
 - **Deployment**: Railway (auto-deploys `main` to production)
 - **Production URL**: https://demo-v2-production.up.railway.app
 
-## Design System
+## Styling
 
-Follow `DESIGN_GUIDELINES.md` exactly. Never improvise CSS values — use only the tokens and patterns defined there.
+This project uses a **hybrid approach** after a partial Tailwind migration:
 
-Key rules:
-- **No raw hex colors** for text, backgrounds, borders, or accents — always use CSS variables from `src/styles/global.css`
-- **No invented spacing values** — only use the allowed scale (2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 64, 80px)
-- **No hardcoded shadows** — use `var(--shadow-xs)` through `var(--shadow-xl)`
-- **No inline transition durations** — use `var(--transition-fast)`, `var(--transition-base)`, or `var(--transition-slow)`
-- Platform brand colors in `PLATFORM_COLORS` are the only exception to the "no raw hex" rule
+### For new components and modifications — use Tailwind:
+- Use Tailwind utility classes (`className="flex items-center gap-2 text-foreground"`)
+- Use CVA for component variants (see `Badge.jsx`, `CTAButton.jsx` for examples)
+- Use `cn()` from `src/lib/utils.js` for conditional classes
+- Semantic colors: `text-foreground`, `text-foreground-muted`, `text-foreground-faint`, `bg-accent`, `bg-surface`, `border-border`, `text-success`, `text-danger`, `text-warn`
+- Shadows: `shadow-xs`, `shadow-sm`, `shadow-md`, `shadow-lg`, `shadow-xl`
+- Radii: `rounded-sm` (6px), `rounded-md` (10px), `rounded-lg` (14px), `rounded-xl` (20px), `rounded-full`
 
-Before creating any new component, check existing components in `src/components/` for patterns to reuse.
+### Legacy CSS Modules (do NOT rewrite — modify in place):
+- `WhatUsersSee.module.css` — timeline/carousel layout
+- `StrategyDrawer.module.css` — drawer + form controls
+- `StrategyTimeline.module.css` — two-column timeline
+- `DataConnection.module.css` — data connection page layout
+
+These modules use legacy CSS variables (`var(--text-primary)`, `var(--border)`, etc.) which are aliased in `global.css :root`.
+
+### Rules:
+- **No raw hex colors** — use Tailwind color classes or CSS variables
+- **No inline `style={{}}`** in new code — use Tailwind classes
+- Platform brand colors in `PLATFORM_COLORS` (PlatformLogo.jsx) are the only hex exception
+- Before creating new components, check `src/components/` for existing patterns
 
 ## Environments
 
 - **Production**: https://demo-v2-production.up.railway.app (auto-deploys from `main`)
 - **Preview**: Railway Preview Environments (auto-deploy per PR — provide the full preview URL after every push)
-
-## Migration Notes
-
-This project uses CSS Modules + custom properties. Future projects should use Tailwind + shadcn/ui (see global CLAUDE.md). Do not migrate this project's styling approach unless Eduardo explicitly requests it.
