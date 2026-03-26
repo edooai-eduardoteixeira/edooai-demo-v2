@@ -2,48 +2,76 @@
 
 ## Status: Open PR #127 on branch `claude/color-system-burgundy-v2`
 
-## What was decided
+## Brand Strategy: "Burgundy = Vincor Intelligence"
+
+### Core principle
+Burgundy appears **only where Vincor's intelligence surfaces** — predictions, AI-powered results, engine output. Not for structural headings, user inputs, or marketing copy.
+
+### What gets burgundy
+- **Hero KPI number** (e.g., "1,363 new customers") — the product's output
+- **Chart lines + gradients** — predictions visualized (both dashboard and strategy charts)
+- **Sparklines** — trend intelligence in KPI cards
+- **Toggles (on state)** — user activating the engine
+- **AI actions** ("Add rule with AI", sparkle icon) — intelligence surfacing
+- **Journey trigger badges** ("Redeems") — outcome/reward moments
+- **Connection checkmarks** — "Vincor has processed this"
+- **Active sidebar items** — text + left border (connection page)
+- **Slider fill + thumb** — user control over the engine
+
+### What does NOT get burgundy
+- **Page headings** ("Your Referral Strategy") — structural, use `--text-soft` (#404040)
+- **Budget number** ("$150K") — user input, not product output
+- **Landing page title** — marketing copy, stays black
+- **KPI card secondary values** — use `--text-soft`, sparkline carries the brand signal
+- **Body text, labels, descriptions** — standard text hierarchy
+
+### Typography hierarchy (post-fix)
+- `--color-brand` (#6B1D2A) — hero data moments (Vincor intelligence output)
+- `--text-soft` / `--color-foreground-soft` (#404040) — headings, card values (structural, quiet)
+- `--text-primary` (#0f172a) — body text, inputs (max readability)
+- `--text-secondary` (#475569) — descriptions, supporting text
+- `--text-tertiary` (#94a3b8) — labels, hints, timestamps
+
+### Burgundy budget per screen
+- **Strategy page**: ~4 moments (hero number, sparklines, chart, slider)
+- **Dashboard page**: ~2 (chart line + gradient)
+- **Connection page**: ~2 (checkmarks, active sidebar)
+- **Landing page**: ~1 (logo only, CTA stays black)
+- **Drawer/right panel**: ~4 (toggles, AI action, "Redeems", section accents)
+
+## What was decided (previous session)
 - **Burgundy brand color**: `#6B1D2A` (stored as `--color-brand` in Tailwind theme)
 - **Light variant**: `#F9F0F1` (stored as `--color-brand-light`)
 - **All buttons stay black** — burgundy is not for buttons
-- **Logo**: burgundy V mark + burgundy "Vincor AI" text (implemented, looks good)
-- **Right panel/drawer**: burgundy toggles, sparkle AI actions, "Redeems" badge (implemented, Eduardo approved — "looks polished")
-- **1st Transaction trigger**: burgundy dot + text replacing green (implemented)
-- **Sparklines**: changed from green to neutral, then to burgundy
-- **Connection page sidebar**: burgundy left-border on active nav item + burgundy checkmarks (implemented but barely visible)
+- **Logo**: burgundy V mark + burgundy "Vincor AI" text (approved)
+- **Right panel/drawer**: burgundy toggles, sparkle AI actions, "Redeems" badge (approved — "looks polished")
 
-## What needs design work
-### Problem: Burgundy/black conflict on the strategy page
-Eduardo's feedback: "As a user I'm having a hard time understanding the burgundy/black. It feels like we are merging two different products and it's work in progress."
+## What was fixed (this session)
+- **Hero KPI "1,363"**: changed from black (800wt) → burgundy (700wt) — anchors brand as the product's voice
+- **"Your Referral Strategy" heading**: changed from `--text-primary` → `--text-soft` — stops competing with hero number
+- **KPI card values**: changed from `--text-primary` → `--text-soft` — harmonizes with heading
+- **Daily Forecast chart**: post-threshold gradient + stroke changed from slate/dark → burgundy (matches dashboard chart)
+- **Chart endpoint**: dot + label changed from `--text-primary` → burgundy
+- **Connection sidebar active state**: added burgundy text color alongside existing border
+- **New token**: `--color-foreground-soft` / `--text-soft` (#404040) for demoted structural headings
 
-The right panel (drawer) works well — burgundy has a clear consistent role (toggles, section headers, AI action). The main strategy page doesn't — burgundy slider and sparklines feel scattered among massive black headings ("1,363", "$150K", "Your Referral Strategy") without a clear visual pattern.
-
-### Problem: Strategy page chart gradient
-The "Daily forecast" chart area gradient was supposed to be burgundy but was missed. Only the Dashboard page chart got the burgundy gradient. The Strategy page chart still uses black/gray gradient.
-
-### Problem: Connection page sidebar accent too subtle
-The 3px burgundy left-border on the active nav item is barely visible. Eduardo asked whether this design pattern should exist at all, or if the text color should change instead.
-
-### Key tension to resolve
-Burgundy works when it's the dominant visual element in a contained space (drawer panel). It struggles when competing with heavy black typography on the main pages. Need to rethink how the main page content integrates with the brand color — possibly adjusting the typography hierarchy (making big numbers burgundy? changing heading weights?) or rethinking what stays black vs what becomes burgundy.
-
-## Design benchmarks discussed
+## Design benchmarks
 - **Linear**: indigo accent on sidebar, focus states, progress indicators — structural repetition
 - **Mercury**: purple on sidebar, buttons, progress bars — financial product with non-standard color
 - **Stripe**: indigo on logo, landing hero, payment buttons
 
-## Files changed in PR #127
-- `src/styles/global.css` — added brand, brand-light, danger-light tokens
+## Files changed
+- `src/styles/global.css` — added brand, brand-light, danger-light, foreground-soft tokens
 - `src/components/Logo.jsx` — burgundy V mark + text
-- `src/components/CTAButton.jsx` — added brand variant (not used on landing page currently)
-- `src/components/StrategyCards.jsx` — toggles burgundy, replaced blue (#3b5bdb) with brand/gray
+- `src/components/CTAButton.jsx` — added brand variant
+- `src/components/StrategyCards.jsx` — toggles, badges, AI actions burgundy
 - `src/components/IntegrationGroup.jsx` — badges normalized to gray
 - `src/components/WhatUsersSee.jsx` — 1st Transaction trigger burgundy
-- `src/pages/LandingPage.jsx` — CTA reverted to black
-- `src/pages/DataConnectionPage.jsx` — active nav border + checkmarks burgundy
-- `src/pages/StrategyBuilderPage.jsx` — slider, sparklines burgundy
+- `src/pages/LandingPage.jsx` — CTA stays black
+- `src/pages/DataConnectionPage.jsx` — active nav border + text + checkmarks burgundy
+- `src/pages/StrategyBuilderPage.jsx` — hero KPI burgundy, heading/values softened, chart burgundy gradient
 - `src/pages/DashboardPage.jsx` — chart curve + gradient burgundy
-- `DESIGN_GUIDELINES.md` — brand colors, interactive text colors, danger-light
+- `DESIGN_GUIDELINES.md` — brand colors, interactive text colors
 
 ## Tech context
 - Tailwind CSS v4 fully migrated (no CSS modules remain)

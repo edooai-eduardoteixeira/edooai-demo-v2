@@ -343,7 +343,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
           fontSize: 32,
           fontWeight: 600,
           letterSpacing: '-0.02em',
-          color: 'var(--text-primary)',
+          color: 'var(--text-soft)',
           marginBottom: 32,
         }}>Your Referral Strategy</h3>
 
@@ -737,9 +737,9 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
                   <div style={{
                     fontSize: 64,
-                    fontWeight: 800,
+                    fontWeight: 700,
                     letterSpacing: '-0.03em',
-                    color: 'var(--text-primary)',
+                    color: 'var(--color-brand)',
                     lineHeight: 1,
                     marginTop: 6,
                   }}>
@@ -818,7 +818,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                             <span style={{
                               fontSize: 16,
                               fontWeight: 600,
-                              color: 'var(--text-primary)',
+                              color: 'var(--text-soft)',
                               animation: 'fadeIn 0.3s ease-out',
                               animationDelay: '200ms',
                               animationFillMode: 'both',
@@ -921,17 +921,17 @@ export default function StrategyBuilderPage({ config, onNext }) {
                               <stop offset="60%" stopColor="#64748b" stopOpacity="0.05" />
                               <stop offset="100%" stopColor="#64748b" stopOpacity="0" />
                             </linearGradient>
-                            {/* Post-threshold area fill: dark grey */}
+                            {/* Post-threshold area fill: burgundy brand */}
                             <linearGradient id="areaFillPost" x1="0" y1={chartTop} x2="0" y2={chartBottom} gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="#1e293b" stopOpacity="0.10" />
-                              <stop offset="60%" stopColor="#1e293b" stopOpacity="0.04" />
-                              <stop offset="100%" stopColor="#1e293b" stopOpacity="0" />
+                              <stop offset="0%" stopColor="var(--color-brand)" stopOpacity="0.12" />
+                              <stop offset="60%" stopColor="var(--color-brand)" stopOpacity="0.04" />
+                              <stop offset="100%" stopColor="var(--color-brand)" stopOpacity="0" />
                             </linearGradient>
-                            {/* Post-threshold stroke gradient */}
+                            {/* Post-threshold stroke gradient: slate → burgundy */}
                             <linearGradient id="strokeGrad" x1={threshX} y1="0" x2={chartRight} y2="0" gradientUnits="userSpaceOnUse">
                               <stop offset="0%" stopColor="#94a3b8" />
-                              <stop offset="40%" stopColor="#475569" />
-                              <stop offset="100%" stopColor="#1e293b" />
+                              <stop offset="40%" stopColor="var(--color-brand)" stopOpacity="0.7" />
+                              <stop offset="100%" stopColor="var(--color-brand)" />
                             </linearGradient>
                             <clipPath id="clipPost">
                               <rect x={threshX} y="0" width={chartRight - threshX} height="210" />
@@ -1013,12 +1013,12 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           )}
 
                           {/* Endpoint */}
-                          <circle cx={lastPt.x} cy={lastPt.y} r="3.5" fill="var(--text-primary)" />
+                          <circle cx={lastPt.x} cy={lastPt.y} r="3.5" fill="var(--color-brand)" />
                           <text
                             x={lastPt.x - 14}
                             y={Math.max(10, lastPt.y - 10)}
                             fontSize="11"
-                            fill="var(--text-primary)"
+                            fill="var(--color-brand)"
                             fontWeight="600"
                             textAnchor="end"
                             fontFamily="var(--font-family)"

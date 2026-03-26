@@ -712,7 +712,7 @@ against this mapping automatically.`);
                   className={cn('flex items-center gap-2.5 py-2.5 px-3 rounded-sm cursor-pointer transition-all duration-150 ease-out mb-0.5 border-l-[3px] border-l-transparent hover:bg-gray-50', isActive && 'bg-gray-50 border-l-brand')}
                   onClick={() => sectionRefs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 >
-                  <span className="text-sm font-medium text-foreground-muted">{a.title}</span>
+                  <span className={cn('text-sm font-medium', isActive ? 'text-brand' : 'text-foreground-muted')}>{a.title}</span>
                   {isFulfilled && (
                     <svg className="ml-auto text-brand shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path
@@ -739,7 +739,7 @@ against this mapping automatically.`);
                   className={cn('flex items-center gap-2.5 py-2.5 px-3 rounded-sm cursor-pointer transition-all duration-150 ease-out mb-0.5 border-l-[3px] border-l-transparent hover:bg-gray-50', isActive && 'bg-gray-50 border-l-brand')}
                   onClick={() => sectionRefs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 >
-                  <span className="text-sm font-medium text-foreground-muted">{a.title}</span>
+                  <span className={cn('text-sm font-medium', isActive ? 'text-brand' : 'text-foreground-muted')}>{a.title}</span>
                   {isFulfilled && (
                     <svg className="ml-auto text-brand shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path
