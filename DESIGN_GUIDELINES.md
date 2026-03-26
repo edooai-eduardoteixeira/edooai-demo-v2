@@ -62,77 +62,112 @@ text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase
 
 ## Colors
 
-**NEVER use raw hex colors.** Always use Tailwind color classes.
+All colors live in a **warm family**. No cool grays, no blue-tinted neutrals. The entire palette descends from warm cream → warm brown, with Pure Wine (#66001F) as the brand accent.
+
+**NEVER use raw hex colors.** Always use Tailwind color classes or CSS variables.
+
+### Brand color: Pure Wine (#66001F)
+
+| Token | Hex | Tailwind Class | Purpose |
+|---|---|---|---|
+| `--color-brand` | #66001F | `text-brand` / `bg-brand` | Brand accent — see usage rules below |
+| `--color-brand-light` | #F0E8E5 | `bg-brand-light` | Hover/selected backgrounds for brand elements |
+
+**Brand color has exactly 3 jobs in the product UI:**
+1. **Primary CTA buttons** — the one key action per screen
+2. **Chart lines and data visualization** — the product's intelligence, visualized
+3. **Active/selected states** — toggles on, active nav items, focus indicators
+
+**Brand color never does:**
+- Text for numbers, headings, labels, or body copy
+- Multiple buttons on the same screen
+- Borders, decorative backgrounds, or large filled areas
+- Compete with semantic colors (success, danger, warning)
+
+**Error vs. brand**: Our danger red (#EF4444) is bright and cool — visually distinct from our warm, dark brand wine. Never use brand color for error or destructive states.
 
 ### Text colors
 
-| Tailwind Class | Purpose |
-|---------------|---------|
-| `text-foreground` | Headings, important text |
-| `text-foreground-muted` | Descriptions, body text |
-| `text-foreground-faint` | Metadata, placeholders, disabled |
-| `text-white` | On dark backgrounds |
-| `text-black` | Maximum contrast |
+| Token | Hex | Tailwind Class | Purpose |
+|---|---|---|---|
+| `--foreground` | #2C2320 | `text-foreground` | Hero numbers, primary data, key content |
+| `--foreground-muted` | #6B5E54 | `text-foreground-muted` | Page headings, body text, descriptions |
+| `--foreground-faint` | #A89E94 | `text-foreground-faint` | Labels, metadata, placeholders, timestamps |
+| — | — | `text-white` | On dark backgrounds (buttons, tooltips) |
 
-### Brand colors
+**Typography hierarchy rule**: Hero metrics (the biggest number on the page) get `text-foreground`. Page titles and headings get `text-foreground-muted` — they're structural, not the star. Labels get `text-foreground-faint`.
 
-| Tailwind Class | Purpose |
-|---------------|---------|
-| `text-brand` / `bg-brand` | Vincor burgundy (#6B1D2A) — AI-powered actions, landing CTA, logo accent |
-| `bg-brand-light` | Light burgundy (#F9F0F1) — hover background for brand elements, AI badge bg |
+### Background and surface colors
 
-**Burgundy usage rules:**
-- Use for AI-powered or "Vincor intelligence" actions (e.g., "Add rule with AI", sparkle icon actions)
-- Use for landing page CTA button (`variant="brand"`)
-- Pair with an icon (sparkle, logo) to signal "brand moment, not error"
-- Never use as body text, borders, or decorative backgrounds
-- Maximum ~3-5 burgundy moments per screen
-
-### Background colors
-
-| Tailwind Class | Purpose |
-|---------------|---------|
-| `bg-white` | Page background |
-| `bg-surface` | Cards, modals, inputs |
-| `bg-accent-subtle` | Subtle section backgrounds |
-| `bg-accent-light` | Hover backgrounds |
-| `bg-accent` | Primary buttons, dark backgrounds |
+| Token | Hex | Tailwind Class | Purpose |
+|---|---|---|---|
+| `--bg` | #FAF7F2 | — (set on body) | Page background — warm cream |
+| `--surface` | #FFFFFF | `bg-surface` | Cards, modals, drawers, inputs — white on cream creates depth |
+| `--accent-subtle` | #F5F1EB | `bg-accent-subtle` | Subtle section backgrounds |
+| `--accent-light` | #EFEBE5 | `bg-accent-light` | Hover backgrounds |
+| `--accent` | #2C2320 | `bg-accent` | Primary buttons, dark backgrounds |
 
 ### Border colors
 
-| Tailwind Class | Purpose |
-|---------------|---------|
-| `border-border` | Standard borders |
-| `border-border-light` | Subtle dividers |
-| `border-gray-300` | Secondary button borders |
+| Token | Hex | Tailwind Class | Purpose |
+|---|---|---|---|
+| `--border` | #E4DDD5 | `border-border` | Standard borders — warm sand |
+| `--border-light` | #EFEBE5 | `border-border-light` | Subtle dividers |
+| — | — | `border-gray-300` | Secondary button borders |
 
 ### Interactive text colors
 
-| Type of text action | Tailwind Class | Examples |
+| Type | Tailwind Class | Examples |
 |---|---|---|
-| AI-powered / brand action | `text-brand` | "Add rule with AI", sparkle actions |
+| Brand / primary action | `text-brand` | "Add rule with AI", sparkle actions |
 | Standard text action | `text-gray-600` | "Add step", "Back", "Skip" |
 | Destructive text action | `text-danger` | "Remove", "Disconnect" |
 
 ### Semantic colors
 
-| Tailwind Class | Purpose |
-|---------------|---------|
-| `text-success` / `bg-success` | Success states |
-| `text-danger` / `bg-danger` | Error states |
-| `bg-danger-light` | Light red hover bg for destructive actions |
-| `text-warn` / `bg-warn` | Warning states |
-| `text-green-600` / `bg-green-50` | Connected/active indicators |
+| Token | Hex | Tailwind Class | Purpose |
+|---|---|---|---|
+| `--success` | #059669 | `text-success` / `bg-success` | Success states |
+| `--danger` | #EF4444 | `text-danger` / `bg-danger` | Error states — bright cool red, distinct from brand |
+| `--danger-light` | #FEF2F2 | `bg-danger-light` | Light destructive hover background |
+| `--warn` | #F59E0B | `text-warn` / `bg-warn` | Warning states |
+| — | — | `text-green-600` / `bg-green-50` | Connected/active indicators |
 
 ### Badge color pairs (use EXACT combos)
 
 | State | Classes |
-|-------|---------|
+|---|---|
 | Success / Active | `bg-[#d1fae5] text-[#065f46]` |
 | Warning / Draft | `bg-[#fef3c7] text-[#92400e]` |
 | Error / Failed | `bg-[#fee2e2] text-[#991b1b]` |
-| Info / Sent | `bg-[#dbeafe] text-[#1e40af]` |
 | Neutral / Disabled | `bg-border-light text-foreground-muted` |
+| Brand / AI | `bg-brand-light text-brand` |
+
+### Gray scale (warm sand family)
+
+All grays are warm. No blue or cool undertones.
+
+| Tailwind Class | Hex | Use |
+|---|---|---|
+| `gray-50` | #F7F3ED | Lightest background |
+| `gray-100` | #EFEBE5 | Hover backgrounds, accent-light |
+| `gray-200` | #E4DDD5 | Borders |
+| `gray-300` | #D1C8BE | Secondary button borders, dividers |
+| `gray-400` | #A89E94 | Placeholder text, disabled states |
+| `gray-500` | #7D7368 | Secondary icons |
+| `gray-600` | #6B5E54 | Body text, descriptions |
+| `gray-700` | #4A3F37 | Strong secondary text |
+| `gray-800` | #2C2320 | Primary text, headings |
+| `gray-900` | #1A1512 | Maximum contrast |
+
+### Chart and data visualization
+
+- **Chart lines**: `var(--color-brand)` — brand carries the data story
+- **Area fills**: Warm taupe at low opacity (`#A89E94` at 0.10-0.14) — not colored, not cool gray
+- **Pre-threshold / uncertain data**: Warm taupe `#A89E94` dashed lines
+- **Axis labels**: `var(--text-tertiary)`
+- **Gridlines**: `var(--border-light)`
+- **Tooltips**: `var(--text-primary)` background with white text
 
 ---
 
@@ -225,12 +260,17 @@ flex flex-wrap gap-5
 
 ### Primary Button (use CTAButton component)
 ```
-inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold rounded-md bg-black text-white transition-all duration-200 ease-out
+inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold rounded-md bg-accent text-white transition-all duration-200 ease-out
+```
+
+### Brand Button (primary CTA — use sparingly, one per screen)
+```
+inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold rounded-md bg-brand text-white hover:opacity-90 transition-all duration-200 ease-out
 ```
 
 ### Secondary Button
 ```
-inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold rounded-md bg-white text-black border border-gray-300 transition-all duration-200 ease-out
+inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold rounded-md bg-white text-foreground border border-gray-300 transition-all duration-200 ease-out
 ```
 
 ### Card
@@ -282,8 +322,10 @@ bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] an
 - Inputs: `focus:border-accent focus:shadow-glow`
 
 ### Active/selected states
-- Nav item: `border-l-[3px] border-l-black bg-accent-light font-semibold`
+- Nav item: `border-l-[3px] border-l-brand text-brand bg-accent-light font-semibold`
 - Tab: `border-b-2 border-b-accent text-foreground font-medium`
+- Toggle on: `bg-brand`
+- Toggle off: `bg-gray-300`
 
 ### Loading states
 - Replace content with spinner (see Spinner recipe above)
@@ -342,10 +384,12 @@ Always pair with `transition-all` or specific properties (`transition-colors`, `
 
 ## Design Philosophy
 
-1. **Spacious over cramped** — use more padding when in doubt
-2. **Color only for semantics** (success, error, warning) — never decorative
-3. **Black (#1a1a1a) as the primary accent** — not blue or purple
-4. **Subtle soft shadows** — never heavy drop shadows
-5. **Every interactive element gets a transition** (duration-200 ease-out)
-6. **Focus states on everything** — never remove outlines without replacing them
-7. **Mobile-first** — design for small screens, enhance for large
+1. **Warm everything** — no cool grays, no blue undertones. The entire palette is warm cream/sand/taupe. Pure Wine (#66001F) is the most saturated member of the same warm family, not a foreign accent.
+2. **Spacious over cramped** — use more padding when in doubt
+3. **Brand color is rare** — Pure Wine has exactly 3 jobs (primary CTA, chart lines, active states). Maximum ~3-5 brand moments per screen. Restraint signals premium.
+4. **Text is never brand-colored** — numbers, headings, body text are always in the warm neutral hierarchy. The brand speaks through UI controls and data visualization, not typography.
+5. **Warm brown-black (#2C2320) as the primary accent** — for buttons, strong text, tooltips
+6. **Subtle soft shadows** — never heavy drop shadows
+7. **Every interactive element gets a transition** (duration-200 ease-out)
+8. **Focus states on everything** — never remove outlines without replacing them
+9. **Mobile-first** — design for small screens, enhance for large
