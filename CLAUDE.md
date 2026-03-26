@@ -22,8 +22,11 @@ Key rules:
 
 Before creating any new component, check existing components in `src/components/` for patterns to reuse.
 
-## Preview URL Pattern
+## Environments
 
-```
-https://demo-v2-production.up.railway.app/preview-<name>.html
-```
+- **Production**: https://demo-v2-production.up.railway.app (auto-deploys from `main`)
+- **Preview**: Railway Preview Environments (auto-deploy per PR — provide the full preview URL after every push)
+
+## Migration Notes
+
+This project uses CSS Modules + custom properties. Future projects should use Tailwind + shadcn/ui (see global CLAUDE.md). Do not migrate this project's styling approach unless Eduardo explicitly requests it.
