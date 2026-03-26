@@ -923,8 +923,8 @@ export default function StrategyBuilderPage({ config, onNext }) {
                             </linearGradient>
                             {/* Post-threshold area fill: burgundy brand */}
                             <linearGradient id="areaFillPost" x1="0" y1={chartTop} x2="0" y2={chartBottom} gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="var(--color-brand)" stopOpacity="0.12" />
-                              <stop offset="60%" stopColor="var(--color-brand)" stopOpacity="0.04" />
+                              <stop offset="0%" stopColor="var(--color-brand)" stopOpacity="0.22" />
+                              <stop offset="60%" stopColor="var(--color-brand)" stopOpacity="0.10" />
                               <stop offset="100%" stopColor="var(--color-brand)" stopOpacity="0" />
                             </linearGradient>
                             {/* Post-threshold stroke gradient: slate → burgundy */}
