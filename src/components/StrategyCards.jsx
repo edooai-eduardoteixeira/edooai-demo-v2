@@ -348,7 +348,7 @@ const BudgetPacing = ({ section }) => {
   const cap = Math.round(section.baseCap * pct);
   const capDisplay = cap >= 1000 ? `~${(cap / 1000).toFixed(1).replace(/\.0$/, '')}K` : `~${cap}`;
   return (
-    <div className="bg-accent-subtle rounded-lg py-3 px-3.5">
+    <div className="bg-accent-subtle rounded-lg py-3 px-4">
       <div className="flex items-center justify-between h-8">
         <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>Conversion rate</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -410,7 +410,7 @@ const AudienceSection = ({ section }) => {
         </div>
       ))}
       {section.summary && (
-        <div className="bg-accent-subtle rounded-lg py-2.5 px-3.5 mb-1" style={{ marginTop: 8 }}>
+        <div className="bg-accent-subtle rounded-lg py-3 px-4 mb-1" style={{ marginTop: 8 }}>
           <div className="flex items-baseline justify-between">
             <span className="text-sm font-semibold text-foreground">{section.summary.value}</span>
             <span className="text-[11.5px] text-foreground-faint">{section.summary.context}</span>
@@ -715,8 +715,8 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                   )}
 
                   {section.type === 'conditional' && (
-                    <div className="bg-accent-subtle rounded-lg overflow-hidden">
-                      <div className="flex items-center h-10 px-3 gap-2.5">
+                    <div className="bg-accent-subtle rounded-lg py-1.5 px-4">
+                      <div className="flex items-center h-10 gap-2.5">
                         <span className="text-[9px] font-bold tracking-[0.08em] uppercase text-foreground-faint min-w-8">If</span>
                         <span className="text-[13px] font-medium text-foreground relative cursor-default" style={{ flex: 1 }}>{section.ifRow.label}</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -724,7 +724,7 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                           {section.ifRow.suffix && <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{section.ifRow.suffix}</span>}
                         </div>
                       </div>
-                      <div className="flex items-center h-10 px-3 gap-2.5">
+                      <div className="flex items-center h-10 gap-2.5">
                         <span className="text-[9px] font-bold tracking-[0.08em] uppercase text-foreground-faint min-w-8">Then</span>
                         <span className="text-[13px] font-medium text-foreground relative cursor-default" style={{ flex: 1 }}>{section.thenRow.label}</span>
                         {section.thenRow.stepper && (
@@ -790,7 +790,7 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                   )}
 
                   {section.type === 'summary' && section.summary && (
-                    <div className="bg-accent-subtle rounded-lg py-2.5 px-3.5 mb-1">
+                    <div className="bg-accent-subtle rounded-lg py-3 px-4 mb-1">
                       {section.summary.note && (
                         <div className="text-[11px] text-foreground-faint mt-1 leading-[1.4]">{section.summary.note}</div>
                       )}
