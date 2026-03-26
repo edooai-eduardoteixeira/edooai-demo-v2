@@ -654,17 +654,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     />
                   </div>
 
-                  {/* Bounds — subtle */}
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    marginTop: 6,
-                    fontSize: 10,
-                    color: 'var(--color-gray-300)',
-                  }}>
-                    <span>${Math.round(budgetSlider.min / 1000)}K</span>
-                    <span>${Math.round(budgetSlider.max / 1000)}K</span>
-                  </div>
                 </div>
 
                 {/* Spacer — budget from context */}
