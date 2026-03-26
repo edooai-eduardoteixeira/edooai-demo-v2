@@ -903,7 +903,7 @@ against this mapping automatically.`);
                     </div>
                   </div>
                 </div>
-                <ul className="list-none mb-5">
+                <ul className="list-none mb-5 [&_li]:flex [&_li]:items-start [&_li]:gap-2 [&_li]:py-2 [&_li]:text-sm [&_li]:text-foreground-muted [&_li]:leading-[1.4] [&_li+li]:border-t [&_li+li]:border-border-light">
                   {INTEGRATION_CATALOG[modal.platform].capabilities.map(cap => {
                     const desc = INTEGRATION_CATALOG[modal.platform].scopeDescriptions[cap] || cap;
                     const dir = getCapDirection(cap);
@@ -953,7 +953,7 @@ against this mapping automatically.`);
                 </div>
                 <div style={{ marginBottom: '16px' }}>
                   <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-2">Expected Payload</div>
-                  <ul className="list-none mb-5">
+                  <ul className="list-none mb-5 [&_li]:flex [&_li]:items-start [&_li]:gap-2 [&_li]:py-2 [&_li]:text-sm [&_li]:text-foreground-muted [&_li]:leading-[1.4] [&_li+li]:border-t [&_li+li]:border-border-light">
                     <li>
                       <div className="w-[18px] h-[18px] rounded-full bg-green-50 flex items-center justify-center shrink-0 mt-px">
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -1087,7 +1087,7 @@ against this mapping automatically.`);
                 </div>
                 <div style={{ marginBottom: '16px' }}>
                   <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-2">Accepted Formats</div>
-                  <ul className="list-none mb-5">
+                  <ul className="list-none mb-5 [&_li]:flex [&_li]:items-start [&_li]:gap-2 [&_li]:py-2 [&_li]:text-sm [&_li]:text-foreground-muted [&_li]:leading-[1.4] [&_li+li]:border-t [&_li+li]:border-border-light">
                     <li>
                       <div className="w-[18px] h-[18px] rounded-full bg-green-50 flex items-center justify-center shrink-0 mt-px">
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
