@@ -6,7 +6,6 @@ import Tooltip from '../components/Tooltip.jsx';
 import { useProjections } from '../hooks/useProjections.js';
 import StrategyCards, { GearIcon, ChevronRight } from '../components/StrategyCards.jsx';
 import WhatUsersSee from '../components/WhatUsersSee.jsx';
-import sDrawer from '../styles/StrategyDrawer.module.css';
 
 /* ───────── Sparkline helpers ───────── */
 
@@ -711,7 +710,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       }} />
 
                       {/* Rules trigger */}
-                      <button className={sDrawer.rulesButton} onClick={() => setActiveDrawer('index')} style={{ animation: 'fadeIn 0.3s ease-out', animationDelay: '400ms', animationFillMode: 'both' }}>
+                      <button className="inline-flex items-center gap-2 p-0 text-[13px] font-medium text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:text-foreground" onClick={() => setActiveDrawer('index')} style={{ animation: 'fadeIn 0.3s ease-out', animationDelay: '400ms', animationFillMode: 'both' }}>
                         <GearIcon /> <span>Referral Rules</span> <ChevronRight />
                       </button>
                     </>

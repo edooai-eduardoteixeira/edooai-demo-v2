@@ -280,6 +280,25 @@
     height: 8px;
     border-radius: 4px;
   }
+
+  /* Tooltip for [data-tip] labels (used in StrategyCards drawer) */
+  [data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: 0;
+    top: 100%;
+    margin-top: 4px;
+    background: var(--text-primary);
+    color: var(--surface);
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 400;
+    white-space: nowrap;
+    z-index: 20;
+    line-height: 1.4;
+    pointer-events: none;
+  }
 }
 
 /* ── Utility classes ── */

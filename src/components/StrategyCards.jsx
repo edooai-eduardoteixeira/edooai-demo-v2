@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import s from '../styles/StrategyDrawer.module.css';
+import { cn } from '../lib/utils';
 
 /* ═══════════════════════════════════════════
    Strategy & Guardrails — Card + Drawer System
@@ -66,8 +66,8 @@ const RULES_INDEX = [
 
 /* ── Toggle ── */
 const Toggle = ({ on, onChange }) => (
-  <div className={`${s.toggleTrack} ${on ? s.on : s.off}`} onClick={() => onChange && onChange(!on)}>
-    <div className={s.toggleKnob} />
+  <div className={cn('w-[34px] h-5 rounded-[10px] cursor-pointer relative transition-colors duration-200 ease-out shrink-0', on ? 'bg-accent' : 'bg-gray-300')} onClick={() => onChange && onChange(!on)}>
+    <div className="w-4 h-4 rounded-full bg-surface absolute top-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.15)] transition-[left] duration-200 ease-out" style={{ left: on ? '16px' : '2px' }} />
   </div>
 );
 
@@ -94,15 +94,15 @@ const MultiSelect = ({ items: initialItems }) => {
 
   return (
     <div style={{ position: 'relative' }} ref={ref}>
-      <div className={s.multiselectTrigger} onClick={() => setOpen(!open)}>
+      <div className="inline-flex items-center gap-1 py-1 px-2.5 bg-accent-subtle border border-border rounded-sm text-[13px] text-foreground-muted cursor-pointer transition-colors duration-150 ease-out max-w-[260px] hover:border-gray-400" onClick={() => setOpen(!open)}>
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{display}</span>
         <span style={{ color: 'var(--text-tertiary)', fontSize: 10, flexShrink: 0 }}>▾</span>
       </div>
       {open && (
-        <div className={s.multiselectDropdown}>
+        <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-lg shadow-md z-10 min-w-[200px] py-1">
           {items.map((item, i) => (
-            <div className={s.multiselectOption} key={i} onClick={() => toggle(i)}>
-              <div className={`${s.multiselectCheck} ${item.on ? s.checked : ''}`}>
+            <div className="flex items-center gap-2 py-2 px-3.5 text-[13px] text-foreground cursor-pointer transition-colors duration-150 ease-out select-none hover:bg-accent-subtle" key={i} onClick={() => toggle(i)}>
+              <div className={cn('w-4 h-4 rounded border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', item.on && 'bg-accent border-accent')}>
                 {item.on && <CheckIcon />}
               </div>
               {item.label}
@@ -130,16 +130,16 @@ const SingleSelect = ({ value: initial, choices, onChange }) => {
 
   return (
     <div style={{ position: 'relative' }} ref={ref}>
-      <div className={s.singleselectTrigger} onClick={() => setOpen(!open)}>
+      <div className="inline-flex items-center gap-1 py-1 px-2.5 bg-accent-subtle border border-border rounded-sm text-[13px] text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:border-gray-400" onClick={() => setOpen(!open)}>
         <span>{val}</span>
         <span style={{ color: 'var(--text-tertiary)', fontSize: 10, flexShrink: 0 }}>▾</span>
       </div>
       {open && (
-        <div className={s.singleselectDropdown}>
+        <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-lg shadow-md z-10 min-w-[140px] py-1">
           {choices.map((choice, i) => (
-            <div className={`${s.singleselectOption} ${choice === val ? s.selected : ''}`} key={i} onClick={() => pick(choice)}>
-              <div className={`${s.singleselectRadio} ${choice === val ? s.selected : ''}`}>
-                {choice === val && <div className={s.singleselectRadioDot} />}
+            <div className={cn('flex items-center gap-2 py-2 px-3.5 text-[13px] text-foreground cursor-pointer transition-colors duration-150 ease-out select-none hover:bg-accent-subtle', choice === val && 'text-[#3b5bdb] font-medium')} key={i} onClick={() => pick(choice)}>
+              <div className={cn('w-3.5 h-3.5 rounded-full border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', choice === val && 'border-accent')}>
+                {choice === val && <div className="w-2 h-2 rounded-full bg-accent" />}
               </div>
               {choice}
             </div>
@@ -163,17 +163,17 @@ const RichSelect = ({ value: initial, richChoices }) => {
   const pick = (v) => { setVal(v); setOpen(false); };
   return (
     <div style={{ position: 'relative' }} ref={ref}>
-      <div className={s.singleselectTrigger} onClick={() => setOpen(!open)}>
+      <div className="inline-flex items-center gap-1 py-1 px-2.5 bg-accent-subtle border border-border rounded-sm text-[13px] text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:border-gray-400" onClick={() => setOpen(!open)}>
         <span>{val}</span>
         <span style={{ color: 'var(--text-tertiary)', fontSize: 10, flexShrink: 0 }}>▾</span>
       </div>
       {open && (
-        <div className={s.singleselectDropdown} style={{ minWidth: 220, padding: '4px 0' }}>
+        <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-lg shadow-md z-10 min-w-[140px] py-1" style={{ minWidth: 220, padding: '4px 0' }}>
           {richChoices.map((c, i) => (
-            <div className={`${s.singleselectOption} ${c.value === val ? s.selected : ''}`} key={i} onClick={() => pick(c.value)} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2, padding: '8px 14px' }}>
+            <div className={cn('flex items-center gap-2 py-2 px-3.5 text-[13px] text-foreground cursor-pointer transition-colors duration-150 ease-out select-none hover:bg-accent-subtle', c.value === val && 'text-[#3b5bdb] font-medium')} key={i} onClick={() => pick(c.value)} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2, padding: '8px 14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div className={`${s.singleselectRadio} ${c.value === val ? s.selected : ''}`}>
-                  {c.value === val && <div className={s.singleselectRadioDot} />}
+                <div className={cn('w-3.5 h-3.5 rounded-full border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', c.value === val && 'border-accent')}>
+                  {c.value === val && <div className="w-2 h-2 rounded-full bg-accent" />}
                 </div>
                 <span style={{ fontWeight: 500 }}>{c.value}</span>
               </div>
@@ -190,24 +190,24 @@ const RichSelect = ({ value: initial, richChoices }) => {
 const SelectableCards = ({ label, tip, value: initial, choices }) => {
   const [selected, setSelected] = useState(initial);
   return (
-    <div className={s.selectableCardsGroup}>
-      <div className={s.drawerRow} style={{ marginBottom: 6 }}>
-        <span className={s.drawerRowLabel} data-tip={tip || undefined}>{label}</span>
+    <div className="mb-3">
+      <div className="flex items-center justify-between min-h-10 p-0" style={{ marginBottom: 6 }}>
+        <span className="text-[13px] font-medium text-foreground relative cursor-default" data-tip={tip || undefined}>{label}</span>
       </div>
-      <div className={s.selectableCardsRow}>
+      <div className="flex gap-2">
         {choices.map((c) => (
           <div
             key={c.value}
-            className={`${s.selectableCard} ${c.value === selected ? s.selectableCardActive : ''}`}
+            className={cn('flex-1 py-2.5 px-3 border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out bg-surface hover:border-gray-300', c.value === selected && 'border-foreground')}
             onClick={() => setSelected(c.value)}
           >
-            <div className={s.selectableCardHeader}>
-              <div className={`${s.selectableCardRadio} ${c.value === selected ? s.selectableCardRadioActive : ''}`}>
-                {c.value === selected && <div className={s.selectableCardRadioDot} />}
+            <div className="flex items-center gap-2 mb-1">
+              <div className={cn('w-3.5 h-3.5 rounded-full border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', c.value === selected && 'border-foreground')}>
+                {c.value === selected && <div className="w-2 h-2 rounded-full bg-foreground" />}
               </div>
-              <span className={s.selectableCardTitle}>{c.value}</span>
+              <span className="text-[13px] font-medium text-foreground">{c.value}</span>
             </div>
-            <div className={s.selectableCardDesc}>{c.desc}</div>
+            <div className="text-[11px] text-foreground-faint leading-[1.4] pl-[22px]">{c.desc}</div>
           </div>
         ))}
       </div>
@@ -221,10 +221,10 @@ const NumericStepper = ({ value: initial, min, max, suffix }) => {
   const dec = () => setVal(v => Math.max(min, v - 1));
   const inc = () => setVal(v => Math.min(max, v + 1));
   return (
-    <div className={s.stepperWrap}>
-      <button className={s.stepperBtn} onClick={dec} disabled={val <= min}>−</button>
-      <span className={s.stepperValue}>{val}{suffix ? ` ${suffix}` : ''}</span>
-      <button className={s.stepperBtn} onClick={inc} disabled={val >= max}>+</button>
+    <div className="inline-flex items-center gap-0 bg-accent-subtle border border-border rounded-sm overflow-hidden">
+      <button className="w-7 h-7 flex items-center justify-center cursor-pointer text-sm text-foreground-muted transition-all duration-150 ease-out p-0 hover:bg-accent-light hover:text-foreground disabled:text-gray-300 disabled:cursor-default" onClick={dec} disabled={val <= min}>−</button>
+      <span className="text-[13px] text-foreground-muted min-w-[52px] text-center px-0.5">{val}{suffix ? ` ${suffix}` : ''}</span>
+      <button className="w-7 h-7 flex items-center justify-center cursor-pointer text-sm text-foreground-muted transition-all duration-150 ease-out p-0 hover:bg-accent-light hover:text-foreground disabled:text-gray-300 disabled:cursor-default" onClick={inc} disabled={val >= max}>+</button>
     </div>
   );
 };
@@ -272,20 +272,20 @@ const JourneySection = ({ section }) => {
         const isLast = i === steps.length - 1;
         const canRemove = !step.fixed && steps.length > 2;
         return (
-          <div className={s.journeyStep} key={i}>
-            <div className={s.journeyRail}>
-              {!isFirst && <div className={s.journeyLine} />}
-              <div className={`${s.journeyDot} ${step.fixed ? s.start : ''} ${step.trigger ? s.trigger : ''}`} />
-              {!isLast && <div className={s.journeyLine} />}
+          <div className="flex items-stretch min-h-[44px]" key={i}>
+            <div className="flex flex-col items-center w-5 shrink-0">
+              {!isFirst && <div className="w-[1.5px] bg-border flex-1 min-h-2" />}
+              <div className={cn('w-2.5 h-2.5 rounded-full border-2 border-gray-300 bg-surface shrink-0 mt-1.5', step.fixed && 'border-accent bg-accent', step.trigger && 'border-[#3b5bdb] bg-[#3b5bdb]')} />
+              {!isLast && <div className="w-[1.5px] bg-border flex-1 min-h-2" />}
             </div>
-            <div className={s.journeyContent}>
+            <div className="flex-1 flex items-center justify-between py-1.5 pl-2.5">
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span className={s.journeyLabel}>{step.label}</span>
-                {step.fixed && <span className={`${s.journeyBadge} ${s.startBadge}`}>Start</span>}
-                {step.trigger && <span className={`${s.journeyBadge} ${s.triggerBadge}`}>Redeems</span>}
+                <span className="text-[13px] font-medium text-foreground">{step.label}</span>
+                {step.fixed && <span className="text-[9px] py-0.5 px-1.5 rounded-[3px] font-semibold tracking-[0.04em] uppercase text-foreground-faint bg-accent-light">Start</span>}
+                {step.trigger && <span className="text-[9px] py-0.5 px-1.5 rounded-[3px] font-semibold tracking-[0.04em] uppercase text-[#3b5bdb] bg-[#eef1ff]">Redeems</span>}
               </div>
               {canRemove && (
-                <div className={s.journeyRemove} onClick={() => removeStep(i)}><XSmall /></div>
+                <div className="w-5 h-5 flex items-center justify-center rounded cursor-pointer text-gray-400 transition-all duration-150 ease-out shrink-0 ml-1 hover:bg-[#fef2f2] hover:text-danger" onClick={() => removeStep(i)}><XSmall /></div>
               )}
             </div>
           </div>
@@ -293,13 +293,13 @@ const JourneySection = ({ section }) => {
       })}
       {available.length > 0 && (
         <div style={{ position: 'relative' }} ref={addRef}>
-          <div className={s.journeyAdd} onClick={() => setShowAdd(!showAdd)}>
+          <div className="flex items-center gap-1.5 py-1 pl-[30px] text-xs text-foreground-faint cursor-pointer transition-colors duration-150 ease-out hover:text-[#3b5bdb]" onClick={() => setShowAdd(!showAdd)}>
             <PlusSmall /> Add step before redemption
           </div>
           {showAdd && (
-            <div className={s.singleselectDropdown} style={{ left: 30, right: 'auto', minWidth: 180 }}>
+            <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-lg shadow-md z-10 min-w-[140px] py-1" style={{ left: 30, right: 'auto', minWidth: 180 }}>
               {available.map((a, i) => (
-                <div className={s.singleselectOption} key={i} onClick={() => addStep(a)}>
+                <div className="flex items-center gap-2 py-2 px-3.5 text-[13px] text-foreground cursor-pointer transition-colors duration-150 ease-out select-none hover:bg-accent-subtle" key={i} onClick={() => addStep(a)}>
                   {a}
                 </div>
               ))}
@@ -321,8 +321,8 @@ const ActivationModes = ({ modes: initialModes }) => {
     <div>
       {modes.map((mode, i) => (
         <div key={mode.key} style={{ borderTop: i > 0 ? '1px solid var(--border-light)' : 'none' }}>
-          <div className={s.drawerRow}>
-            <span className={s.drawerRowLabel}>{mode.label}</span>
+          <div className="flex items-center justify-between min-h-10 p-0">
+            <span className="text-[13px] font-medium text-foreground relative cursor-default">{mode.label}</span>
             <Toggle on={mode.on} onChange={() => toggleMode(i)} />
           </div>
           <div style={{ fontSize: 11.5, color: 'var(--text-tertiary)', lineHeight: 1.4, paddingBottom: 8 }}>
@@ -348,27 +348,27 @@ const BudgetPacing = ({ section }) => {
   const cap = Math.round(section.baseCap * pct);
   const capDisplay = cap >= 1000 ? `~${(cap / 1000).toFixed(1).replace(/\.0$/, '')}K` : `~${cap}`;
   return (
-    <div className={s.pacingBlock}>
-      <div className={s.pacingRow}>
+    <div className="bg-accent-subtle rounded-lg py-3 px-3.5">
+      <div className="flex items-center justify-between h-8">
         <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>Conversion rate</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{section.conversionRate}</span>
-          <span className={s.autoBadge}>from data</span>
+          <span className="text-[9px] text-foreground-faint bg-accent-light px-1.5 py-px rounded-[3px] ml-1.5 tracking-[0.04em] uppercase font-medium">from data</span>
         </div>
       </div>
-      <div className={s.pacingRow}>
+      <div className="flex items-center justify-between h-8">
         <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>Pacing intensity</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative' }} ref={ref}>
-          <div className={s.singleselectTrigger} onClick={() => setOpen(!open)}>
+          <div className="inline-flex items-center gap-1 py-1 px-2.5 bg-accent-subtle border border-border rounded-sm text-[13px] text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:border-gray-400" onClick={() => setOpen(!open)}>
             <span>{intensity}</span>
             <span style={{ color: 'var(--text-tertiary)', fontSize: 10, flexShrink: 0 }}>▾</span>
           </div>
           {open && (
-            <div className={s.singleselectDropdown}>
+            <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-lg shadow-md z-10 min-w-[140px] py-1">
               {section.intensityChoices.map((c, i) => (
-                <div className={`${s.singleselectOption} ${c === intensity ? s.selected : ''}`} key={i} onClick={() => { setIntensity(c); setOpen(false); }}>
-                  <div className={`${s.singleselectRadio} ${c === intensity ? s.selected : ''}`}>
-                    {c === intensity && <div className={s.singleselectRadioDot} />}
+                <div className={cn('flex items-center gap-2 py-2 px-3.5 text-[13px] text-foreground cursor-pointer transition-colors duration-150 ease-out select-none hover:bg-accent-subtle', c === intensity && 'text-[#3b5bdb] font-medium')} key={i} onClick={() => { setIntensity(c); setOpen(false); }}>
+                  <div className={cn('w-3.5 h-3.5 rounded-full border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', c === intensity && 'border-accent')}>
+                    {c === intensity && <div className="w-2 h-2 rounded-full bg-accent" />}
                   </div>
                   {c}
                 </div>
@@ -395,8 +395,8 @@ const AudienceSection = ({ section }) => {
   return (
     <>
       {rows.map((row, ri) => (
-        <div className={s.drawerRow} key={ri}>
-          <span className={s.drawerRowLabel} data-tip={row.tip || undefined}>
+        <div className="flex items-center justify-between min-h-10 p-0" key={ri}>
+          <span className="text-[13px] font-medium text-foreground relative cursor-default" data-tip={row.tip || undefined}>
             {row.label}
             {row.detail && <span style={{ fontSize: 12, color: 'var(--text-tertiary)', fontWeight: 400, marginLeft: 4 }}>{row.detail}</span>}
           </span>
@@ -405,18 +405,18 @@ const AudienceSection = ({ section }) => {
           ) : row.choices ? (
             <SingleSelect value={row.value} choices={row.choices} />
           ) : (
-            <span className={s.drawerRowValue}>{row.value}</span>
+            <span className="text-[13px] text-foreground-muted text-right">{row.value}</span>
           )}
         </div>
       ))}
       {section.summary && (
-        <div className={s.liveSummary} style={{ marginTop: 8 }}>
-          <div className={s.liveSummaryTop}>
-            <span className={s.liveSummaryValue}>{section.summary.value}</span>
-            <span className={s.liveSummaryContext}>{section.summary.context}</span>
+        <div className="bg-accent-subtle rounded-lg py-2.5 px-3.5 mb-1" style={{ marginTop: 8 }}>
+          <div className="flex items-baseline justify-between">
+            <span className="text-sm font-semibold text-foreground">{section.summary.value}</span>
+            <span className="text-[11.5px] text-foreground-faint">{section.summary.context}</span>
           </div>
           {section.summary.note && (
-            <div className={s.liveSummaryNote}>{section.summary.note}</div>
+            <div className="text-[11px] text-foreground-faint mt-1 leading-[1.4]">{section.summary.note}</div>
           )}
         </div>
       )}
@@ -625,24 +625,24 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
 
   return (
     <>
-      <div className={`${s.drawerBackdrop} ${isOpen ? s.open : ''}`} onClick={onClose} />
-      <div className={`${s.drawerPanel} ${isOpen ? s.open : ''}`}>
+      <div className={cn('fixed inset-0 bg-black/15 z-[100] transition-opacity duration-[250ms] ease-out', isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none')} onClick={onClose} />
+      <div className={cn('fixed top-0 right-0 bottom-0 w-[420px] max-w-[90vw] bg-surface z-[101] transition-transform duration-300 shadow-[-8px_0_30px_rgba(0,0,0,0.08)] flex flex-col', isOpen ? 'translate-x-0' : 'translate-x-full')}>
         {isIndex && (
           <>
-            <div className={s.drawerHeader}>
-              <div className={s.drawerHeaderTop}>
+            <div className="py-4 px-6 pb-3.5 border-b border-border-light shrink-0">
+              <div className="flex items-center justify-between mb-0.5">
                 <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>Rules and Guardrails</div>
-                <div className={s.drawerClose} onClick={onClose}><CloseIcon /></div>
+                <div className="w-7 h-7 flex items-center justify-center cursor-pointer rounded-sm text-foreground-faint transition-colors duration-150 ease-out shrink-0 hover:bg-accent-light hover:text-foreground" onClick={onClose}><CloseIcon /></div>
               </div>
             </div>
-            <div className={s.drawerBody}>
+            <div className="flex-1 overflow-y-auto">
               {RULES_INDEX.map((cat) => (
-                <div key={cat.key} className={s.indexCard} onClick={() => onNavigate(cat.key)}>
+                <div key={cat.key} className="flex items-center justify-between py-3.5 px-6 border-b border-border-light cursor-pointer transition-colors duration-150 ease-out hover:bg-accent-subtle last:border-b-0" onClick={() => onNavigate(cat.key)}>
                   <div>
-                    <div className={s.indexCardLabel}>{cat.label}</div>
-                    <div className={s.indexCardSub}>{cat.subtopics}</div>
+                    <div className="text-sm font-semibold text-foreground">{cat.label}</div>
+                    <div className="text-xs text-foreground-faint mt-0.5">{cat.subtopics}</div>
                   </div>
-                  <ChevronRight className={s.configRowChevron} />
+                  <ChevronRight className="shrink-0 text-gray-400 transition-colors duration-150 ease-out" />
                 </div>
               ))}
             </div>
@@ -650,29 +650,29 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
         )}
         {data && (
           <>
-            <div className={s.drawerHeader}>
-              <div className={s.drawerHeaderTop}>
+            <div className="py-4 px-6 pb-3.5 border-b border-border-light shrink-0">
+              <div className="flex items-center justify-between mb-0.5">
                 <div>
-                  <button className={s.drawerBack} onClick={() => onNavigate('index')}>
+                  <button className="flex items-center gap-1 text-xs text-foreground-faint cursor-pointer transition-colors duration-150 ease-out hover:text-foreground" onClick={() => onNavigate('index')}>
                     <ChevronLeft /> Rules
                   </button>
                   <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginTop: 4 }}>{data.title}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <div className={s.drawerNav}>
-                    <button className={s.drawerNavBtn} onClick={goPrev} disabled={!canPrev}><ChevronUp /></button>
-                    <span className={s.drawerNavCount}>{currentIdx + 1} / {DRAWER_ORDER.length}</span>
-                    <button className={s.drawerNavBtn} onClick={goNext} disabled={!canNext}><ChevronDown /></button>
+                  <div className="flex items-center gap-0.5">
+                    <button className="w-7 h-7 flex items-center justify-center cursor-pointer rounded-sm text-foreground-faint transition-all duration-150 ease-out p-0 hover:bg-accent-light hover:text-foreground disabled:text-gray-300 disabled:cursor-default" onClick={goPrev} disabled={!canPrev}><ChevronUp /></button>
+                    <span className="text-[11px] text-foreground-faint px-1 min-w-9 text-center">{currentIdx + 1} / {DRAWER_ORDER.length}</span>
+                    <button className="w-7 h-7 flex items-center justify-center cursor-pointer rounded-sm text-foreground-faint transition-all duration-150 ease-out p-0 hover:bg-accent-light hover:text-foreground disabled:text-gray-300 disabled:cursor-default" onClick={goNext} disabled={!canNext}><ChevronDown /></button>
                   </div>
-                  <div className={s.drawerClose} onClick={onClose}><CloseIcon /></div>
+                  <div className="w-7 h-7 flex items-center justify-center cursor-pointer rounded-sm text-foreground-faint transition-colors duration-150 ease-out shrink-0 hover:bg-accent-light hover:text-foreground" onClick={onClose}><CloseIcon /></div>
                 </div>
               </div>
             </div>
 
-            <div className={s.drawerBody}>
+            <div className="flex-1 overflow-y-auto">
               {data.sections.map((section, si) => (
-                <div className={s.drawerSection} key={`${blockKey}-${si}`}>
-                  {section.title && <div className={s.drawerSectionTitle}>{section.title}</div>}
+                <div className="py-3 px-6" key={`${blockKey}-${si}`}>
+                  {section.title && <div className="text-[10px] text-foreground-faint tracking-[0.1em] uppercase font-semibold mb-2">{section.title}</div>}
 
                   {section.type === 'audience' && (
                     <AudienceSection section={section} />
@@ -684,8 +684,8 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
 
                   {section.type === 'multiselect-rows' && section.rows && (
                     section.rows.map((row, ri) => (
-                      <div className={s.drawerRow} key={ri}>
-                        <span className={s.drawerRowLabel}>{row.label}</span>
+                      <div className="flex items-center justify-between min-h-10 p-0" key={ri}>
+                        <span className="text-[13px] font-medium text-foreground relative cursor-default">{row.label}</span>
                         <MultiSelect items={row.items} />
                       </div>
                     ))
@@ -697,12 +697,12 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
 
                   {section.type === 'multiplier-rows' && section.rows && (
                     section.rows.map((row, ri) => (
-                      <div className={s.drawerRow} key={ri} style={{ minHeight: 44 }}>
-                        <span className={s.drawerRowLabel} data-tip={row.tip || undefined}>{row.label}</span>
+                      <div className="flex items-center justify-between min-h-10 p-0" key={ri} style={{ minHeight: 44 }}>
+                        <span className="text-[13px] font-medium text-foreground relative cursor-default" data-tip={row.tip || undefined}>{row.label}</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <SingleSelect value={row.multiplier} choices={row.choices} />
-                          <span className={s.multiplierFormula}>{row.ref} =</span>
-                          <span className={s.multiplierResult}>{row.result}</span>
+                          <span className="flex items-center gap-1.5 text-xs text-foreground-faint">{row.ref} =</span>
+                          <span className="text-[13px] text-foreground-muted font-medium">{row.result}</span>
                         </div>
                       </div>
                     ))
@@ -715,18 +715,18 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                   )}
 
                   {section.type === 'conditional' && (
-                    <div className={s.conditionalBlock}>
-                      <div className={s.conditionalRow}>
-                        <span className={s.conditionalKeyword}>If</span>
-                        <span className={s.drawerRowLabel} style={{ flex: 1 }}>{section.ifRow.label}</span>
+                    <div className="bg-accent-subtle rounded-lg overflow-hidden">
+                      <div className="flex items-center h-10 px-3 gap-2.5">
+                        <span className="text-[9px] font-bold tracking-[0.08em] uppercase text-foreground-faint min-w-8">If</span>
+                        <span className="text-[13px] font-medium text-foreground relative cursor-default" style={{ flex: 1 }}>{section.ifRow.label}</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <SingleSelect value={section.ifRow.value} choices={section.ifRow.choices} />
                           {section.ifRow.suffix && <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{section.ifRow.suffix}</span>}
                         </div>
                       </div>
-                      <div className={s.conditionalRow}>
-                        <span className={s.conditionalKeyword}>Then</span>
-                        <span className={s.drawerRowLabel} style={{ flex: 1 }}>{section.thenRow.label}</span>
+                      <div className="flex items-center h-10 px-3 gap-2.5">
+                        <span className="text-[9px] font-bold tracking-[0.08em] uppercase text-foreground-faint min-w-8">Then</span>
+                        <span className="text-[13px] font-medium text-foreground relative cursor-default" style={{ flex: 1 }}>{section.thenRow.label}</span>
                         {section.thenRow.stepper && (
                           <NumericStepper value={section.thenRow.stepper.value} min={section.thenRow.stepper.min} max={section.thenRow.stepper.max} suffix={section.thenRow.stepper.suffix} />
                         )}
@@ -743,8 +743,8 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                       {section.rows.map((row, ri) => {
                         const side = section.title?.toLowerCase().includes('referrer') ? 'referrer' : 'referee';
                         return (
-                          <div className={s.drawerRow} key={ri}>
-                            <span className={s.drawerRowLabel} data-tip={row.tip || undefined}>{row.label}</span>
+                          <div className="flex items-center justify-between min-h-10 p-0" key={ri}>
+                            <span className="text-[13px] font-medium text-foreground relative cursor-default" data-tip={row.tip || undefined}>{row.label}</span>
                             {row.choices ? (
                               <SingleSelect
                                 value={row.value}
@@ -752,14 +752,14 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                                 onChange={(val) => handleRewardChange(side, ri, val)}
                               />
                             ) : (
-                              <span className={s.drawerRowValue}>{row.value}</span>
+                              <span className="text-[13px] text-foreground-muted text-right">{row.value}</span>
                             )}
                           </div>
                         );
                       })}
                       {section.paidAs && (
-                        <div className={s.drawerRow} style={{ marginTop: 4 }}>
-                          <span className={s.drawerRowLabel}>Payment Method</span>
+                        <div className="flex items-center justify-between min-h-10 p-0" style={{ marginTop: 4 }}>
+                          <span className="text-[13px] font-medium text-foreground relative cursor-default">Payment Method</span>
                           <MultiSelect items={section.paidAs} />
                         </div>
                       )}
@@ -768,8 +768,8 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
 
                   {section.type === 'rows' && section.rows && (
                     section.rows.map((row, ri) => (
-                      <div className={s.drawerRow} key={ri}>
-                        <span className={s.drawerRowLabel} data-tip={row.tip || undefined}>{row.label}</span>
+                      <div className="flex items-center justify-between min-h-10 p-0" key={ri}>
+                        <span className="text-[13px] font-medium text-foreground relative cursor-default" data-tip={row.tip || undefined}>{row.label}</span>
                         {row.stepper ? (
                           <NumericStepper value={row.stepper.value} min={row.stepper.min} max={row.stepper.max} suffix={row.stepper.suffix} />
                         ) : row.richChoices ? (
@@ -778,21 +778,21 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <SingleSelect value={row.value} choices={row.choices} />
                             {row.suffix && <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{row.suffix}</span>}
-                            {row.ref && <span className={s.autoBadge}>{row.ref}</span>}
+                            {row.ref && <span className="text-[9px] text-foreground-faint bg-accent-light px-1.5 py-px rounded-[3px] ml-1.5 tracking-[0.04em] uppercase font-medium">{row.ref}</span>}
                           </div>
                         ) : row.formula ? (
-                          <span className={s.drawerRowDerived}>{row.value}<span className={s.autoBadge}>{row.formula}</span></span>
+                          <span className="text-[13px] text-foreground-faint font-normal">{row.value}<span className="text-[9px] text-foreground-faint bg-accent-light px-1.5 py-px rounded-[3px] ml-1.5 tracking-[0.04em] uppercase font-medium">{row.formula}</span></span>
                         ) : (
-                          <span className={s.drawerRowValue}>{row.value}</span>
+                          <span className="text-[13px] text-foreground-muted text-right">{row.value}</span>
                         )}
                       </div>
                     ))
                   )}
 
                   {section.type === 'summary' && section.summary && (
-                    <div className={s.liveSummary}>
+                    <div className="bg-accent-subtle rounded-lg py-2.5 px-3.5 mb-1">
                       {section.summary.note && (
-                        <div className={s.liveSummaryNote}>{section.summary.note}</div>
+                        <div className="text-[11px] text-foreground-faint mt-1 leading-[1.4]">{section.summary.note}</div>
                       )}
                     </div>
                   )}
@@ -804,9 +804,9 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
               ))}
 
               {/* Semantic Engine — add rule via AI */}
-              <div className={s.drawerSection} style={{ borderTop: '1px solid var(--border-light)' }}>
-                <div className={s.addRuleBtn}>
-                  <div className={s.addRulePlus}><Sparkle /></div>
+              <div className="py-3 px-6" style={{ borderTop: '1px solid var(--border-light)' }}>
+                <div className="flex items-center gap-1.5 h-10 text-[13px] text-[#3b5bdb] cursor-pointer font-medium transition-opacity duration-150 ease-out hover:opacity-80">
+                  <div className="w-[18px] h-[18px] rounded-md bg-[#eef1ff] flex items-center justify-center"><Sparkle /></div>
                   Add rule with AI
                 </div>
               </div>

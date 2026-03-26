@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Logo from '../components/Logo.jsx';
 import CTAButton from '../components/CTAButton.jsx';
-import styles from '../styles/DataConnection.module.css';
+import { cn } from '../lib/utils';
 
 // ═══════════════════════════════════════════
 // SVG ICON COMPONENTS
@@ -440,7 +440,7 @@ against this mapping automatically.`);
       gridContent = (
         <div>
           {commsGrid.connectedComms.length > 0 && (
-            <div className={styles.platformGrid}>
+            <div className="grid grid-cols-2 gap-0">
               {commsGrid.connectedComms.map(renderConnectedPlatformRow)}
             </div>
           )}
@@ -448,13 +448,13 @@ against this mapping automatically.`);
           {!allFulfilled && allUnfulfilled && (
             <>
               {commsGrid.relevantCRMs.length > 0 && (
-                <div className={styles.platformGrid}>
+                <div className="grid grid-cols-2 gap-0">
                   {commsGrid.relevantCRMs.map(renderPlatformRow)}
                 </div>
               )}
               {!commsExpanded && (
                 <button
-                  className={styles.skipBtn}
+                  className="inline-flex items-center gap-1.5 mt-5 py-3.5 px-8 text-base font-semibold text-black bg-white border border-gray-300 rounded-md cursor-pointer transition-all duration-200 ease-out leading-[1.4] hover:bg-gray-50"
                   onClick={() => setCommsExpanded(true)}
                 >
                   See more options
@@ -467,8 +467,8 @@ against this mapping automatically.`);
                 if (platforms.length === 0) return null;
                 return (
                   <div key={cat}>
-                    <div className={styles.groupLabel} style={{ marginTop: '28px' }}>{cat}</div>
-                    <div className={styles.platformGrid}>
+                    <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-1.5" style={{ marginTop: '28px' }}>{cat}</div>
+                    <div className="grid grid-cols-2 gap-0">
                       {platforms.map(renderPlatformRow)}
                     </div>
                   </div>
@@ -481,8 +481,8 @@ against this mapping automatically.`);
             <>
               {commsGrid.relevantCRMs.length > 0 && (
                 <>
-                  <div className={styles.groupLabel} style={commsGrid.connectedComms.length === 0 ? { marginTop: 0 } : { marginTop: '28px' }}>Platforms</div>
-                  <div className={styles.platformGrid}>
+                  <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-1.5" style={commsGrid.connectedComms.length === 0 ? { marginTop: 0 } : { marginTop: '28px' }}>Platforms</div>
+                  <div className="grid grid-cols-2 gap-0">
                     {commsGrid.relevantCRMs.map(renderPlatformRow)}
                   </div>
                 </>
@@ -494,8 +494,8 @@ against this mapping automatically.`);
                 if (platforms.length === 0) return null;
                 return (
                   <div key={cat}>
-                    <div className={styles.groupLabel} style={{ marginTop: '28px' }}>{cat}</div>
-                    <div className={styles.platformGrid}>
+                    <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-1.5" style={{ marginTop: '28px' }}>{cat}</div>
+                    <div className="grid grid-cols-2 gap-0">
                       {platforms.map(renderPlatformRow)}
                     </div>
                   </div>
@@ -514,7 +514,7 @@ against this mapping automatically.`);
 
       gridContent = (
         <div>
-          <div className={styles.platformGrid}>
+          <div className="grid grid-cols-2 gap-0">
             {dataGrid.connectedData.map(renderConnectedPlatformRow)}
           </div>
           {!dataGrid.fulfilled && (
@@ -526,37 +526,37 @@ against this mapping automatically.`);
                   .filter(name => !connectedPlatforms.includes(name));
                 return platforms.length > 0 && (
                   <div key={group.label}>
-                    <div className={styles.groupLabel} style={{ marginTop: i === 0 && dataGrid.connectedData.length === 0 ? '0' : '28px' }}>
+                    <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-1.5" style={{ marginTop: i === 0 && dataGrid.connectedData.length === 0 ? '0' : '28px' }}>
                       {group.label}
                     </div>
-                    <div className={styles.platformGrid}>
+                    <div className="grid grid-cols-2 gap-0">
                       {platforms.map(renderPlatformRow)}
                     </div>
                   </div>
                 );
               })}
               <div>
-                <div className={styles.groupLabel} style={{ marginTop: '28px' }}>Custom Integration</div>
-                <div className={styles.customIntegrationGroup}>
+                <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-1.5" style={{ marginTop: '28px' }}>Custom Integration</div>
+                <div className="mt-2 flex flex-col gap-2">
                   {['Inbound Webhooks', 'REST API', 'Secure File Drop'].map(name => {
                     const meta = CUSTOM_INTEGRATION_META[name] || { displayName: name, desc: '', recommended: false };
                     return (
                       <div
                         key={name}
-                        className={styles.customCard}
+                        className="flex items-center gap-3 py-3.5 px-4 border border-border rounded-md cursor-pointer transition-all duration-150 ease-out bg-white hover:border-gray-400 hover:bg-gray-50 active:bg-gray-100"
                         onClick={() => showModal(name)}
                       >
-                        <div className={styles.customCardIcon}>
+                        <div className="w-7 h-7 flex items-center justify-center shrink-0">
                           <PlatformSVG name={name} size={24} />
                         </div>
-                        <div className={styles.customCardContent}>
-                          <div className={styles.customCardName}>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-semibold text-foreground leading-[1.3]">
                             {meta.displayName}
-                            {meta.recommended && <span className={styles.customCardBadge}>Recommended</span>}
+                            {meta.recommended && <span className="inline-flex items-center ml-2 px-2 py-px text-[11px] font-semibold text-green-600 bg-green-50 rounded-full tracking-[0.01em] align-middle">Recommended</span>}
                           </div>
-                          <div className={styles.customCardDesc}>{meta.desc}</div>
+                          <div className="text-[12.5px] text-foreground-faint leading-[1.4] mt-0.5">{meta.desc}</div>
                         </div>
-                        <svg className={styles.customCardChevron} width="14" height="14" viewBox="0 0 16 16" fill="none">
+                        <svg className="text-gray-300 shrink-0" width="14" height="14" viewBox="0 0 16 16" fill="none">
                           <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </div>
@@ -584,14 +584,14 @@ against this mapping automatically.`);
           .filter(name => !connectedPlatforms.includes(name));
 
         gridContent = (
-          <div className={styles.platformGrid}>
+          <div className="grid grid-cols-2 gap-0">
             {connectedInArea.map(renderConnectedPlatformRow)}
             {available.map(renderPlatformRow)}
           </div>
         );
       } else {
         gridContent = (
-          <div className={styles.platformGrid}>
+          <div className="grid grid-cols-2 gap-0">
             {connectedInArea.map(renderConnectedPlatformRow)}
           </div>
         );
@@ -613,17 +613,17 @@ against this mapping automatically.`);
     });
 
     return (
-      <div key={name} className={styles.platformRowConnected}>
-        <div className={styles.platformRowIcon}>
+      <div key={name} className="flex w-full cursor-default opacity-100 col-span-full flex-wrap py-3 items-center gap-2">
+        <div className="w-[22px] h-[22px] flex items-center justify-center shrink-0">
           <PlatformSVG name={name} size={20} />
         </div>
-        <span className={styles.platformRowName}>{name}</span>
-        <span className={`${styles.platformRowStatus} ${isPending ? styles.pending : ''}`}>
-          <span className={`${styles.platformRowStatusDot} ${isPending ? styles.pending : ''}`} />
+        <span className="text-[15px] font-semibold text-foreground">{name}</span>
+        <span className="flex items-center gap-1.5 text-xs font-medium text-green-600 ml-auto ${isPending ? 'text-warn' : ''}">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0 ${isPending ? 'text-warn' : ''}" />
           {isPending ? 'Pending' : 'Connected'}
         </span>
         <span
-          className={styles.platformRowDisconnect}
+          className="text-foreground-faint cursor-pointer opacity-0 transition-all duration-150 ease-out shrink-0 ml-2 group-hover:opacity-100 hover:text-danger"
           onClick={() => disconnectPlatform(name)}
           title="Disconnect"
         >
@@ -632,9 +632,9 @@ against this mapping automatically.`);
           </svg>
         </span>
         {scopeLabels.length > 0 && (
-          <div className={styles.platformRowScopes}>
+          <div className="w-full pl-[30px] text-xs text-foreground-faint leading-[1.4]">
             {directions.map(dir => (
-              <span key={dir} className={styles.directionTag}>{dir}</span>
+              <span key={dir} className="inline-flex items-center px-1.5 text-[9px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]">{dir}</span>
             ))}
             {scopeLabels.join(' · ')}
           </div>
@@ -645,12 +645,12 @@ against this mapping automatically.`);
 
   const renderPlatformRow = (name) => {
     return (
-      <div key={name} className={styles.platformRow} onClick={() => showModal(name)}>
-        <div className={styles.platformRowIcon}>
+      <div key={name} className="inline-flex items-center gap-2 py-3 cursor-pointer w-fit transition-opacity duration-150 ease-out hover:opacity-55 active:opacity-40" onClick={() => showModal(name)}>
+        <div className="w-[22px] h-[22px] flex items-center justify-center shrink-0">
           <PlatformSVG name={name} size={20} />
         </div>
-        <span className={styles.platformRowName}>{name}</span>
-        <svg className={styles.platformRowChevron} width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <span className="text-[15px] font-semibold text-foreground">{name}</span>
+        <svg className="text-gray-300 shrink-0" width="14" height="14" viewBox="0 0 16 16" fill="none">
           <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
@@ -681,15 +681,15 @@ against this mapping automatically.`);
   };
 
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
+    <div className="min-h-screen flex flex-col">
+      <header className="py-3.5 px-12">
         <Logo />
       </header>
 
-      <div className={styles.splitContainer}>
+      <div className="flex-1 grid grid-cols-[280px_1fr] min-h-0 max-w-[1100px] mx-auto w-full">
         {/* Sidebar — scroll-spy nav */}
-        <div className={styles.leftCol}>
-          <button className={styles.exitBtn} onClick={() => alert('Navigating back')}>
+        <div className="flex flex-col py-8 pr-5 pb-16 pl-8 overflow-y-auto overflow-x-hidden border-r border-border-light sticky top-0 h-screen self-start">
+          <button className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground-muted cursor-pointer mb-6 transition-colors duration-150 ease-out hover:text-foreground" onClick={() => alert('Navigating back')}>
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="M10 4l-4 4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -698,7 +698,7 @@ against this mapping automatically.`);
           <div style={{ padding: '0 12px 12px', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
             Integration Setup
           </div>
-          <div className={styles.navSectionLabel} style={{ marginTop: 0 }}>
+          <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint py-4 px-3 pb-1.5" style={{ marginTop: 0 }}>
             Required
           </div>
           {Object.entries(SETUP_AREAS)
@@ -709,12 +709,12 @@ against this mapping automatically.`);
               return (
                 <div
                   key={id}
-                  className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+                  className={cn('flex items-center gap-2.5 py-2.5 px-3 rounded-sm cursor-pointer transition-all duration-150 ease-out mb-0.5 border-l-[3px] border-l-transparent hover:bg-gray-50', isActive && 'bg-gray-50 border-l-black')}
                   onClick={() => sectionRefs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 >
-                  <span className={styles.navItemTitle}>{a.title}</span>
+                  <span className="text-sm font-medium text-foreground-muted">{a.title}</span>
                   {isFulfilled && (
-                    <svg className={styles.navItemCheck} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <svg className="ml-auto text-green-500 shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path
                         d="M3 8.5l3.5 3.5 6.5-7"
                         stroke="currentColor"
@@ -727,7 +727,7 @@ against this mapping automatically.`);
                 </div>
               );
             })}
-          <div className={styles.navSectionLabel}>Enhance your program</div>
+          <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint py-4 px-3 pb-1.5">Enhance your program</div>
           {Object.entries(SETUP_AREAS)
             .filter(([_, a]) => !a.required)
             .map(([id, a]) => {
@@ -736,12 +736,12 @@ against this mapping automatically.`);
               return (
                 <div
                   key={id}
-                  className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+                  className={cn('flex items-center gap-2.5 py-2.5 px-3 rounded-sm cursor-pointer transition-all duration-150 ease-out mb-0.5 border-l-[3px] border-l-transparent hover:bg-gray-50', isActive && 'bg-gray-50 border-l-black')}
                   onClick={() => sectionRefs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 >
-                  <span className={styles.navItemTitle}>{a.title}</span>
+                  <span className="text-sm font-medium text-foreground-muted">{a.title}</span>
                   {isFulfilled && (
-                    <svg className={styles.navItemCheck} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <svg className="ml-auto text-green-500 shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path
                         d="M3 8.5l3.5 3.5 6.5-7"
                         stroke="currentColor"
@@ -757,7 +757,7 @@ against this mapping automatically.`);
         </div>
 
         {/* Right Content — scrollable with all sections */}
-        <div className={styles.rightCol} ref={rightColRef}>
+        <div className="py-8 px-12 pb-16 overflow-y-auto" ref={rightColRef}>
           {Object.entries(SETUP_AREAS).map(([sectionId, section]) => {
             const isFulfilled = isSectionFulfilled(sectionId);
             const isCollapsed = collapsedSections.has(sectionId);
@@ -768,26 +768,26 @@ against this mapping automatically.`);
                 key={sectionId}
                 ref={sectionRefs[sectionId]}
                 data-section={sectionId}
-                className={`${styles.section} ${isCollapsed ? styles.sectionCollapsed : ''}`}
+                className="pb-10 mb-10 border-b border-border-light scroll-mt-6 ${isCollapsed ? 'pb-4 mb-6' : ''}"
               >
                 {/* Section Header — collapsed: clickable to expand */}
                 {isCollapsed && isFulfilled ? (
                   <>
                     <div
-                      className={styles.sectionHeader}
+                      className="flex items-center gap-3 cursor-pointer py-4 transition-opacity duration-150 ease-out hover:opacity-70"
                       onClick={() => toggleSectionCollapse(sectionId)}
                     >
-                      <div className={styles.sectionHeaderCheck}>
+                      <div className="w-5 h-5 rounded-full bg-green-50 flex items-center justify-center shrink-0">
                         <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                           <path d="M2 6l3 3 5-5" stroke="var(--color-green-600)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </div>
-                      <div className={styles.sectionHeaderTitle}>
+                      <div className="text-base font-semibold text-foreground flex-1 leading-[1.3]">
                         {section.question}
-                        <span className={styles.directionTag} style={{ marginLeft: '8px', verticalAlign: 'middle' }}>{getSectionDirection(sectionId)}</span>
+                        <span className="inline-flex items-center px-1.5 text-[9px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]" style={{ marginLeft: '8px', verticalAlign: 'middle' }}>{getSectionDirection(sectionId)}</span>
                       </div>
                       <svg
-                        className={styles.sectionChevron}
+                        className="shrink-0 text-foreground-faint transition-transform duration-150 ease-out"
                         width="16"
                         height="16"
                         viewBox="0 0 16 16"
@@ -796,7 +796,7 @@ against this mapping automatically.`);
                         <path d="M12 6l-4 4-4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
-                    <div className={styles.sectionHeaderSummary}>
+                    <div className="mb-4">
                       {renderCollapsedSectionSummary(sectionId)}
                     </div>
                   </>
@@ -805,20 +805,20 @@ against this mapping automatically.`);
                     {/* Expanded: question goes directly into content, no separate header title */}
                     {isFulfilled && (
                       <div
-                        className={styles.sectionHeader}
+                        className="flex items-center gap-3 cursor-pointer py-4 transition-opacity duration-150 ease-out hover:opacity-70"
                         onClick={() => toggleSectionCollapse(sectionId)}
                       >
-                        <div className={styles.sectionHeaderCheck}>
+                        <div className="w-5 h-5 rounded-full bg-green-50 flex items-center justify-center shrink-0">
                           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                             <path d="M2 6l3 3 5-5" stroke="var(--color-green-600)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         </div>
-                        <div className={styles.sectionHeaderTitle}>
+                        <div className="text-base font-semibold text-foreground flex-1 leading-[1.3]">
                           {section.question}
-                          <span className={styles.directionTag} style={{ marginLeft: '8px', verticalAlign: 'middle' }}>{getSectionDirection(sectionId)}</span>
+                          <span className="inline-flex items-center px-1.5 text-[9px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]" style={{ marginLeft: '8px', verticalAlign: 'middle' }}>{getSectionDirection(sectionId)}</span>
                         </div>
                         <svg
-                          className={`${styles.sectionChevron} ${styles.sectionChevronOpen}`}
+                          className="shrink-0 text-foreground-faint transition-transform duration-150 ease-out rotate-180"
                           width="16"
                           height="16"
                           viewBox="0 0 16 16"
@@ -828,7 +828,7 @@ against this mapping automatically.`);
                         </svg>
                       </div>
                     )}
-                    <div className={`${styles.sectionContent} ${isFadingOut ? styles.sectionContentFadingOut : ''}`}>
+                    <div className="opacity-100 translate-y-0 transition-all duration-[350ms] ease-out ${isFadingOut ? 'opacity-0 -translate-y-2' : ''}">
                       {(() => {
                         const hasConnections = connectedPlatforms.some(name => {
                           const p = INTEGRATION_CATALOG[name];
@@ -837,13 +837,13 @@ against this mapping automatically.`);
                         return (
                           <>
                             {!isFulfilled && (
-                              <div className={styles.promptQuestion}>
+                              <div className="text-[32px] font-semibold text-foreground leading-[1.3] mb-2 tracking-tight">
                                 {section.question}
-                                <span className={styles.directionTag} style={{ marginLeft: '12px', verticalAlign: 'middle', fontSize: '10px' }}>{getSectionDirection(sectionId)}</span>
+                                <span className="inline-flex items-center px-1.5 text-[9px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]" style={{ marginLeft: '12px', verticalAlign: 'middle', fontSize: '10px' }}>{getSectionDirection(sectionId)}</span>
                               </div>
                             )}
                             {!hasConnections && (
-                              <div className={styles.promptSub}>{section.sub}</div>
+                              <div className="text-lg text-foreground-muted font-normal mb-8 leading-normal">{section.sub}</div>
                             )}
                           </>
                         );
@@ -871,12 +871,12 @@ against this mapping automatically.`);
 
       {/* Modal */}
       {modal && (
-        <div className={styles.modalBackdrop} onClick={closeModal}>
+        <div className="fixed inset-0 bg-black/25 z-[100] flex items-center justify-center animate-fade-in" onClick={closeModal}>
           <div
-            className={`${styles.modalCard} ${['webhooks', 'api', 'filedrop'].includes(modal.type) ? styles.modalCardWide : ''}`}
+            className="bg-surface rounded-lg p-8 max-w-[440px] w-[calc(100%-32px)] shadow-lg animate-modal-slide relative ${['webhooks', 'api', 'filedrop'].includes(modal.type) ? 'max-w-[680px]' : ''}"
             onClick={e => e.stopPropagation()}
           >
-            <div className={styles.modalClose} onClick={closeModal}>
+            <div className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-sm cursor-pointer text-foreground-faint transition-all duration-150 ease-out hover:bg-accent-subtle hover:text-foreground" onClick={closeModal}>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M11 3L3 11M3 3L11 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
@@ -884,9 +884,9 @@ against this mapping automatically.`);
 
             {modal.type === 'validating' && (
               <div style={{ textAlign: 'center' }}>
-                <div className={styles.spinner} />
-                <div className={styles.validationTitle}>Verifying permissions...</div>
-                <div className={styles.validationSub}>Checking scopes for {modal.platform}</div>
+                <div className="w-8 h-8 border-[3px] border-gray-200 border-t-gray-700 rounded-full animate-spin mx-auto mb-4" />
+                <div className="text-lg font-semibold text-foreground mb-2">Verifying permissions...</div>
+                <div className="text-sm text-foreground-muted">Checking scopes for {modal.platform}</div>
               </div>
             )}
 
@@ -895,7 +895,7 @@ against this mapping automatically.`);
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
                   <PlatformSVG name={modal.platform} size={32} />
                   <div>
-                    <div className={styles.modalTitle} style={{ marginBottom: 0 }}>
+                    <div className="text-lg font-semibold text-foreground mb-4" style={{ marginBottom: 0 }}>
                       Connecting {modal.platform}
                     </div>
                     <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
@@ -903,26 +903,26 @@ against this mapping automatically.`);
                     </div>
                   </div>
                 </div>
-                <ul className={styles.modalScopes}>
+                <ul className="list-none mb-5">
                   {INTEGRATION_CATALOG[modal.platform].capabilities.map(cap => {
                     const desc = INTEGRATION_CATALOG[modal.platform].scopeDescriptions[cap] || cap;
                     const dir = getCapDirection(cap);
                     return (
                       <li key={cap}>
-                        <div className={styles.scopeIcon}>
+                        <div className="w-[18px] h-[18px] rounded-full bg-green-50 flex items-center justify-center shrink-0 mt-px">
                           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                             <path d="M2 5L4 7L8 3" stroke="var(--color-green-600)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         </div>
-                        <span><span className={styles.directionTag}>{dir}</span> {desc}</span>
+                        <span><span className="inline-flex items-center px-1.5 text-[9px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]">{dir}</span> {desc}</span>
                       </li>
                     );
                   })}
                 </ul>
-                <button className={styles.modalConnectBtn} onClick={() => handlePlatformConnect(modal.platform)}>
+                <button className="w-full py-3 text-base font-semibold rounded-md bg-black text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-gray-800" onClick={() => handlePlatformConnect(modal.platform)}>
                   Connect {modal.platform}
                 </button>
-                <div className={styles.modalFooter}>
+                <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
                   <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                     <path d="M8 1a4 4 0 00-4 4v3H3a1 1 0 00-1 1v5a1 1 0 001 1h10a1 1 0 001-1V9a1 1 0 00-1-1h-1V5a4 4 0 00-4-4zm-2 4a2 2 0 114 0v3H6V5z" fill="var(--text-tertiary)" />
                   </svg>
@@ -936,7 +936,7 @@ against this mapping automatically.`);
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
                   <PlatformSVG name={modal.platform} size={32} />
                   <div>
-                    <div className={styles.modalTitle} style={{ marginBottom: 0 }}>
+                    <div className="text-lg font-semibold text-foreground mb-4" style={{ marginBottom: 0 }}>
                       Configure Webhooks
                     </div>
                     <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
@@ -945,17 +945,17 @@ against this mapping automatically.`);
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
-                  <div className={styles.modalFieldLabel}>Webhook URL</div>
-                  <div className={styles.modalFieldBox}>
-                    <code className={styles.modalFieldCode}>https://api.vincor.ai/v1/webhooks/tx_9982x...</code>
-                    <button className={styles.modalCopyBtn} onClick={(e) => handleCopy('https://api.vincor.ai/v1/webhooks/tx_9982x...', e)}>Copy Webhook URL</button>
+                  <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-2">Webhook URL</div>
+                  <div className="flex items-center gap-2 bg-gray-50 border border-border rounded-sm py-2.5 px-3">
+                    <code className="flex-1 text-[13px] text-foreground font-mono break-all leading-[1.4]">https://api.vincor.ai/v1/webhooks/tx_9982x...</code>
+                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-white border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-100 hover:text-foreground" onClick={(e) => handleCopy('https://api.vincor.ai/v1/webhooks/tx_9982x...', e)}>Copy Webhook URL</button>
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
-                  <div className={styles.modalFieldLabel}>Expected Payload</div>
-                  <ul className={styles.modalScopes}>
+                  <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-2">Expected Payload</div>
+                  <ul className="list-none mb-5">
                     <li>
-                      <div className={styles.scopeIcon}>
+                      <div className="w-[18px] h-[18px] rounded-full bg-green-50 flex items-center justify-center shrink-0 mt-px">
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                           <path d="M2 5L4 7L8 3" stroke="var(--color-green-600)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -963,7 +963,7 @@ against this mapping automatically.`);
                       <span>transaction_id — Unique identifier</span>
                     </li>
                     <li>
-                      <div className={styles.scopeIcon}>
+                      <div className="w-[18px] h-[18px] rounded-full bg-green-50 flex items-center justify-center shrink-0 mt-px">
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                           <path d="M2 5L4 7L8 3" stroke="var(--color-green-600)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -971,7 +971,7 @@ against this mapping automatically.`);
                       <span>timestamp — ISO 8601 format</span>
                     </li>
                     <li>
-                      <div className={styles.scopeIcon}>
+                      <div className="w-[18px] h-[18px] rounded-full bg-green-50 flex items-center justify-center shrink-0 mt-px">
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                           <path d="M2 5L4 7L8 3" stroke="var(--color-green-600)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -980,27 +980,27 @@ against this mapping automatically.`);
                     </li>
                   </ul>
                 </div>
-                <hr className={styles.agenticDivider} />
-                <div className={styles.agenticSectionBox}>
-                  <div className={styles.agenticHeader}>
-                    <span className={styles.sparkle}>✦</span> Need help formatting the payload?
+                <hr className="border-0 border-t border-border my-5" />
+                <div className="bg-gray-50 rounded-md p-4 mt-1">
+                  <div className="text-[13px] font-semibold text-foreground mb-1 flex items-center gap-1.5">
+                    <span className="text-warn">✦</span> Need help formatting the payload?
                   </div>
-                  <div className={styles.agenticSub}>Paste your system's standard webhook payload to automatically map the fields.</div>
+                  <div className="text-xs text-foreground-faint mb-3 leading-[1.4]">Paste your system's standard webhook payload to automatically map the fields.</div>
                   <textarea
-                    className={styles.agenticTextarea}
+                    className="w-full min-h-[80px] py-2.5 px-3 text-[13px] font-mono text-foreground bg-gray-50 border border-border rounded-sm resize-y leading-normal transition-colors duration-150 ease-out focus:outline-none focus:border-gray-400 placeholder:text-foreground-faint placeholder:font-sans placeholder:not-italic placeholder:text-[12.5px]"
                     placeholder='{"event":"charge.succeeded","data":{"id":"ch_1N","amount":4999,"currency":"usd","customer":"cus_9s6"}}'
                     value={agenticInput}
                     onChange={e => setAgenticInput(e.target.value)}
                   />
-                  <button className={styles.agenticGenerateBtn} onClick={handleGenerateWebhookMapping}>
+                  <button className="inline-flex items-center gap-1.5 mt-2.5 py-2 px-4 text-[13px] font-semibold text-black bg-white border border-gray-300 rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-50 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateWebhookMapping}>
                     Map Fields
                   </button>
-                  {agenticOutput && <div className={styles.agenticOutput}>{agenticOutput}</div>}
+                  {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-[#e2e8f0] bg-[#1e293b] rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
                 </div>
-                <button className={styles.modalConnectBtn} onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
+                <button className="w-full py-3 text-base font-semibold rounded-md bg-black text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-gray-800" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
                   Mark as Configured
                 </button>
-                <div className={styles.modalFooter}>
+                <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
                   <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                     <path d="M8 1a4 4 0 00-4 4v3H3a1 1 0 00-1 1v5a1 1 0 001 1h10a1 1 0 001-1V9a1 1 0 00-1-1h-1V5a4 4 0 00-4-4zm-2 4a2 2 0 114 0v3H6V5z" fill="var(--text-tertiary)" />
                   </svg>
@@ -1014,7 +1014,7 @@ against this mapping automatically.`);
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
                   <PlatformSVG name={modal.platform} size={32} />
                   <div>
-                    <div className={styles.modalTitle} style={{ marginBottom: 0 }}>
+                    <div className="text-lg font-semibold text-foreground mb-4" style={{ marginBottom: 0 }}>
                       Developer API Keys
                     </div>
                     <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
@@ -1023,40 +1023,40 @@ against this mapping automatically.`);
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
-                  <div className={styles.modalFieldLabel}>Secret Key</div>
-                  <div className={styles.modalFieldBox}>
-                    <code className={styles.modalFieldCode}>vincor_live_*******************</code>
-                    <button className={styles.modalCopyBtn} onClick={(e) => handleCopy('vincor_live_sk_7f8a3b2c1d9e4f6a', e)}>Reveal & Copy Key</button>
+                  <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-2">Secret Key</div>
+                  <div className="flex items-center gap-2 bg-gray-50 border border-border rounded-sm py-2.5 px-3">
+                    <code className="flex-1 text-[13px] text-foreground font-mono break-all leading-[1.4]">vincor_live_*******************</code>
+                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-white border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-100 hover:text-foreground" onClick={(e) => handleCopy('vincor_live_sk_7f8a3b2c1d9e4f6a', e)}>Reveal & Copy Key</button>
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
-                  <div className={styles.modalFieldLabel}>API Endpoint</div>
-                  <div className={styles.modalFieldBox}>
-                    <code className={styles.modalFieldCode}>POST https://api.vincor.ai/v1/transactions</code>
-                    <button className={styles.modalCopyBtn} onClick={(e) => handleCopy('POST https://api.vincor.ai/v1/transactions', e)}>Copy</button>
+                  <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-2">API Endpoint</div>
+                  <div className="flex items-center gap-2 bg-gray-50 border border-border rounded-sm py-2.5 px-3">
+                    <code className="flex-1 text-[13px] text-foreground font-mono break-all leading-[1.4]">POST https://api.vincor.ai/v1/transactions</code>
+                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-white border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-100 hover:text-foreground" onClick={(e) => handleCopy('POST https://api.vincor.ai/v1/transactions', e)}>Copy</button>
                   </div>
                 </div>
-                <hr className={styles.agenticDivider} />
-                <div className={styles.agenticSectionBox}>
-                  <div className={styles.agenticHeader}>
-                    <span className={styles.sparkle}>✦</span> Don't want to read the docs?
+                <hr className="border-0 border-t border-border my-5" />
+                <div className="bg-gray-50 rounded-md p-4 mt-1">
+                  <div className="text-[13px] font-semibold text-foreground mb-1 flex items-center gap-1.5">
+                    <span className="text-warn">✦</span> Don't want to read the docs?
                   </div>
-                  <div className={styles.agenticSub}>Paste a sample row from your database to instantly generate a ready-to-run integration script.</div>
+                  <div className="text-xs text-foreground-faint mb-3 leading-[1.4]">Paste a sample row from your database to instantly generate a ready-to-run integration script.</div>
                   <textarea
-                    className={styles.agenticTextarea}
+                    className="w-full min-h-[80px] py-2.5 px-3 text-[13px] font-mono text-foreground bg-gray-50 border border-border rounded-sm resize-y leading-normal transition-colors duration-150 ease-out focus:outline-none focus:border-gray-400 placeholder:text-foreground-faint placeholder:font-sans placeholder:not-italic placeholder:text-[12.5px]"
                     placeholder='{"user_account_id":"usr_482","usd_amount":49.99,"event_type":"purchase","created_at":"2026-03-15T14:30:00Z"}'
                     value={agenticInput}
                     onChange={e => setAgenticInput(e.target.value)}
                   />
-                  <button className={styles.agenticGenerateBtn} onClick={handleGenerateAPIScript}>
+                  <button className="inline-flex items-center gap-1.5 mt-2.5 py-2 px-4 text-[13px] font-semibold text-black bg-white border border-gray-300 rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-50 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateAPIScript}>
                     Generate Script
                   </button>
-                  {agenticOutput && <div className={styles.agenticOutput}>{agenticOutput}</div>}
+                  {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-[#e2e8f0] bg-[#1e293b] rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
                 </div>
-                <button className={styles.modalConnectBtn} onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
+                <button className="w-full py-3 text-base font-semibold rounded-md bg-black text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-gray-800" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
                   Mark as Configured
                 </button>
-                <div className={styles.modalFooter}>
+                <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
                   <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                     <path d="M8 1a4 4 0 00-4 4v3H3a1 1 0 00-1 1v5a1 1 0 001 1h10a1 1 0 001-1V9a1 1 0 00-1-1h-1V5a4 4 0 00-4-4zm-2 4a2 2 0 114 0v3H6V5z" fill="var(--text-tertiary)" />
                   </svg>
@@ -1070,7 +1070,7 @@ against this mapping automatically.`);
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
                   <PlatformSVG name={modal.platform} size={32} />
                   <div>
-                    <div className={styles.modalTitle} style={{ marginBottom: 0 }}>
+                    <div className="text-lg font-semibold text-foreground mb-4" style={{ marginBottom: 0 }}>
                       Secure Bucket Provisioned
                     </div>
                     <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
@@ -1079,17 +1079,17 @@ against this mapping automatically.`);
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
-                  <div className={styles.modalFieldLabel}>S3 Bucket ARN</div>
-                  <div className={styles.modalFieldBox}>
-                    <code className={styles.modalFieldCode}>arn:aws:s3:::vincor-client-drop-8821</code>
-                    <button className={styles.modalCopyBtn} onClick={(e) => handleCopy('arn:aws:s3:::vincor-client-drop-8821', e)}>Copy Credentials</button>
+                  <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-2">S3 Bucket ARN</div>
+                  <div className="flex items-center gap-2 bg-gray-50 border border-border rounded-sm py-2.5 px-3">
+                    <code className="flex-1 text-[13px] text-foreground font-mono break-all leading-[1.4]">arn:aws:s3:::vincor-client-drop-8821</code>
+                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-white border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-100 hover:text-foreground" onClick={(e) => handleCopy('arn:aws:s3:::vincor-client-drop-8821', e)}>Copy Credentials</button>
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
-                  <div className={styles.modalFieldLabel}>Accepted Formats</div>
-                  <ul className={styles.modalScopes}>
+                  <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-2">Accepted Formats</div>
+                  <ul className="list-none mb-5">
                     <li>
-                      <div className={styles.scopeIcon}>
+                      <div className="w-[18px] h-[18px] rounded-full bg-green-50 flex items-center justify-center shrink-0 mt-px">
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                           <path d="M2 5L4 7L8 3" stroke="var(--color-green-600)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -1097,7 +1097,7 @@ against this mapping automatically.`);
                       <span>CSV, JSON, or Parquet</span>
                     </li>
                     <li>
-                      <div className={styles.scopeIcon}>
+                      <div className="w-[18px] h-[18px] rounded-full bg-green-50 flex items-center justify-center shrink-0 mt-px">
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                           <path d="M2 5L4 7L8 3" stroke="var(--color-green-600)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -1105,7 +1105,7 @@ against this mapping automatically.`);
                       <span>Max 5 GB per upload</span>
                     </li>
                     <li>
-                      <div className={styles.scopeIcon}>
+                      <div className="w-[18px] h-[18px] rounded-full bg-green-50 flex items-center justify-center shrink-0 mt-px">
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                           <path d="M2 5L4 7L8 3" stroke="var(--color-green-600)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -1114,29 +1114,29 @@ against this mapping automatically.`);
                     </li>
                   </ul>
                 </div>
-                <hr className={styles.agenticDivider} />
-                <div className={styles.agenticSectionBox}>
-                  <div className={styles.agenticHeader}>
-                    <span className={styles.sparkle}>✦</span> Upload a sample file
+                <hr className="border-0 border-t border-border my-5" />
+                <div className="bg-gray-50 rounded-md p-4 mt-1">
+                  <div className="text-[13px] font-semibold text-foreground mb-1 flex items-center gap-1.5">
+                    <span className="text-warn">✦</span> Upload a sample file
                   </div>
-                  <div className={styles.agenticSub}>Paste a few rows from your export to auto-detect your schema and map columns.</div>
+                  <div className="text-xs text-foreground-faint mb-3 leading-[1.4]">Paste a few rows from your export to auto-detect your schema and map columns.</div>
                   <textarea
-                    className={styles.agenticTextarea}
+                    className="w-full min-h-[80px] py-2.5 px-3 text-[13px] font-mono text-foreground bg-gray-50 border border-border rounded-sm resize-y leading-normal transition-colors duration-150 ease-out focus:outline-none focus:border-gray-400 placeholder:text-foreground-faint placeholder:font-sans placeholder:not-italic placeholder:text-[12.5px]"
                     placeholder='user_id,order_id,amount,currency,created_at
 usr_482,ord_1001,49.99,USD,2026-03-15
 usr_117,ord_1002,129.00,USD,2026-03-15'
                     value={agenticInput}
                     onChange={e => setAgenticInput(e.target.value)}
                   />
-                  <button className={styles.agenticGenerateBtn} onClick={handleGenerateFileMapping}>
+                  <button className="inline-flex items-center gap-1.5 mt-2.5 py-2 px-4 text-[13px] font-semibold text-black bg-white border border-gray-300 rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-50 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateFileMapping}>
                     Detect Schema
                   </button>
-                  {agenticOutput && <div className={styles.agenticOutput}>{agenticOutput}</div>}
+                  {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-[#e2e8f0] bg-[#1e293b] rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
                 </div>
-                <button className={styles.modalConnectBtn} onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
+                <button className="w-full py-3 text-base font-semibold rounded-md bg-black text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-gray-800" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
                   Mark as Configured
                 </button>
-                <div className={styles.modalFooter}>
+                <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
                   <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                     <path d="M8 1a4 4 0 00-4 4v3H3a1 1 0 00-1 1v5a1 1 0 001 1h10a1 1 0 001-1V9a1 1 0 00-1-1h-1V5a4 4 0 00-4-4zm-2 4a2 2 0 114 0v3H6V5z" fill="var(--text-tertiary)" />
                   </svg>
