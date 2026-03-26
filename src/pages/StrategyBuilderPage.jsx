@@ -669,8 +669,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                 {/* Strategy context — AI insight + rules access */}
                 <div style={{
                   marginTop: 24,
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border)',
+                  background: 'var(--accent-subtle)',
                   borderRadius: 'var(--radius-md)',
                   padding: '14px 16px',
                 }}>
