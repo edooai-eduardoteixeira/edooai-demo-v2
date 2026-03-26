@@ -440,10 +440,12 @@ export default function StrategyBuilderPage({ config, onNext }) {
               gridTemplateColumns: '340px 1fr',
             }}>
 
-              {/* ── Budget column ── */}
+              {/* ── Budget column — single control panel ── */}
               <div style={{
-                padding: '0 32px 0 0',
-                borderRight: '1px solid var(--border-light)',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '24px',
                 display: 'flex',
                 flexDirection: 'column',
               }}>
@@ -666,12 +668,14 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   </div>
                 </div>
 
-                {/* Strategy context — AI insight + rules access */}
+              </div>
+
+                {/* Strategy context — AI insight + rules access (outside card — system output) */}
                 <div style={{
-                  marginTop: 24,
+                  marginTop: 20,
+                  padding: '14px 16px',
                   background: 'var(--accent-subtle)',
                   borderRadius: 'var(--radius-md)',
-                  padding: '14px 16px',
                 }}>
                   {!isRevealed ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -696,18 +700,13 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           fontSize: 12.5,
                           color: 'var(--text-secondary)',
                           lineHeight: 1.5,
-                          minHeight: 57,
                         }}>
                           {guidanceMessage}
                         </div>
                       </div>
 
                       {/* Divider */}
-                      <div style={{
-                        height: 1,
-                        background: 'var(--border-light)',
-                        margin: '12px 0',
-                      }} />
+                      <div style={{ height: 1, background: 'var(--border-light)', margin: '12px 0' }} />
 
                       {/* Rules trigger */}
                       <button className="inline-flex items-center gap-2 p-0 text-[13px] font-medium text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:text-foreground" onClick={() => setActiveDrawer('index')} style={{ animation: 'fadeIn 0.3s ease-out', animationDelay: '400ms', animationFillMode: 'both' }}>
@@ -716,7 +715,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     </>
                   )}
                 </div>
-              </div>
 
               {/* ── Results column ── */}
               <div style={{
