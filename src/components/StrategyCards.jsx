@@ -102,7 +102,7 @@ const MultiSelect = ({ items: initialItems }) => {
         <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-lg shadow-md z-10 min-w-[200px] py-1">
           {items.map((item, i) => (
             <div className="flex items-center gap-2 py-2 px-3.5 text-[13px] text-foreground cursor-pointer transition-colors duration-150 ease-out select-none hover:bg-accent-subtle" key={i} onClick={() => toggle(i)}>
-              <div className={cn('w-4 h-4 rounded border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', item.on && 'bg-accent border-accent')}>
+              <div className={cn('w-4 h-4 rounded border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', item.on && 'bg-brand border-brand')}>
                 {item.on && <CheckIcon />}
               </div>
               {item.label}
@@ -138,8 +138,8 @@ const SingleSelect = ({ value: initial, choices, onChange }) => {
         <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-lg shadow-md z-10 min-w-[140px] py-1">
           {choices.map((choice, i) => (
             <div className={cn('flex items-center gap-2 py-2 px-3.5 text-[13px] text-foreground cursor-pointer transition-colors duration-150 ease-out select-none hover:bg-accent-subtle', choice === val && 'text-foreground font-medium')} key={i} onClick={() => pick(choice)}>
-              <div className={cn('w-3.5 h-3.5 rounded-full border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', choice === val && 'border-accent')}>
-                {choice === val && <div className="w-2 h-2 rounded-full bg-accent" />}
+              <div className={cn('w-3.5 h-3.5 rounded-full border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', choice === val && 'border-brand')}>
+                {choice === val && <div className="w-2 h-2 rounded-full bg-brand" />}
               </div>
               {choice}
             </div>
@@ -172,8 +172,8 @@ const RichSelect = ({ value: initial, richChoices }) => {
           {richChoices.map((c, i) => (
             <div className={cn('flex items-center gap-2 py-2 px-3.5 text-[13px] text-foreground cursor-pointer transition-colors duration-150 ease-out select-none hover:bg-accent-subtle', c.value === val && 'text-foreground font-medium')} key={i} onClick={() => pick(c.value)} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2, padding: '8px 14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div className={cn('w-3.5 h-3.5 rounded-full border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', c.value === val && 'border-accent')}>
-                  {c.value === val && <div className="w-2 h-2 rounded-full bg-accent" />}
+                <div className={cn('w-3.5 h-3.5 rounded-full border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', c.value === val && 'border-brand')}>
+                  {c.value === val && <div className="w-2 h-2 rounded-full bg-brand" />}
                 </div>
                 <span style={{ fontWeight: 500 }}>{c.value}</span>
               </div>
@@ -198,12 +198,12 @@ const SelectableCards = ({ label, tip, value: initial, choices }) => {
         {choices.map((c) => (
           <div
             key={c.value}
-            className={cn('flex-1 py-2.5 px-3 border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out bg-surface hover:border-gray-300', c.value === selected && 'border-foreground')}
+            className={cn('flex-1 py-2.5 px-3 border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out bg-surface hover:border-gray-300', c.value === selected && 'border-brand')}
             onClick={() => setSelected(c.value)}
           >
             <div className="flex items-center gap-2 mb-1">
-              <div className={cn('w-3.5 h-3.5 rounded-full border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', c.value === selected && 'border-foreground')}>
-                {c.value === selected && <div className="w-2 h-2 rounded-full bg-foreground" />}
+              <div className={cn('w-3.5 h-3.5 rounded-full border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', c.value === selected && 'border-brand')}>
+                {c.value === selected && <div className="w-2 h-2 rounded-full bg-brand" />}
               </div>
               <span className="text-[13px] font-medium text-foreground">{c.value}</span>
             </div>
@@ -367,8 +367,8 @@ const BudgetPacing = ({ section }) => {
             <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-lg shadow-md z-10 min-w-[140px] py-1">
               {section.intensityChoices.map((c, i) => (
                 <div className={cn('flex items-center gap-2 py-2 px-3.5 text-[13px] text-foreground cursor-pointer transition-colors duration-150 ease-out select-none hover:bg-accent-subtle', c === intensity && 'text-foreground font-medium')} key={i} onClick={() => { setIntensity(c); setOpen(false); }}>
-                  <div className={cn('w-3.5 h-3.5 rounded-full border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', c === intensity && 'border-accent')}>
-                    {c === intensity && <div className="w-2 h-2 rounded-full bg-accent" />}
+                  <div className={cn('w-3.5 h-3.5 rounded-full border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', c === intensity && 'border-brand')}>
+                    {c === intensity && <div className="w-2 h-2 rounded-full bg-brand" />}
                   </div>
                   {c}
                 </div>
