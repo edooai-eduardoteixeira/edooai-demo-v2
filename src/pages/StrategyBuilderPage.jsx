@@ -343,7 +343,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
           fontSize: 32,
           fontWeight: 600,
           letterSpacing: '-0.02em',
-          color: 'var(--text-soft)',
+          color: 'var(--text-primary)',
           marginBottom: 32,
         }}>Your Referral Strategy</h3>
 
@@ -737,9 +737,9 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
                   <div style={{
                     fontSize: 64,
-                    fontWeight: 700,
+                    fontWeight: 800,
                     letterSpacing: '-0.03em',
-                    color: 'var(--color-brand)',
+                    color: 'var(--text-primary)',
                     lineHeight: 1,
                     marginTop: 6,
                   }}>
@@ -818,7 +818,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                             <span style={{
                               fontSize: 16,
                               fontWeight: 600,
-                              color: 'var(--text-soft)',
+                              color: 'var(--text-primary)',
                               animation: 'fadeIn 0.3s ease-out',
                               animationDelay: '200ms',
                               animationFillMode: 'both',
