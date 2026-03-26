@@ -326,6 +326,41 @@ export default function StrategyBuilderPage({ config, onNext }) {
         <Logo />
       </header>
 
+      {/* ── TEMPORARY: Brand color tester ── */}
+      {(() => {
+        const CANDIDATES = [
+          { hex: '#850020', label: 'Current merlot' },
+          { hex: '#6B1D2A', label: 'Original burgundy' },
+          { hex: '#66001F', label: 'Pure wine' },
+          { hex: '#531C22', label: 'Dark bordeaux' },
+          { hex: '#3F0B0D', label: 'Deep merlot' },
+        ];
+        return (
+          <div style={{
+            position: 'fixed', bottom: 20, right: 20, zIndex: 9999,
+            background: 'white', borderRadius: 12, padding: '16px 20px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)', border: '1px solid var(--border)',
+            fontSize: 12, fontFamily: 'var(--font-family)',
+          }}>
+            <div style={{ fontWeight: 700, marginBottom: 10, color: 'var(--text-primary)' }}>Brand Color Test</div>
+            {CANDIDATES.map(c => (
+              <label key={c.hex} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', cursor: 'pointer' }}>
+                <input
+                  type="radio"
+                  name="brandColor"
+                  defaultChecked={c.hex === '#850020'}
+                  onChange={() => document.documentElement.style.setProperty('--color-brand', c.hex)}
+                  style={{ accentColor: c.hex }}
+                />
+                <span style={{ width: 20, height: 20, borderRadius: 4, background: c.hex, border: '1px solid var(--border)', flexShrink: 0 }} />
+                <span style={{ color: 'var(--text-secondary)' }}>{c.label}</span>
+                <span style={{ color: 'var(--text-tertiary)', fontFamily: 'monospace' }}>{c.hex}</span>
+              </label>
+            ))}
+          </div>
+        );
+      })()}
+
       {/* Main Content */}
       <main
         style={{
