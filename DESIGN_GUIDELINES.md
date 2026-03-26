@@ -74,6 +74,20 @@ text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase
 | `text-white` | On dark backgrounds |
 | `text-black` | Maximum contrast |
 
+### Brand colors
+
+| Tailwind Class | Purpose |
+|---------------|---------|
+| `text-brand` / `bg-brand` | Vincor burgundy (#6B1D2A) — AI-powered actions, landing CTA, logo accent |
+| `bg-brand-light` | Light burgundy (#F9F0F1) — hover background for brand elements, AI badge bg |
+
+**Burgundy usage rules:**
+- Use for AI-powered or "Vincor intelligence" actions (e.g., "Add rule with AI", sparkle icon actions)
+- Use for landing page CTA button (`variant="brand"`)
+- Pair with an icon (sparkle, logo) to signal "brand moment, not error"
+- Never use as body text, borders, or decorative backgrounds
+- Maximum ~3-5 burgundy moments per screen
+
 ### Background colors
 
 | Tailwind Class | Purpose |
@@ -92,12 +106,21 @@ text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase
 | `border-border-light` | Subtle dividers |
 | `border-gray-300` | Secondary button borders |
 
+### Interactive text colors
+
+| Type of text action | Tailwind Class | Examples |
+|---|---|---|
+| AI-powered / brand action | `text-brand` | "Add rule with AI", sparkle actions |
+| Standard text action | `text-gray-600` | "Add step", "Back", "Skip" |
+| Destructive text action | `text-danger` | "Remove", "Disconnect" |
+
 ### Semantic colors
 
 | Tailwind Class | Purpose |
 |---------------|---------|
 | `text-success` / `bg-success` | Success states |
 | `text-danger` / `bg-danger` | Error states |
+| `bg-danger-light` | Light red hover bg for destructive actions |
 | `text-warn` / `bg-warn` | Warning states |
 | `text-green-600` / `bg-green-50` | Connected/active indicators |
 

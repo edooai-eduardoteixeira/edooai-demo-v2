@@ -8,6 +8,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: 'bg-black text-white disabled:bg-gray-300 disabled:opacity-60 disabled:cursor-not-allowed',
+        brand: 'bg-brand text-white hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed',
         secondary: 'bg-white text-black border border-gray-300',
       },
     },
