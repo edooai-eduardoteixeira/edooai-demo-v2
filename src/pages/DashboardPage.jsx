@@ -60,8 +60,8 @@ function SimpleLineChart({ data, phases }) {
     >
       <defs>
         <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="black" stopOpacity="0.08" />
-          <stop offset="100%" stopColor="black" stopOpacity="0" />
+          <stop offset="0%" stopColor="var(--color-brand)" stopOpacity="0.12" />
+          <stop offset="100%" stopColor="var(--color-brand)" stopOpacity="0" />
         </linearGradient>
       </defs>
 
@@ -135,12 +135,12 @@ function SimpleLineChart({ data, phases }) {
       ))}
 
       <path d={areaD} fill="url(#areaGradient)" />
-      <path d={pathD} fill="none" className="stroke-foreground" strokeWidth="2.5" strokeLinejoin="round" />
+      <path d={pathD} fill="none" className="stroke-brand" strokeWidth="2.5" strokeLinejoin="round" />
       <circle
         cx={points[points.length - 1].x}
         cy={points[points.length - 1].y}
         r="4"
-        className="fill-foreground"
+        className="fill-brand"
       />
     </svg>
   );

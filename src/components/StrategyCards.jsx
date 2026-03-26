@@ -66,7 +66,7 @@ const RULES_INDEX = [
 
 /* ── Toggle ── */
 const Toggle = ({ on, onChange }) => (
-  <div className={cn('w-[34px] h-5 rounded-[10px] cursor-pointer relative transition-colors duration-200 ease-out shrink-0', on ? 'bg-accent' : 'bg-gray-300')} onClick={() => onChange && onChange(!on)}>
+  <div className={cn('w-[34px] h-5 rounded-[10px] cursor-pointer relative transition-colors duration-200 ease-out shrink-0', on ? 'bg-brand' : 'bg-gray-300')} onClick={() => onChange && onChange(!on)}>
     <div className="w-4 h-4 rounded-full bg-surface absolute top-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.15)] transition-[left] duration-200 ease-out" style={{ left: on ? '16px' : '2px' }} />
   </div>
 );

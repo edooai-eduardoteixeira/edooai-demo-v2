@@ -28,7 +28,7 @@ function sparkColor(arr, invertGood = false, startDay = 0) {
   const mid = data[midIdx];
   const end = data[data.length - 1];
   if (mid === 0 && end === 0) return 'var(--text-tertiary)';
-  return 'var(--text-primary)';
+  return 'var(--color-brand)';
 }
 
 /* Returns [{x, y}] for SVG polyline + trailing dot (viewBox 0 0 60 16).
@@ -609,7 +609,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       top: 7,
                       width: `${isRevealed ? sliderPercent : 50}%`,
                       height: 6,
-                      background: isRevealed ? 'var(--accent)' : 'var(--color-gray-300)',
+                      background: isRevealed ? 'var(--color-brand)' : 'var(--color-gray-300)',
                       borderRadius: 3,
                       zIndex: 1,
                       transition: isRevealed ? 'width 0.3s ease' : 'none',
@@ -623,7 +623,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       transform: 'translate(-50%, -50%)',
                       width: 20,
                       height: 20,
-                      background: 'var(--accent)',
+                      background: 'var(--color-brand)',
                       border: '3px solid var(--surface)',
                       borderRadius: '50%',
                       cursor: 'grab',

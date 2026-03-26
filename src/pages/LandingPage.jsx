@@ -49,7 +49,7 @@ export default function LandingPage({ config, onNext }) {
               landing.subheadline
             )}
           </p>
-          <CTAButton variant="brand" onClick={onNext}>{landing.ctaText}</CTAButton>
+          <CTAButton onClick={onNext}>{landing.ctaText}</CTAButton>
         </main>
       </section>
 

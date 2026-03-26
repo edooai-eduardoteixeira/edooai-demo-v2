@@ -709,12 +709,12 @@ against this mapping automatically.`);
               return (
                 <div
                   key={id}
-                  className={cn('flex items-center gap-2.5 py-2.5 px-3 rounded-sm cursor-pointer transition-all duration-150 ease-out mb-0.5 border-l-[3px] border-l-transparent hover:bg-gray-50', isActive && 'bg-gray-50 border-l-black')}
+                  className={cn('flex items-center gap-2.5 py-2.5 px-3 rounded-sm cursor-pointer transition-all duration-150 ease-out mb-0.5 border-l-[3px] border-l-transparent hover:bg-gray-50', isActive && 'bg-gray-50 border-l-brand')}
                   onClick={() => sectionRefs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 >
                   <span className="text-sm font-medium text-foreground-muted">{a.title}</span>
                   {isFulfilled && (
-                    <svg className="ml-auto text-green-500 shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <svg className="ml-auto text-brand shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path
                         d="M3 8.5l3.5 3.5 6.5-7"
                         stroke="currentColor"
@@ -736,12 +736,12 @@ against this mapping automatically.`);
               return (
                 <div
                   key={id}
-                  className={cn('flex items-center gap-2.5 py-2.5 px-3 rounded-sm cursor-pointer transition-all duration-150 ease-out mb-0.5 border-l-[3px] border-l-transparent hover:bg-gray-50', isActive && 'bg-gray-50 border-l-black')}
+                  className={cn('flex items-center gap-2.5 py-2.5 px-3 rounded-sm cursor-pointer transition-all duration-150 ease-out mb-0.5 border-l-[3px] border-l-transparent hover:bg-gray-50', isActive && 'bg-gray-50 border-l-brand')}
                   onClick={() => sectionRefs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 >
                   <span className="text-sm font-medium text-foreground-muted">{a.title}</span>
                   {isFulfilled && (
-                    <svg className="ml-auto text-green-500 shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <svg className="ml-auto text-brand shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path
                         d="M3 8.5l3.5 3.5 6.5-7"
                         stroke="currentColor"

@@ -5,13 +5,13 @@ export default function Logo({ size = 'default', className }) {
   return (
     <div
       className={cn(
-        'flex items-center gap-2 font-bold text-black tracking-tight',
+        'flex items-center gap-2 font-bold text-brand tracking-tight',
         size === 'large' ? 'text-2xl' : 'text-lg',
         className
       )}
     >
       <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <rect width="28" height="28" rx="6" fill="black" />
+        <rect width="28" height="28" rx="6" fill="var(--color-brand)" />
         <text
           x="14"
           y="19"
