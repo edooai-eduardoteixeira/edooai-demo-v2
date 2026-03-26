@@ -2,17 +2,17 @@
 
 /* ── Tailwind v4 theme: maps existing design tokens ── */
 @theme {
-  /* Colors — Gray (warm stone family) */
-  --color-gray-50: #FAFAF9;
-  --color-gray-100: #F5F5F4;
-  --color-gray-200: #E7E5E4;
-  --color-gray-300: #D6D3D1;
-  --color-gray-400: #A8A29E;
-  --color-gray-500: #78716C;
-  --color-gray-600: #57534E;
-  --color-gray-700: #44403C;
-  --color-gray-800: #292524;
-  --color-gray-900: #1C1917;
+  /* Colors — Gray (warm sand family) */
+  --color-gray-50: #F7F3ED;
+  --color-gray-100: #EFEBE5;
+  --color-gray-200: #E4DDD5;
+  --color-gray-300: #D1C8BE;
+  --color-gray-400: #A89E94;
+  --color-gray-500: #7D7368;
+  --color-gray-600: #6B5E54;
+  --color-gray-700: #4A3F37;
+  --color-gray-800: #2C2320;
+  --color-gray-900: #1A1512;
 
   /* Colors — Green */
   --color-green-50: #f0fdf4;
@@ -21,22 +21,22 @@
   --color-green-600: #16a34a;
 
   /* Colors — Semantic */
-  --color-accent: #1C1917;
-  --color-accent-hover: #0C0A09;
-  --color-accent-light: #F5F5F4;
-  --color-accent-subtle: #FAFAF9;
+  --color-accent: #2C2320;
+  --color-accent-hover: #1A1512;
+  --color-accent-light: #EFEBE5;
+  --color-accent-subtle: #F5F1EB;
   --color-brand: #850020;
-  --color-brand-light: #F5EEEC;
+  --color-brand-light: #F0E8E5;
   --color-danger: #ef4444;
   --color-danger-light: #fef2f2;
   --color-warn: #f59e0b;
   --color-success: #059669;
   --color-surface: #ffffff;
-  --color-border: #E7E5E4;
-  --color-border-light: #F5F5F4;
-  --color-foreground: #1C1917;
-  --color-foreground-muted: #57534E;
-  --color-foreground-faint: #A8A29E;
+  --color-border: #E4DDD5;
+  --color-border-light: #EFEBE5;
+  --color-foreground: #2C2320;
+  --color-foreground-muted: #6B5E54;
+  --color-foreground-faint: #A89E94;
 
   /* Font family */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -130,17 +130,17 @@
   --shadow-up-md: 0 -4px 6px -1px rgba(0, 0, 0, 0.05), 0 -2px 4px -2px rgba(0, 0, 0, 0.03);
   --shadow-inset-sm: inset 0 1px 3px rgba(0, 0, 0, 0.04);
 
-  --text-primary: #1C1917;
-  --text-secondary: #57534E;
-  --text-tertiary: #A8A29E;
-  --border: #E7E5E4;
-  --bg: #FAFAF9;
+  --text-primary: #2C2320;
+  --text-secondary: #6B5E54;
+  --text-tertiary: #A89E94;
+  --border: #E4DDD5;
+  --bg: #FAF7F2;
   --surface: #ffffff;
-  --border-light: #F5F5F4;
-  --accent: #1C1917;
-  --accent-hover: #0C0A09;
-  --accent-light: #F5F5F4;
-  --accent-subtle: #FAFAF9;
+  --border-light: #EFEBE5;
+  --accent: #2C2320;
+  --accent-hover: #1A1512;
+  --accent-light: #EFEBE5;
+  --accent-subtle: #F5F1EB;
   --danger: #ef4444;
   --warn: #f59e0b;
   --success: #10b981;

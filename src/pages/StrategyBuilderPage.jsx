@@ -915,21 +915,21 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       return (
                         <>
                           <defs>
-                            {/* Pre-threshold area fill: slate accent */}
+                            {/* Pre-threshold area fill: warm taupe */}
                             <linearGradient id="areaFillPre" x1="0" y1={chartTop} x2="0" y2={chartBottom} gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="#64748b" stopOpacity="0.12" />
-                              <stop offset="60%" stopColor="#64748b" stopOpacity="0.05" />
-                              <stop offset="100%" stopColor="#64748b" stopOpacity="0" />
+                              <stop offset="0%" stopColor="#A89E94" stopOpacity="0.12" />
+                              <stop offset="60%" stopColor="#A89E94" stopOpacity="0.05" />
+                              <stop offset="100%" stopColor="#A89E94" stopOpacity="0" />
                             </linearGradient>
-                            {/* Post-threshold area fill: neutral warm gray */}
+                            {/* Post-threshold area fill: warm sand */}
                             <linearGradient id="areaFillPost" x1="0" y1={chartTop} x2="0" y2={chartBottom} gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="#78716C" stopOpacity="0.10" />
-                              <stop offset="60%" stopColor="#78716C" stopOpacity="0.04" />
-                              <stop offset="100%" stopColor="#78716C" stopOpacity="0" />
+                              <stop offset="0%" stopColor="#A89E94" stopOpacity="0.14" />
+                              <stop offset="60%" stopColor="#A89E94" stopOpacity="0.05" />
+                              <stop offset="100%" stopColor="#A89E94" stopOpacity="0" />
                             </linearGradient>
-                            {/* Post-threshold stroke gradient: slate → burgundy */}
+                            {/* Post-threshold stroke gradient: warm taupe → merlot */}
                             <linearGradient id="strokeGrad" x1={threshX} y1="0" x2={chartRight} y2="0" gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="#94a3b8" />
+                              <stop offset="0%" stopColor="#A89E94" />
                               <stop offset="40%" stopColor="var(--color-brand)" stopOpacity="0.7" />
                               <stop offset="100%" stopColor="var(--color-brand)" />
                             </linearGradient>
@@ -961,18 +961,18 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           {/* Area fill — post-threshold (dark grey) */}
                           <path d={areaD} fill="url(#areaFillPost)" clipPath="url(#clipPost)" />
 
-                          {/* Pre-threshold curve — dashed, unified slate */}
-                          <path d={pathD} fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="6,4" opacity="0.5" clipPath="url(#clipPre)" />
+                          {/* Pre-threshold curve — dashed, warm taupe */}
+                          <path d={pathD} fill="none" stroke="#A89E94" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="6,4" opacity="0.6" clipPath="url(#clipPre)" />
 
-                          {/* Post-threshold curve — confident dark gradient */}
+                          {/* Post-threshold curve — confident brand gradient */}
                           <path d={pathD} fill="none" stroke="url(#strokeGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#clipPost)" />
 
-                          {/* Threshold dashed line — unified slate */}
-                          <line x1={threshX} y1={chartTop} x2={threshX} y2={chartBottom} stroke="#64748b" strokeWidth="1" strokeDasharray="4,4" opacity="0.6" />
+                          {/* Threshold dashed line — warm taupe */}
+                          <line x1={threshX} y1={chartTop} x2={threshX} y2={chartBottom} stroke="#A89E94" strokeWidth="1" strokeDasharray="4,4" opacity="0.6" />
 
                           {/* Learning phase label — anchored near dashed line */}
-                          <text x={threshX - 8} y={chartTop + 16} fontSize="10" fill="#64748b" fontFamily="var(--font-family)" fontWeight="600" textAnchor="end">Learning phase</text>
-                          <text x={threshX - 8} y={chartTop + 28} fontSize="9" fill="#64748b" fontFamily="var(--font-family)" opacity="0.65" textAnchor="end">AI calibrating signals</text>
+                          <text x={threshX - 8} y={chartTop + 16} fontSize="10" fill="#7D7368" fontFamily="var(--font-family)" fontWeight="600" textAnchor="end">Learning phase</text>
+                          <text x={threshX - 8} y={chartTop + 28} fontSize="9" fill="#7D7368" fontFamily="var(--font-family)" opacity="0.65" textAnchor="end">AI calibrating signals</text>
 
                           {/* Hover overlay */}
                           <rect
