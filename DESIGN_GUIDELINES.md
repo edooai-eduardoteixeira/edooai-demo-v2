@@ -273,6 +273,16 @@ inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold roun
 inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold rounded-md bg-white text-foreground border border-gray-300 transition-all duration-200 ease-out
 ```
 
+### Container surfaces (inside drawers/panels)
+
+| Type | Treatment | Padding | Use |
+|---|---|---|---|
+| **User controls** (dropdowns, steppers, selectable cards) | `bg-surface border border-border` | varies by control | Interactive elements the user changes |
+| **Computed context** (eligibility, pacing, summaries) | `bg-accent-subtle rounded-lg` | `py-3 px-4` | System-derived data, should recede |
+| **Floating popovers** (dropdown menus) | `bg-surface border border-border shadow-md` | `py-1` | Temporary overlays |
+
+**Rule**: Computed context recedes (subtle bg, no border). User controls pop (white, bordered). Never invert this.
+
 ### Card
 ```
 bg-surface border border-border rounded-lg shadow-sm overflow-hidden
