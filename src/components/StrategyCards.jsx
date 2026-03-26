@@ -275,7 +275,7 @@ const JourneySection = ({ section }) => {
           <div className="flex items-stretch min-h-[44px]" key={i}>
             <div className="flex flex-col items-center w-5 shrink-0">
               {!isFirst && <div className="w-[1.5px] bg-border flex-1 min-h-2" />}
-              <div className={cn('w-2.5 h-2.5 rounded-full border-2 border-gray-300 bg-surface shrink-0 mt-1.5', step.fixed && 'border-accent bg-accent', step.trigger && 'border-brand bg-brand')} />
+              <div className={cn('w-2.5 h-2.5 rounded-full border-2 border-gray-300 bg-surface shrink-0 mt-1.5', step.fixed && 'border-gray-400 bg-gray-400', step.trigger && 'border-brand bg-brand')} />
               {!isLast && <div className="w-[1.5px] bg-border flex-1 min-h-2" />}
             </div>
             <div className="flex-1 flex items-center justify-between py-1.5 pl-2.5">
