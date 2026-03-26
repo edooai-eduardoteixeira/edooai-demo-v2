@@ -440,10 +440,11 @@ export default function StrategyBuilderPage({ config, onNext }) {
               gridTemplateColumns: '340px 1fr',
             }}>
 
-              {/* ── Budget column ── */}
+              {/* ── Control panel (sandy card) ── */}
               <div style={{
-                padding: '0 32px 0 0',
-                borderRight: '1px solid var(--border-light)',
+                background: 'var(--accent-subtle)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '20px 24px',
                 display: 'flex',
                 flexDirection: 'column',
               }}>
@@ -666,51 +667,44 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   </div>
                 </div>
 
-                {/* Strategy context — AI insight + rules access */}
-                <div style={{
-                  marginTop: 24,
-                  background: 'var(--accent-subtle)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '14px 16px',
-                }}>
-                  {!isRevealed ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      <SkeletonBar width="100%" height={12} />
-                      <SkeletonBar width="70%" height={12} />
-                    </div>
-                  ) : (
-                    <>
-                      {/* AI insight */}
+                {/* Divider — budget from context */}
+                <div style={{ height: 1, background: 'var(--border)', margin: '20px 0 16px' }} />
+
+                {/* AI insight + rules access */}
+                {!isRevealed ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <SkeletonBar width="100%" height={12} />
+                    <SkeletonBar width="70%" height={12} />
+                  </div>
+                ) : (
+                  <>
+                    <div style={{
+                      display: 'flex',
+                      gap: 8,
+                      alignItems: 'flex-start',
+                      animation: 'fadeIn 0.3s ease-out',
+                      animationDelay: '400ms',
+                      animationFillMode: 'both',
+                    }}>
+                      <svg style={{ flexShrink: 0, marginTop: 1 }} width="14" height="14" viewBox="0 0 16 16" fill="none">
+                        <path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="var(--text-tertiary)"/>
+                      </svg>
                       <div style={{
-                        display: 'flex',
-                        gap: 8,
-                        alignItems: 'flex-start',
-                        animation: 'fadeIn 0.3s ease-out',
-                        animationDelay: '400ms',
-                        animationFillMode: 'both',
+                        fontSize: 12.5,
+                        color: 'var(--text-secondary)',
+                        lineHeight: 1.5,
                       }}>
-                        <svg style={{ flexShrink: 0, marginTop: 1 }} width="14" height="14" viewBox="0 0 16 16" fill="none">
-                          <path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="var(--text-tertiary)"/>
-                        </svg>
-                        <div style={{
-                          fontSize: 12.5,
-                          color: 'var(--text-secondary)',
-                          lineHeight: 1.5,
-                        }}>
-                          {guidanceMessage}
-                        </div>
+                        {guidanceMessage}
                       </div>
+                    </div>
 
-                      {/* Divider */}
-                      <div style={{ height: 1, background: 'var(--border-light)', margin: '12px 0' }} />
+                    <div style={{ height: 1, background: 'var(--border)', margin: '12px 0' }} />
 
-                      {/* Rules trigger */}
-                      <button className="inline-flex items-center gap-2 p-0 text-[13px] font-medium text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:text-foreground" onClick={() => setActiveDrawer('index')} style={{ animation: 'fadeIn 0.3s ease-out', animationDelay: '400ms', animationFillMode: 'both' }}>
-                        <GearIcon /> <span>Referral Rules</span> <ChevronRight />
-                      </button>
-                    </>
-                  )}
-                </div>
+                    <button className="inline-flex items-center gap-2 p-0 text-[13px] font-medium text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:text-foreground" onClick={() => setActiveDrawer('index')} style={{ animation: 'fadeIn 0.3s ease-out', animationDelay: '400ms', animationFillMode: 'both' }}>
+                      <GearIcon /> <span>Referral Rules</span> <ChevronRight />
+                    </button>
+                  </>
+                )}
               </div>
 
               {/* ── Results column ── */}
