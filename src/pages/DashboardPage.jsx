@@ -60,8 +60,8 @@ function SimpleLineChart({ data, phases }) {
     >
       <defs>
         <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--color-brand)" stopOpacity="0.22" />
-          <stop offset="100%" stopColor="var(--color-brand)" stopOpacity="0" />
+          <stop offset="0%" stopColor="#78716C" stopOpacity="0.10" />
+          <stop offset="100%" stopColor="#78716C" stopOpacity="0" />
         </linearGradient>
       </defs>
 

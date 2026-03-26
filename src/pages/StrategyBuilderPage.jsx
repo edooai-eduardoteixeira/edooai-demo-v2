@@ -921,11 +921,11 @@ export default function StrategyBuilderPage({ config, onNext }) {
                               <stop offset="60%" stopColor="#64748b" stopOpacity="0.05" />
                               <stop offset="100%" stopColor="#64748b" stopOpacity="0" />
                             </linearGradient>
-                            {/* Post-threshold area fill: burgundy brand */}
+                            {/* Post-threshold area fill: neutral warm gray */}
                             <linearGradient id="areaFillPost" x1="0" y1={chartTop} x2="0" y2={chartBottom} gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="var(--color-brand)" stopOpacity="0.22" />
-                              <stop offset="60%" stopColor="var(--color-brand)" stopOpacity="0.10" />
-                              <stop offset="100%" stopColor="var(--color-brand)" stopOpacity="0" />
+                              <stop offset="0%" stopColor="#78716C" stopOpacity="0.10" />
+                              <stop offset="60%" stopColor="#78716C" stopOpacity="0.04" />
+                              <stop offset="100%" stopColor="#78716C" stopOpacity="0" />
                             </linearGradient>
                             {/* Post-threshold stroke gradient: slate → burgundy */}
                             <linearGradient id="strokeGrad" x1={threshX} y1="0" x2={chartRight} y2="0" gradientUnits="userSpaceOnUse">
