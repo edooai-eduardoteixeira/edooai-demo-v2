@@ -28,8 +28,7 @@ function sparkColor(arr, invertGood = false, startDay = 0) {
   const mid = data[midIdx];
   const end = data[data.length - 1];
   if (mid === 0 && end === 0) return 'var(--text-tertiary)';
-  const improving = invertGood ? (end <= mid) : (end >= mid);
-  return improving ? 'var(--success)' : 'var(--danger)';
+  return 'var(--text-primary)';
 }
 
 /* Returns [{x, y}] for SVG polyline + trailing dot (viewBox 0 0 60 16).
