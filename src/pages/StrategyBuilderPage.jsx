@@ -667,8 +667,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   </div>
                 </div>
 
-                {/* Divider — budget from context */}
-                <div style={{ height: 1, background: 'var(--border)', margin: '20px 0 16px' }} />
+                {/* Spacer — budget from context */}
 
                 {/* AI insight + rules access */}
                 {!isRevealed ? (
@@ -698,7 +697,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       </div>
                     </div>
 
-                    <div style={{ height: 1, background: 'var(--border)', margin: '12px 0' }} />
+                    <div style={{ height: 1, background: 'var(--border)', margin: '14px 0' }} />
 
                     <button className="inline-flex items-center gap-2 p-0 text-[13px] font-medium text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:text-foreground" onClick={() => setActiveDrawer('index')} style={{ animation: 'fadeIn 0.3s ease-out', animationDelay: '400ms', animationFillMode: 'both' }}>
                       <GearIcon /> <span>Referral Rules</span> <ChevronRight />
