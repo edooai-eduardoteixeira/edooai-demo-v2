@@ -38,7 +38,7 @@ const GearIcon = () => (
   </svg>
 );
 const Sparkle = () => (
-  <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="#3b5bdb"/></svg>
+  <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="currentColor"/></svg>
 );
 const CheckIcon = () => (
   <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -137,7 +137,7 @@ const SingleSelect = ({ value: initial, choices, onChange }) => {
       {open && (
         <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-lg shadow-md z-10 min-w-[140px] py-1">
           {choices.map((choice, i) => (
-            <div className={cn('flex items-center gap-2 py-2 px-3.5 text-[13px] text-foreground cursor-pointer transition-colors duration-150 ease-out select-none hover:bg-accent-subtle', choice === val && 'text-[#3b5bdb] font-medium')} key={i} onClick={() => pick(choice)}>
+            <div className={cn('flex items-center gap-2 py-2 px-3.5 text-[13px] text-foreground cursor-pointer transition-colors duration-150 ease-out select-none hover:bg-accent-subtle', choice === val && 'text-foreground font-medium')} key={i} onClick={() => pick(choice)}>
               <div className={cn('w-3.5 h-3.5 rounded-full border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', choice === val && 'border-accent')}>
                 {choice === val && <div className="w-2 h-2 rounded-full bg-accent" />}
               </div>
@@ -170,7 +170,7 @@ const RichSelect = ({ value: initial, richChoices }) => {
       {open && (
         <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-lg shadow-md z-10 min-w-[140px] py-1" style={{ minWidth: 220, padding: '4px 0' }}>
           {richChoices.map((c, i) => (
-            <div className={cn('flex items-center gap-2 py-2 px-3.5 text-[13px] text-foreground cursor-pointer transition-colors duration-150 ease-out select-none hover:bg-accent-subtle', c.value === val && 'text-[#3b5bdb] font-medium')} key={i} onClick={() => pick(c.value)} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2, padding: '8px 14px' }}>
+            <div className={cn('flex items-center gap-2 py-2 px-3.5 text-[13px] text-foreground cursor-pointer transition-colors duration-150 ease-out select-none hover:bg-accent-subtle', c.value === val && 'text-foreground font-medium')} key={i} onClick={() => pick(c.value)} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2, padding: '8px 14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div className={cn('w-3.5 h-3.5 rounded-full border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', c.value === val && 'border-accent')}>
                   {c.value === val && <div className="w-2 h-2 rounded-full bg-accent" />}
@@ -275,17 +275,17 @@ const JourneySection = ({ section }) => {
           <div className="flex items-stretch min-h-[44px]" key={i}>
             <div className="flex flex-col items-center w-5 shrink-0">
               {!isFirst && <div className="w-[1.5px] bg-border flex-1 min-h-2" />}
-              <div className={cn('w-2.5 h-2.5 rounded-full border-2 border-gray-300 bg-surface shrink-0 mt-1.5', step.fixed && 'border-accent bg-accent', step.trigger && 'border-[#3b5bdb] bg-[#3b5bdb]')} />
+              <div className={cn('w-2.5 h-2.5 rounded-full border-2 border-gray-300 bg-surface shrink-0 mt-1.5', step.fixed && 'border-accent bg-accent', step.trigger && 'border-brand bg-brand')} />
               {!isLast && <div className="w-[1.5px] bg-border flex-1 min-h-2" />}
             </div>
             <div className="flex-1 flex items-center justify-between py-1.5 pl-2.5">
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span className="text-[13px] font-medium text-foreground">{step.label}</span>
                 {step.fixed && <span className="text-[9px] py-0.5 px-1.5 rounded-[3px] font-semibold tracking-[0.04em] uppercase text-foreground-faint bg-accent-light">Start</span>}
-                {step.trigger && <span className="text-[9px] py-0.5 px-1.5 rounded-[3px] font-semibold tracking-[0.04em] uppercase text-[#3b5bdb] bg-[#eef1ff]">Redeems</span>}
+                {step.trigger && <span className="text-[9px] py-0.5 px-1.5 rounded-[3px] font-semibold tracking-[0.04em] uppercase text-brand bg-brand-light">Redeems</span>}
               </div>
               {canRemove && (
-                <div className="w-5 h-5 flex items-center justify-center rounded cursor-pointer text-gray-400 transition-all duration-150 ease-out shrink-0 ml-1 hover:bg-[#fef2f2] hover:text-danger" onClick={() => removeStep(i)}><XSmall /></div>
+                <div className="w-5 h-5 flex items-center justify-center rounded cursor-pointer text-gray-400 transition-all duration-150 ease-out shrink-0 ml-1 hover:bg-danger-light hover:text-danger" onClick={() => removeStep(i)}><XSmall /></div>
               )}
             </div>
           </div>
@@ -293,7 +293,7 @@ const JourneySection = ({ section }) => {
       })}
       {available.length > 0 && (
         <div style={{ position: 'relative' }} ref={addRef}>
-          <div className="flex items-center gap-1.5 py-1 pl-[30px] text-xs text-foreground-faint cursor-pointer transition-colors duration-150 ease-out hover:text-[#3b5bdb]" onClick={() => setShowAdd(!showAdd)}>
+          <div className="flex items-center gap-1.5 py-1 pl-[30px] text-xs text-foreground-faint cursor-pointer transition-colors duration-150 ease-out hover:text-gray-600" onClick={() => setShowAdd(!showAdd)}>
             <PlusSmall /> Add step before redemption
           </div>
           {showAdd && (
@@ -366,7 +366,7 @@ const BudgetPacing = ({ section }) => {
           {open && (
             <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-lg shadow-md z-10 min-w-[140px] py-1">
               {section.intensityChoices.map((c, i) => (
-                <div className={cn('flex items-center gap-2 py-2 px-3.5 text-[13px] text-foreground cursor-pointer transition-colors duration-150 ease-out select-none hover:bg-accent-subtle', c === intensity && 'text-[#3b5bdb] font-medium')} key={i} onClick={() => { setIntensity(c); setOpen(false); }}>
+                <div className={cn('flex items-center gap-2 py-2 px-3.5 text-[13px] text-foreground cursor-pointer transition-colors duration-150 ease-out select-none hover:bg-accent-subtle', c === intensity && 'text-foreground font-medium')} key={i} onClick={() => { setIntensity(c); setOpen(false); }}>
                   <div className={cn('w-3.5 h-3.5 rounded-full border-[1.5px] border-gray-300 flex items-center justify-center shrink-0 transition-all duration-150 ease-out', c === intensity && 'border-accent')}>
                     {c === intensity && <div className="w-2 h-2 rounded-full bg-accent" />}
                   </div>
@@ -805,8 +805,8 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
 
               {/* Semantic Engine — add rule via AI */}
               <div className="py-3 px-6" style={{ borderTop: '1px solid var(--border-light)' }}>
-                <div className="flex items-center gap-1.5 h-10 text-[13px] text-[#3b5bdb] cursor-pointer font-medium transition-opacity duration-150 ease-out hover:opacity-80">
-                  <div className="w-[18px] h-[18px] rounded-md bg-[#eef1ff] flex items-center justify-center"><Sparkle /></div>
+                <div className="flex items-center gap-1.5 h-10 text-[13px] text-brand cursor-pointer font-medium transition-opacity duration-150 ease-out hover:opacity-80">
+                  <div className="w-[18px] h-[18px] rounded-md bg-brand-light flex items-center justify-center"><Sparkle /></div>
                   Add rule with AI
                 </div>
               </div>

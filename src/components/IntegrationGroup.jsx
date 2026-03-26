@@ -38,9 +38,7 @@ export default function IntegrationGroup({
         <span
           className={cn(
             'inline-flex items-center text-[11px] font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap',
-            group.dataDirection === 'Read only'
-              ? 'bg-[#dbeafe] text-[#1e40af]'
-              : 'bg-border-light text-[#334155]'
+            'bg-gray-100 text-gray-600'
           )}
         >
           {group.dataDirection}
