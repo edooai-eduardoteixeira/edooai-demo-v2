@@ -440,12 +440,10 @@ export default function StrategyBuilderPage({ config, onNext }) {
               gridTemplateColumns: '340px 1fr',
             }}>
 
-              {/* ── Budget column — single control panel ── */}
+              {/* ── Budget column ── */}
               <div style={{
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-lg)',
-                padding: '24px',
+                padding: '0 32px 0 0',
+                borderRight: '1px solid var(--border-light)',
                 display: 'flex',
                 flexDirection: 'column',
               }}>
@@ -668,14 +666,12 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   </div>
                 </div>
 
-              </div>
-
-                {/* Strategy context — AI insight + rules access (outside card — system output) */}
+                {/* Strategy context — AI insight + rules access */}
                 <div style={{
-                  marginTop: 20,
-                  padding: '14px 16px',
+                  marginTop: 24,
                   background: 'var(--accent-subtle)',
                   borderRadius: 'var(--radius-md)',
+                  padding: '14px 16px',
                 }}>
                   {!isRevealed ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -715,6 +711,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     </>
                   )}
                 </div>
+              </div>
 
               {/* ── Results column ── */}
               <div style={{
