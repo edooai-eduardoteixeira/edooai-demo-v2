@@ -442,11 +442,17 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
               {/* ── Budget column ── */}
               <div style={{
-                padding: '0 32px 0 0',
+                paddingRight: 32,
                 borderRight: '1px solid var(--border-light)',
                 display: 'flex',
                 flexDirection: 'column',
               }}>
+               <div style={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '20px 24px 16px',
+                }}>
                 <div style={{
                   fontSize: 11,
                   fontWeight: 600,
@@ -665,6 +671,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     <span>${Math.round(budgetSlider.max / 1000)}K</span>
                   </div>
                 </div>
+               </div>
 
                 {/* Strategy context — AI insight + rules access */}
                 <div style={{
