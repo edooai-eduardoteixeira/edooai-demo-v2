@@ -94,7 +94,7 @@ const MultiSelect = ({ items: initialItems }) => {
 
   return (
     <div style={{ position: 'relative' }} ref={ref}>
-      <div className="inline-flex items-center gap-1 py-1 px-2.5 bg-accent-subtle border border-border rounded-sm text-[13px] text-foreground-muted cursor-pointer transition-colors duration-150 ease-out max-w-[260px] hover:border-gray-400" onClick={() => setOpen(!open)}>
+      <div className="inline-flex items-center gap-1 py-1 px-2.5 bg-surface border border-border rounded-sm text-[13px] text-foreground-muted cursor-pointer transition-colors duration-150 ease-out max-w-[260px] hover:border-gray-400" onClick={() => setOpen(!open)}>
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{display}</span>
         <span style={{ color: 'var(--text-tertiary)', fontSize: 10, flexShrink: 0 }}>▾</span>
       </div>
@@ -130,7 +130,7 @@ const SingleSelect = ({ value: initial, choices, onChange }) => {
 
   return (
     <div style={{ position: 'relative' }} ref={ref}>
-      <div className="inline-flex items-center gap-1 py-1 px-2.5 bg-accent-subtle border border-border rounded-sm text-[13px] text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:border-gray-400" onClick={() => setOpen(!open)}>
+      <div className="inline-flex items-center gap-1 py-1 px-2.5 bg-surface border border-border rounded-sm text-[13px] text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:border-gray-400" onClick={() => setOpen(!open)}>
         <span>{val}</span>
         <span style={{ color: 'var(--text-tertiary)', fontSize: 10, flexShrink: 0 }}>▾</span>
       </div>
@@ -163,7 +163,7 @@ const RichSelect = ({ value: initial, richChoices }) => {
   const pick = (v) => { setVal(v); setOpen(false); };
   return (
     <div style={{ position: 'relative' }} ref={ref}>
-      <div className="inline-flex items-center gap-1 py-1 px-2.5 bg-accent-subtle border border-border rounded-sm text-[13px] text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:border-gray-400" onClick={() => setOpen(!open)}>
+      <div className="inline-flex items-center gap-1 py-1 px-2.5 bg-surface border border-border rounded-sm text-[13px] text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:border-gray-400" onClick={() => setOpen(!open)}>
         <span>{val}</span>
         <span style={{ color: 'var(--text-tertiary)', fontSize: 10, flexShrink: 0 }}>▾</span>
       </div>
@@ -221,7 +221,7 @@ const NumericStepper = ({ value: initial, min, max, suffix }) => {
   const dec = () => setVal(v => Math.max(min, v - 1));
   const inc = () => setVal(v => Math.min(max, v + 1));
   return (
-    <div className="inline-flex items-center gap-0 bg-accent-subtle border border-border rounded-sm overflow-hidden">
+    <div className="inline-flex items-center gap-0 bg-surface border border-border rounded-sm overflow-hidden">
       <button className="w-7 h-7 flex items-center justify-center cursor-pointer text-sm text-foreground-muted transition-all duration-150 ease-out p-0 hover:bg-accent-light hover:text-foreground disabled:text-gray-300 disabled:cursor-default" onClick={dec} disabled={val <= min}>−</button>
       <span className="text-[13px] text-foreground-muted min-w-[52px] text-center px-0.5">{val}{suffix ? ` ${suffix}` : ''}</span>
       <button className="w-7 h-7 flex items-center justify-center cursor-pointer text-sm text-foreground-muted transition-all duration-150 ease-out p-0 hover:bg-accent-light hover:text-foreground disabled:text-gray-300 disabled:cursor-default" onClick={inc} disabled={val >= max}>+</button>
@@ -348,7 +348,7 @@ const BudgetPacing = ({ section }) => {
   const cap = Math.round(section.baseCap * pct);
   const capDisplay = cap >= 1000 ? `~${(cap / 1000).toFixed(1).replace(/\.0$/, '')}K` : `~${cap}`;
   return (
-    <div className="bg-accent-subtle rounded-lg py-3 px-3.5">
+    <div className="bg-surface border border-border rounded-lg py-3 px-3.5">
       <div className="flex items-center justify-between h-8">
         <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>Conversion rate</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -359,7 +359,7 @@ const BudgetPacing = ({ section }) => {
       <div className="flex items-center justify-between h-8">
         <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>Pacing intensity</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative' }} ref={ref}>
-          <div className="inline-flex items-center gap-1 py-1 px-2.5 bg-accent-subtle border border-border rounded-sm text-[13px] text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:border-gray-400" onClick={() => setOpen(!open)}>
+          <div className="inline-flex items-center gap-1 py-1 px-2.5 bg-surface border border-border rounded-sm text-[13px] text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:border-gray-400" onClick={() => setOpen(!open)}>
             <span>{intensity}</span>
             <span style={{ color: 'var(--text-tertiary)', fontSize: 10, flexShrink: 0 }}>▾</span>
           </div>
@@ -715,7 +715,7 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                   )}
 
                   {section.type === 'conditional' && (
-                    <div className="bg-accent-subtle rounded-lg overflow-hidden">
+                    <div className="bg-surface border border-border rounded-lg overflow-hidden">
                       <div className="flex items-center h-10 px-3 gap-2.5">
                         <span className="text-[9px] font-bold tracking-[0.08em] uppercase text-foreground-faint min-w-8">If</span>
                         <span className="text-[13px] font-medium text-foreground relative cursor-default" style={{ flex: 1 }}>{section.ifRow.label}</span>
@@ -790,7 +790,7 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                   )}
 
                   {section.type === 'summary' && section.summary && (
-                    <div className="bg-accent-subtle rounded-lg py-2.5 px-3.5 mb-1">
+                    <div className="bg-surface border border-border rounded-lg py-2.5 px-3.5 mb-1">
                       {section.summary.note && (
                         <div className="text-[11px] text-foreground-faint mt-1 leading-[1.4]">{section.summary.note}</div>
                       )}
