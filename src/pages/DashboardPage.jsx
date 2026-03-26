@@ -4,30 +4,11 @@ import CTAButton from '../components/CTAButton.jsx';
 
 function MetricRow({ label, value }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '0.875rem 0',
-        borderBottom: '1px solid var(--border-light)',
-      }}
-    >
-      <span
-        style={{
-          fontSize: 'var(--font-size-sm)',
-          color: 'var(--text-secondary)',
-        }}
-      >
+    <div className="flex justify-between items-center py-3.5 border-b border-border-light">
+      <span className="text-sm text-foreground-muted">
         {label}
       </span>
-      <span
-        style={{
-          fontSize: 'var(--font-size-base)',
-          fontWeight: 600,
-          color: 'var(--text-primary)',
-        }}
-      >
+      <span className="text-base font-semibold text-foreground">
         {value}
       </span>
     </div>
@@ -75,7 +56,7 @@ function SimpleLineChart({ data, phases }) {
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}
-      style={{ width: '100%', maxWidth: '700px' }}
+      className="w-full max-w-[700px]"
     >
       <defs>
         <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
@@ -94,14 +75,14 @@ function SimpleLineChart({ data, phases }) {
               y1={y}
               x2={width - padding.right}
               y2={y}
-              style={{ stroke: 'var(--border)' }}
+              className="stroke-border"
               strokeWidth="1"
             />
             <text
               x={padding.left - 10}
               y={y + 4}
               textAnchor="end"
-              style={{ fill: 'var(--text-tertiary)', fontFamily: 'var(--font-family)' }}
+              className="fill-foreground-faint font-sans"
               fontSize="11"
             >
               {val}
@@ -118,7 +99,7 @@ function SimpleLineChart({ data, phases }) {
             x={x}
             y={height - 10}
             textAnchor="middle"
-            style={{ fill: 'var(--text-tertiary)', fontFamily: 'var(--font-family)' }}
+            className="fill-foreground-faint font-sans"
             fontSize="11"
           >
             Day {day}
@@ -133,7 +114,7 @@ function SimpleLineChart({ data, phases }) {
           y1={padding.top}
           x2={x}
           y2={padding.top + chartH}
-          style={{ stroke: 'var(--color-gray-300)' }}
+          className="stroke-gray-300"
           strokeWidth="1"
           strokeDasharray="4,4"
         />
@@ -145,7 +126,7 @@ function SimpleLineChart({ data, phases }) {
           x={x}
           y={padding.top - 8}
           textAnchor="middle"
-          style={{ fill: 'var(--text-tertiary)', fontFamily: 'var(--font-family)' }}
+          className="fill-foreground-faint font-sans"
           fontSize="11"
           fontWeight="500"
         >
@@ -154,12 +135,12 @@ function SimpleLineChart({ data, phases }) {
       ))}
 
       <path d={areaD} fill="url(#areaGradient)" />
-      <path d={pathD} fill="none" style={{ stroke: 'var(--text-primary)' }} strokeWidth="2.5" strokeLinejoin="round" />
+      <path d={pathD} fill="none" className="stroke-foreground" strokeWidth="2.5" strokeLinejoin="round" />
       <circle
         cx={points[points.length - 1].x}
         cy={points[points.length - 1].y}
         r="4"
-        style={{ fill: 'var(--text-primary)' }}
+        className="fill-foreground"
       />
     </svg>
   );
@@ -175,52 +156,21 @@ export default function DashboardPage({ config }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <header
-        style={{
-          padding: '14px 48px',
-        }}
-      >
+    <div className="min-h-screen flex flex-col">
+      <header className="px-12 py-3.5">
         <Logo />
       </header>
 
-      <main
-        style={{
-          flex: 1,
-          padding: '3rem',
-          maxWidth: '900px',
-          margin: '0 auto',
-          width: '100%',
-        }}
-      >
-        <h2
-          style={{
-            fontSize: 'var(--font-size-2xl)',
-            fontWeight: 700,
-            marginBottom: '0.5rem',
-          }}
-        >
+      <main className="flex-1 p-12 max-w-[900px] mx-auto w-full">
+        <h2 className="text-2xl font-bold mb-2">
           Projected 30-Day Results
         </h2>
-        <p
-          style={{
-            fontSize: 'var(--font-size-sm)',
-            color: 'var(--text-tertiary)',
-            marginBottom: '2rem',
-          }}
-        >
+        <p className="text-sm text-foreground-faint mb-8">
           Based on $150K monthly budget
         </p>
 
         {/* Metrics */}
-        <div
-          style={{
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '1.5rem',
-            marginBottom: '2rem',
-          }}
-        >
+        <div className="border border-border rounded-lg p-6 mb-8">
           <MetricRow
             label="New active users (first transaction)"
             value={dashboard30Day.activeUsers.toLocaleString()}
@@ -248,24 +198,11 @@ export default function DashboardPage({ config }) {
         </div>
 
         {/* Chart */}
-        <div
-          style={{
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '1.5rem',
-            marginBottom: '2rem',
-          }}
-        >
-          <h3
-            style={{
-              fontSize: 'var(--font-size-base)',
-              fontWeight: 600,
-              marginBottom: '1rem',
-            }}
-          >
+        <div className="border border-border rounded-lg p-6 mb-8">
+          <h3 className="text-base font-semibold mb-4">
             Cumulative Active Users (30 Days)
           </h3>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <div className="flex justify-center">
             <SimpleLineChart
               data={dashboard30Day.dailyData}
               phases={dashboard30Day.chartPhases}
@@ -274,7 +211,7 @@ export default function DashboardPage({ config }) {
         </div>
 
         {/* CTA */}
-        <div style={{ textAlign: 'center', paddingTop: '1rem' }}>
+        <div className="text-center pt-4">
           <CTAButton onClick={handleBookCall}>
             {dashboard30Day.ctaText}
           </CTAButton>

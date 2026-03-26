@@ -1,48 +1,29 @@
 import React from 'react';
+import { cva } from 'class-variance-authority';
+import { cn } from '../lib/utils';
 
-export default function Badge({ children, variant = 'default' }) {
-  const variants = {
-    default: {
-      backgroundColor: 'var(--color-gray-100)',
-      color: 'var(--color-gray-700)',
+const badgeVariants = cva(
+  'inline-flex items-center px-3 py-1 text-[11px] font-semibold rounded-full whitespace-nowrap',
+  {
+    variants: {
+      variant: {
+        default: 'bg-gray-100 text-gray-700',
+        required: 'bg-gray-900 text-white',
+        optional: 'bg-gray-100 text-gray-600',
+        success: 'bg-gray-900 text-white',
+        quickwin: 'bg-gray-50 text-gray-800 border border-gray-800',
+        lookalike: 'bg-gray-50 text-gray-800 border border-gray-800',
+      },
     },
-    required: {
-      backgroundColor: 'var(--color-gray-900)',
-      color: 'var(--color-white)',
+    defaultVariants: {
+      variant: 'default',
     },
-    optional: {
-      backgroundColor: 'var(--color-gray-100)',
-      color: 'var(--color-gray-600)',
-    },
-    success: {
-      backgroundColor: 'var(--color-gray-900)',
-      color: 'var(--color-white)',
-    },
-    quickwin: {
-      backgroundColor: '#F8F8F8',
-      color: '#333',
-      border: '1px solid #333',
-    },
-    lookalike: {
-      backgroundColor: '#F8F8F8',
-      color: '#333',
-      border: '1px solid #333',
-    },
-  };
+  }
+);
 
+export default function Badge({ children, variant = 'default', className }) {
   return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        padding: '4px 12px',
-        fontSize: '11px',
-        fontWeight: 600,
-        borderRadius: '16px',
-        whiteSpace: 'nowrap',
-        ...variants[variant],
-      }}
-    >
+    <span className={cn(badgeVariants({ variant }), className)}>
       {children}
     </span>
   );

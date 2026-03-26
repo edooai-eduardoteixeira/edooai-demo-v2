@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { cn } from '../lib/utils';
 
 export default function Tooltip({ text, children, underline = false }) {
   const [visible, setVisible] = useState(false);
@@ -19,46 +20,22 @@ export default function Tooltip({ text, children, underline = false }) {
     }
   }, [visible]);
 
-  const triggerStyle = {
-    position: 'relative',
-    cursor: 'help',
-  };
-
-  if (underline) {
-    triggerStyle.textDecoration = visible ? 'underline dashed' : 'none';
-    triggerStyle.textDecorationColor = 'var(--text-tertiary)';
-    triggerStyle.textUnderlineOffset = '3px';
-    triggerStyle.textDecorationThickness = '1px';
-  }
-
   return (
     <span
       ref={triggerRef}
       onMouseEnter={() => setVisible(true)}
       onMouseLeave={() => setVisible(false)}
-      style={triggerStyle}
+      className={cn(
+        'relative cursor-help',
+        underline && visible && 'underline decoration-dashed decoration-foreground-faint underline-offset-[3px] decoration-1'
+      )}
     >
       {children}
       {visible && (
         <span
           ref={tipRef}
-          style={{
-            position: 'fixed',
-            top: pos.top,
-            left: pos.left,
-            maxWidth: '280px',
-            padding: '8px 12px',
-            fontSize: 'var(--font-size-xs)',
-            lineHeight: 1.5,
-            color: 'var(--text-secondary)',
-            backgroundColor: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)',
-            boxShadow: 'var(--shadow-lg)',
-            zIndex: 9999,
-            pointerEvents: 'none',
-            animation: 'tooltipFadeIn 150ms ease',
-          }}
+          className="fixed max-w-[280px] px-3 py-2 text-xs leading-normal text-foreground-muted bg-surface border border-border rounded-sm shadow-lg z-[9999] pointer-events-none animate-tooltip-fade-in"
+          style={{ top: pos.top, left: pos.left }}
         >
           {text}
         </span>
