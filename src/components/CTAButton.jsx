@@ -7,9 +7,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'bg-black text-white disabled:bg-gray-300 disabled:opacity-60 disabled:cursor-not-allowed',
-        brand: 'bg-brand text-white hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed',
-        secondary: 'bg-white text-black border border-gray-300',
+        primary: 'bg-accent text-white hover:-translate-y-px hover:shadow-md disabled:bg-gray-300 disabled:opacity-60 disabled:cursor-not-allowed',
+        brand: 'bg-brand text-white hover:-translate-y-px hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+        secondary: 'bg-surface text-foreground border border-border hover:bg-accent-subtle',
       },
     },
     defaultVariants: {

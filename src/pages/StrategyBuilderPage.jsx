@@ -1063,9 +1063,9 @@ export default function StrategyBuilderPage({ config, onNext }) {
             CTA — Launch Campaigns
             ════════════════════════════════════════════ */}
         {showCTA && (
-          <div style={{ textAlign: 'center', marginTop: 32, animation: 'fadeIn 0.4s ease forwards' }}>
-            {approvalScope && <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 32, lineHeight: 1.5 }}>{approvalScope}</div>}
-            <CTAButton onClick={onNext}>Launch Campaigns</CTAButton>
+          <div style={{ textAlign: 'center', marginTop: 56, paddingTop: 40, borderTop: '1px solid var(--border-light)', animation: 'fadeIn 0.4s ease forwards' }}>
+            {approvalScope && <div style={{ fontSize: 14, color: 'var(--text-tertiary)', marginBottom: 24, lineHeight: 1.5 }}>{approvalScope}</div>}
+            <CTAButton variant="brand" onClick={onNext}>Launch Campaigns</CTAButton>
           </div>
         )}
 
