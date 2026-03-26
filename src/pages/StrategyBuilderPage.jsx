@@ -656,7 +656,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
                 </div>
 
-                {/* Spacer — budget from context */}
+                <div style={{ height: 20 }} />
 
                 {/* AI insight + rules access */}
                 {!isRevealed ? (
