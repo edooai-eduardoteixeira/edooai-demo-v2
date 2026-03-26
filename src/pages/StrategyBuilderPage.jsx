@@ -678,7 +678,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                         <path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="var(--text-tertiary)"/>
                       </svg>
                       <div style={{
-                        fontSize: 12.5,
+                        fontSize: 12,
                         color: 'var(--text-secondary)',
                         lineHeight: 1.5,
                       }}>
@@ -927,8 +927,8 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           <line x1={chartLeft} y1={chartBottom} x2={chartRight} y2={chartBottom} stroke="var(--border-light)" strokeWidth="1" />
 
                           {/* Y-axis: 0 and max */}
-                          <text x="-6" y={chartBottom + 4} fontSize="10" fill="var(--text-tertiary)" textAnchor="end" fontFamily="var(--font-family)">0</text>
-                          <text x="-6" y={chartTop + 14} fontSize="10" fill="var(--text-tertiary)" textAnchor="end" fontFamily="var(--font-family)">{Math.round(maxVal)}</text>
+                          <text x="-6" y={chartBottom + 4} fontSize="11" fill="var(--text-tertiary)" textAnchor="end" fontFamily="var(--font-family)">0</text>
+                          <text x="-6" y={chartTop + 14} fontSize="11" fill="var(--text-tertiary)" textAnchor="end" fontFamily="var(--font-family)">{Math.round(maxVal)}</text>
 
                           {/* X-axis labels */}
                           <text x={chartLeft} y="190" fontSize="11" fill="var(--text-tertiary)" textAnchor="start" fontFamily="var(--font-family)">Day 1</text>
@@ -949,8 +949,8 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           <line x1={threshX} y1={chartTop} x2={threshX} y2={chartBottom} stroke="#A89E94" strokeWidth="1" strokeDasharray="4,4" opacity="0.6" />
 
                           {/* Learning phase label — anchored near dashed line */}
-                          <text x={threshX - 8} y={chartTop + 16} fontSize="10" fill="#7D7368" fontFamily="var(--font-family)" fontWeight="600" textAnchor="end">Learning phase</text>
-                          <text x={threshX - 8} y={chartTop + 28} fontSize="9" fill="#7D7368" fontFamily="var(--font-family)" opacity="0.65" textAnchor="end">AI calibrating signals</text>
+                          <text x={threshX - 8} y={chartTop + 16} fontSize="11" fill="#7D7368" fontFamily="var(--font-family)" fontWeight="600" textAnchor="end">Learning phase</text>
+                          <text x={threshX - 8} y={chartTop + 28} fontSize="11" fill="#7D7368" fontFamily="var(--font-family)" opacity="0.65" textAnchor="end">AI calibrating signals</text>
 
                           {/* Hover overlay */}
                           <rect

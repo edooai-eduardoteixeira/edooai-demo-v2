@@ -96,7 +96,7 @@ const MultiSelect = ({ items: initialItems }) => {
     <div style={{ position: 'relative' }} ref={ref}>
       <div className="inline-flex items-center gap-1 py-1 px-2.5 bg-surface border border-border rounded-sm text-[13px] text-foreground-muted cursor-pointer transition-colors duration-150 ease-out max-w-[260px] hover:border-gray-400" onClick={() => setOpen(!open)}>
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{display}</span>
-        <span style={{ color: 'var(--text-tertiary)', fontSize: 10, flexShrink: 0 }}>▾</span>
+        <span style={{ color: 'var(--text-tertiary)', fontSize: 11, flexShrink: 0 }}>▾</span>
       </div>
       {open && (
         <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-lg shadow-md z-10 min-w-[200px] py-1">
@@ -132,7 +132,7 @@ const SingleSelect = ({ value: initial, choices, onChange }) => {
     <div style={{ position: 'relative' }} ref={ref}>
       <div className="inline-flex items-center gap-1 py-1 px-2.5 bg-surface border border-border rounded-sm text-[13px] text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:border-gray-400" onClick={() => setOpen(!open)}>
         <span>{val}</span>
-        <span style={{ color: 'var(--text-tertiary)', fontSize: 10, flexShrink: 0 }}>▾</span>
+        <span style={{ color: 'var(--text-tertiary)', fontSize: 11, flexShrink: 0 }}>▾</span>
       </div>
       {open && (
         <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-lg shadow-md z-10 min-w-[140px] py-1">
@@ -165,7 +165,7 @@ const RichSelect = ({ value: initial, richChoices }) => {
     <div style={{ position: 'relative' }} ref={ref}>
       <div className="inline-flex items-center gap-1 py-1 px-2.5 bg-surface border border-border rounded-sm text-[13px] text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:border-gray-400" onClick={() => setOpen(!open)}>
         <span>{val}</span>
-        <span style={{ color: 'var(--text-tertiary)', fontSize: 10, flexShrink: 0 }}>▾</span>
+        <span style={{ color: 'var(--text-tertiary)', fontSize: 11, flexShrink: 0 }}>▾</span>
       </div>
       {open && (
         <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-lg shadow-md z-10 min-w-[140px] py-1" style={{ minWidth: 220, padding: '4px 0' }}>
@@ -177,7 +177,7 @@ const RichSelect = ({ value: initial, richChoices }) => {
                 </div>
                 <span style={{ fontWeight: 500 }}>{c.value}</span>
               </div>
-              <div style={{ fontSize: 11.5, color: 'var(--text-tertiary)', paddingLeft: 22, lineHeight: 1.3 }}>{c.desc}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-tertiary)', paddingLeft: 22, lineHeight: 1.3 }}>{c.desc}</div>
             </div>
           ))}
         </div>
@@ -281,8 +281,8 @@ const JourneySection = ({ section }) => {
             <div className="flex-1 flex items-center justify-between py-1.5 pl-2.5">
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span className="text-[13px] font-medium text-foreground">{step.label}</span>
-                {step.fixed && <span className="text-[9px] py-0.5 px-1.5 rounded-[3px] font-semibold tracking-[0.04em] uppercase text-foreground-faint bg-accent-light">Start</span>}
-                {step.trigger && <span className="text-[9px] py-0.5 px-1.5 rounded-[3px] font-semibold tracking-[0.04em] uppercase text-brand bg-brand-light">Redeems</span>}
+                {step.fixed && <span className="text-[11px] py-0.5 px-1.5 rounded-[3px] font-semibold tracking-[0.04em] uppercase text-foreground-faint bg-accent-light">Start</span>}
+                {step.trigger && <span className="text-[11px] py-0.5 px-1.5 rounded-[3px] font-semibold tracking-[0.04em] uppercase text-brand bg-brand-light">Redeems</span>}
               </div>
               {canRemove && (
                 <div className="w-5 h-5 flex items-center justify-center rounded cursor-pointer text-gray-400 transition-all duration-150 ease-out shrink-0 ml-1 hover:bg-danger-light hover:text-danger" onClick={() => removeStep(i)}><XSmall /></div>
@@ -325,7 +325,7 @@ const ActivationModes = ({ modes: initialModes }) => {
             <span className="text-[13px] font-medium text-foreground relative cursor-default">{mode.label}</span>
             <Toggle on={mode.on} onChange={() => toggleMode(i)} />
           </div>
-          <div style={{ fontSize: 11.5, color: 'var(--text-tertiary)', lineHeight: 1.4, paddingBottom: 8 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.4, paddingBottom: 8 }}>
             {mode.description}
           </div>
         </div>
@@ -353,7 +353,7 @@ const BudgetPacing = ({ section }) => {
         <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>Conversion rate</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{section.conversionRate}</span>
-          <span className="text-[9px] text-foreground-faint bg-accent-light px-1.5 py-px rounded-[3px] ml-1.5 tracking-[0.04em] uppercase font-medium">from data</span>
+          <span className="text-[11px] text-foreground-faint bg-accent-light px-1.5 py-px rounded-[3px] ml-1.5 tracking-[0.04em] uppercase font-medium">from data</span>
         </div>
       </div>
       <div className="flex items-center justify-between h-8">
@@ -361,7 +361,7 @@ const BudgetPacing = ({ section }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative' }} ref={ref}>
           <div className="inline-flex items-center gap-1 py-1 px-2.5 bg-surface border border-border rounded-sm text-[13px] text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:border-gray-400" onClick={() => setOpen(!open)}>
             <span>{intensity}</span>
-            <span style={{ color: 'var(--text-tertiary)', fontSize: 10, flexShrink: 0 }}>▾</span>
+            <span style={{ color: 'var(--text-tertiary)', fontSize: 11, flexShrink: 0 }}>▾</span>
           </div>
           {open && (
             <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-lg shadow-md z-10 min-w-[140px] py-1">
@@ -672,7 +672,7 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
             <div className="flex-1 overflow-y-auto">
               {data.sections.map((section, si) => (
                 <div className="py-3 px-6" key={`${blockKey}-${si}`}>
-                  {section.title && <div className="text-[10px] text-foreground-faint tracking-[0.1em] uppercase font-semibold mb-2">{section.title}</div>}
+                  {section.title && <div className="text-[11px] text-foreground-faint tracking-[0.05em] uppercase font-semibold mb-2">{section.title}</div>}
 
                   {section.type === 'audience' && (
                     <AudienceSection section={section} />
@@ -717,7 +717,7 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                   {section.type === 'conditional' && (
                     <div className="bg-accent-subtle rounded-lg py-1.5 px-4">
                       <div className="flex items-center h-10 gap-2.5">
-                        <span className="text-[9px] font-bold tracking-[0.08em] uppercase text-foreground-faint min-w-8">If</span>
+                        <span className="text-[11px] font-bold tracking-[0.08em] uppercase text-foreground-faint min-w-8">If</span>
                         <span className="text-[13px] font-medium text-foreground relative cursor-default" style={{ flex: 1 }}>{section.ifRow.label}</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <SingleSelect value={section.ifRow.value} choices={section.ifRow.choices} />
@@ -725,7 +725,7 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                         </div>
                       </div>
                       <div className="flex items-center h-10 gap-2.5">
-                        <span className="text-[9px] font-bold tracking-[0.08em] uppercase text-foreground-faint min-w-8">Then</span>
+                        <span className="text-[11px] font-bold tracking-[0.08em] uppercase text-foreground-faint min-w-8">Then</span>
                         <span className="text-[13px] font-medium text-foreground relative cursor-default" style={{ flex: 1 }}>{section.thenRow.label}</span>
                         {section.thenRow.stepper && (
                           <NumericStepper value={section.thenRow.stepper.value} min={section.thenRow.stepper.min} max={section.thenRow.stepper.max} suffix={section.thenRow.stepper.suffix} />
@@ -778,10 +778,10 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <SingleSelect value={row.value} choices={row.choices} />
                             {row.suffix && <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{row.suffix}</span>}
-                            {row.ref && <span className="text-[9px] text-foreground-faint bg-accent-light px-1.5 py-px rounded-[3px] ml-1.5 tracking-[0.04em] uppercase font-medium">{row.ref}</span>}
+                            {row.ref && <span className="text-[11px] text-foreground-faint bg-accent-light px-1.5 py-px rounded-[3px] ml-1.5 tracking-[0.04em] uppercase font-medium">{row.ref}</span>}
                           </div>
                         ) : row.formula ? (
-                          <span className="text-[13px] text-foreground-faint font-normal">{row.value}<span className="text-[9px] text-foreground-faint bg-accent-light px-1.5 py-px rounded-[3px] ml-1.5 tracking-[0.04em] uppercase font-medium">{row.formula}</span></span>
+                          <span className="text-[13px] text-foreground-faint font-normal">{row.value}<span className="text-[11px] text-foreground-faint bg-accent-light px-1.5 py-px rounded-[3px] ml-1.5 tracking-[0.04em] uppercase font-medium">{row.formula}</span></span>
                         ) : (
                           <span className="text-[13px] text-foreground-muted text-right">{row.value}</span>
                         )}
@@ -798,7 +798,7 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                   )}
 
                   {section.note && (
-                    <div style={{ fontSize: 11.5, color: 'var(--text-tertiary)', marginTop: 10, lineHeight: 1.5, fontStyle: 'italic' }}>{section.note}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 10, lineHeight: 1.5, fontStyle: 'italic' }}>{section.note}</div>
                   )}
                 </div>
               ))}

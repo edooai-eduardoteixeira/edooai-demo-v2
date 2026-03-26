@@ -31,7 +31,9 @@ All new code must use **Tailwind utility classes** — never inline `style={{}}`
 | `text-[28px]` | 28px | Page h1 |
 | `text-[32px]` | 32px | Hero stats |
 | `text-4xl` | 36px | Landing hero (mobile) |
+| `fontSize: 40` | 40px | Large input number (budget) — inline style only |
 | `text-[48px]` | 48px | Landing hero (desktop) |
+| `fontSize: 64` | 64px | Hero KPI (strategy page) — inline style only |
 
 ### Font weights
 
