@@ -32,17 +32,6 @@ Quando o usuário pedir mudanças visuais em um componente:
 - Sempre fornecer o link do preview após push
 - Não sugerir ações que dependam de terminal ou ambiente local
 
-## Multi-Persona Workflow (GStack)
-
-When the user requests a plan, proposal, or any work that will need review by different personas:
-
-1. **Always write the plan to a file** in `docs/plans/<name>.md` — never keep it only in conversation
-2. **Persona definitions** live in `docs/personas/` — read them when asked to review as a specific persona
-3. **Write reviews to files** in `docs/reviews/<name>-<persona>.md`
-4. **Don't implement** until the user explicitly says to proceed after reviews
-
-This enables the user to invoke different personas across conversations without losing context. See `docs/WORKFLOW.md` for the full process.
-
 ## Design System
 
 Follow the design system rules in `DESIGN_GUIDELINES.md` exactly. Never improvise CSS values — use only the tokens and patterns defined there.
