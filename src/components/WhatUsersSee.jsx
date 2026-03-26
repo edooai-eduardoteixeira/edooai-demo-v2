@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import s from '../styles/WhatUsersSee.module.css';
+import { cn } from '../lib/utils';
 
 /* ── Channel config ── */
 const CH = {
@@ -134,16 +134,19 @@ const RWD = {
 function Notif({ ch, title, body }) {
   const c = CH[ch];
   return (
-    <div className={s.notif}>
-      <div className={s.notifHead}>
-        <div className={s.notifIcon} style={c.bg ? { background: c.bg } : undefined}>
+    <div className="rounded-lg bg-surface p-[8px_10px]">
+      <div className="flex items-center gap-1.5 mb-1">
+        <div
+          className="w-5 h-5 rounded-sm bg-foreground flex items-center justify-center text-[11px] font-bold text-white shrink-0 [&_svg]:w-3 [&_svg]:h-3 [&_svg]:fill-white"
+          style={c.bg ? { background: c.bg } : undefined}
+        >
           {c.icon}
         </div>
-        <span className={s.notifApp}>{c.app}</span>
-        <span className={s.notifTime}>now</span>
+        <span className="text-xs font-semibold text-foreground-muted">{c.app}</span>
+        <span className="text-[11px] text-foreground-faint ml-auto">{c.time || 'now'}</span>
       </div>
-      <div className={s.notifTitle}>{title}</div>
-      <div className={s.notifBody}>{body}</div>
+      <div className="text-sm font-semibold mb-0.5 overflow-hidden text-ellipsis whitespace-nowrap">{title}</div>
+      <div className="text-[13px] text-foreground-muted leading-[1.4] line-clamp-4">{body}</div>
     </div>
   );
 }
@@ -151,14 +154,14 @@ function Notif({ ch, title, body }) {
 /* ── WhatsApp notification (Refer section) ── */
 function WANotif({ name, body }) {
   return (
-    <div className={s.notif}>
-      <div className={s.notifHead}>
-        <div className={s.notifIcon} style={{ background: '#25D366' }}>{WA_ICON}</div>
-        <span className={s.notifApp}>WhatsApp</span>
-        <span className={s.notifTime}>now</span>
+    <div className="rounded-lg bg-surface p-[8px_10px]">
+      <div className="flex items-center gap-1.5 mb-1">
+        <div className="w-5 h-5 rounded-sm flex items-center justify-center text-[11px] font-bold text-white shrink-0 [&_svg]:w-3 [&_svg]:h-3 [&_svg]:fill-white" style={{ background: '#25D366' }}>{WA_ICON}</div>
+        <span className="text-xs font-semibold text-foreground-muted">WhatsApp</span>
+        <span className="text-[11px] text-foreground-faint ml-auto">now</span>
       </div>
-      <div className={s.notifTitle}>{name}</div>
-      <div className={s.notifBody}>{body}</div>
+      <div className="text-sm font-semibold mb-0.5 overflow-hidden text-ellipsis whitespace-nowrap">{name}</div>
+      <div className="text-[13px] text-foreground-muted leading-[1.4] line-clamp-4">{body}</div>
     </div>
   );
 }
@@ -289,58 +292,75 @@ export default function WhatUsersSee() {
 
   return (
     <>
-      <h3 className={s.sectionTitle}>What Users See</h3>
+      <h3 className="text-[32px] font-semibold tracking-[-0.02em] text-foreground mb-10 max-[860px]:text-[22px] max-[860px]:mb-8">
+        What Users See
+      </h3>
 
-      <div className={s.timeline}>
+      <div className="relative">
+        {/* Timeline vertical line (replaces ::before pseudo-element) */}
+        <div className="absolute left-[3px] top-8 bottom-[26px] w-px bg-border-light z-0 max-[860px]:hidden" />
+
         {/* ═══ INVITE ═══ */}
-        <div className={s.inviteRow}>
-          <div className={`${s.inviteText} ${s.timelineNode}`}>
-            <div className={s.phaseName}>Invite</div>
-            <div className={s.phaseDesc}>Engage your users</div>
+        <div className="flex items-start gap-12 mb-12 max-[860px]:flex-col max-[860px]:gap-5">
+          <div className="flex-[0_0_240px] pt-5 relative pl-6 max-[860px]:pl-0 max-[860px]:flex-none">
+            {/* Timeline node dot (replaces ::before pseudo-element) */}
+            <div className="absolute left-0 top-[27px] w-[7px] h-[7px] rounded-full bg-foreground-faint z-[2] max-[860px]:hidden" />
+            <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Invite</div>
+            <div className="text-sm font-normal text-foreground-muted leading-[1.4] mt-1">Engage your users</div>
           </div>
-          <div className={s.inviteCardArea}>
+          <div className="flex-1 flex flex-col items-start">
             <div
-              className={s.carouselWrap}
+              className="max-w-[400px]"
               onMouseEnter={invite.onMouseEnter}
               onMouseLeave={invite.onMouseLeave}
             >
-              <div className={s.card}>
+              <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
                 <div
                   ref={inviteBodyRef}
-                  className={`${s.cardBody} ${s.carouselBody} ${invite.fading ? s.carouselBodyFading : ''}`}
-                  style={inviteMinH ? { minHeight: inviteMinH } : undefined}
+                  className="p-2.5"
+                  style={{
+                    transition: 'opacity 200ms ease',
+                    opacity: invite.fading ? 0 : 1,
+                    ...(inviteMinH ? { minHeight: inviteMinH } : {}),
+                  }}
                 >
                   {inviteMsg && <Notif ch={inviteV.c} title={inviteMsg.t} body={inviteMsg.b} />}
                 </div>
               </div>
-              <div className={s.carouselNav}>
-                <div className={s.carouselDots}>
+              <div className="flex items-center gap-3 mt-2.5 px-1">
+                <div className="flex gap-1.5">
                   {INVITE_VARIANTS.map((_, i) => (
                     <button
                       key={i}
-                      className={`${s.carouselDot} ${i === invite.idx ? s.carouselDotActive : ''}`}
+                      className={cn(
+                        'w-1.5 h-1.5 rounded-full bg-border border-none p-0 cursor-pointer transition-[background,transform] duration-200',
+                        'hover:bg-foreground-faint',
+                        i === invite.idx && 'bg-foreground-muted scale-[1.3]'
+                      )}
                       onClick={() => invite.jumpTo(i)}
                     />
                   ))}
                 </div>
-                <div className={s.carouselLabel}>{invite.label}</div>
+                <div className="text-xs font-medium text-foreground-faint transition-opacity duration-200 min-w-[100px]">{invite.label}</div>
               </div>
             </div>
           </div>
         </div>
 
         {/* ═══ REFER ═══ */}
-        <div className={s.referRow}>
-          <div className={`${s.referText} ${s.timelineNode}`}>
-            <div className={s.phaseName}>Refer</div>
-            <div className={s.phaseDesc}>Share with friends</div>
+        <div className="flex items-start gap-12 mb-8 max-[860px]:flex-col max-[860px]:gap-5">
+          <div className="flex-[0_0_240px] pt-5 relative pl-6 max-[860px]:pl-0 max-[860px]:flex-none">
+            {/* Timeline node dot */}
+            <div className="absolute left-0 top-[27px] w-[7px] h-[7px] rounded-full bg-foreground-faint z-[2] max-[860px]:hidden" />
+            <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Refer</div>
+            <div className="text-sm font-normal text-foreground-muted leading-[1.4] mt-1">Share with friends</div>
           </div>
-          <div className={s.referCardArea}>
-            <div className={s.referStack}>
+          <div className="flex-1 relative min-h-[220px] max-[860px]:justify-start">
+            <div className="relative max-w-[700px]">
               {/* Gina — back layer */}
-              <div className={s.referCardGina}>
-                <div className={s.card}>
-                  <div className={s.cardBody}>
+              <div className="relative z-[1] w-[380px] max-w-[380px]">
+                <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
+                  <div className="p-2.5">
                     <WANotif
                       name="Gina Miller"
                       body="Hey Paul, check out NeoBank. I've been using and it's awesome—plus we both get free Netflix 🍿 neo.bnk/gina"
@@ -349,9 +369,9 @@ export default function WhatUsersSee() {
                 </div>
               </div>
               {/* Paul — front layer, overlaps Gina */}
-              <div className={s.referCardPaul}>
-                <div className={s.card}>
-                  <div className={s.cardBody}>
+              <div className="absolute top-[78%] left-[285px] z-[2] w-[380px] max-w-[380px] max-[860px]:relative max-[860px]:top-0 max-[860px]:left-0 max-[860px]:mt-4">
+                <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
+                  <div className="p-2.5">
                     <WANotif
                       name="Paul Davis"
                       body="Love this! Thanks for keeping me in mind, Gina 🍿"
@@ -364,44 +384,54 @@ export default function WhatUsersSee() {
         </div>
 
         {/* ═══ REFEREE JOURNEY — horizontal pill stepper ═══ */}
-        <div className={s.journeyWrap}>
-          <div className={s.journeyRow}>
-            <div className={s.journeyStep}>
-              <div className={s.journeyDot} />
-              <div className={s.journeyName}>Sign Up</div>
+        <div className="relative mb-8">
+          {/* Dashed overlay on timeline segment (replaces ::before and ::after) */}
+          <div className="absolute left-[3px] top-[-8px] bottom-[-8px] w-[3px] bg-gray-50 z-[1] max-[860px]:hidden" />
+          <div className="absolute left-[3px] top-[-8px] bottom-[-8px] border-l border-dashed border-border z-[1] max-[860px]:hidden" />
+
+          <div className="inline-flex items-center gap-0 ml-6 py-1.5 px-3.5 bg-surface rounded-[20px] relative z-[2] max-[860px]:ml-0 max-[860px]:flex-wrap max-[860px]:gap-1.5">
+            <div className="flex items-center gap-[5px]">
+              <div className="w-[5px] h-[5px] rounded-full bg-border shrink-0" />
+              <div className="text-xs font-medium text-foreground-faint whitespace-nowrap">Sign Up</div>
             </div>
-            <div className={s.journeyLine} />
-            <div className={s.journeyStep}>
-              <div className={s.journeyDot} />
-              <div className={s.journeyName}>KYC</div>
+            <div className="w-5 h-px bg-border shrink-0 mx-1.5" />
+            <div className="flex items-center gap-[5px]">
+              <div className="w-[5px] h-[5px] rounded-full bg-border shrink-0" />
+              <div className="text-xs font-medium text-foreground-faint whitespace-nowrap">KYC</div>
             </div>
-            <div className={s.journeyLine} />
-            <div className={`${s.journeyStep} ${s.journeyTrigger}`}>
-              <div className={s.journeyDot} />
-              <div className={s.journeyName}>1st Transaction</div>
+            <div className="w-5 h-px bg-border shrink-0 mx-1.5" />
+            <div className="flex items-center gap-[5px]">
+              <div className="w-[5px] h-[5px] rounded-full bg-green-500 shrink-0 shadow-[0_0_0_2px_rgba(34,197,94,0.15)]" />
+              <div className="text-xs font-semibold text-green-600 whitespace-nowrap">1st Transaction</div>
             </div>
           </div>
         </div>
 
         {/* ═══ REDEEM — overlapping cards ═══ */}
-        <div className={s.redeemRow}>
-          <div className={`${s.redeemText} ${s.timelineNode}`}>
-            <div className={s.phaseName}>Redeem</div>
-            <div className={s.phaseDesc}>Both sides get rewarded</div>
+        <div className="flex items-start gap-12 max-[860px]:flex-col max-[860px]:gap-5">
+          <div className="flex-[0_0_240px] pt-5 relative pl-6 max-[860px]:pl-0 max-[860px]:flex-none">
+            {/* Timeline node dot */}
+            <div className="absolute left-0 top-[27px] w-[7px] h-[7px] rounded-full bg-foreground-faint z-[2] max-[860px]:hidden" />
+            <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Redeem</div>
+            <div className="text-sm font-normal text-foreground-muted leading-[1.4] mt-1">Both sides get rewarded</div>
           </div>
           <div
-            className={s.redeemCardArea}
+            className="flex-1 relative min-h-[280px]"
             onMouseEnter={redeem.onMouseEnter}
             onMouseLeave={redeem.onMouseLeave}
           >
-            <div className={s.redeemStack}>
+            <div className="relative max-w-[700px]">
               {/* Gina — back layer, has carousel */}
-              <div className={`${s.redeemCardBack} ${s.carouselWrap}`}>
-                <div className={s.card}>
+              <div className="relative z-[1] w-[380px] max-w-[380px]">
+                <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
                   <div
                     ref={redeemGinaRef}
-                    className={`${s.cardBody} ${s.carouselBody} ${redeem.fading ? s.carouselBodyFading : ''}`}
-                    style={redeemGinaMinH ? { minHeight: redeemGinaMinH } : undefined}
+                    className="p-2.5"
+                    style={{
+                      transition: 'opacity 200ms ease',
+                      opacity: redeem.fading ? 0 : 1,
+                      ...(redeemGinaMinH ? { minHeight: redeemGinaMinH } : {}),
+                    }}
                   >
                     {redeemReferrer && (
                       <Notif ch={redeemV.c} title={redeemReferrer.t} body={redeemReferrer.b} />
@@ -410,12 +440,16 @@ export default function WhatUsersSee() {
                 </div>
               </div>
               {/* Paul — front layer */}
-              <div className={s.redeemCardFront}>
-                <div className={s.card}>
+              <div className="absolute top-[78%] left-[285px] z-[2] w-[380px] max-w-[380px] max-[860px]:relative max-[860px]:top-0 max-[860px]:left-0 max-[860px]:mt-4">
+                <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
                   <div
                     ref={redeemPaulRef}
-                    className={`${s.cardBody} ${s.carouselBody} ${redeem.fading ? s.carouselBodyFading : ''}`}
-                    style={redeemPaulMinH ? { minHeight: redeemPaulMinH } : undefined}
+                    className="p-2.5"
+                    style={{
+                      transition: 'opacity 200ms ease',
+                      opacity: redeem.fading ? 0 : 1,
+                      ...(redeemPaulMinH ? { minHeight: redeemPaulMinH } : {}),
+                    }}
                   >
                     {redeemReferee && (
                       <Notif ch={redeemV.c} title={redeemReferee.t} body={redeemReferee.b} />
@@ -425,17 +459,21 @@ export default function WhatUsersSee() {
               </div>
             </div>
             {/* Redeem nav — outside stack so mobile layout works */}
-            <div className={s.carouselNav}>
-              <div className={s.carouselDots}>
+            <div className="flex items-center gap-3 mt-2.5 px-1">
+              <div className="flex gap-1.5">
                 {REDEEM_VARIANTS.map((_, i) => (
                   <button
                     key={i}
-                    className={`${s.carouselDot} ${i === redeem.idx ? s.carouselDotActive : ''}`}
+                    className={cn(
+                      'w-1.5 h-1.5 rounded-full bg-border border-none p-0 cursor-pointer transition-[background,transform] duration-200',
+                      'hover:bg-foreground-faint',
+                      i === redeem.idx && 'bg-foreground-muted scale-[1.3]'
+                    )}
                     onClick={() => redeem.jumpTo(i)}
                   />
                 ))}
               </div>
-              <div className={s.carouselLabel}>{redeem.label}</div>
+              <div className="text-xs font-medium text-foreground-faint transition-opacity duration-200 min-w-[100px]">{redeem.label}</div>
             </div>
           </div>
         </div>

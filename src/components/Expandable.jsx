@@ -1,32 +1,14 @@
 import React, { useState } from 'react';
+import { cn } from '../lib/utils';
 
-export default function Expandable({ title, children }) {
+export default function Expandable({ title, children, className }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div
-      style={{
-        border: '1px solid var(--color-gray-200)',
-        borderRadius: 'var(--radius-lg)',
-        overflow: 'hidden',
-      }}
-    >
+    <div className={cn('border border-gray-200 rounded-lg overflow-hidden', className)}>
       <button
         onClick={() => setOpen(!open)}
-        style={{
-          width: '100%',
-          padding: '1rem 1.5rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          backgroundColor: 'var(--color-gray-50)',
-          fontSize: 'var(--font-size-sm)',
-          fontWeight: 600,
-          color: 'var(--color-gray-800)',
-          cursor: 'pointer',
-          border: 'none',
-          fontFamily: 'inherit',
-        }}
+        className="w-full px-6 py-4 flex items-center justify-between bg-gray-50 text-sm font-semibold text-gray-800"
       >
         {title}
         <svg
@@ -34,10 +16,10 @@ export default function Expandable({ title, children }) {
           height="16"
           viewBox="0 0 16 16"
           fill="none"
-          style={{
-            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform var(--transition-base)',
-          }}
+          className={cn(
+            'transition-transform duration-200 ease-out',
+            open && 'rotate-180'
+          )}
         >
           <path
             d="M4 6l4 4 4-4"
@@ -49,13 +31,10 @@ export default function Expandable({ title, children }) {
         </svg>
       </button>
       <div
-        style={{
-          maxHeight: open ? '2000px' : '0',
-          overflow: 'hidden',
-          transition: 'max-height 0.4s ease',
-        }}
+        className="overflow-hidden transition-[max-height] duration-400 ease-out"
+        style={{ maxHeight: open ? '2000px' : '0' }}
       >
-        <div style={{ padding: '1.5rem' }}>{children}</div>
+        <div className="p-6">{children}</div>
       </div>
     </div>
   );

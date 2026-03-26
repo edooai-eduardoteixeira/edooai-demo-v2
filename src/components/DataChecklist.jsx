@@ -21,62 +21,30 @@ function CheckItem({ field, checked, source }) {
   }, [checked]);
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'baseline',
-        minHeight: '32px',
-        gap: '0.5rem',
-        padding: '10px 12px',
-        borderRadius: 'var(--radius-sm)',
-        backgroundColor: 'transparent',
-        cursor: 'default',
-        userSelect: 'none',
-        marginTop: '4px',
-        transition: 'background-color var(--transition-base)',
-      }}
-    >
-      {/* Status indicator: ○ waiting → ✓ connected */}
+    <div className="flex items-baseline min-h-8 gap-2 px-3 py-2.5 rounded-sm bg-transparent cursor-default select-none mt-1 transition-colors duration-200 ease-out">
+      {/* Status indicator */}
       <span
-        style={{
-          width: '14px',
-          flexShrink: 0,
-          fontSize: '12px',
-          lineHeight: 1,
-          color: checked && checkVisible ? 'var(--color-green-600)' : 'var(--text-tertiary)',
-          transition: 'color var(--transition-base)',
-        }}
+        className={`w-3.5 shrink-0 text-xs leading-none transition-colors duration-200 ease-out ${
+          checked && checkVisible ? 'text-green-600' : 'text-foreground-faint'
+        }`}
       >
         {checked && checkVisible ? '✓' : '○'}
       </span>
 
-      {/* Field label — single line, single style */}
+      {/* Field label */}
       <span
-        style={{
-          fontSize: '14px',
-          fontWeight: 500,
-          color: checked ? 'var(--text-primary)' : 'var(--text-tertiary)',
-          flex: 1,
-          minWidth: 0,
-          lineHeight: 1.5,
-          transition: 'color var(--transition-base)',
-        }}
+        className={`text-sm font-medium flex-1 min-w-0 leading-normal transition-colors duration-200 ease-out ${
+          checked ? 'text-foreground' : 'text-foreground-faint'
+        }`}
       >
         {field.framework}
       </span>
 
-      {/* Source label — fades in when checked */}
+      {/* Source label */}
       {source && (
         <span
-          style={{
-            fontSize: '12px',
-            color: 'var(--text-tertiary)',
-            fontWeight: 400,
-            whiteSpace: 'nowrap',
-            flexShrink: 0,
-            opacity: sourceVisible ? 1 : 0,
-            transition: 'opacity var(--transition-base)',
-          }}
+          className="text-xs text-foreground-faint font-normal whitespace-nowrap shrink-0 transition-opacity duration-200 ease-out"
+          style={{ opacity: sourceVisible ? 1 : 0 }}
         >
           via {source}
         </span>
@@ -113,50 +81,22 @@ export default function DataChecklist({
   const highlighted = highlightedCategories || [];
 
   return (
-    <div
-      style={{
-        backgroundColor: 'var(--accent-subtle)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-lg)',
-        padding: '28px 32px',
-        boxShadow: 'var(--shadow-inset-sm)',
-        height: 'fit-content',
-        position: 'sticky',
-        top: '2rem',
-      }}
-    >
+    <div className="bg-accent-subtle border border-border rounded-lg shadow-inset-sm h-fit sticky top-8" style={{ padding: '28px 32px' }}>
       {categories.map((cat, ci) => {
         const isHighlighted = highlighted.includes(cat.label);
 
         return (
           <div
             key={ci}
-            style={{
-              marginBottom: ci < categories.length - 1 ? '24px' : 0,
-            }}
+            className={ci < categories.length - 1 ? 'mb-6' : ''}
           >
             {/* Category header */}
             <div
-              style={{
-                paddingBottom: '10px',
-                marginBottom: '8px',
-                borderBottom: '1px solid var(--border)',
-                backgroundColor: isHighlighted
-                  ? 'var(--accent-subtle)'
-                  : 'transparent',
-                borderRadius: '4px',
-                padding: isHighlighted ? '2px 6px 6px 6px' : '0 0 6px 0',
-                transition: 'background-color var(--transition-slow)',
-              }}
+              className={`pb-2.5 mb-2 border-b border-border transition-colors duration-300 ease-out ${
+                isHighlighted ? 'bg-accent-subtle rounded px-1.5 pt-0.5 pb-1.5' : 'px-0 pt-0 pb-1.5'
+              }`}
             >
-              <span
-                style={{
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  color: 'var(--text-secondary)',
-                  letterSpacing: '0.06em',
-                }}
-              >
+              <span className="text-[13px] font-semibold text-foreground-muted tracking-[0.06em]">
                 {cat.label}
               </span>
             </div>

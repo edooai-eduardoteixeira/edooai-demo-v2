@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '../lib/utils';
 import Logo from '../components/Logo.jsx';
 import CTAButton from '../components/CTAButton.jsx';
 
@@ -6,43 +7,21 @@ export default function LandingPage({ config, onNext }) {
   const { landing } = config;
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header
-        style={{
-          padding: '14px 48px',
-        }}
-      >
+      <header className="py-[14px] px-[48px]">
         <Logo />
       </header>
 
       {/* Hero */}
-      <section
-        style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '0 48px',
-        }}
-      >
-        <main
-          style={{
-            textAlign: 'center',
-            maxWidth: '960px',
-            width: '100%',
-          }}
-        >
+      <section className="flex-1 flex items-center justify-center px-[48px]">
+        <main className="text-center max-w-[960px] w-full">
           <h1
-            style={{
-              fontSize: '48px',
-              fontWeight: 700,
-              color: 'var(--text-primary)',
-              lineHeight: 1.08,
-              letterSpacing: '-0.03em',
-              maxWidth: '792px',
-              margin: '0 auto 48px',
-            }}
+            className={cn(
+              'text-[48px] font-bold text-foreground',
+              'leading-[1.08] tracking-[-0.03em]',
+              'max-w-[792px] mx-auto mb-[48px]'
+            )}
           >
             {landing.headline.split('customers ').length > 1 ? (
               <>
@@ -55,13 +34,10 @@ export default function LandingPage({ config, onNext }) {
             )}
           </h1>
           <p
-            style={{
-              fontSize: '22px',
-              fontWeight: 500,
-              color: 'var(--text-secondary)',
-              lineHeight: 1.5,
-              marginBottom: '56px',
-            }}
+            className={cn(
+              'text-[22px] font-medium text-foreground-muted',
+              'leading-[1.5] mb-[56px]'
+            )}
           >
             {landing.subheadline.split('. ').length > 1 ? (
               <>
@@ -78,20 +54,8 @@ export default function LandingPage({ config, onNext }) {
       </section>
 
       {/* Footer */}
-      <footer
-        style={{
-          padding: '24px 48px',
-          textAlign: 'center',
-        }}
-      >
-        <p
-          style={{
-            fontSize: '15px',
-            fontWeight: 400,
-            color: 'var(--text-tertiary)',
-            lineHeight: 1.5,
-          }}
-        >
+      <footer className="py-[24px] px-[48px] text-center">
+        <p className="text-[15px] font-normal text-foreground-faint leading-[1.5]">
           {landing.missionLine}
         </p>
       </footer>

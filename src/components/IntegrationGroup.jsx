@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '../lib/utils';
 import PlatformLogo from './PlatformLogo.jsx';
 
 export default function IntegrationGroup({
@@ -12,90 +13,47 @@ export default function IntegrationGroup({
 }) {
   return (
     <div
-      style={{
-        border: isOptional ? '1px dashed var(--border)' : '1px solid var(--border)',
-        borderRadius: 'var(--radius-lg)',
-        padding: '32px',
-        backgroundColor: 'var(--surface)',
-        boxShadow: isOptional ? 'none' : 'var(--shadow-sm)',
-        opacity: isOptional && !connected ? 0.75 : 1,
-        transition: 'opacity var(--transition-slow)',
-        marginTop: isOptional ? '12px' : 0,
-      }}
+      className={cn(
+        'rounded-lg bg-surface transition-opacity duration-300 ease-out',
+        isOptional ? 'border border-dashed border-border shadow-none mt-3' : 'border border-border shadow-sm',
+        isOptional && !connected && 'opacity-75'
+      )}
+      style={{ padding: '32px' }}
     >
       {/* Title row: step · title + data direction tag */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '10px',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0' }}>
-          <span
-            style={{
-              fontSize: '1.0625rem',
-              fontWeight: 700,
-              color: 'var(--text-primary)',
-            }}
-          >
+      <div className="flex items-center justify-between mb-2.5">
+        <div className="flex items-baseline">
+          <span className="text-[17px] font-bold text-foreground">
             {step} &middot;&nbsp;
           </span>
-          <span
-            style={{
-              fontSize: '1.0625rem',
-              fontWeight: 700,
-              color: 'var(--text-primary)',
-            }}
-          >
+          <span className="text-[17px] font-bold text-foreground">
             {group.label}
           </span>
           {isOptional && (
-            <span
-              style={{
-                fontSize: '1.0625rem',
-                fontWeight: 400,
-                color: 'var(--text-tertiary)',
-                marginLeft: '4px',
-              }}
-            >
+            <span className="text-[17px] font-normal text-foreground-faint ml-1">
               (optional)
             </span>
           )}
         </div>
         <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            fontSize: '0.6875rem',
-            fontWeight: 600,
-            padding: '3px 10px',
-            borderRadius: 'var(--radius-full)',
-            whiteSpace: 'nowrap',
-            backgroundColor: group.dataDirection === 'Read only' ? '#dbeafe' : 'var(--border-light)',
-            color: group.dataDirection === 'Read only' ? '#1e40af' : '#334155',
-          }}
+          className={cn(
+            'inline-flex items-center text-[11px] font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap',
+            group.dataDirection === 'Read only'
+              ? 'bg-[#dbeafe] text-[#1e40af]'
+              : 'bg-border-light text-[#334155]'
+          )}
         >
           {group.dataDirection}
         </span>
       </div>
 
       {/* WHY line */}
-      <p
-        style={{
-          fontSize: '0.9375rem',
-          color: 'var(--text-secondary)',
-          fontWeight: 400,
-          lineHeight: 1.5,
-          marginBottom: '24px',
-        }}
-      >
+      <p className="text-[15px] text-foreground-muted font-normal leading-normal mb-6">
         {group.whyLine}
       </p>
 
       {/* Logos */}
-      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+      <div className="flex gap-5 flex-wrap">
         {group.platforms.map((platform) => (
           <PlatformLogo
             key={platform}
@@ -109,7 +67,6 @@ export default function IntegrationGroup({
           />
         ))}
       </div>
-
     </div>
   );
 }

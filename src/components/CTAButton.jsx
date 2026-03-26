@@ -1,44 +1,36 @@
 import React from 'react';
+import { cva } from 'class-variance-authority';
+import { cn } from '../lib/utils';
+
+const buttonVariants = cva(
+  'inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold rounded-md transition-all duration-200 ease-out leading-[1.4]',
+  {
+    variants: {
+      variant: {
+        primary: 'bg-black text-white disabled:bg-gray-300 disabled:opacity-60 disabled:cursor-not-allowed',
+        secondary: 'bg-white text-black border border-gray-300',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+    },
+  }
+);
 
 export default function CTAButton({
   children,
   onClick,
   disabled = false,
   variant = 'primary',
-  style = {},
+  className,
+  style,
 }) {
-  const baseStyles = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '0.875rem 2rem',
-    fontSize: 'var(--font-size-base)',
-    fontWeight: 600,
-    borderRadius: 'var(--radius-md)',
-    transition: 'all var(--transition-base)',
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    border: 'none',
-    lineHeight: 1.4,
-  };
-
-  const variants = {
-    primary: {
-      backgroundColor: disabled ? 'var(--color-gray-300)' : 'var(--color-black)',
-      color: 'var(--color-white)',
-      opacity: disabled ? 0.6 : 1,
-    },
-    secondary: {
-      backgroundColor: 'var(--color-white)',
-      color: 'var(--color-black)',
-      border: '1px solid var(--color-gray-300)',
-    },
-  };
-
   return (
     <button
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
-      style={{ ...baseStyles, ...variants[variant], ...style }}
+      className={cn(buttonVariants({ variant }), className)}
+      style={style}
     >
       {children}
     </button>
