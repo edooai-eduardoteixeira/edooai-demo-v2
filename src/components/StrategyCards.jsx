@@ -416,7 +416,7 @@ const AudienceSection = ({ section }) => {
             <span className="text-[11.5px] text-foreground-faint">{section.summary.context}</span>
           </div>
           {section.summary.note && (
-            <div className="text-xs text-foreground-faint mt-1 leading-[1.4]">{section.summary.note}</div>
+            <div className="text-[13px] text-foreground-faint mt-1 leading-[1.4]">{section.summary.note}</div>
           )}
         </div>
       )}
@@ -792,7 +792,7 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                   {section.type === 'summary' && section.summary && (
                     <div className="bg-accent-subtle rounded-lg py-3 px-4 mb-1">
                       {section.summary.note && (
-                        <div className="text-xs text-foreground-faint mt-1 leading-[1.4]">{section.summary.note}</div>
+                        <div className="text-[13px] text-foreground-faint mt-1 leading-[1.4]">{section.summary.note}</div>
                       )}
                     </div>
                   )}
