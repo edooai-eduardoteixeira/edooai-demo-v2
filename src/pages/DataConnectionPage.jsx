@@ -454,7 +454,7 @@ against this mapping automatically.`);
               )}
               {!commsExpanded && (
                 <button
-                  className="inline-flex items-center gap-1.5 mt-5 py-3.5 px-8 text-base font-semibold text-black bg-white border border-gray-300 rounded-md cursor-pointer transition-all duration-200 ease-out leading-[1.4] hover:bg-gray-50"
+                  className="inline-flex items-center gap-1.5 mt-5 py-3.5 px-8 text-base font-semibold text-foreground bg-surface border border-border rounded-md cursor-pointer transition-all duration-200 ease-out leading-[1.4] hover:bg-accent-subtle"
                   onClick={() => setCommsExpanded(true)}
                 >
                   See more options
@@ -884,7 +884,7 @@ against this mapping automatically.`);
 
             {modal.type === 'validating' && (
               <div style={{ textAlign: 'center' }}>
-                <div className="w-8 h-8 border-[3px] border-gray-200 border-t-gray-700 rounded-full animate-spin mx-auto mb-4" />
+                <div className="w-8 h-8 border-[3px] border-border border-t-foreground rounded-full animate-spin mx-auto mb-4" />
                 <div className="text-lg font-semibold text-foreground mb-2">Verifying permissions...</div>
                 <div className="text-sm text-foreground-muted">Checking scopes for {modal.platform}</div>
               </div>
@@ -919,7 +919,7 @@ against this mapping automatically.`);
                     );
                   })}
                 </ul>
-                <button className="w-full py-3 text-base font-semibold rounded-md bg-black text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-gray-800" onClick={() => handlePlatformConnect(modal.platform)}>
+                <button className="w-full py-3 text-base font-semibold rounded-md bg-accent text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-accent-hover" onClick={() => handlePlatformConnect(modal.platform)}>
                   Connect {modal.platform}
                 </button>
                 <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
@@ -992,12 +992,12 @@ against this mapping automatically.`);
                     value={agenticInput}
                     onChange={e => setAgenticInput(e.target.value)}
                   />
-                  <button className="inline-flex items-center gap-1.5 mt-2.5 py-2 px-4 text-[13px] font-semibold text-black bg-white border border-gray-300 rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-50 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateWebhookMapping}>
+                  <button className="inline-flex items-center gap-1.5 mt-2.5 py-2 px-4 text-[13px] font-semibold text-foreground bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateWebhookMapping}>
                     Map Fields
                   </button>
-                  {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-[#e2e8f0] bg-[#1e293b] rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
+                  {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-gray-100 bg-gray-900 rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
                 </div>
-                <button className="w-full py-3 text-base font-semibold rounded-md bg-black text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-gray-800" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
+                <button className="w-full py-3 text-base font-semibold rounded-md bg-accent text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-accent-hover" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
                   Mark as Configured
                 </button>
                 <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
@@ -1048,12 +1048,12 @@ against this mapping automatically.`);
                     value={agenticInput}
                     onChange={e => setAgenticInput(e.target.value)}
                   />
-                  <button className="inline-flex items-center gap-1.5 mt-2.5 py-2 px-4 text-[13px] font-semibold text-black bg-white border border-gray-300 rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-50 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateAPIScript}>
+                  <button className="inline-flex items-center gap-1.5 mt-2.5 py-2 px-4 text-[13px] font-semibold text-foreground bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateAPIScript}>
                     Generate Script
                   </button>
-                  {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-[#e2e8f0] bg-[#1e293b] rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
+                  {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-gray-100 bg-gray-900 rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
                 </div>
-                <button className="w-full py-3 text-base font-semibold rounded-md bg-black text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-gray-800" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
+                <button className="w-full py-3 text-base font-semibold rounded-md bg-accent text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-accent-hover" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
                   Mark as Configured
                 </button>
                 <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
@@ -1128,12 +1128,12 @@ usr_117,ord_1002,129.00,USD,2026-03-15'
                     value={agenticInput}
                     onChange={e => setAgenticInput(e.target.value)}
                   />
-                  <button className="inline-flex items-center gap-1.5 mt-2.5 py-2 px-4 text-[13px] font-semibold text-black bg-white border border-gray-300 rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-50 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateFileMapping}>
+                  <button className="inline-flex items-center gap-1.5 mt-2.5 py-2 px-4 text-[13px] font-semibold text-foreground bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateFileMapping}>
                     Detect Schema
                   </button>
-                  {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-[#e2e8f0] bg-[#1e293b] rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
+                  {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-gray-100 bg-gray-900 rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
                 </div>
-                <button className="w-full py-3 text-base font-semibold rounded-md bg-black text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-gray-800" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
+                <button className="w-full py-3 text-base font-semibold rounded-md bg-accent text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-accent-hover" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
                   Mark as Configured
                 </button>
                 <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
