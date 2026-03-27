@@ -220,6 +220,8 @@ Use Tailwind's spacing scale. Common values:
 | **Landing** | `full` (icon + "Vincor AI") | Static (normal flow) | Acts as a section — content starts after it |
 | **Internal** (strategy, connection, dashboard) | `mark` (icon only) | `position: absolute` | Infrastructure — content flows from top independently, header floats in corner |
 
+**Content top padding is independent of the header.** The main content uses `padding-top: 2rem` (32px) as its own comfortable breathing room — not calculated from the header height. The header and content are separate design tokens. This matches Stripe (32px), Mercury (32px), and Linear (24px) benchmarks.
+
 ---
 
 ## Shadows
