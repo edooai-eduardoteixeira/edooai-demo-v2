@@ -221,6 +221,20 @@ Use Tailwind's spacing scale. Common values:
 
 **Logo always aligns with content** because both share the same container and padding. Never position the header separately from the content container.
 
+**Header bottom margin**: `mb-6` (24px) on all pages — consistent breathing room between logo and first content.
+
+### Sidebar layout (connection page)
+
+The sidebar is a layout variant, not an exception to the design system.
+
+- Sidebar width: **280px** (fixed column in a CSS grid: `grid-cols-[280px_1fr]`)
+- Sidebar sits **inside** the shared `max-w-[1100px] px-12` container
+- Sidebar content aligns with the logo — **no extra left padding** on the sidebar
+- Sidebar has `border-r border-border-light` to separate from main content
+- Active nav items use `border-l-[3px] border-l-brand` + `text-brand`
+- Sidebar is **contextual** (setup wizard), not permanent navigation — stays neutral, not branded
+- Sidebar title uses `text-sm font-medium text-foreground-muted` — orients without competing with main column headings
+
 ---
 
 ## Shadows

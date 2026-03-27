@@ -9,7 +9,7 @@ export default function LandingPage({ config, onNext, onHome }) {
   return (
     <div className="min-h-screen flex flex-col max-w-[1100px] mx-auto w-full px-12">
       {/* Header */}
-      <header className="py-2.5">
+      <header className="py-2.5 mb-6">
         <Logo variant="full" onClick={onHome} />
       </header>
 

@@ -317,7 +317,7 @@ export default function StrategyBuilderPage({ config, onNext, onHome }) {
   /* ═══════ RENDER ═══════ */
   return (
     <div className="min-h-screen flex flex-col max-w-[1100px] mx-auto w-full px-12">
-      <header className="py-2.5">
+      <header className="py-2.5 mb-6">
         <Logo variant="mark" onClick={onHome} />
       </header>
 

@@ -683,23 +683,17 @@ against this mapping automatically.`);
 
   return (
     <div className="min-h-screen flex flex-col max-w-[1100px] mx-auto w-full px-12">
-      <header className="py-2.5">
+      <header className="py-2.5 mb-6">
         <Logo variant="mark" onClick={onHome} />
       </header>
 
       <div className="flex-1 grid grid-cols-[280px_1fr] min-h-0">
         {/* Sidebar — scroll-spy nav */}
-        <div className="flex flex-col py-8 pr-5 pb-16 pl-8 overflow-y-auto overflow-x-hidden border-r border-border-light sticky top-0 h-screen self-start">
-          <button className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground-muted cursor-pointer mb-6 transition-colors duration-150 ease-out hover:text-foreground" onClick={() => alert('Navigating back')}>
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M10 4l-4 4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Save & Exit
-          </button>
-          <div style={{ padding: '0 12px 12px', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
+        <div className="flex flex-col py-4 pr-5 pb-16 overflow-y-auto overflow-x-hidden border-r border-border-light sticky top-0 h-screen self-start">
+          <div className="text-sm font-medium text-foreground-muted mb-4">
             Integration Setup
           </div>
-          <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint py-4 px-3 pb-1.5" style={{ marginTop: 0 }}>
+          <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint pt-4 pb-1.5">
             Required
           </div>
           {Object.entries(SETUP_AREAS)
@@ -728,7 +722,7 @@ against this mapping automatically.`);
                 </div>
               );
             })}
-          <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint py-4 px-3 pb-1.5">Enhance your program</div>
+          <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint pt-4 pb-1.5">Enhance your program</div>
           {Object.entries(SETUP_AREAS)
             .filter(([_, a]) => !a.required)
             .map(([id, a]) => {
