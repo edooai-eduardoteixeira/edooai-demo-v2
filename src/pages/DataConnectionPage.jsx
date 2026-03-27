@@ -682,7 +682,7 @@ against this mapping automatically.`);
 
   return (
     <div className="min-h-screen flex flex-col relative">
-      <header className="absolute top-0 left-0 z-10" style={{ padding: '10px 48px' }}>
+      <header className="absolute top-0 left-0 py-2.5 px-12 z-10">
         <Logo variant="mark" onClick={onHome} />
       </header>
 

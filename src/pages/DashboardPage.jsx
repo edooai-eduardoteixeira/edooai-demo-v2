@@ -156,8 +156,8 @@ export default function DashboardPage({ config, onHome }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="px-12 py-3.5">
+    <div className="min-h-screen flex flex-col relative">
+      <header className="absolute top-0 left-0 py-2.5 px-12 z-10">
         <Logo variant="mark" onClick={onHome} />
       </header>
 

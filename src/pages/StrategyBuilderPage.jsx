@@ -318,15 +318,7 @@ export default function StrategyBuilderPage({ config, onNext, onHome }) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       {/* Header — infrastructure, doesn't push content */}
-      <header
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          padding: '10px 48px',
-          zIndex: 10,
-        }}
-      >
+      <header className="absolute top-0 left-0 py-2.5 px-12 z-10">
         <Logo variant="mark" onClick={onHome} />
       </header>
 
