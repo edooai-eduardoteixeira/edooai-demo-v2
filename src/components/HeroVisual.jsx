@@ -1,181 +1,162 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { cn } from '../lib/utils';
 
 /*
-  HeroVisual — "The agent is working"
+  HeroVisual — "An agent is acquiring customers"
 
-  A simplified software interface that operates itself.
-  5 abstract rows animate in sequence: highlight → action → complete.
-  No text, no labels. The pattern of autonomous task completion
-  communicates "this software does the work for you."
+  A card showing an autonomous agent at work:
+  - Top: agent status indicator (pulsing dot + shimmer bar)
+  - Title: "New Active Customers" — frames the list
+  - Body: customer rows that appear one by one
+  - Bottom: skeleton row that resolves into the next customer
 
-  Uses a JS interval for looping. All transitions via Tailwind classes.
+  The list grows from 1–2 to 6, pauses, then resets and loops.
 */
 
-const ROWS = 5;
-const STEP_DURATION = 700;   // ms per row
-const HOLD_DURATION = 1500;  // pause when all complete
-const RESET_DURATION = 600;  // fade-out before restart
+const CUSTOMERS = [
+  { initial: 'S', name: 'Sarah M.', bg: 'bg-brand' },
+  { initial: 'J', name: 'James K.', bg: 'bg-foreground' },
+  { initial: 'R', name: 'Rachel T.', bg: 'bg-gray-600' },
+  { initial: 'D', name: 'David L.', bg: 'bg-brand' },
+  { initial: 'A', name: 'Ana P.', bg: 'bg-foreground' },
+  { initial: 'M', name: 'Marcus W.', bg: 'bg-gray-600' },
+];
+
+const SKELETON_DURATION = 1200;  // how long skeleton shows before resolving
+const PAUSE_BETWEEN = 400;       // pause after resolve before next skeleton
+const HOLD_AT_END = 2500;        // pause when list is full
+const FADE_OUT = 500;            // fade-out before restart
 
 export default function HeroVisual({ className }) {
-  const [activeRow, setActiveRow] = useState(-1);
-  const [completedRows, setCompletedRows] = useState(new Set());
-  const [phase, setPhase] = useState('running'); // 'running' | 'holding' | 'resetting'
+  const [visibleCount, setVisibleCount] = useState(2);
+  const [showSkeleton, setShowSkeleton] = useState(false);
+  const [phase, setPhase] = useState('growing'); // 'growing' | 'holding' | 'resetting'
   const timeoutRef = useRef(null);
+  const mountedRef = useRef(true);
 
-  useEffect(() => {
-    let currentRow = -1;
-    let completed = new Set();
-
-    function tick() {
-      currentRow++;
-
-      if (currentRow >= ROWS) {
-        // All rows complete — hold
-        setPhase('holding');
-        timeoutRef.current = setTimeout(() => {
-          // Reset
-          setPhase('resetting');
-          timeoutRef.current = setTimeout(() => {
-            currentRow = -1;
-            completed = new Set();
-            setActiveRow(-1);
-            setCompletedRows(new Set());
-            setPhase('running');
-            timeoutRef.current = setTimeout(tick, 300);
-          }, RESET_DURATION);
-        }, HOLD_DURATION);
-        return;
-      }
-
-      setActiveRow(currentRow);
-
-      // Mark previous row as completed (with slight delay for the "action" feel)
-      if (currentRow > 0) {
-        const prev = currentRow - 1;
-        completed = new Set([...completed, prev]);
-        setCompletedRows(new Set(completed));
-      }
-
-      // Mark last row complete after its step
-      if (currentRow === ROWS - 1) {
-        timeoutRef.current = setTimeout(() => {
-          completed = new Set([...completed, currentRow]);
-          setCompletedRows(new Set(completed));
-          setActiveRow(-1);
-          timeoutRef.current = setTimeout(() => {
-            setPhase('holding');
-            timeoutRef.current = setTimeout(() => {
-              setPhase('resetting');
-              timeoutRef.current = setTimeout(() => {
-                currentRow = -1;
-                completed = new Set();
-                setActiveRow(-1);
-                setCompletedRows(new Set());
-                setPhase('running');
-                timeoutRef.current = setTimeout(tick, 300);
-              }, RESET_DURATION);
-            }, HOLD_DURATION);
-          }, 100);
-        }, STEP_DURATION * 0.6);
-        return;
-      }
-
-      timeoutRef.current = setTimeout(tick, STEP_DURATION);
+  const clearTimer = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
-
-    // Initial delay before first cycle
-    timeoutRef.current = setTimeout(tick, 800);
-
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
   }, []);
 
-  // Row bar widths — varying for organic feel
-  const barWidths = ['w-3/4', 'w-4/5', 'w-2/3', 'w-[85%]', 'w-3/5'];
+  useEffect(() => {
+    mountedRef.current = true;
+
+    function schedule(fn, delay) {
+      clearTimer();
+      timeoutRef.current = setTimeout(() => {
+        if (mountedRef.current) fn();
+      }, delay);
+    }
+
+    function addNext(count) {
+      if (!mountedRef.current) return;
+
+      if (count >= CUSTOMERS.length) {
+        // List is full — hold, then reset
+        setShowSkeleton(false);
+        setPhase('holding');
+        schedule(() => {
+          setPhase('resetting');
+          schedule(() => {
+            setVisibleCount(2);
+            setShowSkeleton(false);
+            setPhase('growing');
+            schedule(() => addNext(2), 800);
+          }, FADE_OUT);
+        }, HOLD_AT_END);
+        return;
+      }
+
+      // Show skeleton
+      setShowSkeleton(true);
+      schedule(() => {
+        // Resolve skeleton into customer
+        setVisibleCount(count + 1);
+        setShowSkeleton(false);
+        schedule(() => addNext(count + 1), PAUSE_BETWEEN);
+      }, SKELETON_DURATION);
+    }
+
+    // Start first cycle after initial delay
+    schedule(() => addNext(2), 1000);
+
+    return () => {
+      mountedRef.current = false;
+      clearTimer();
+    };
+  }, [clearTimer]);
+
+  const visibleCustomers = CUSTOMERS.slice(0, visibleCount);
 
   return (
     <div className={cn('flex items-start justify-center', className)}>
       <div
         className={cn(
-          'bg-surface rounded-xl shadow-lg p-6 w-[260px]',
-          'transition-opacity duration-500',
-          phase === 'resetting' && 'opacity-0'
+          'bg-surface rounded-xl shadow-lg w-[280px]',
+          'transition-opacity duration-500 ease-out',
+          phase === 'resetting' ? 'opacity-0' : 'opacity-100'
         )}
       >
-        {/* Abstract header bar — looks like a tiny toolbar */}
-        <div className="flex items-center gap-2 mb-5 pb-4 border-b border-border-light">
-          <div className="w-2 h-2 rounded-full bg-gray-300" />
-          <div className="w-2 h-2 rounded-full bg-gray-300" />
-          <div className="w-2 h-2 rounded-full bg-gray-300" />
-          <div className="flex-1" />
-          <div className="w-8 h-1.5 rounded-full bg-gray-200" />
+        {/* Agent status bar */}
+        <div className="flex items-center gap-2.5 px-5 pt-5 pb-4">
+          <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
+          <div className="relative h-1.5 w-16 rounded-full bg-gray-100 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 bg-[length:200%_100%] animate-shimmer rounded-full" />
+          </div>
         </div>
 
-        {/* Task rows */}
-        <div className="flex flex-col gap-3">
-          {Array.from({ length: ROWS }).map((_, i) => {
-            const isActive = activeRow === i;
-            const isCompleted = completedRows.has(i);
+        {/* Divider */}
+        <div className="mx-5 border-b border-border-light" />
 
-            return (
+        {/* List title */}
+        <div className="px-5 pt-4 pb-3">
+          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
+            New Active Customers
+          </span>
+        </div>
+
+        {/* Customer list */}
+        <div className="px-5 pb-5 flex flex-col gap-1">
+          {visibleCustomers.map((customer, i) => (
+            <div
+              key={customer.name}
+              className={cn(
+                'flex items-center gap-3 py-2 px-2 rounded-md',
+                'animate-fade-in'
+              )}
+            >
+              {/* Avatar */}
               <div
-                key={i}
                 className={cn(
-                  'flex items-center gap-3 px-2.5 py-2 rounded-md',
-                  'transition-all duration-300 ease-out',
-                  isActive && 'bg-brand-light',
-                  !isActive && !isCompleted && 'bg-transparent'
+                  'w-7 h-7 rounded-full shrink-0 flex items-center justify-center',
+                  customer.bg
                 )}
               >
-                {/* Avatar circle */}
-                <div
-                  className={cn(
-                    'w-3 h-3 rounded-full shrink-0',
-                    'transition-all duration-300 ease-out',
-                    isActive && 'bg-brand scale-110',
-                    isCompleted && 'bg-brand',
-                    !isActive && !isCompleted && 'bg-gray-300'
-                  )}
-                />
-
-                {/* Content bar */}
-                <div
-                  className={cn(
-                    'h-2 rounded-full',
-                    'transition-all duration-300 ease-out',
-                    barWidths[i],
-                    isActive && 'bg-brand/20',
-                    isCompleted && 'bg-gray-200',
-                    !isActive && !isCompleted && 'bg-gray-200'
-                  )}
-                />
-
-                {/* Completion indicator */}
-                <div className="w-3 h-3 shrink-0 flex items-center justify-center ml-auto">
-                  {isCompleted && (
-                    <svg
-                      className="w-3 h-3 text-brand animate-fade-in"
-                      viewBox="0 0 12 12"
-                      fill="none"
-                    >
-                      <path
-                        d="M2.5 6L5 8.5L9.5 4"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  )}
-                  {isActive && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
-                  )}
-                </div>
+                <span className="text-[11px] font-semibold text-white leading-none">
+                  {customer.initial}
+                </span>
               </div>
-            );
-          })}
+
+              {/* Name */}
+              <span className="text-[13px] font-medium text-foreground-muted">
+                {customer.name}
+              </span>
+            </div>
+          ))}
+
+          {/* Skeleton row — next customer loading */}
+          {showSkeleton && (
+            <div className="flex items-center gap-3 py-2 px-2 rounded-md animate-fade-in">
+              {/* Skeleton avatar */}
+              <div className="w-7 h-7 rounded-full shrink-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer" />
+
+              {/* Skeleton name */}
+              <div className="h-3 w-20 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer" />
+            </div>
+          )}
         </div>
       </div>
     </div>
