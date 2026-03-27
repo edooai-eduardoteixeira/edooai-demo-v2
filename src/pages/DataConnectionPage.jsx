@@ -454,7 +454,7 @@ against this mapping automatically.`);
               )}
               {!commsExpanded && (
                 <button
-                  className="inline-flex items-center gap-1.5 mt-5 py-3.5 px-8 text-base font-semibold text-foreground bg-surface border border-border rounded-md cursor-pointer transition-all duration-200 ease-out leading-[1.4] hover:bg-accent-subtle"
+                  className="inline-flex items-center justify-center gap-1.5 mt-5 min-w-[200px] py-3.5 px-8 text-base font-semibold text-foreground bg-surface border border-border rounded-md cursor-pointer transition-all duration-200 ease-out leading-[1.4] hover:bg-accent-subtle"
                   onClick={() => setCommsExpanded(true)}
                 >
                   See more options
@@ -919,7 +919,7 @@ against this mapping automatically.`);
                     );
                   })}
                 </ul>
-                <button className="w-full py-3 text-base font-semibold rounded-md bg-accent text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-accent-hover" onClick={() => handlePlatformConnect(modal.platform)}>
+                <button className="w-full py-3.5 text-base font-semibold rounded-md bg-accent text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:-translate-y-px hover:shadow-md" onClick={() => handlePlatformConnect(modal.platform)}>
                   Connect {modal.platform}
                 </button>
                 <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
@@ -948,7 +948,7 @@ against this mapping automatically.`);
                   <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-2">Webhook URL</div>
                   <div className="flex items-center gap-2 bg-gray-50 border border-border rounded-sm py-2.5 px-3">
                     <code className="flex-1 text-[13px] text-foreground font-mono break-all leading-[1.4]">https://api.vincor.ai/v1/webhooks/tx_9982x...</code>
-                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-white border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-100 hover:text-foreground" onClick={(e) => handleCopy('https://api.vincor.ai/v1/webhooks/tx_9982x...', e)}>Copy Webhook URL</button>
+                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:text-foreground" onClick={(e) => handleCopy('https://api.vincor.ai/v1/webhooks/tx_9982x...', e)}>Copy Webhook URL</button>
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
@@ -992,12 +992,12 @@ against this mapping automatically.`);
                     value={agenticInput}
                     onChange={e => setAgenticInput(e.target.value)}
                   />
-                  <button className="inline-flex items-center gap-1.5 mt-2.5 py-2 px-4 text-[13px] font-semibold text-foreground bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateWebhookMapping}>
+                  <button className="inline-flex items-center justify-center gap-1.5 mt-2.5 min-w-[120px] py-2 px-4 text-[13px] font-semibold text-foreground bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateWebhookMapping}>
                     Map Fields
                   </button>
                   {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-gray-100 bg-gray-900 rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
                 </div>
-                <button className="w-full py-3 text-base font-semibold rounded-md bg-accent text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-accent-hover" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
+                <button className="w-full py-3.5 text-base font-semibold rounded-md bg-accent text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:-translate-y-px hover:shadow-md" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
                   Mark as Configured
                 </button>
                 <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
@@ -1026,14 +1026,14 @@ against this mapping automatically.`);
                   <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-2">Secret Key</div>
                   <div className="flex items-center gap-2 bg-gray-50 border border-border rounded-sm py-2.5 px-3">
                     <code className="flex-1 text-[13px] text-foreground font-mono break-all leading-[1.4]">vincor_live_*******************</code>
-                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-white border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-100 hover:text-foreground" onClick={(e) => handleCopy('vincor_live_sk_7f8a3b2c1d9e4f6a', e)}>Reveal & Copy Key</button>
+                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:text-foreground" onClick={(e) => handleCopy('vincor_live_sk_7f8a3b2c1d9e4f6a', e)}>Reveal & Copy Key</button>
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
                   <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-2">API Endpoint</div>
                   <div className="flex items-center gap-2 bg-gray-50 border border-border rounded-sm py-2.5 px-3">
                     <code className="flex-1 text-[13px] text-foreground font-mono break-all leading-[1.4]">POST https://api.vincor.ai/v1/transactions</code>
-                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-white border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-100 hover:text-foreground" onClick={(e) => handleCopy('POST https://api.vincor.ai/v1/transactions', e)}>Copy</button>
+                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:text-foreground" onClick={(e) => handleCopy('POST https://api.vincor.ai/v1/transactions', e)}>Copy</button>
                   </div>
                 </div>
                 <hr className="border-0 border-t border-border my-5" />
@@ -1048,12 +1048,12 @@ against this mapping automatically.`);
                     value={agenticInput}
                     onChange={e => setAgenticInput(e.target.value)}
                   />
-                  <button className="inline-flex items-center gap-1.5 mt-2.5 py-2 px-4 text-[13px] font-semibold text-foreground bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateAPIScript}>
+                  <button className="inline-flex items-center justify-center gap-1.5 mt-2.5 min-w-[120px] py-2 px-4 text-[13px] font-semibold text-foreground bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateAPIScript}>
                     Generate Script
                   </button>
                   {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-gray-100 bg-gray-900 rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
                 </div>
-                <button className="w-full py-3 text-base font-semibold rounded-md bg-accent text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-accent-hover" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
+                <button className="w-full py-3.5 text-base font-semibold rounded-md bg-accent text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:-translate-y-px hover:shadow-md" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
                   Mark as Configured
                 </button>
                 <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
@@ -1082,7 +1082,7 @@ against this mapping automatically.`);
                   <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-2">S3 Bucket ARN</div>
                   <div className="flex items-center gap-2 bg-gray-50 border border-border rounded-sm py-2.5 px-3">
                     <code className="flex-1 text-[13px] text-foreground font-mono break-all leading-[1.4]">arn:aws:s3:::vincor-client-drop-8821</code>
-                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-white border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-100 hover:text-foreground" onClick={(e) => handleCopy('arn:aws:s3:::vincor-client-drop-8821', e)}>Copy Credentials</button>
+                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:text-foreground" onClick={(e) => handleCopy('arn:aws:s3:::vincor-client-drop-8821', e)}>Copy Credentials</button>
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
@@ -1128,12 +1128,12 @@ usr_117,ord_1002,129.00,USD,2026-03-15'
                     value={agenticInput}
                     onChange={e => setAgenticInput(e.target.value)}
                   />
-                  <button className="inline-flex items-center gap-1.5 mt-2.5 py-2 px-4 text-[13px] font-semibold text-foreground bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateFileMapping}>
+                  <button className="inline-flex items-center justify-center gap-1.5 mt-2.5 min-w-[120px] py-2 px-4 text-[13px] font-semibold text-foreground bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateFileMapping}>
                     Detect Schema
                   </button>
                   {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-gray-100 bg-gray-900 rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
                 </div>
-                <button className="w-full py-3 text-base font-semibold rounded-md bg-accent text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-accent-hover" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
+                <button className="w-full py-3.5 text-base font-semibold rounded-md bg-accent text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:-translate-y-px hover:shadow-md" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
                   Mark as Configured
                 </button>
                 <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">

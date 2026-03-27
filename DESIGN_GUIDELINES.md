@@ -260,19 +260,47 @@ flex flex-wrap gap-5
 
 ## Component Recipes
 
-### Primary Button (use CTAButton component)
+### Button sizes — 3 sizes only
+
+| Size | Padding | Font | Radius | Width | Use |
+|---|---|---|---|---|---|
+| **Large** | `py-3.5 px-8` | 16px (`text-base`) semibold | `rounded-md` | `min-w-[200px]` on page, `w-full` in modals/cards | Page-level CTAs: "Launch Campaigns", "Connect to Data", landing CTA |
+| **Medium** | `py-2 px-4` | 13px (`text-[13px]`) semibold | `rounded-sm` | `min-w-[120px]` | Section-level actions: "Map Fields", "Generate Script", inline form actions |
+| **Small** | `py-1 px-2.5` | 11px (`text-[11px]`) semibold | `rounded-sm` | Content-width (no minimum) | Utility actions: "Copy", "Reveal", compact triggers |
+
+**Width rules:**
+- Large buttons on a page: `min-w-[200px]` — ensures CTA presence regardless of label length
+- Large buttons inside a modal or card: `w-full` — fills the container
+- Medium buttons: `min-w-[120px]` — prevents tiny pill appearance
+- Small buttons: no minimum — utility actions should be compact
+
+**No in-between sizes.** Every button must be one of these three.
+
+### Large button variants (use CTAButton component)
+
+**Primary** (dark):
 ```
-inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold rounded-md bg-accent text-white transition-all duration-200 ease-out
+inline-flex items-center justify-center min-w-[200px] px-8 py-3.5 text-base font-semibold rounded-md bg-accent text-white hover:-translate-y-px hover:shadow-md
 ```
 
-### Brand Button (primary CTA — use sparingly, one per screen)
+**Brand** (Pure Wine — one per screen max):
 ```
-inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold rounded-md bg-brand text-white hover:opacity-90 transition-all duration-200 ease-out
+inline-flex items-center justify-center min-w-[200px] px-8 py-3.5 text-base font-semibold rounded-md bg-brand text-white hover:-translate-y-px hover:shadow-md
 ```
 
-### Secondary Button
+**Secondary** (outlined):
 ```
-inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold rounded-md bg-white text-foreground border border-gray-300 transition-all duration-200 ease-out
+inline-flex items-center justify-center min-w-[200px] px-8 py-3.5 text-base font-semibold rounded-md bg-surface text-foreground border border-border hover:bg-accent-subtle
+```
+
+### Medium button
+```
+inline-flex items-center justify-center min-w-[120px] py-2 px-4 text-[13px] font-semibold rounded-sm bg-surface text-foreground border border-border hover:bg-accent-subtle
+```
+
+### Small button
+```
+inline-flex items-center justify-center py-1 px-2.5 text-[11px] font-semibold rounded-sm bg-surface text-foreground-muted border border-border hover:bg-accent-subtle hover:text-foreground
 ```
 
 ### Container surfaces (inside drawers/panels)
