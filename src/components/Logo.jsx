@@ -22,9 +22,9 @@ export default function Logo({ size = 'default', variant = 'full', className }) 
           y="19"
           textAnchor="middle"
           fill="white"
-          fontSize="14"
+          fontSize="16"
           fontWeight="700"
-          fontFamily="Inter, sans-serif"
+          fontFamily="'Playfair Display', serif"
         >
           V
         </text>
