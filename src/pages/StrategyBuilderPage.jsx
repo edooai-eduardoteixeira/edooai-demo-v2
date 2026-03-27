@@ -741,7 +741,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
                 {/* KPI grid */}
                 <div style={{
-                  paddingTop: 14,
+                  paddingTop: 20,
                   borderTop: '1px solid var(--border-light)',
                   display: 'grid',
                   gridTemplateColumns: '1fr 1fr',
@@ -863,7 +863,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   justifyContent: 'space-between',
                   alignItems: 'baseline',
                 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
                     Daily forecast: new active users
                   </span>
                 </div>
@@ -949,8 +949,8 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           <line x1={threshX} y1={chartTop} x2={threshX} y2={chartBottom} stroke="#A89E94" strokeWidth="1" strokeDasharray="4,4" opacity="0.6" />
 
                           {/* Learning phase label — anchored near dashed line */}
-                          <text x={threshX - 8} y={chartTop + 16} fontSize="11" fill="#7D7368" fontFamily="var(--font-family)" fontWeight="600" textAnchor="end">Learning phase</text>
-                          <text x={threshX - 8} y={chartTop + 28} fontSize="11" fill="#7D7368" fontFamily="var(--font-family)" opacity="0.65" textAnchor="end">AI calibrating signals</text>
+                          <text x={threshX - 8} y={chartTop + 16} fontSize="11" fill="var(--text-tertiary)" fontFamily="var(--font-family)" fontWeight="500" textAnchor="end">Learning phase</text>
+                          <text x={threshX - 8} y={chartTop + 28} fontSize="11" fill="var(--text-tertiary)" fontFamily="var(--font-family)" fontWeight="400" opacity="0.6" textAnchor="end">AI calibrating signals</text>
 
                           {/* Hover overlay */}
                           <rect
