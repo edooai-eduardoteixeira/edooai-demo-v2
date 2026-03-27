@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '../lib/utils';
 
-export default function Logo({ size = 'default', className }) {
+export default function Logo({ size = 'default', variant = 'full', className }) {
   return (
     <div
       className={cn(
@@ -24,7 +24,7 @@ export default function Logo({ size = 'default', className }) {
           V
         </text>
       </svg>
-      Vincor AI
+      {variant === 'full' && 'Vincor AI'}
     </div>
   );
 }

@@ -320,10 +320,10 @@ export default function StrategyBuilderPage({ config, onNext }) {
       {/* Header */}
       <header
         style={{
-          padding: '14px 48px',
+          padding: '12px 48px',
         }}
       >
-        <Logo />
+        <Logo variant="mark" />
       </header>
 
 
