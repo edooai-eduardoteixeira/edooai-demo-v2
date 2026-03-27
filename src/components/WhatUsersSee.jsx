@@ -264,9 +264,14 @@ export default function WhatUsersSee() {
   const inviteBodyRef = useRef(null);
   const redeemGinaRef = useRef(null);
   const redeemPaulRef = useRef(null);
+  const timelineRef = useRef(null);
+  const circle1Ref = useRef(null);
+  const circle3Ref = useRef(null);
   const [inviteMinH, setInviteMinH] = useState(0);
   const [redeemGinaMinH, setRedeemGinaMinH] = useState(0);
   const [redeemPaulMinH, setRedeemPaulMinH] = useState(0);
+  const [lineTop, setLineTop] = useState(0);
+  const [lineHeight, setLineHeight] = useState(0);
 
   useEffect(() => {
     // Measure after first render
@@ -283,6 +288,15 @@ export default function WhatUsersSee() {
         const h = redeemPaulRef.current.scrollHeight;
         setRedeemPaulMinH((prev) => Math.max(prev, h));
       }
+      if (timelineRef.current && circle1Ref.current && circle3Ref.current) {
+        const container = timelineRef.current.getBoundingClientRect();
+        const r1 = circle1Ref.current.getBoundingClientRect();
+        const r3 = circle3Ref.current.getBoundingClientRect();
+        const c1Center = r1.top - container.top + r1.height / 2;
+        const c3Center = r3.top - container.top + r3.height / 2;
+        setLineTop(c1Center);
+        setLineHeight(c3Center - c1Center);
+      }
     };
     measure();
     // Re-measure on resize
@@ -296,15 +310,17 @@ export default function WhatUsersSee() {
         What Users See
       </h3>
 
-      <div className="relative">
-        {/* Timeline vertical line — continuous from circle 1 to circle 3 */}
-        <div className="absolute left-[13px] top-10 bottom-[280px] w-0.5 bg-border z-[1] max-[860px]:hidden" />
+      <div ref={timelineRef} className="relative">
+        {/* Timeline vertical line — connects circle 1 center to circle 3 center */}
+        {lineHeight > 0 && (
+          <div className="absolute left-[13px] w-0.5 bg-border z-[1] max-[860px]:hidden" style={{ top: lineTop, height: lineHeight }} />
+        )}
 
         {/* ═══ INVITE ═══ */}
         <div className="flex items-start gap-12 mb-10 max-[860px]:flex-col max-[860px]:gap-5">
           <div className="flex-[0_0_240px] pt-5 relative pl-12 max-[860px]:pl-0 max-[860px]:flex-none">
             {/* Timeline numbered circle */}
-            <div className="absolute left-0 top-5 w-7 h-7 rounded-full bg-foreground-faint text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">1</div>
+            <div ref={circle1Ref} className="absolute left-0 top-5 w-7 h-7 rounded-full bg-foreground-faint text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">1</div>
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Invite</div>
           </div>
           <div className="flex-1 flex flex-col items-start">
@@ -405,7 +421,7 @@ export default function WhatUsersSee() {
         <div className="flex items-start gap-12 max-[860px]:flex-col max-[860px]:gap-5">
           <div className="flex-[0_0_240px] pt-5 relative pl-12 max-[860px]:pl-0 max-[860px]:flex-none">
             {/* Timeline numbered circle */}
-            <div className="absolute left-0 top-5 w-7 h-7 rounded-full bg-foreground-faint text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">3</div>
+            <div ref={circle3Ref} className="absolute left-0 top-5 w-7 h-7 rounded-full bg-foreground-faint text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">3</div>
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Redeem</div>
           </div>
           <div
