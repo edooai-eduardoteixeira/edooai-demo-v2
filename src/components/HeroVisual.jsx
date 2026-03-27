@@ -5,20 +5,20 @@ import { cn } from '../lib/utils';
   HeroVisual — "An agent is acquiring customers"
 
   - Top: pulsing glow dot + "Agent working" text (agent presence)
-  - Title: "NEW ACTIVE CUSTOMERS" (frames the list)
-  - Body: name + activation milestone rows, growing one by one
+  - Column headers: "CUSTOMER" + "CAC" (frames the list)
+  - Body: name + CAC amount rows, growing one by one
   - Bottom: skeleton row resolving into next customer
 
   List grows from 2 to 6, holds, fades, loops.
 */
 
 const CUSTOMERS = [
-  { name: 'Sarah M.', milestone: 'Account funded' },
-  { name: 'James K.', milestone: 'First purchase' },
-  { name: 'Rachel T.', milestone: 'Card activated' },
-  { name: 'David L.', milestone: 'Account funded' },
-  { name: 'Ana P.', milestone: 'First deposit' },
-  { name: 'Marcus W.', milestone: 'First purchase' },
+  { name: 'Sarah M.', cac: '$60' },
+  { name: 'James K.', cac: '$90' },
+  { name: 'Rachel T.', cac: '$60' },
+  { name: 'David L.', cac: '$120' },
+  { name: 'Ana P.', cac: '$90' },
+  { name: 'Marcus W.', cac: '$60' },
 ];
 
 const SKELETON_DURATION = 1200;
@@ -109,10 +109,13 @@ export default function HeroVisual({ className }) {
         {/* Divider */}
         <div className="mx-5 border-b border-border-light" />
 
-        {/* List title */}
-        <div className="px-5 pt-4 pb-3">
+        {/* Column headers */}
+        <div className="flex items-center justify-between px-7 pt-4 pb-2">
           <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
-            New Active Customers
+            Customer
+          </span>
+          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
+            CAC
           </span>
         </div>
 
@@ -126,8 +129,8 @@ export default function HeroVisual({ className }) {
               <span className="text-[13px] font-medium text-foreground-muted">
                 {customer.name}
               </span>
-              <span className="text-[11px] text-foreground-faint">
-                {customer.milestone}
+              <span className="text-[13px] text-foreground-faint tabular-nums">
+                {customer.cac}
               </span>
             </div>
           ))}
@@ -136,7 +139,7 @@ export default function HeroVisual({ className }) {
           {showSkeleton && (
             <div className="flex items-center justify-between py-2 px-2 rounded-md animate-fade-in">
               <div className="h-3 w-20 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer" />
-              <div className="h-3 w-16 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer" />
+              <div className="h-3 w-8 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer" />
             </div>
           )}
         </div>
