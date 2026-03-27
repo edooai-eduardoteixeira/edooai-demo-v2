@@ -3,14 +3,14 @@ import { cn } from '../lib/utils';
 import Logo from '../components/Logo.jsx';
 import CTAButton from '../components/CTAButton.jsx';
 
-export default function LandingPage({ config, onNext }) {
+export default function LandingPage({ config, onNext, onHome }) {
   const { landing } = config;
 
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header style={{ padding: '10px 48px' }}>
-        <Logo variant="full" />
+        <Logo variant="full" onClick={onHome} />
       </header>
 
       {/* Hero */}

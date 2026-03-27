@@ -1,10 +1,7 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
 
-export default function Logo({ size = 'default', variant = 'full', className }) {
-  const navigate = useNavigate();
-
+export default function Logo({ size = 'default', variant = 'full', onClick, className }) {
   return (
     <div
       className={cn(
@@ -13,7 +10,7 @@ export default function Logo({ size = 'default', variant = 'full', className }) 
         className
       )}
       style={variant === 'full' ? { fontFamily: "'Playfair Display', serif" } : undefined}
-      onClick={() => navigate('/')}
+      onClick={onClick}
     >
       <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
         <rect width="28" height="28" rx="6" fill="var(--color-brand)" />

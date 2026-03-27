@@ -149,7 +149,7 @@ function getGuidanceMessage(guidanceState, { reachPct }) {
 /* ═════════════════════════════════════════════════════════
    Main Page Component
    ═════════════════════════════════════════════════════════ */
-export default function StrategyBuilderPage({ config, onNext }) {
+export default function StrategyBuilderPage({ config, onNext, onHome }) {
   const {
     strategy,
     budgetSlider,
@@ -327,7 +327,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
           zIndex: 10,
         }}
       >
-        <Logo variant="mark" />
+        <Logo variant="mark" onClick={onHome} />
       </header>
 
       {/* Main Content */}

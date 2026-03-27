@@ -146,7 +146,7 @@ function SimpleLineChart({ data, phases }) {
   );
 }
 
-export default function DashboardPage({ config }) {
+export default function DashboardPage({ config, onHome }) {
   const { dashboard30Day } = config;
 
   const handleBookCall = () => {
@@ -158,7 +158,7 @@ export default function DashboardPage({ config }) {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="px-12 py-3.5">
-        <Logo />
+        <Logo variant="mark" onClick={onHome} />
       </header>
 
       <main className="flex-1 p-12 max-w-[900px] mx-auto w-full">

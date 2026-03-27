@@ -15,16 +15,18 @@ export default function App() {
     setCurrentScreen(screen);
   };
 
+  const onHome = () => goToScreen(1);
+
   switch (currentScreen) {
     case 1:
-      return <LandingPage config={config} onNext={() => goToScreen(2)} />;
+      return <LandingPage config={config} onNext={() => goToScreen(2)} onHome={onHome} />;
     case 2:
-      return <DataConnectionPage config={config} onNext={() => goToScreen(3)} />;
+      return <DataConnectionPage config={config} onNext={() => goToScreen(3)} onHome={onHome} />;
     case 3:
-      return <StrategyBuilderPage config={config} onNext={() => goToScreen(4)} />;
+      return <StrategyBuilderPage config={config} onNext={() => goToScreen(4)} onHome={onHome} />;
     case 4:
-      return <DashboardPage config={config} />;
+      return <DashboardPage config={config} onHome={onHome} />;
     default:
-      return <LandingPage config={config} onNext={() => goToScreen(2)} />;
+      return <LandingPage config={config} onNext={() => goToScreen(2)} onHome={onHome} />;
   }
 }
