@@ -13,13 +13,11 @@ export default function Logo({ size = 'default', variant = 'full', onClick, clas
       style={variant === 'full' ? { fontFamily: "'Playfair Display', serif" } : undefined}
       onClick={onClick}
     >
-      <div className={cn('shrink-0 overflow-hidden flex items-center justify-center', variant === 'full' ? 'w-10 h-10 -mr-1' : 'w-6 h-6')}>
-        <img
-          src="/vincor svg.svg"
-          alt=""
-          className={cn(variant === 'full' ? 'w-[72px] h-[72px]' : 'w-11 h-11')}
-        />
-      </div>
+      <img
+        src="/vincor svg.svg"
+        alt=""
+        className={cn('shrink-0', variant === 'full' ? 'w-16 h-16 -m-3' : 'w-10 h-10 -m-2')}
+      />
       {variant === 'full' && 'Vincor'}
     </div>
   );
