@@ -40,7 +40,12 @@ All components use **Tailwind utility classes**. No CSS modules.
 - Platform brand colors in `PLATFORM_COLORS` (PlatformLogo.jsx) are the only hex exception
 - Before creating new components, check `src/components/` for existing patterns
 
-## Environments
+## Environments & Links
 
 - **Production**: https://demo-v2-production.up.railway.app (auto-deploys from `main`)
 - **Preview**: Railway Preview Environments (auto-deploy per PR — provide the full preview URL after every push)
+
+### Link Rules:
+- **NEVER give relative paths** like `/wines` or `/about`. Always use full URLs with the appropriate base domain.
+- When referencing any page or route, use the full production URL (e.g., `https://demo-v2-production.up.railway.app/wines`) or the full Railway preview URL if working on a PR.
+- **The repo is private** — do not link to GitHub raw file views, blob URLs, or commit pages as a way to "preview" changes. The PR link itself is fine (it's how I access the Railway preview).
