@@ -298,13 +298,13 @@ export default function WhatUsersSee() {
 
       <div className="relative">
         {/* Timeline vertical line (replaces ::before pseudo-element) */}
-        <div className="absolute left-[-13px] top-8 bottom-[26px] w-px bg-border-light z-0 max-[860px]:hidden" />
+        <div className="absolute left-[3px] top-8 bottom-[26px] w-px bg-border-light z-0 max-[860px]:hidden" />
 
         {/* ═══ INVITE ═══ */}
         <div className="flex items-start gap-12 mb-12 max-[860px]:flex-col max-[860px]:gap-5">
-          <div className="flex-[0_0_240px] pt-5 relative max-[860px]:flex-none">
+          <div className="flex-[0_0_240px] pt-5 relative pl-6 max-[860px]:pl-0 max-[860px]:flex-none">
             {/* Timeline node dot (replaces ::before pseudo-element) */}
-            <div className="absolute left-[-16px] top-[27px] w-[7px] h-[7px] rounded-full bg-foreground-faint z-[2] max-[860px]:hidden" />
+            <div className="absolute left-0 top-[27px] w-[7px] h-[7px] rounded-full bg-foreground-faint z-[2] max-[860px]:hidden" />
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Invite</div>
             <div className="text-sm font-normal text-foreground-muted leading-[1.4] mt-1">Engage your users</div>
           </div>
@@ -349,9 +349,9 @@ export default function WhatUsersSee() {
 
         {/* ═══ REFER ═══ */}
         <div className="flex items-start gap-12 mb-8 max-[860px]:flex-col max-[860px]:gap-5">
-          <div className="flex-[0_0_240px] pt-5 relative max-[860px]:flex-none">
+          <div className="flex-[0_0_240px] pt-5 relative pl-6 max-[860px]:pl-0 max-[860px]:flex-none">
             {/* Timeline node dot */}
-            <div className="absolute left-[-16px] top-[27px] w-[7px] h-[7px] rounded-full bg-foreground-faint z-[2] max-[860px]:hidden" />
+            <div className="absolute left-0 top-[27px] w-[7px] h-[7px] rounded-full bg-foreground-faint z-[2] max-[860px]:hidden" />
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Refer</div>
             <div className="text-sm font-normal text-foreground-muted leading-[1.4] mt-1">Share with friends</div>
           </div>
@@ -409,9 +409,9 @@ export default function WhatUsersSee() {
 
         {/* ═══ REDEEM — overlapping cards ═══ */}
         <div className="flex items-start gap-12 max-[860px]:flex-col max-[860px]:gap-5">
-          <div className="flex-[0_0_240px] pt-5 relative max-[860px]:flex-none">
+          <div className="flex-[0_0_240px] pt-5 relative pl-6 max-[860px]:pl-0 max-[860px]:flex-none">
             {/* Timeline node dot */}
-            <div className="absolute left-[-16px] top-[27px] w-[7px] h-[7px] rounded-full bg-foreground-faint z-[2] max-[860px]:hidden" />
+            <div className="absolute left-0 top-[27px] w-[7px] h-[7px] rounded-full bg-foreground-faint z-[2] max-[860px]:hidden" />
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Redeem</div>
             <div className="text-sm font-normal text-foreground-muted leading-[1.4] mt-1">Both sides get rewarded</div>
           </div>
