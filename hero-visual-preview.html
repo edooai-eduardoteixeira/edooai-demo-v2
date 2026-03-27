@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hero Visual Preview</title>
+<title>Hero Visual Preview — Referral Network</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
 
@@ -28,7 +28,6 @@
     gap: 64px;
   }
 
-  /* Left side — simulated headline for context */
   .hero-text {
     max-width: 520px;
     padding-top: 40px;
@@ -61,196 +60,226 @@
     font-family: 'Inter', sans-serif;
   }
 
-  /* Right side — the visual */
+  /* Right side — the network visual */
   .hero-visual {
     flex-shrink: 0;
-    width: 280px;
-    padding-top: 20px;
-  }
-
-  .visual-card {
-    background: white;
-    border-radius: 20px;
-    padding: 32px 28px 28px;
-    box-shadow: 0 4px 24px rgba(44, 35, 32, 0.08), 0 1px 4px rgba(44, 35, 32, 0.04);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
-  }
-
-  /* Vincor mark */
-  .vincor-mark {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .vincor-mark svg {
-    width: 36px;
-    height: 36px;
-  }
-
-  /* Dot cluster area */
-  .dot-cluster {
-    width: 180px;
-    height: 180px;
+    width: 380px;
+    height: 360px;
+    padding-top: 10px;
     position: relative;
   }
 
-  .dot {
+  /* SVG lines connecting nodes */
+  .network-lines {
     position: absolute;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #66001F;
-    opacity: 0;
-    transform: scale(0.3);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
   }
 
-  /* Counter */
-  .counter-area {
-    display: flex;
-    align-items: baseline;
-    gap: 4px;
+  .network-line {
+    stroke: #E4DDD5;
+    stroke-width: 1.5;
+    opacity: 0;
+    transition: opacity 0.6s ease-out;
   }
-  .counter-number {
-    font-size: 32px;
-    font-weight: 800;
-    color: #2C2320;
-    font-variant-numeric: tabular-nums;
+  .network-line.visible {
+    opacity: 1;
   }
-  .counter-label {
-    font-size: 14px;
-    font-weight: 500;
-    color: #059669;
+
+  /* Node: a person in the network */
+  .node {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(0);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out, background 0.5s ease-out, border-color 0.4s ease-out, box-shadow 0.4s ease-out;
+  }
+
+  /* Outline = referred but not yet active */
+  .node.pending {
+    opacity: 1;
+    transform: scale(1);
+    background: transparent;
+    border: 2px solid #D1C8BE;
+  }
+
+  /* Solid = active customer */
+  .node.active {
+    opacity: 1;
+    transform: scale(1);
+    background: #66001F;
+    border: 2px solid #66001F;
+    box-shadow: 0 0 0 4px rgba(102, 0, 31, 0.1);
+  }
+
+  /* Seed nodes — the "existing customers" — slightly different */
+  .node.seed {
+    opacity: 1;
+    transform: scale(1);
+    background: #2C2320;
+    border: 2px solid #2C2320;
   }
 </style>
 </head>
 <body>
 
 <div class="hero-layout">
-  <!-- Left: headline context (not the deliverable — just for spatial reference) -->
   <div class="hero-text">
     <h1>Turn your best customers into your growth engine.</h1>
     <p>Stop competing for expensive ads while your most powerful channel is untapped. We operate your referrals end‑to‑end to deliver active customers at a fraction of your CAC.</p>
     <button>Start Now</button>
   </div>
 
-  <!-- Right: THE VISUAL (this is the deliverable) -->
-  <div class="hero-visual">
-    <div class="visual-card">
-      <!-- Vincor mark (simplified crystalline shape) -->
-      <div class="vincor-mark">
-        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M50 8L62 35L92 35L68 55L78 85L50 67L22 85L32 55L8 35L38 35Z" fill="#66001F" opacity="0.9"/>
-        </svg>
-      </div>
-
-      <!-- Dot cluster: people appearing -->
-      <div class="dot-cluster" id="dotCluster"></div>
-
-      <!-- Counter -->
-      <div class="counter-area">
-        <span class="counter-number" id="counter">0</span>
-        <span class="counter-label">new customers</span>
-      </div>
-    </div>
+  <div class="hero-visual" id="visual">
+    <svg class="network-lines" id="lines"></svg>
   </div>
 </div>
 
 <script>
-  // Dot positions — pre-computed organic cluster layout
-  // Arranged to look like a natural, growing group of people
-  const positions = [
-    { x: 83, y: 83 },
-    { x: 60, y: 95 },
-    { x: 105, y: 72 },
-    { x: 40, y: 75 },
-    { x: 75, y: 55 },
-    { x: 55, y: 65 },
-    { x: 95, y: 95 },
-    { x: 30, y: 92 },
-    { x: 118, y: 88 },
-    { x: 68, y: 42 },
-    { x: 45, y: 50 },
-    { x: 98, y: 52 },
-    { x: 82, y: 105 },
-    { x: 25, y: 65 },
-    { x: 112, y: 60 },
-    { x: 55, y: 35 },
-    { x: 135, y: 78 },
-    { x: 10, y: 80 },
-    { x: 72, y: 25 },
-    { x: 38, y: 108 },
-    { x: 125, y: 95 },
-    { x: 90, y: 35 },
-    { x: 15, y: 55 },
-    { x: 50, y: 115 },
-    { x: 110, y: 42 },
+  /*
+    The network:
+    - Seed nodes (dark, existing customers) are already present
+    - New nodes appear as outlines (pending referrals), connected to a seed/active node
+    - Outlines fill in with brand color (become active customers)
+    - Those new active nodes then spawn their own referrals
+    - The network grows organically — customers creating customers
+  */
+
+  const visual = document.getElementById('visual');
+  const linesSvg = document.getElementById('lines');
+
+  // Network structure: each node has position, size, and parent (who referred them)
+  // Seeds have no parent. All others grow from existing nodes.
+  const network = [
+    // === SEEDS (existing customers — dark, appear immediately) ===
+    { id: 0, x: 80,  y: 140, size: 16, type: 'seed', parent: null },
+    { id: 1, x: 200, y: 100, size: 14, type: 'seed', parent: null },
+    { id: 2, x: 160, y: 240, size: 15, type: 'seed', parent: null },
+
+    // === WAVE 1: referred by seeds ===
+    { id: 3, x: 40,  y: 70,  size: 12, type: 'referred', parent: 0 },
+    { id: 4, x: 135, y: 60,  size: 11, type: 'referred', parent: 1 },
+    { id: 5, x: 280, y: 80,  size: 13, type: 'referred', parent: 1 },
+    { id: 6, x: 100, y: 260, size: 12, type: 'referred', parent: 2 },
+    { id: 7, x: 240, y: 200, size: 11, type: 'referred', parent: 2 },
+
+    // === WAVE 2: referred by wave 1 (compounding) ===
+    { id: 8,  x: 15,  y: 170, size: 10, type: 'referred', parent: 3 },
+    { id: 9,  x: 310, y: 150, size: 12, type: 'referred', parent: 5 },
+    { id: 10, x: 60,  y: 310, size: 11, type: 'referred', parent: 6 },
+    { id: 11, x: 300, y: 260, size: 10, type: 'referred', parent: 7 },
+    { id: 12, x: 180, y: 30,  size: 10, type: 'referred', parent: 4 },
+
+    // === WAVE 3: further compounding ===
+    { id: 13, x: 350, y: 110, size: 10, type: 'referred', parent: 9 },
+    { id: 14, x: 340, y: 220, size: 9,  type: 'referred', parent: 11 },
+    { id: 15, x: 120, y: 330, size: 10, type: 'referred', parent: 10 },
+    { id: 16, x: 250, y: 30,  size: 9,  type: 'referred', parent: 12 },
   ];
 
-  // Varying opacities for depth
-  const opacities = [1, 0.85, 0.7, 0.55, 0.4];
+  // Create DOM elements for nodes
+  const nodeEls = {};
+  const lineEls = {};
 
-  const cluster = document.getElementById('dotCluster');
-  const counterEl = document.getElementById('counter');
-  let dots = [];
+  network.forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'node';
+    el.style.left = (n.x - n.size / 2) + 'px';
+    el.style.top = (n.y - n.size / 2) + 'px';
+    el.style.width = n.size + 'px';
+    el.style.height = n.size + 'px';
+    visual.appendChild(el);
+    nodeEls[n.id] = el;
 
-  // Create dot elements
-  positions.forEach((pos, i) => {
-    const dot = document.createElement('div');
-    dot.className = 'dot';
-    dot.style.left = pos.x + 'px';
-    dot.style.top = pos.y + 'px';
-    // Vary sizes slightly for organic feel
-    const size = 10 + Math.random() * 6;
-    dot.style.width = size + 'px';
-    dot.style.height = size + 'px';
-    cluster.appendChild(dot);
-    dots.push(dot);
+    // Create connecting line to parent
+    if (n.parent !== null) {
+      const parent = network[n.parent];
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', parent.x);
+      line.setAttribute('y1', parent.y);
+      line.setAttribute('x2', n.x);
+      line.setAttribute('y2', n.y);
+      line.classList.add('network-line');
+      linesSvg.appendChild(line);
+      lineEls[n.id] = line;
+    }
   });
 
-  let currentDot = 0;
-  let count = 0;
+  // Animation sequence
+  const timeline = [];
+  let time = 0;
 
-  function animateDot() {
-    if (currentDot >= dots.length) {
-      // Pause at full, then reset
+  // Step 1: Seeds appear (already active)
+  network.filter(n => n.type === 'seed').forEach((n, i) => {
+    timeline.push({ time: time + i * 200, id: n.id, action: 'seed' });
+  });
+  time += 800;
+
+  // Step 2: Wave 1 — appear as pending (outline), then activate
+  const wave1 = network.filter(n => n.parent !== null && n.parent <= 2);
+  wave1.forEach((n, i) => {
+    timeline.push({ time: time + i * 300, id: n.id, action: 'pending' });
+    timeline.push({ time: time + i * 300 + 600, id: n.id, action: 'activate' });
+  });
+  time += wave1.length * 300 + 800;
+
+  // Step 3: Wave 2 — compounding
+  const wave2 = network.filter(n => [3,4,5,6,7].includes(n.parent));
+  wave2.forEach((n, i) => {
+    timeline.push({ time: time + i * 300, id: n.id, action: 'pending' });
+    timeline.push({ time: time + i * 300 + 600, id: n.id, action: 'activate' });
+  });
+  time += wave2.length * 300 + 800;
+
+  // Step 4: Wave 3 — further compounding
+  const wave3 = network.filter(n => [9,10,11,12].includes(n.parent));
+  wave3.forEach((n, i) => {
+    timeline.push({ time: time + i * 250, id: n.id, action: 'pending' });
+    timeline.push({ time: time + i * 250 + 500, id: n.id, action: 'activate' });
+  });
+  time += wave3.length * 250 + 2000;
+
+  // Reset time
+  const totalDuration = time;
+
+  function runTimeline() {
+    // Reset everything
+    Object.values(nodeEls).forEach(el => {
+      el.className = 'node';
+      el.style.opacity = '0';
+      el.style.transform = 'scale(0)';
+    });
+    Object.values(lineEls).forEach(el => {
+      el.classList.remove('visible');
+    });
+
+    // Schedule each event
+    timeline.forEach(event => {
       setTimeout(() => {
-        dots.forEach(d => {
-          d.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
-          d.style.opacity = '0';
-          d.style.transform = 'scale(0.3)';
-        });
-        counterEl.textContent = '0';
-        currentDot = 0;
-        count = 0;
-        setTimeout(animateDot, 1000);
-      }, 2000);
-      return;
-    }
+        const el = nodeEls[event.id];
+        if (event.action === 'seed') {
+          el.className = 'node seed';
+        } else if (event.action === 'pending') {
+          el.className = 'node pending';
+          // Show connecting line
+          if (lineEls[event.id]) {
+            lineEls[event.id].classList.add('visible');
+          }
+        } else if (event.action === 'activate') {
+          el.className = 'node active';
+        }
+      }, event.time);
+    });
 
-    const dot = dots[currentDot];
-    const depthIndex = Math.floor(currentDot / 5);
-    const targetOpacity = opacities[Math.min(depthIndex, opacities.length - 1)];
-
-    dot.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
-    dot.style.opacity = targetOpacity;
-    dot.style.transform = 'scale(1)';
-
-    count++;
-    counterEl.textContent = count;
-
-    currentDot++;
-
-    // Each dot appears ~200ms after the previous — steady cadence
-    setTimeout(animateDot, 200);
+    // Loop
+    setTimeout(runTimeline, totalDuration);
   }
 
-  // Start after a brief pause
-  setTimeout(animateDot, 600);
+  // Start
+  setTimeout(runTimeline, 400);
 </script>
 
 </body>
