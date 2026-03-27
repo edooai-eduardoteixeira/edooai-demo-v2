@@ -1026,7 +1026,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
             }}
           >
             <div style={{
-              maxWidth: 'calc(1100px - 6rem)',
+              maxWidth: 1100,
               margin: '0 auto',
               padding: '0 3rem',
             }}>
