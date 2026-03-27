@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hero Visual Preview</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #FAF7F2;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 80px 48px;
+  }
+
+  .hero-layout {
+    max-width: 1100px;
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 64px;
+  }
+
+  /* Left side — simulated headline for context */
+  .hero-text {
+    max-width: 520px;
+    padding-top: 40px;
+  }
+  .hero-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 56px;
+    font-weight: 700;
+    color: #66001F;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    margin-bottom: 32px;
+  }
+  .hero-text p {
+    font-size: 22px;
+    font-weight: 500;
+    color: #6B5E54;
+    line-height: 1.5;
+    margin-bottom: 40px;
+  }
+  .hero-text button {
+    background: #66001F;
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Right side — the visual */
+  .hero-visual {
+    flex-shrink: 0;
+    width: 280px;
+    padding-top: 20px;
+  }
+
+  .visual-card {
+    background: white;
+    border-radius: 20px;
+    padding: 32px 28px 28px;
+    box-shadow: 0 4px 24px rgba(44, 35, 32, 0.08), 0 1px 4px rgba(44, 35, 32, 0.04);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  /* Vincor mark */
+  .vincor-mark {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .vincor-mark svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Dot cluster area */
+  .dot-cluster {
+    width: 180px;
+    height: 180px;
+    position: relative;
+  }
+
+  .dot {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #66001F;
+    opacity: 0;
+    transform: scale(0.3);
+  }
+
+  /* Counter */
+  .counter-area {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .counter-number {
+    font-size: 32px;
+    font-weight: 800;
+    color: #2C2320;
+    font-variant-numeric: tabular-nums;
+  }
+  .counter-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #059669;
+  }
+</style>
+</head>
+<body>
+
+<div class="hero-layout">
+  <!-- Left: headline context (not the deliverable — just for spatial reference) -->
+  <div class="hero-text">
+    <h1>Turn your best customers into your growth engine.</h1>
+    <p>Stop competing for expensive ads while your most powerful channel is untapped. We operate your referrals end‑to‑end to deliver active customers at a fraction of your CAC.</p>
+    <button>Start Now</button>
+  </div>
+
+  <!-- Right: THE VISUAL (this is the deliverable) -->
+  <div class="hero-visual">
+    <div class="visual-card">
+      <!-- Vincor mark (simplified crystalline shape) -->
+      <div class="vincor-mark">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M50 8L62 35L92 35L68 55L78 85L50 67L22 85L32 55L8 35L38 35Z" fill="#66001F" opacity="0.9"/>
+        </svg>
+      </div>
+
+      <!-- Dot cluster: people appearing -->
+      <div class="dot-cluster" id="dotCluster"></div>
+
+      <!-- Counter -->
+      <div class="counter-area">
+        <span class="counter-number" id="counter">0</span>
+        <span class="counter-label">new customers</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Dot positions — pre-computed organic cluster layout
+  // Arranged to look like a natural, growing group of people
+  const positions = [
+    { x: 83, y: 83 },
+    { x: 60, y: 95 },
+    { x: 105, y: 72 },
+    { x: 40, y: 75 },
+    { x: 75, y: 55 },
+    { x: 55, y: 65 },
+    { x: 95, y: 95 },
+    { x: 30, y: 92 },
+    { x: 118, y: 88 },
+    { x: 68, y: 42 },
+    { x: 45, y: 50 },
+    { x: 98, y: 52 },
+    { x: 82, y: 105 },
+    { x: 25, y: 65 },
+    { x: 112, y: 60 },
+    { x: 55, y: 35 },
+    { x: 135, y: 78 },
+    { x: 10, y: 80 },
+    { x: 72, y: 25 },
+    { x: 38, y: 108 },
+    { x: 125, y: 95 },
+    { x: 90, y: 35 },
+    { x: 15, y: 55 },
+    { x: 50, y: 115 },
+    { x: 110, y: 42 },
+  ];
+
+  // Varying opacities for depth
+  const opacities = [1, 0.85, 0.7, 0.55, 0.4];
+
+  const cluster = document.getElementById('dotCluster');
+  const counterEl = document.getElementById('counter');
+  let dots = [];
+
+  // Create dot elements
+  positions.forEach((pos, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    dot.style.left = pos.x + 'px';
+    dot.style.top = pos.y + 'px';
+    // Vary sizes slightly for organic feel
+    const size = 10 + Math.random() * 6;
+    dot.style.width = size + 'px';
+    dot.style.height = size + 'px';
+    cluster.appendChild(dot);
+    dots.push(dot);
+  });
+
+  let currentDot = 0;
+  let count = 0;
+
+  function animateDot() {
+    if (currentDot >= dots.length) {
+      // Pause at full, then reset
+      setTimeout(() => {
+        dots.forEach(d => {
+          d.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+          d.style.opacity = '0';
+          d.style.transform = 'scale(0.3)';
+        });
+        counterEl.textContent = '0';
+        currentDot = 0;
+        count = 0;
+        setTimeout(animateDot, 1000);
+      }, 2000);
+      return;
+    }
+
+    const dot = dots[currentDot];
+    const depthIndex = Math.floor(currentDot / 5);
+    const targetOpacity = opacities[Math.min(depthIndex, opacities.length - 1)];
+
+    dot.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+    dot.style.opacity = targetOpacity;
+    dot.style.transform = 'scale(1)';
+
+    count++;
+    counterEl.textContent = count;
+
+    currentDot++;
+
+    // Each dot appears ~200ms after the previous — steady cadence
+    setTimeout(animateDot, 200);
+  }
+
+  // Start after a brief pause
+  setTimeout(animateDot, 600);
+</script>
+
+</body>
+</html>
