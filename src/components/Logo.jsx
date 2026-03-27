@@ -16,7 +16,7 @@ export default function Logo({ size = 'default', variant = 'full', onClick, clas
       <img
         src="/vincor svg.svg"
         alt=""
-        className={cn('shrink-0', variant === 'full' ? 'w-[54px] h-[54px] -m-2.5' : 'w-10 h-10 -m-2')}
+        className="shrink-0 w-[54px] h-[54px] -m-2.5"
       />
       {variant === 'full' && 'Vincor'}
     </div>
