@@ -1023,7 +1023,6 @@ export default function StrategyBuilderPage({ config, onNext }) {
               width: '100vw',
               marginLeft: 'calc(-50vw + 50%)',
               padding: '48px 0 56px',
-              marginBottom: '3rem',
             }}
           >
             <div style={{
