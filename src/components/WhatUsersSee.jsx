@@ -297,16 +297,15 @@ export default function WhatUsersSee() {
       </h3>
 
       <div className="relative">
-        {/* Timeline vertical line (replaces ::before pseudo-element) */}
-        <div className="absolute left-[3px] top-8 bottom-[26px] w-px bg-border-light z-0 max-[860px]:hidden" />
+        {/* Timeline vertical line */}
+        <div className="absolute left-[13px] top-10 bottom-[18px] w-0.5 bg-border z-0 max-[860px]:hidden" />
 
         {/* ═══ INVITE ═══ */}
-        <div className="flex items-start gap-12 mb-12 max-[860px]:flex-col max-[860px]:gap-5">
-          <div className="flex-[0_0_240px] pt-5 relative pl-6 max-[860px]:pl-0 max-[860px]:flex-none">
-            {/* Timeline node dot (replaces ::before pseudo-element) */}
-            <div className="absolute left-0 top-[27px] w-[7px] h-[7px] rounded-full bg-foreground-faint z-[2] max-[860px]:hidden" />
+        <div className="flex items-start gap-12 mb-10 max-[860px]:flex-col max-[860px]:gap-5">
+          <div className="flex-[0_0_240px] pt-5 relative pl-12 max-[860px]:pl-0 max-[860px]:flex-none">
+            {/* Timeline numbered circle */}
+            <div className="absolute left-0 top-5 w-7 h-7 rounded-full bg-brand text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">1</div>
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Invite</div>
-            <div className="text-sm font-normal text-foreground-muted leading-[1.4] mt-1">Engage your users</div>
           </div>
           <div className="flex-1 flex flex-col items-start">
             <div
@@ -348,12 +347,11 @@ export default function WhatUsersSee() {
         </div>
 
         {/* ═══ REFER ═══ */}
-        <div className="flex items-start gap-12 mb-8 max-[860px]:flex-col max-[860px]:gap-5">
-          <div className="flex-[0_0_240px] pt-5 relative pl-6 max-[860px]:pl-0 max-[860px]:flex-none">
-            {/* Timeline node dot */}
-            <div className="absolute left-0 top-[27px] w-[7px] h-[7px] rounded-full bg-foreground-faint z-[2] max-[860px]:hidden" />
+        <div className="flex items-start gap-12 mb-10 max-[860px]:flex-col max-[860px]:gap-5">
+          <div className="flex-[0_0_240px] pt-5 relative pl-12 max-[860px]:pl-0 max-[860px]:flex-none">
+            {/* Timeline numbered circle */}
+            <div className="absolute left-0 top-5 w-7 h-7 rounded-full bg-brand text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">2</div>
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Refer</div>
-            <div className="text-sm font-normal text-foreground-muted leading-[1.4] mt-1">Share with friends</div>
           </div>
           <div className="flex-1 relative min-h-[220px] max-[860px]:justify-start">
             <div className="relative max-w-[700px]">
@@ -384,12 +382,12 @@ export default function WhatUsersSee() {
         </div>
 
         {/* ═══ REFEREE JOURNEY — horizontal pill stepper ═══ */}
-        <div className="relative mb-8">
-          {/* Dashed overlay on timeline segment (replaces ::before and ::after) */}
-          <div className="absolute left-[3px] top-[-8px] bottom-[-8px] w-[3px] bg-gray-50 z-[1] max-[860px]:hidden" />
-          <div className="absolute left-[3px] top-[-8px] bottom-[-8px] border-l border-dashed border-border z-[1] max-[860px]:hidden" />
+        <div className="relative mb-10">
+          {/* Dashed overlay on timeline segment */}
+          <div className="absolute left-[13px] top-[-8px] bottom-[-8px] w-[3px] bg-gray-50 z-[1] max-[860px]:hidden" />
+          <div className="absolute left-[13px] top-[-8px] bottom-[-8px] border-l border-dashed border-border z-[1] max-[860px]:hidden" />
 
-          <div className="inline-flex items-center gap-0 ml-6 py-1.5 px-3.5 bg-surface rounded-[20px] relative z-[2] max-[860px]:ml-0 max-[860px]:flex-wrap max-[860px]:gap-1.5">
+          <div className="inline-flex items-center gap-0 ml-12 py-1.5 px-3.5 bg-surface rounded-[20px] relative z-[2] max-[860px]:ml-0 max-[860px]:flex-wrap max-[860px]:gap-1.5">
             <div className="flex items-center gap-[5px]">
               <div className="w-[5px] h-[5px] rounded-full bg-border shrink-0" />
               <div className="text-xs font-medium text-foreground-faint whitespace-nowrap">Sign Up</div>
@@ -409,11 +407,10 @@ export default function WhatUsersSee() {
 
         {/* ═══ REDEEM — overlapping cards ═══ */}
         <div className="flex items-start gap-12 max-[860px]:flex-col max-[860px]:gap-5">
-          <div className="flex-[0_0_240px] pt-5 relative pl-6 max-[860px]:pl-0 max-[860px]:flex-none">
-            {/* Timeline node dot */}
-            <div className="absolute left-0 top-[27px] w-[7px] h-[7px] rounded-full bg-foreground-faint z-[2] max-[860px]:hidden" />
+          <div className="flex-[0_0_240px] pt-5 relative pl-12 max-[860px]:pl-0 max-[860px]:flex-none">
+            {/* Timeline numbered circle */}
+            <div className="absolute left-0 top-5 w-7 h-7 rounded-full bg-brand text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">3</div>
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Redeem</div>
-            <div className="text-sm font-normal text-foreground-muted leading-[1.4] mt-1">Both sides get rewarded</div>
           </div>
           <div
             className="flex-1 relative min-h-[280px]"
