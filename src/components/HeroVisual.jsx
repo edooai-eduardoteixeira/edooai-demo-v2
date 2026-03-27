@@ -4,33 +4,32 @@ import { cn } from '../lib/utils';
 /*
   HeroVisual — "An agent is acquiring customers"
 
-  A card showing an autonomous agent at work:
-  - Top: agent status indicator (pulsing dot + shimmer bar)
-  - Title: "New Active Customers" — frames the list
-  - Body: customer rows that appear one by one
-  - Bottom: skeleton row that resolves into the next customer
+  - Top: pulsing glow dot + "Agent working" text (agent presence)
+  - Title: "NEW ACTIVE CUSTOMERS" (frames the list)
+  - Body: name + transaction amount rows, growing one by one
+  - Bottom: skeleton row resolving into next customer
 
-  The list grows from 1–2 to 6, pauses, then resets and loops.
+  List grows from 2 to 6, holds, fades, loops.
 */
 
 const CUSTOMERS = [
-  { initial: 'S', name: 'Sarah M.', bg: 'bg-brand' },
-  { initial: 'J', name: 'James K.', bg: 'bg-foreground' },
-  { initial: 'R', name: 'Rachel T.', bg: 'bg-gray-600' },
-  { initial: 'D', name: 'David L.', bg: 'bg-brand' },
-  { initial: 'A', name: 'Ana P.', bg: 'bg-foreground' },
-  { initial: 'M', name: 'Marcus W.', bg: 'bg-gray-600' },
+  { name: 'Sarah M.', amount: '$45.00' },
+  { name: 'James K.', amount: '$120.00' },
+  { name: 'Rachel T.', amount: '$67.50' },
+  { name: 'David L.', amount: '$89.00' },
+  { name: 'Ana P.', amount: '$34.00' },
+  { name: 'Marcus W.', amount: '$156.00' },
 ];
 
-const SKELETON_DURATION = 1200;  // how long skeleton shows before resolving
-const PAUSE_BETWEEN = 400;       // pause after resolve before next skeleton
-const HOLD_AT_END = 2500;        // pause when list is full
-const FADE_OUT = 500;            // fade-out before restart
+const SKELETON_DURATION = 1200;
+const PAUSE_BETWEEN = 400;
+const HOLD_AT_END = 2500;
+const FADE_OUT = 500;
 
 export default function HeroVisual({ className }) {
   const [visibleCount, setVisibleCount] = useState(2);
   const [showSkeleton, setShowSkeleton] = useState(false);
-  const [phase, setPhase] = useState('growing'); // 'growing' | 'holding' | 'resetting'
+  const [phase, setPhase] = useState('growing');
   const timeoutRef = useRef(null);
   const mountedRef = useRef(true);
 
@@ -55,7 +54,6 @@ export default function HeroVisual({ className }) {
       if (!mountedRef.current) return;
 
       if (count >= CUSTOMERS.length) {
-        // List is full — hold, then reset
         setShowSkeleton(false);
         setPhase('holding');
         schedule(() => {
@@ -70,17 +68,14 @@ export default function HeroVisual({ className }) {
         return;
       }
 
-      // Show skeleton
       setShowSkeleton(true);
       schedule(() => {
-        // Resolve skeleton into customer
         setVisibleCount(count + 1);
         setShowSkeleton(false);
         schedule(() => addNext(count + 1), PAUSE_BETWEEN);
       }, SKELETON_DURATION);
     }
 
-    // Start first cycle after initial delay
     schedule(() => addNext(2), 1000);
 
     return () => {
@@ -100,12 +95,15 @@ export default function HeroVisual({ className }) {
           phase === 'resetting' ? 'opacity-0' : 'opacity-100'
         )}
       >
-        {/* Agent status bar */}
+        {/* Agent status */}
         <div className="flex items-center gap-2.5 px-5 pt-5 pb-4">
-          <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
-          <div className="relative h-1.5 w-16 rounded-full bg-gray-100 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 bg-[length:200%_100%] animate-shimmer rounded-full" />
+          <div className="relative flex items-center justify-center w-4 h-4">
+            <div className="absolute w-2 h-2 rounded-full bg-brand" />
+            <div className="absolute w-2 h-2 rounded-full bg-brand animate-[agent-glow_2s_ease-in-out_infinite]" />
           </div>
+          <span className="text-[13px] font-medium text-foreground-faint">
+            Agent working
+          </span>
         </div>
 
         {/* Divider */}
@@ -119,42 +117,26 @@ export default function HeroVisual({ className }) {
         </div>
 
         {/* Customer list */}
-        <div className="px-5 pb-5 flex flex-col gap-1">
-          {visibleCustomers.map((customer, i) => (
+        <div className="px-5 pb-5 flex flex-col gap-0.5">
+          {visibleCustomers.map((customer) => (
             <div
               key={customer.name}
-              className={cn(
-                'flex items-center gap-3 py-2 px-2 rounded-md',
-                'animate-fade-in'
-              )}
+              className="flex items-center justify-between py-2 px-2 rounded-md animate-fade-in"
             >
-              {/* Avatar */}
-              <div
-                className={cn(
-                  'w-7 h-7 rounded-full shrink-0 flex items-center justify-center',
-                  customer.bg
-                )}
-              >
-                <span className="text-[11px] font-semibold text-white leading-none">
-                  {customer.initial}
-                </span>
-              </div>
-
-              {/* Name */}
               <span className="text-[13px] font-medium text-foreground-muted">
                 {customer.name}
+              </span>
+              <span className="text-[13px] text-foreground-faint tabular-nums">
+                {customer.amount}
               </span>
             </div>
           ))}
 
-          {/* Skeleton row — next customer loading */}
+          {/* Skeleton row — next customer incoming */}
           {showSkeleton && (
-            <div className="flex items-center gap-3 py-2 px-2 rounded-md animate-fade-in">
-              {/* Skeleton avatar */}
-              <div className="w-7 h-7 rounded-full shrink-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer" />
-
-              {/* Skeleton name */}
+            <div className="flex items-center justify-between py-2 px-2 rounded-md animate-fade-in">
               <div className="h-3 w-20 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer" />
+              <div className="h-3 w-12 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer" />
             </div>
           )}
         </div>
