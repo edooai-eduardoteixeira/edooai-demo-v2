@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '../lib/utils';
 
-export default function Logo({ size = 'default', variant = 'full', className }) {
+export default function Logo({ size = 'default', variant = 'full', wordmark = 'Vincor AI', fontFamily, className }) {
   return (
     <div
       className={cn(
@@ -9,6 +9,7 @@ export default function Logo({ size = 'default', variant = 'full', className }) 
         size === 'large' ? 'text-2xl' : 'text-lg',
         className
       )}
+      style={fontFamily ? { fontFamily } : undefined}
     >
       <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
         <rect width="28" height="28" rx="6" fill="var(--color-brand)" />
@@ -24,7 +25,7 @@ export default function Logo({ size = 'default', variant = 'full', className }) 
           V
         </text>
       </svg>
-      {variant === 'full' && 'Vincor AI'}
+      {variant === 'full' && wordmark}
     </div>
   );
 }
