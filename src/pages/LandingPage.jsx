@@ -15,12 +15,12 @@ export default function LandingPage({ config, onNext, onHome }) {
 
       {/* Hero */}
       <section className="flex-1 flex items-center">
-        <main className="max-w-[720px] w-full">
+        <main className="max-w-[800px] w-full">
           <h1
             className={cn(
-              'text-[48px] font-bold text-foreground',
-              'leading-[1.08] tracking-[-0.03em]',
-              'mb-[48px]'
+              'font-display text-[56px] font-bold text-brand',
+              'leading-[1.08] tracking-[-0.02em]',
+              'mb-8'
             )}
           >
             {landing.headline.split('customers ').length > 1 ? (
@@ -36,7 +36,7 @@ export default function LandingPage({ config, onNext, onHome }) {
           <p
             className={cn(
               'text-[22px] font-medium text-foreground-muted',
-              'leading-[1.5] mb-[56px]'
+              'leading-[1.5] mb-10'
             )}
           >
             {landing.subheadline.split('. ').length > 1 ? (

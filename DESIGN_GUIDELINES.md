@@ -32,7 +32,8 @@ All new code must use **Tailwind utility classes** — never inline `style={{}}`
 | `text-[32px]` | 32px | Hero stats |
 | `text-4xl` | 36px | Landing hero (mobile) |
 | `fontSize: 40` | 40px | Large input number (budget) — inline style only |
-| `text-[48px]` | 48px | Landing hero (desktop) |
+| `text-[48px]` | 48px | Landing hero (desktop) — Inter |
+| `text-[56px]` | 56px | Landing hero (desktop) — Playfair Display (size-compensated) |
 | `fontSize: 64` | 64px | Hero KPI (strategy page) — inline style only |
 
 ### Font weights
@@ -80,7 +81,9 @@ All colors live in a **warm family**. No cool grays, no blue-tinted neutrals. Th
 2. **Chart lines and data visualization** — the product's intelligence, visualized
 3. **Active/selected states** — toggles on, active nav items, focus indicators
 
-**Brand color never does:**
+**Landing page exception:** The hero headline uses `text-brand` in Playfair Display (`font-display text-[56px]`). The landing IS the brand moment — the headline speaks in the brand voice. This is the only place brand color appears as text.
+
+**Brand color never does (in the product UI):**
 - Text for numbers, headings, labels, or body copy
 - Multiple buttons on the same screen
 - Borders, decorative backgrounds, or large filled areas
