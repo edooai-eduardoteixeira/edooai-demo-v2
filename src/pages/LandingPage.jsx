@@ -7,15 +7,15 @@ export default function LandingPage({ config, onNext, onHome }) {
   const { landing } = config;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col max-w-[1100px] mx-auto w-full px-12">
       {/* Header */}
-      <header className="py-2.5 px-20">
+      <header className="py-2.5">
         <Logo variant="full" onClick={onHome} />
       </header>
 
       {/* Hero */}
-      <section className="flex-1 flex items-center justify-center px-[48px]">
-        <main className="text-center max-w-[960px] w-full">
+      <section className="flex-1 flex items-center justify-center">
+        <main className="text-center max-w-[960px] w-full mx-auto">
           <h1
             className={cn(
               'text-[48px] font-bold text-foreground',
@@ -54,7 +54,7 @@ export default function LandingPage({ config, onNext, onHome }) {
       </section>
 
       {/* Footer */}
-      <footer className="py-[24px] px-[48px] text-center">
+      <footer className="py-6 text-center">
         <p className="text-[15px] font-normal text-foreground-faint leading-[1.5]">
           {landing.missionLine}
         </p>

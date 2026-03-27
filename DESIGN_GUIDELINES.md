@@ -240,10 +240,19 @@ Use Tailwind's spacing scale. Common values:
 
 ## Layout Patterns
 
-### Page container
+### Page container — consistent across ALL pages
 ```
-max-w-[820px] mx-auto px-8 py-12 pb-16
+max-w-[1100px] mx-auto px-12 w-full
 ```
+
+| Token | Value | Rule |
+|---|---|---|
+| Max-width | `max-w-[1100px]` | Same on every page — never varies |
+| Side padding | `px-12` (48px) | Same on every page — header and content share this |
+| Centering | `mx-auto w-full` | Always centered |
+
+**The header sits inside the same max-width container as the content.** This ensures the logo left edge always aligns with the content left edge regardless of screen width. Never position the header at the viewport edge with a different padding.
+
 Mobile: `px-5` at 480px, `px-6` at 768px
 
 ### Full-height page

@@ -683,7 +683,7 @@ against this mapping automatically.`);
 
   return (
     <div className="min-h-screen flex flex-col relative">
-      <header className="absolute top-0 left-0 py-2.5 px-20 z-10">
+      <header className="absolute top-0 left-0 right-0 py-2.5 px-12 z-10 max-w-[1100px] mx-auto w-full">
         <Logo variant="mark" onClick={onHome} />
       </header>
 

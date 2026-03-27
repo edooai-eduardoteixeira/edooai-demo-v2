@@ -318,19 +318,14 @@ export default function StrategyBuilderPage({ config, onNext, onHome }) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       {/* Header — infrastructure, doesn't push content */}
-      <header className="absolute top-0 left-0 py-2.5 px-20 z-10">
+      <header className="absolute top-0 left-0 right-0 py-2.5 px-12 z-10 max-w-[1100px] mx-auto w-full">
         <Logo variant="mark" onClick={onHome} />
       </header>
 
       {/* Main Content */}
       <main
-        style={{
-          flex: 1,
-          padding: '2rem 3rem 0',
-          maxWidth: '1100px',
-          margin: '0 auto',
-          width: '100%',
-        }}
+        className="flex-1 px-12 max-w-[1100px] mx-auto w-full"
+        style={{ paddingTop: '2rem' }}
       >
         {/* ════════════════════════════════════════════
             HEADING — visible from frame 1
@@ -1020,11 +1015,7 @@ export default function StrategyBuilderPage({ config, onNext, onHome }) {
               padding: '48px 0 56px',
             }}
           >
-            <div style={{
-              maxWidth: 1100,
-              margin: '0 auto',
-              padding: '0 3rem',
-            }}>
+            <div className="max-w-[1100px] mx-auto px-12">
               <WhatUsersSee />
 
               {/* CTA — conclusion of What Users See */}
