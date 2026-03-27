@@ -209,6 +209,19 @@ Use Tailwind's spacing scale. Common values:
 
 ---
 
+## Header
+
+**Icon**: 24×24px (uses viewBox scaling from 28×28 SVG)
+**Height**: 44px total (10px vertical padding + 24px icon)
+**Horizontal padding**: 48px (matches main content)
+
+| Page type | Logo variant | Positioning | Behavior |
+|---|---|---|---|
+| **Landing** | `full` (icon + "Vincor AI") | Static (normal flow) | Acts as a section — content starts after it |
+| **Internal** (strategy, connection, dashboard) | `mark` (icon only) | `position: absolute` | Infrastructure — content flows from top independently, header floats in corner |
+
+---
+
 ## Shadows
 
 | Tailwind Class | Use case |

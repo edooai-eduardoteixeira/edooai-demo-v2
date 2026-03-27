@@ -10,7 +10,7 @@ export default function Logo({ size = 'default', variant = 'full', className }) 
         className
       )}
     >
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
         <rect width="28" height="28" rx="6" fill="var(--color-brand)" />
         <text
           x="14"

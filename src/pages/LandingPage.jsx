@@ -9,8 +9,8 @@ export default function LandingPage({ config, onNext }) {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="py-[14px] px-[48px]">
-        <Logo />
+      <header style={{ padding: '10px 48px' }}>
+        <Logo variant="full" />
       </header>
 
       {/* Hero */}

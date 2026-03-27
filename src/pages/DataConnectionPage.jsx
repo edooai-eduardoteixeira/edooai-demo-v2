@@ -681,9 +681,9 @@ against this mapping automatically.`);
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="py-3.5 px-12">
-        <Logo />
+    <div className="min-h-screen flex flex-col relative">
+      <header className="absolute top-0 left-0 z-10" style={{ padding: '10px 48px' }}>
+        <Logo variant="mark" />
       </header>
 
       <div className="flex-1 grid grid-cols-[280px_1fr] min-h-0 max-w-[1100px] mx-auto w-full">

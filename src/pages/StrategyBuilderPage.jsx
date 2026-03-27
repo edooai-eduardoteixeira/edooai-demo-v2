@@ -316,16 +316,19 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
   /* ═══════ RENDER ═══════ */
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      {/* Header — infrastructure, doesn't push content */}
       <header
         style={{
-          padding: '12px 48px',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          padding: '10px 48px',
+          zIndex: 10,
         }}
       >
         <Logo variant="mark" />
       </header>
-
 
       {/* Main Content */}
       <main
