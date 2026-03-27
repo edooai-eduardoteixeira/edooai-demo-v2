@@ -60,7 +60,6 @@
     font-family: 'Inter', sans-serif;
   }
 
-  /* Right side — the network visual */
   .hero-visual {
     flex-shrink: 0;
     width: 380px;
@@ -69,58 +68,23 @@
     position: relative;
   }
 
-  /* SVG lines connecting nodes */
-  .network-lines {
+  .network-svg {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
+    width: 380px;
+    height: 360px;
+    overflow: visible;
   }
 
-  .network-line {
+  .net-line {
     stroke: #E4DDD5;
     stroke-width: 1.5;
     opacity: 0;
-    transition: opacity 0.6s ease-out;
-  }
-  .network-line.visible {
-    opacity: 1;
   }
 
-  /* Node: a person in the network */
-  .node {
-    position: absolute;
-    border-radius: 50%;
+  .net-node {
     opacity: 0;
-    transform: scale(0);
-    transition: opacity 0.5s ease-out, transform 0.5s ease-out, background 0.5s ease-out, border-color 0.4s ease-out, box-shadow 0.4s ease-out;
-  }
-
-  /* Outline = referred but not yet active */
-  .node.pending {
-    opacity: 1;
-    transform: scale(1);
-    background: transparent;
-    border: 2px solid #D1C8BE;
-  }
-
-  /* Solid = active customer */
-  .node.active {
-    opacity: 1;
-    transform: scale(1);
-    background: #66001F;
-    border: 2px solid #66001F;
-    box-shadow: 0 0 0 4px rgba(102, 0, 31, 0.1);
-  }
-
-  /* Seed nodes — the "existing customers" — slightly different */
-  .node.seed {
-    opacity: 1;
-    transform: scale(1);
-    background: #2C2320;
-    border: 2px solid #2C2320;
   }
 </style>
 </head>
@@ -129,157 +93,221 @@
 <div class="hero-layout">
   <div class="hero-text">
     <h1>Turn your best customers into your growth engine.</h1>
-    <p>Stop competing for expensive ads while your most powerful channel is untapped. We operate your referrals end‑to‑end to deliver active customers at a fraction of your CAC.</p>
+    <p>Stop competing for expensive ads while your most powerful channel is untapped. We operate your referrals end-to-end to deliver active customers at a fraction of your CAC.</p>
     <button>Start Now</button>
   </div>
 
-  <div class="hero-visual" id="visual">
-    <svg class="network-lines" id="lines"></svg>
+  <div class="hero-visual">
+    <svg class="network-svg" viewBox="0 0 380 360">
+      <!-- Lines drawn by JS -->
+      <g id="linesGroup"></g>
+      <!-- Nodes drawn by JS -->
+      <g id="nodesGroup"></g>
+    </svg>
   </div>
 </div>
 
 <script>
-  /*
-    The network:
-    - Seed nodes (dark, existing customers) are already present
-    - New nodes appear as outlines (pending referrals), connected to a seed/active node
-    - Outlines fill in with brand color (become active customers)
-    - Those new active nodes then spawn their own referrals
-    - The network grows organically — customers creating customers
-  */
+  var network = [
+    // Seeds — existing customers (dark brown)
+    { id: 0, x: 80,  y: 140, r: 8,   type: 'seed', parent: null },
+    { id: 1, x: 200, y: 100, r: 7,   type: 'seed', parent: null },
+    { id: 2, x: 160, y: 240, r: 7.5, type: 'seed', parent: null },
 
-  const visual = document.getElementById('visual');
-  const linesSvg = document.getElementById('lines');
+    // Wave 1 — referred by seeds
+    { id: 3, x: 40,  y: 70,  r: 6, parent: 0 },
+    { id: 4, x: 135, y: 55,  r: 5.5, parent: 1 },
+    { id: 5, x: 280, y: 80,  r: 6.5, parent: 1 },
+    { id: 6, x: 100, y: 280, r: 6, parent: 2 },
+    { id: 7, x: 240, y: 210, r: 5.5, parent: 2 },
 
-  // Network structure: each node has position, size, and parent (who referred them)
-  // Seeds have no parent. All others grow from existing nodes.
-  const network = [
-    // === SEEDS (existing customers — dark, appear immediately) ===
-    { id: 0, x: 80,  y: 140, size: 16, type: 'seed', parent: null },
-    { id: 1, x: 200, y: 100, size: 14, type: 'seed', parent: null },
-    { id: 2, x: 160, y: 240, size: 15, type: 'seed', parent: null },
+    // Wave 2 — compounding
+    { id: 8,  x: 15,  y: 170, r: 5, parent: 3 },
+    { id: 9,  x: 310, y: 150, r: 6, parent: 5 },
+    { id: 10, x: 55,  y: 320, r: 5.5, parent: 6 },
+    { id: 11, x: 300, y: 265, r: 5, parent: 7 },
+    { id: 12, x: 175, y: 28,  r: 5, parent: 4 },
 
-    // === WAVE 1: referred by seeds ===
-    { id: 3, x: 40,  y: 70,  size: 12, type: 'referred', parent: 0 },
-    { id: 4, x: 135, y: 60,  size: 11, type: 'referred', parent: 1 },
-    { id: 5, x: 280, y: 80,  size: 13, type: 'referred', parent: 1 },
-    { id: 6, x: 100, y: 260, size: 12, type: 'referred', parent: 2 },
-    { id: 7, x: 240, y: 200, size: 11, type: 'referred', parent: 2 },
-
-    // === WAVE 2: referred by wave 1 (compounding) ===
-    { id: 8,  x: 15,  y: 170, size: 10, type: 'referred', parent: 3 },
-    { id: 9,  x: 310, y: 150, size: 12, type: 'referred', parent: 5 },
-    { id: 10, x: 60,  y: 310, size: 11, type: 'referred', parent: 6 },
-    { id: 11, x: 300, y: 260, size: 10, type: 'referred', parent: 7 },
-    { id: 12, x: 180, y: 30,  size: 10, type: 'referred', parent: 4 },
-
-    // === WAVE 3: further compounding ===
-    { id: 13, x: 350, y: 110, size: 10, type: 'referred', parent: 9 },
-    { id: 14, x: 340, y: 220, size: 9,  type: 'referred', parent: 11 },
-    { id: 15, x: 120, y: 330, size: 10, type: 'referred', parent: 10 },
-    { id: 16, x: 250, y: 30,  size: 9,  type: 'referred', parent: 12 },
+    // Wave 3 — further compounding
+    { id: 13, x: 350, y: 110, r: 5, parent: 9 },
+    { id: 14, x: 345, y: 225, r: 4.5, parent: 11 },
+    { id: 15, x: 115, y: 340, r: 5, parent: 10 },
+    { id: 16, x: 248, y: 28,  r: 4.5, parent: 12 },
   ];
 
-  // Create DOM elements for nodes
-  const nodeEls = {};
-  const lineEls = {};
+  var linesGroup = document.getElementById('linesGroup');
+  var nodesGroup = document.getElementById('nodesGroup');
 
-  network.forEach(n => {
-    const el = document.createElement('div');
-    el.className = 'node';
-    el.style.left = (n.x - n.size / 2) + 'px';
-    el.style.top = (n.y - n.size / 2) + 'px';
-    el.style.width = n.size + 'px';
-    el.style.height = n.size + 'px';
-    visual.appendChild(el);
-    nodeEls[n.id] = el;
+  var lineEls = {};
+  var nodeEls = {};
 
-    // Create connecting line to parent
+  // Build SVG elements
+  network.forEach(function(n) {
+    // Line to parent
     if (n.parent !== null) {
-      const parent = network[n.parent];
-      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      line.setAttribute('x1', parent.x);
-      line.setAttribute('y1', parent.y);
+      var p = network[n.parent];
+      var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', p.x);
+      line.setAttribute('y1', p.y);
       line.setAttribute('x2', n.x);
       line.setAttribute('y2', n.y);
-      line.classList.add('network-line');
-      linesSvg.appendChild(line);
+      line.setAttribute('class', 'net-line');
+      linesGroup.appendChild(line);
       lineEls[n.id] = line;
     }
+
+    // Node circle
+    var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', n.x);
+    circle.setAttribute('cy', n.y);
+    circle.setAttribute('r', n.r);
+    circle.setAttribute('class', 'net-node');
+
+    if (n.type === 'seed') {
+      circle.setAttribute('fill', '#2C2320');
+      circle.setAttribute('stroke', 'none');
+    } else {
+      circle.setAttribute('fill', 'transparent');
+      circle.setAttribute('stroke', '#D1C8BE');
+      circle.setAttribute('stroke-width', '2');
+    }
+
+    nodesGroup.appendChild(circle);
+    nodeEls[n.id] = circle;
   });
 
-  // Animation sequence
-  const timeline = [];
-  let time = 0;
-
-  // Step 1: Seeds appear (already active)
-  network.filter(n => n.type === 'seed').forEach((n, i) => {
-    timeline.push({ time: time + i * 200, id: n.id, action: 'seed' });
-  });
-  time += 800;
-
-  // Step 2: Wave 1 — appear as pending (outline), then activate
-  const wave1 = network.filter(n => n.parent !== null && n.parent <= 2);
-  wave1.forEach((n, i) => {
-    timeline.push({ time: time + i * 300, id: n.id, action: 'pending' });
-    timeline.push({ time: time + i * 300 + 600, id: n.id, action: 'activate' });
-  });
-  time += wave1.length * 300 + 800;
-
-  // Step 3: Wave 2 — compounding
-  const wave2 = network.filter(n => [3,4,5,6,7].includes(n.parent));
-  wave2.forEach((n, i) => {
-    timeline.push({ time: time + i * 300, id: n.id, action: 'pending' });
-    timeline.push({ time: time + i * 300 + 600, id: n.id, action: 'activate' });
-  });
-  time += wave2.length * 300 + 800;
-
-  // Step 4: Wave 3 — further compounding
-  const wave3 = network.filter(n => [9,10,11,12].includes(n.parent));
-  wave3.forEach((n, i) => {
-    timeline.push({ time: time + i * 250, id: n.id, action: 'pending' });
-    timeline.push({ time: time + i * 250 + 500, id: n.id, action: 'activate' });
-  });
-  time += wave3.length * 250 + 2000;
-
-  // Reset time
-  const totalDuration = time;
-
-  function runTimeline() {
-    // Reset everything
-    Object.values(nodeEls).forEach(el => {
-      el.className = 'node';
-      el.style.opacity = '0';
-      el.style.transform = 'scale(0)';
-    });
-    Object.values(lineEls).forEach(el => {
-      el.classList.remove('visible');
+  // Animation timeline
+  function animate(el, props, duration) {
+    var start = performance.now();
+    var initial = {};
+    Object.keys(props).forEach(function(k) {
+      initial[k] = parseFloat(el.style[k]) || 0;
     });
 
-    // Schedule each event
-    timeline.forEach(event => {
-      setTimeout(() => {
-        const el = nodeEls[event.id];
-        if (event.action === 'seed') {
-          el.className = 'node seed';
-        } else if (event.action === 'pending') {
-          el.className = 'node pending';
-          // Show connecting line
-          if (lineEls[event.id]) {
-            lineEls[event.id].classList.add('visible');
-          }
-        } else if (event.action === 'activate') {
-          el.className = 'node active';
-        }
-      }, event.time);
+    function step(now) {
+      var t = Math.min((now - start) / duration, 1);
+      // ease-out cubic
+      var ease = 1 - Math.pow(1 - t, 3);
+      Object.keys(props).forEach(function(k) {
+        el.style[k] = initial[k] + (props[k] - initial[k]) * ease;
+      });
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function showNode(id, asSeed) {
+    var el = nodeEls[id];
+    el.style.opacity = 0;
+    el.style.transform = 'scale(0)';
+    el.style.transformOrigin = 'center';
+    el.style.transformBox = 'fill-box';
+
+    // Fade + scale in
+    var startTime = performance.now();
+    function step(now) {
+      var t = Math.min((now - startTime) / 400, 1);
+      var ease = 1 - Math.pow(1 - t, 3);
+      el.style.opacity = ease;
+      // Use SVG transform for scaling
+      var n = network[id];
+      var s = ease;
+      el.setAttribute('transform', 'translate(' + n.x + ',' + n.y + ') scale(' + s + ') translate(' + (-n.x) + ',' + (-n.y) + ')');
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function showLine(id) {
+    var el = lineEls[id];
+    if (!el) return;
+    var startTime = performance.now();
+    function step(now) {
+      var t = Math.min((now - startTime) / 500, 1);
+      el.style.opacity = t;
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function activateNode(id) {
+    var el = nodeEls[id];
+    var n = network[id];
+    // Transition from outline to filled brand
+    var startTime = performance.now();
+    function step(now) {
+      var t = Math.min((now - startTime) / 500, 1);
+      var ease = 1 - Math.pow(1 - t, 3);
+
+      // Interpolate color: transparent -> #66001F
+      var r = Math.round(102 * ease);
+      var g = Math.round(0 * ease);
+      var b = Math.round(31 * ease);
+      el.setAttribute('fill', 'rgb(' + r + ',' + g + ',' + b + ')');
+      el.setAttribute('stroke', 'rgb(' + r + ',' + g + ',' + b + ')');
+
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function runCycle() {
+    // Reset all
+    network.forEach(function(n) {
+      var el = nodeEls[n.id];
+      el.style.opacity = 0;
+      el.setAttribute('transform', '');
+      if (n.type === 'seed') {
+        el.setAttribute('fill', '#2C2320');
+        el.setAttribute('stroke', 'none');
+      } else {
+        el.setAttribute('fill', 'transparent');
+        el.setAttribute('stroke', '#D1C8BE');
+        el.setAttribute('stroke-width', '2');
+      }
+      if (lineEls[n.id]) {
+        lineEls[n.id].style.opacity = 0;
+      }
     });
+
+    var delay = 0;
+
+    // Seeds appear
+    [0, 1, 2].forEach(function(id, i) {
+      setTimeout(function() { showNode(id); }, delay + i * 200);
+    });
+    delay += 800;
+
+    // Wave 1: pending then activate
+    [3, 4, 5, 6, 7].forEach(function(id, i) {
+      var t = delay + i * 300;
+      setTimeout(function() { showLine(id); showNode(id); }, t);
+      setTimeout(function() { activateNode(id); }, t + 600);
+    });
+    delay += 5 * 300 + 800;
+
+    // Wave 2
+    [8, 9, 10, 11, 12].forEach(function(id, i) {
+      var t = delay + i * 300;
+      setTimeout(function() { showLine(id); showNode(id); }, t);
+      setTimeout(function() { activateNode(id); }, t + 600);
+    });
+    delay += 5 * 300 + 800;
+
+    // Wave 3
+    [13, 14, 15, 16].forEach(function(id, i) {
+      var t = delay + i * 250;
+      setTimeout(function() { showLine(id); showNode(id); }, t);
+      setTimeout(function() { activateNode(id); }, t + 500);
+    });
+    delay += 4 * 250 + 2500;
 
     // Loop
-    setTimeout(runTimeline, totalDuration);
+    setTimeout(runCycle, delay);
   }
 
   // Start
-  setTimeout(runTimeline, 400);
+  setTimeout(runCycle, 500);
 </script>
 
 </body>
