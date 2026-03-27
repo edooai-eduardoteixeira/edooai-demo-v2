@@ -60,8 +60,8 @@ function SimpleLineChart({ data, phases }) {
     >
       <defs>
         <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="black" stopOpacity="0.08" />
-          <stop offset="100%" stopColor="black" stopOpacity="0" />
+          <stop offset="0%" stopColor="#78716C" stopOpacity="0.10" />
+          <stop offset="100%" stopColor="#78716C" stopOpacity="0" />
         </linearGradient>
       </defs>
 
@@ -135,18 +135,18 @@ function SimpleLineChart({ data, phases }) {
       ))}
 
       <path d={areaD} fill="url(#areaGradient)" />
-      <path d={pathD} fill="none" className="stroke-foreground" strokeWidth="2.5" strokeLinejoin="round" />
+      <path d={pathD} fill="none" className="stroke-brand" strokeWidth="2.5" strokeLinejoin="round" />
       <circle
         cx={points[points.length - 1].x}
         cy={points[points.length - 1].y}
         r="4"
-        className="fill-foreground"
+        className="fill-brand"
       />
     </svg>
   );
 }
 
-export default function DashboardPage({ config }) {
+export default function DashboardPage({ config, onHome }) {
   const { dashboard30Day } = config;
 
   const handleBookCall = () => {
@@ -156,12 +156,12 @@ export default function DashboardPage({ config }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="px-12 py-3.5">
-        <Logo />
+    <div className="min-h-screen flex flex-col max-w-[1100px] mx-auto w-full px-12">
+      <header className="py-2.5 mb-6">
+        <Logo variant="mark" onClick={onHome} />
       </header>
 
-      <main className="flex-1 p-12 max-w-[900px] mx-auto w-full">
+      <main className="flex-1">
         <h2 className="text-2xl font-bold mb-2">
           Projected 30-Day Results
         </h2>
@@ -212,7 +212,7 @@ export default function DashboardPage({ config }) {
 
         {/* CTA */}
         <div className="text-center pt-4">
-          <CTAButton onClick={handleBookCall}>
+          <CTAButton variant="brand" onClick={handleBookCall}>
             {dashboard30Day.ctaText}
           </CTAButton>
         </div>

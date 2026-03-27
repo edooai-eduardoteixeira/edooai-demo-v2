@@ -31,7 +31,10 @@ All new code must use **Tailwind utility classes** — never inline `style={{}}`
 | `text-[28px]` | 28px | Page h1 |
 | `text-[32px]` | 32px | Hero stats |
 | `text-4xl` | 36px | Landing hero (mobile) |
-| `text-[48px]` | 48px | Landing hero (desktop) |
+| `fontSize: 40` | 40px | Large input number (budget) — inline style only |
+| `text-[48px]` | 48px | Landing hero (desktop) — Inter |
+| `text-[56px]` | 56px | Landing hero (desktop) — Playfair Display (size-compensated) |
+| `fontSize: 64` | 64px | Hero KPI (strategy page) — inline style only |
 
 ### Font weights
 
@@ -62,54 +65,114 @@ text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase
 
 ## Colors
 
-**NEVER use raw hex colors.** Always use Tailwind color classes.
+All colors live in a **warm family**. No cool grays, no blue-tinted neutrals. The entire palette descends from warm cream → warm brown, with Pure Wine (#66001F) as the brand accent.
+
+**NEVER use raw hex colors.** Always use Tailwind color classes or CSS variables.
+
+### Brand color: Pure Wine (#66001F)
+
+| Token | Hex | Tailwind Class | Purpose |
+|---|---|---|---|
+| `--color-brand` | #66001F | `text-brand` / `bg-brand` | Brand accent — see usage rules below |
+| `--color-brand-light` | #F0E8E5 | `bg-brand-light` | Hover/selected backgrounds for brand elements |
+
+**Brand color has exactly 3 jobs in the product UI:**
+1. **Primary CTA buttons** — the one key action per screen
+2. **Chart lines and data visualization** — the product's intelligence, visualized
+3. **Active/selected states** — toggles on, active nav items, focus indicators
+
+**Landing page exception:** The hero headline uses `text-brand` in Playfair Display (`font-display text-[56px]`). The landing IS the brand moment — the headline speaks in the brand voice. This is the only place brand color appears as text.
+
+**Brand color never does (in the product UI):**
+- Text for numbers, headings, labels, or body copy
+- Multiple buttons on the same screen
+- Borders, decorative backgrounds, or large filled areas
+- Compete with semantic colors (success, danger, warning)
+
+**Error vs. brand**: Our danger red (#EF4444) is bright and cool — visually distinct from our warm, dark brand wine. Never use brand color for error or destructive states.
 
 ### Text colors
 
-| Tailwind Class | Purpose |
-|---------------|---------|
-| `text-foreground` | Headings, important text |
-| `text-foreground-muted` | Descriptions, body text |
-| `text-foreground-faint` | Metadata, placeholders, disabled |
-| `text-white` | On dark backgrounds |
-| `text-black` | Maximum contrast |
+| Token | Hex | Tailwind Class | Purpose |
+|---|---|---|---|
+| `--foreground` | #2C2320 | `text-foreground` | Hero numbers, primary data, key content |
+| `--foreground-muted` | #6B5E54 | `text-foreground-muted` | Page headings, body text, descriptions |
+| `--foreground-faint` | #A89E94 | `text-foreground-faint` | Labels, metadata, placeholders, timestamps |
+| — | — | `text-white` | On dark backgrounds (buttons, tooltips) |
 
-### Background colors
+**Typography hierarchy rule**: Hero metrics (the biggest number on the page) get `text-foreground`. Page titles and headings get `text-foreground-muted` — they're structural, not the star. Labels get `text-foreground-faint`.
 
-| Tailwind Class | Purpose |
-|---------------|---------|
-| `bg-white` | Page background |
-| `bg-surface` | Cards, modals, inputs |
-| `bg-accent-subtle` | Subtle section backgrounds |
-| `bg-accent-light` | Hover backgrounds |
-| `bg-accent` | Primary buttons, dark backgrounds |
+### Background and surface colors
+
+| Token | Hex | Tailwind Class | Purpose |
+|---|---|---|---|
+| `--bg` | #FAF7F2 | — (set on body) | Page background — warm cream |
+| `--surface` | #FFFFFF | `bg-surface` | Cards, modals, drawers, inputs — white on cream creates depth |
+| `--accent-subtle` | #F5F1EB | `bg-accent-subtle` | Subtle section backgrounds |
+| `--accent-light` | #EFEBE5 | `bg-accent-light` | Hover backgrounds |
+| `--accent` | #2C2320 | `bg-accent` | Primary buttons, dark backgrounds |
 
 ### Border colors
 
-| Tailwind Class | Purpose |
-|---------------|---------|
-| `border-border` | Standard borders |
-| `border-border-light` | Subtle dividers |
-| `border-gray-300` | Secondary button borders |
+| Token | Hex | Tailwind Class | Purpose |
+|---|---|---|---|
+| `--border` | #E4DDD5 | `border-border` | Standard borders — warm sand |
+| `--border-light` | #EFEBE5 | `border-border-light` | Subtle dividers |
+| — | — | `border-gray-300` | Secondary button borders |
+
+### Interactive text colors
+
+| Type | Tailwind Class | Examples |
+|---|---|---|
+| Brand / primary action | `text-brand` | "Add rule with AI", sparkle actions |
+| Standard text action | `text-gray-600` | "Add step", "Back", "Skip" |
+| Destructive text action | `text-danger` | "Remove", "Disconnect" |
 
 ### Semantic colors
 
-| Tailwind Class | Purpose |
-|---------------|---------|
-| `text-success` / `bg-success` | Success states |
-| `text-danger` / `bg-danger` | Error states |
-| `text-warn` / `bg-warn` | Warning states |
-| `text-green-600` / `bg-green-50` | Connected/active indicators |
+| Token | Hex | Tailwind Class | Purpose |
+|---|---|---|---|
+| `--success` | #059669 | `text-success` / `bg-success` | Success states |
+| `--danger` | #EF4444 | `text-danger` / `bg-danger` | Error states — bright cool red, distinct from brand |
+| `--danger-light` | #FEF2F2 | `bg-danger-light` | Light destructive hover background |
+| `--warn` | #F59E0B | `text-warn` / `bg-warn` | Warning states |
+| — | — | `text-green-600` / `bg-green-50` | Connected/active indicators |
 
 ### Badge color pairs (use EXACT combos)
 
 | State | Classes |
-|-------|---------|
+|---|---|
 | Success / Active | `bg-[#d1fae5] text-[#065f46]` |
 | Warning / Draft | `bg-[#fef3c7] text-[#92400e]` |
 | Error / Failed | `bg-[#fee2e2] text-[#991b1b]` |
-| Info / Sent | `bg-[#dbeafe] text-[#1e40af]` |
 | Neutral / Disabled | `bg-border-light text-foreground-muted` |
+| Brand / AI | `bg-brand-light text-brand` |
+
+### Gray scale (warm sand family)
+
+All grays are warm. No blue or cool undertones.
+
+| Tailwind Class | Hex | Use |
+|---|---|---|
+| `gray-50` | #F7F3ED | Lightest background |
+| `gray-100` | #EFEBE5 | Hover backgrounds, accent-light |
+| `gray-200` | #E4DDD5 | Borders |
+| `gray-300` | #D1C8BE | Secondary button borders, dividers |
+| `gray-400` | #A89E94 | Placeholder text, disabled states |
+| `gray-500` | #7D7368 | Secondary icons |
+| `gray-600` | #6B5E54 | Body text, descriptions |
+| `gray-700` | #4A3F37 | Strong secondary text |
+| `gray-800` | #2C2320 | Primary text, headings |
+| `gray-900` | #1A1512 | Maximum contrast |
+
+### Chart and data visualization
+
+- **Chart lines**: `var(--color-brand)` — brand carries the data story
+- **Area fills**: Warm taupe at low opacity (`#A89E94` at 0.10-0.14) — not colored, not cool gray
+- **Pre-threshold / uncertain data**: Warm taupe `#A89E94` dashed lines
+- **Axis labels**: `var(--text-tertiary)`
+- **Gridlines**: `var(--border-light)`
+- **Tooltips**: `var(--text-primary)` background with white text
 
 ---
 
@@ -131,9 +194,21 @@ Use Tailwind's spacing scale. Common values:
 | `p-10` / `gap-10` | 40px | Section padding |
 | `p-12` / `gap-12` | 48px | Page padding |
 | `p-16` | 64px | Large sections |
-| `p-20` | 80px | Hero spacing |
+| `p-20` | 80px | Landing hero top padding |
 
 **Never** use arbitrary spacing values like `p-[11px]` or `m-[23px]`. Stick to the Tailwind scale.
+
+### Landing page spacing
+
+| Element | Spacing | Tailwind | Rationale |
+|---|---|---|---|
+| Header bottom margin | 24px | `mb-6` | Same as all pages |
+| Hero section top | 80px | `pt-20` | Fixed distance from header — not vertically centered |
+| Headline → subtitle | 32px | `mb-8` | Unified hero message — tight coupling |
+| Subtitle → CTA | 40px | `mb-10` | Visual pause before the action |
+| Content max-width | 800px | `max-w-[800px]` | Readable line lengths at 22px subtitle |
+
+**No forced line breaks** (`<br>`) in hero text. Text flows naturally within the container width. Forced breaks are fragile across screen sizes.
 
 ---
 
@@ -146,6 +221,33 @@ Use Tailwind's spacing scale. Common values:
 | `rounded-lg` | 14px | Panels, list containers |
 | `rounded-xl` | 20px | Modals, prominent cards |
 | `rounded-full` | 9999px | Pill badges, avatars |
+
+---
+
+## Header
+
+**All pages use the same outer container**: `max-w-[1100px] mx-auto w-full px-12`. The header sits inside this container in **normal flow** — it takes its height, content starts after it. No absolute positioning.
+
+| Page type | Logo variant | Behavior |
+|---|---|---|
+| **Landing** | `full` (icon + "Vincor") | Full logo with Playfair Display wordmark |
+| **Internal** (strategy, connection, dashboard) | `mark` (icon only) | Mark only, same size as landing icon |
+
+**Logo always aligns with content** because both share the same container and padding. Never position the header separately from the content container.
+
+**Header bottom margin**: `mb-6` (24px) on all pages — consistent breathing room between logo and first content.
+
+### Sidebar layout (connection page)
+
+The sidebar is a layout variant, not an exception to the design system.
+
+- Sidebar width: **280px** (fixed column in a CSS grid: `grid-cols-[280px_1fr]`)
+- Sidebar sits **inside** the shared `max-w-[1100px] px-12` container
+- Sidebar content aligns with the logo — **no extra left padding** on the sidebar
+- Sidebar has `border-r border-border-light` to separate from main content
+- Active nav items use `border-l-[3px] border-l-brand` + `text-brand`
+- Sidebar is **contextual** (setup wizard), not permanent navigation — stays neutral, not branded
+- Sidebar title uses `text-sm font-medium text-foreground-muted` — orients without competing with main column headings
 
 ---
 
@@ -164,10 +266,19 @@ Use Tailwind's spacing scale. Common values:
 
 ## Layout Patterns
 
-### Page container
+### Page container — consistent across ALL pages
 ```
-max-w-[820px] mx-auto px-8 py-12 pb-16
+max-w-[1100px] mx-auto px-12 w-full
 ```
+
+| Token | Value | Rule |
+|---|---|---|
+| Max-width | `max-w-[1100px]` | Same on every page — never varies |
+| Side padding | `px-12` (48px) | Same on every page — header and content share this |
+| Centering | `mx-auto w-full` | Always centered |
+
+**The header sits inside the same max-width container as the content.** This ensures the logo left edge always aligns with the content left edge regardless of screen width. Never position the header at the viewport edge with a different padding.
+
 Mobile: `px-5` at 480px, `px-6` at 768px
 
 ### Full-height page
@@ -200,15 +311,63 @@ flex flex-wrap gap-5
 
 ## Component Recipes
 
-### Primary Button (use CTAButton component)
+### Button sizes — 3 sizes only
+
+| Size | Padding | Font | Radius | Width | Use |
+|---|---|---|---|---|---|
+| **Large** | `py-3.5 px-8` | 16px (`text-base`) semibold | `rounded-md` | `min-w-[200px]` on page, `w-full` in modals | Page CTAs (brand filled), modal confirms (brand outlined) |
+| **Medium** | `py-2 px-4` | 13px (`text-[13px]`) semibold | `rounded-sm` | `min-w-[120px]` | Section-level actions: "Map Fields", "Generate Script", inline form actions |
+| **Small** | `py-1 px-2.5` | 11px (`text-[11px]`) semibold | `rounded-sm` | Content-width (no minimum) | Utility actions: "Copy", "Reveal", compact triggers |
+
+**Width rules:**
+- Large buttons on a page: `min-w-[200px]` — ensures CTA presence regardless of label length
+- Large buttons inside a modal or card: `w-full` — fills the container
+- Medium buttons: `min-w-[120px]` — prevents tiny pill appearance
+- Small buttons: no minimum — utility actions should be compact
+
+**No in-between sizes.** Every button must be one of these three.
+
+### Large button variants (use CTAButton component)
+
+**Primary** (dark):
 ```
-inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold rounded-md bg-black text-white transition-all duration-200 ease-out
+inline-flex items-center justify-center min-w-[200px] px-8 py-3.5 text-base font-semibold rounded-md bg-accent text-white hover:-translate-y-px hover:shadow-md
 ```
 
-### Secondary Button
+**Brand** (Pure Wine — page CTA, one per screen max):
 ```
-inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold rounded-md bg-white text-black border border-gray-300 transition-all duration-200 ease-out
+inline-flex items-center justify-center min-w-[200px] px-8 py-3.5 text-base font-semibold rounded-md bg-brand text-white hover:-translate-y-px hover:shadow-md
 ```
+
+**Brand outline** (modal confirms — prominent but not filled):
+```
+w-full py-3.5 text-base font-semibold rounded-md bg-surface text-brand border-2 border-brand hover:-translate-y-px hover:shadow-md
+```
+
+**Secondary** (outlined):
+```
+inline-flex items-center justify-center min-w-[200px] px-8 py-3.5 text-base font-semibold rounded-md bg-surface text-foreground border border-border hover:bg-accent-subtle
+```
+
+### Medium button
+```
+inline-flex items-center justify-center min-w-[120px] py-2 px-4 text-[13px] font-semibold rounded-sm bg-surface text-foreground border border-border hover:bg-accent-subtle
+```
+
+### Small button
+```
+inline-flex items-center justify-center py-1 px-2.5 text-[11px] font-semibold rounded-sm bg-surface text-foreground-muted border border-border hover:bg-accent-subtle hover:text-foreground
+```
+
+### Container surfaces (inside drawers/panels)
+
+| Type | Treatment | Padding | Use |
+|---|---|---|---|
+| **User controls** (dropdowns, steppers, selectable cards) | `bg-surface border border-border` | varies by control | Interactive elements the user changes |
+| **Computed context** (eligibility, pacing, summaries) | `bg-accent-subtle rounded-lg` | `py-3 px-4` | System-derived data, should recede |
+| **Floating popovers** (dropdown menus) | `bg-surface border border-border shadow-md` | `py-1` | Temporary overlays |
+
+**Rule**: Computed context recedes (subtle bg, no border). User controls pop (white, bordered). Never invert this.
 
 ### Card
 ```
@@ -225,9 +384,21 @@ w-full px-3.5 py-3 border-[1.5px] border-border rounded-md text-[15px] bg-surfac
 inline-flex items-center px-3 py-1 text-[11px] font-semibold rounded-full whitespace-nowrap
 ```
 
-### Modal
-- Overlay: `fixed inset-0 bg-black/50 flex items-center justify-center animate-fade-in`
-- Box: `max-w-[520px] w-full rounded-xl shadow-xl animate-modal-slide`
+### Modal (use Modal component — `src/components/Modal.jsx`)
+
+Always use the `<Modal>` component. Never build one-off modal markup.
+
+| Element | Spec |
+|---|---|
+| Overlay | `fixed inset-0 bg-black/40 z-[100] animate-fade-in` |
+| Box | `bg-surface rounded-xl shadow-xl animate-modal-slide` |
+| Box width | `max-w-[440px]` default, `max-w-[680px]` wide (pass `wide` prop) |
+| Padding | `pt-10 px-8 pb-6` (generous top for close button, tighter bottom) |
+| Close button | `absolute top-5 right-5 w-8 h-8` |
+| Header | Use `<Modal.Header icon={} title="" subtitle="" />` |
+| Footer | Use `<Modal.Footer securityText="">` wrapping the confirm button |
+| Confirm button | Brand-outlined: `w-full bg-surface text-brand border-2 border-brand` |
+| Dismiss | Click overlay or X button — both call `onClose` |
 
 ### Spinner
 ```
@@ -259,8 +430,10 @@ bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] an
 - Inputs: `focus:border-accent focus:shadow-glow`
 
 ### Active/selected states
-- Nav item: `border-l-[3px] border-l-black bg-accent-light font-semibold`
+- Nav item: `border-l-[3px] border-l-brand text-brand bg-accent-light font-semibold`
 - Tab: `border-b-2 border-b-accent text-foreground font-medium`
+- Toggle on: `bg-brand`
+- Toggle off: `bg-gray-300`
 
 ### Loading states
 - Replace content with spinner (see Spinner recipe above)
@@ -319,10 +492,12 @@ Always pair with `transition-all` or specific properties (`transition-colors`, `
 
 ## Design Philosophy
 
-1. **Spacious over cramped** — use more padding when in doubt
-2. **Color only for semantics** (success, error, warning) — never decorative
-3. **Black (#1a1a1a) as the primary accent** — not blue or purple
-4. **Subtle soft shadows** — never heavy drop shadows
-5. **Every interactive element gets a transition** (duration-200 ease-out)
-6. **Focus states on everything** — never remove outlines without replacing them
-7. **Mobile-first** — design for small screens, enhance for large
+1. **Warm everything** — no cool grays, no blue undertones. The entire palette is warm cream/sand/taupe. Pure Wine (#66001F) is the most saturated member of the same warm family, not a foreign accent.
+2. **Spacious over cramped** — use more padding when in doubt
+3. **Brand color is rare** — Pure Wine has exactly 3 jobs (primary CTA, chart lines, active states). Maximum ~3-5 brand moments per screen. Restraint signals premium.
+4. **Text is never brand-colored** — numbers, headings, body text are always in the warm neutral hierarchy. The brand speaks through UI controls and data visualization, not typography.
+5. **Warm brown-black (#2C2320) as the primary accent** — for buttons, strong text, tooltips
+6. **Subtle soft shadows** — never heavy drop shadows
+7. **Every interactive element gets a transition** (duration-200 ease-out)
+8. **Focus states on everything** — never remove outlines without replacing them
+9. **Mobile-first** — design for small screens, enhance for large

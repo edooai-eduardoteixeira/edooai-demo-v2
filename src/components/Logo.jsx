@@ -1,30 +1,25 @@
 import React from 'react';
 import { cn } from '../lib/utils';
 
-export default function Logo({ size = 'default', className }) {
+export default function Logo({ size = 'default', variant = 'full', onClick, className }) {
   return (
     <div
       className={cn(
-        'flex items-center gap-2 font-bold text-black tracking-tight',
-        size === 'large' ? 'text-2xl' : 'text-lg',
+        'font-bold text-brand tracking-tight cursor-pointer flex items-center',
+        variant === 'full' ? 'font-display text-2xl gap-0.5' : 'text-lg',
+        size === 'large' && 'text-2xl',
         className
       )}
+      onClick={onClick}
     >
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <rect width="28" height="28" rx="6" fill="black" />
-        <text
-          x="14"
-          y="19"
-          textAnchor="middle"
-          fill="white"
-          fontSize="14"
-          fontWeight="700"
-          fontFamily="Inter, sans-serif"
-        >
-          V
-        </text>
-      </svg>
-      Vincor AI
+      <div className="shrink-0 w-8 h-8 overflow-hidden flex items-center justify-center">
+        <img
+          src="/vincor svg.svg"
+          alt=""
+          className="w-[54px] h-[54px] max-w-none"
+        />
+      </div>
+      {variant === 'full' && 'Vincor'}
     </div>
   );
 }

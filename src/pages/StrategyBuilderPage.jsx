@@ -28,8 +28,7 @@ function sparkColor(arr, invertGood = false, startDay = 0) {
   const mid = data[midIdx];
   const end = data[data.length - 1];
   if (mid === 0 && end === 0) return 'var(--text-tertiary)';
-  const improving = invertGood ? (end <= mid) : (end >= mid);
-  return improving ? 'var(--success)' : 'var(--danger)';
+  return 'var(--color-brand)';
 }
 
 /* Returns [{x, y}] for SVG polyline + trailing dot (viewBox 0 0 60 16).
@@ -150,7 +149,7 @@ function getGuidanceMessage(guidanceState, { reachPct }) {
 /* ═════════════════════════════════════════════════════════
    Main Page Component
    ═════════════════════════════════════════════════════════ */
-export default function StrategyBuilderPage({ config, onNext }) {
+export default function StrategyBuilderPage({ config, onNext, onHome }) {
   const {
     strategy,
     budgetSlider,
@@ -317,26 +316,12 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
   /* ═══════ RENDER ═══════ */
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
-      <header
-        style={{
-          padding: '14px 48px',
-        }}
-      >
-        <Logo />
+    <div className="min-h-screen flex flex-col max-w-[1100px] mx-auto w-full px-12">
+      <header className="py-2.5 mb-6">
+        <Logo variant="mark" onClick={onHome} />
       </header>
 
-      {/* Main Content */}
-      <main
-        style={{
-          flex: 1,
-          padding: '2rem 3rem 6rem',
-          maxWidth: '1100px',
-          margin: '0 auto',
-          width: '100%',
-        }}
-      >
+      <main className="flex-1">
         {/* ════════════════════════════════════════════
             HEADING — visible from frame 1
             ════════════════════════════════════════════ */}
@@ -344,7 +329,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
           fontSize: 32,
           fontWeight: 600,
           letterSpacing: '-0.02em',
-          color: 'var(--text-primary)',
+          color: 'var(--text-secondary)',
           marginBottom: 32,
         }}>Your Referral Strategy</h3>
 
@@ -440,10 +425,11 @@ export default function StrategyBuilderPage({ config, onNext }) {
               gridTemplateColumns: '340px 1fr',
             }}>
 
-              {/* ── Budget column ── */}
+              {/* ── Control panel (sandy card) ── */}
               <div style={{
-                padding: '0 32px 0 0',
-                borderRight: '1px solid var(--border-light)',
+                background: 'var(--accent-subtle)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '20px 24px',
                 display: 'flex',
                 flexDirection: 'column',
               }}>
@@ -610,7 +596,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       top: 7,
                       width: `${isRevealed ? sliderPercent : 50}%`,
                       height: 6,
-                      background: isRevealed ? 'var(--accent)' : 'var(--color-gray-300)',
+                      background: isRevealed ? 'var(--color-brand)' : 'var(--color-gray-300)',
                       borderRadius: 3,
                       zIndex: 1,
                       transition: isRevealed ? 'width 0.3s ease' : 'none',
@@ -624,7 +610,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       transform: 'translate(-50%, -50%)',
                       width: 20,
                       height: 20,
-                      background: 'var(--accent)',
+                      background: 'var(--color-brand)',
                       border: '3px solid var(--surface)',
                       borderRadius: '50%',
                       cursor: 'grab',
@@ -653,69 +639,45 @@ export default function StrategyBuilderPage({ config, onNext }) {
                     />
                   </div>
 
-                  {/* Bounds — subtle */}
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    marginTop: 6,
-                    fontSize: 10,
-                    color: 'var(--color-gray-300)',
-                  }}>
-                    <span>${Math.round(budgetSlider.min / 1000)}K</span>
-                    <span>${Math.round(budgetSlider.max / 1000)}K</span>
+                </div>
+
+                <div style={{ height: 20 }} />
+
+                {/* AI insight + rules access */}
+                {!isRevealed ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <SkeletonBar width="100%" height={12} />
+                    <SkeletonBar width="70%" height={12} />
                   </div>
-                </div>
-
-                {/* Strategy context — AI insight + rules access */}
-                <div style={{
-                  marginTop: 24,
-                  background: 'var(--accent-subtle)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '14px 16px',
-                }}>
-                  {!isRevealed ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      <SkeletonBar width="100%" height={12} />
-                      <SkeletonBar width="70%" height={12} />
-                    </div>
-                  ) : (
-                    <>
-                      {/* AI insight */}
+                ) : (
+                  <>
+                    <div style={{
+                      display: 'flex',
+                      gap: 8,
+                      alignItems: 'flex-start',
+                      animation: 'fadeIn 0.3s ease-out',
+                      animationDelay: '400ms',
+                      animationFillMode: 'both',
+                    }}>
+                      <svg style={{ flexShrink: 0, marginTop: 1 }} width="14" height="14" viewBox="0 0 16 16" fill="none">
+                        <path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="var(--text-tertiary)"/>
+                      </svg>
                       <div style={{
-                        display: 'flex',
-                        gap: 8,
-                        alignItems: 'flex-start',
-                        animation: 'fadeIn 0.3s ease-out',
-                        animationDelay: '400ms',
-                        animationFillMode: 'both',
+                        fontSize: 12,
+                        color: 'var(--text-secondary)',
+                        lineHeight: 1.5,
                       }}>
-                        <svg style={{ flexShrink: 0, marginTop: 1 }} width="14" height="14" viewBox="0 0 16 16" fill="none">
-                          <path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="var(--text-tertiary)"/>
-                        </svg>
-                        <div style={{
-                          fontSize: 12.5,
-                          color: 'var(--text-secondary)',
-                          lineHeight: 1.5,
-                          minHeight: 57,
-                        }}>
-                          {guidanceMessage}
-                        </div>
+                        {guidanceMessage}
                       </div>
+                    </div>
 
-                      {/* Divider */}
-                      <div style={{
-                        height: 1,
-                        background: 'var(--border-light)',
-                        margin: '12px 0',
-                      }} />
+                    <div style={{ height: 1, background: 'var(--border)', margin: '14px 0' }} />
 
-                      {/* Rules trigger */}
-                      <button className="inline-flex items-center gap-2 p-0 text-[13px] font-medium text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:text-foreground" onClick={() => setActiveDrawer('index')} style={{ animation: 'fadeIn 0.3s ease-out', animationDelay: '400ms', animationFillMode: 'both' }}>
-                        <GearIcon /> <span>Referral Rules</span> <ChevronRight />
-                      </button>
-                    </>
-                  )}
-                </div>
+                    <button className="inline-flex items-center gap-2 p-0 text-[13px] font-medium text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:text-foreground" onClick={() => setActiveDrawer('index')} style={{ animation: 'fadeIn 0.3s ease-out', animationDelay: '400ms', animationFillMode: 'both' }}>
+                      <GearIcon /> <span>Referral Rules</span> <ChevronRight />
+                    </button>
+                  </>
+                )}
               </div>
 
               {/* ── Results column ── */}
@@ -764,7 +726,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
 
                 {/* KPI grid */}
                 <div style={{
-                  paddingTop: 14,
+                  paddingTop: 20,
                   borderTop: '1px solid var(--border-light)',
                   display: 'grid',
                   gridTemplateColumns: '1fr 1fr',
@@ -886,7 +848,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
                   justifyContent: 'space-between',
                   alignItems: 'baseline',
                 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
                     Daily forecast: new active users
                   </span>
                 </div>
@@ -916,23 +878,23 @@ export default function StrategyBuilderPage({ config, onNext }) {
                       return (
                         <>
                           <defs>
-                            {/* Pre-threshold area fill: slate accent */}
+                            {/* Pre-threshold area fill: warm taupe */}
                             <linearGradient id="areaFillPre" x1="0" y1={chartTop} x2="0" y2={chartBottom} gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="#64748b" stopOpacity="0.12" />
-                              <stop offset="60%" stopColor="#64748b" stopOpacity="0.05" />
-                              <stop offset="100%" stopColor="#64748b" stopOpacity="0" />
+                              <stop offset="0%" stopColor="#A89E94" stopOpacity="0.12" />
+                              <stop offset="60%" stopColor="#A89E94" stopOpacity="0.05" />
+                              <stop offset="100%" stopColor="#A89E94" stopOpacity="0" />
                             </linearGradient>
-                            {/* Post-threshold area fill: dark grey */}
+                            {/* Post-threshold area fill: warm sand */}
                             <linearGradient id="areaFillPost" x1="0" y1={chartTop} x2="0" y2={chartBottom} gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="#1e293b" stopOpacity="0.10" />
-                              <stop offset="60%" stopColor="#1e293b" stopOpacity="0.04" />
-                              <stop offset="100%" stopColor="#1e293b" stopOpacity="0" />
+                              <stop offset="0%" stopColor="#A89E94" stopOpacity="0.14" />
+                              <stop offset="60%" stopColor="#A89E94" stopOpacity="0.05" />
+                              <stop offset="100%" stopColor="#A89E94" stopOpacity="0" />
                             </linearGradient>
-                            {/* Post-threshold stroke gradient */}
+                            {/* Post-threshold stroke gradient: warm taupe → merlot */}
                             <linearGradient id="strokeGrad" x1={threshX} y1="0" x2={chartRight} y2="0" gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="#94a3b8" />
-                              <stop offset="40%" stopColor="#475569" />
-                              <stop offset="100%" stopColor="#1e293b" />
+                              <stop offset="0%" stopColor="#A89E94" />
+                              <stop offset="40%" stopColor="var(--color-brand)" stopOpacity="0.7" />
+                              <stop offset="100%" stopColor="var(--color-brand)" />
                             </linearGradient>
                             <clipPath id="clipPost">
                               <rect x={threshX} y="0" width={chartRight - threshX} height="210" />
@@ -950,8 +912,8 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           <line x1={chartLeft} y1={chartBottom} x2={chartRight} y2={chartBottom} stroke="var(--border-light)" strokeWidth="1" />
 
                           {/* Y-axis: 0 and max */}
-                          <text x="-6" y={chartBottom + 4} fontSize="10" fill="var(--text-tertiary)" textAnchor="end" fontFamily="var(--font-family)">0</text>
-                          <text x="-6" y={chartTop + 14} fontSize="10" fill="var(--text-tertiary)" textAnchor="end" fontFamily="var(--font-family)">{Math.round(maxVal)}</text>
+                          <text x="-6" y={chartBottom + 4} fontSize="11" fill="var(--text-tertiary)" textAnchor="end" fontFamily="var(--font-family)">0</text>
+                          <text x="-6" y={chartTop + 14} fontSize="11" fill="var(--text-tertiary)" textAnchor="end" fontFamily="var(--font-family)">{Math.round(maxVal)}</text>
 
                           {/* X-axis labels */}
                           <text x={chartLeft} y="190" fontSize="11" fill="var(--text-tertiary)" textAnchor="start" fontFamily="var(--font-family)">Day 1</text>
@@ -962,18 +924,18 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           {/* Area fill — post-threshold (dark grey) */}
                           <path d={areaD} fill="url(#areaFillPost)" clipPath="url(#clipPost)" />
 
-                          {/* Pre-threshold curve — dashed, unified slate */}
-                          <path d={pathD} fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="6,4" opacity="0.5" clipPath="url(#clipPre)" />
+                          {/* Pre-threshold curve — dashed, warm taupe */}
+                          <path d={pathD} fill="none" stroke="#A89E94" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="6,4" opacity="0.6" clipPath="url(#clipPre)" />
 
-                          {/* Post-threshold curve — confident dark gradient */}
+                          {/* Post-threshold curve — confident brand gradient */}
                           <path d={pathD} fill="none" stroke="url(#strokeGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#clipPost)" />
 
-                          {/* Threshold dashed line — unified slate */}
-                          <line x1={threshX} y1={chartTop} x2={threshX} y2={chartBottom} stroke="#64748b" strokeWidth="1" strokeDasharray="4,4" opacity="0.6" />
+                          {/* Threshold dashed line — warm taupe */}
+                          <line x1={threshX} y1={chartTop} x2={threshX} y2={chartBottom} stroke="#A89E94" strokeWidth="1" strokeDasharray="4,4" opacity="0.6" />
 
                           {/* Learning phase label — anchored near dashed line */}
-                          <text x={threshX - 8} y={chartTop + 16} fontSize="10" fill="#64748b" fontFamily="var(--font-family)" fontWeight="600" textAnchor="end">Learning phase</text>
-                          <text x={threshX - 8} y={chartTop + 28} fontSize="9" fill="#64748b" fontFamily="var(--font-family)" opacity="0.65" textAnchor="end">AI calibrating signals</text>
+                          <text x={threshX - 8} y={chartTop + 16} fontSize="11" fill="var(--text-tertiary)" fontFamily="var(--font-family)" fontWeight="500" textAnchor="end">Learning phase</text>
+                          <text x={threshX - 8} y={chartTop + 28} fontSize="11" fill="var(--text-tertiary)" fontFamily="var(--font-family)" fontWeight="400" opacity="0.6" textAnchor="end">AI calibrating signals</text>
 
                           {/* Hover overlay */}
                           <rect
@@ -1014,12 +976,12 @@ export default function StrategyBuilderPage({ config, onNext }) {
                           )}
 
                           {/* Endpoint */}
-                          <circle cx={lastPt.x} cy={lastPt.y} r="3.5" fill="var(--text-primary)" />
+                          <circle cx={lastPt.x} cy={lastPt.y} r="3.5" fill="var(--color-brand)" />
                           <text
                             x={lastPt.x - 14}
                             y={Math.max(10, lastPt.y - 10)}
                             fontSize="11"
-                            fill="var(--text-primary)"
+                            fill="var(--color-brand)"
                             fontWeight="600"
                             textAnchor="end"
                             fontFamily="var(--font-family)"
@@ -1046,27 +1008,20 @@ export default function StrategyBuilderPage({ config, onNext }) {
               width: '100vw',
               marginLeft: 'calc(-50vw + 50%)',
               padding: '48px 0 56px',
-              marginBottom: '3rem',
             }}
           >
-            <div style={{
-              maxWidth: 'calc(1100px - 6rem)',
-              margin: '0 auto',
-              padding: '0 3rem',
-            }}>
+            <div className="max-w-[1100px] mx-auto px-12">
               <WhatUsersSee />
+
+              {/* CTA — conclusion of What Users See */}
+              {showCTA && (
+                <div style={{ textAlign: 'center', marginTop: 48, animation: 'fadeIn 0.4s ease forwards' }}>
+                  {approvalScope && <div style={{ fontSize: 14, color: 'var(--text-tertiary)', marginBottom: 16, lineHeight: 1.5 }}>{approvalScope}</div>}
+                  <CTAButton variant="brand" onClick={onNext}>Launch Campaigns</CTAButton>
+                </div>
+              )}
             </div>
           </section>
-        )}
-
-        {/* ════════════════════════════════════════════
-            CTA — Launch Campaigns
-            ════════════════════════════════════════════ */}
-        {showCTA && (
-          <div style={{ textAlign: 'center', marginTop: 32, animation: 'fadeIn 0.4s ease forwards' }}>
-            {approvalScope && <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 32, lineHeight: 1.5 }}>{approvalScope}</div>}
-            <CTAButton onClick={onNext}>Launch Campaigns</CTAButton>
-          </div>
         )}
 
         {/* Strategy Rules Drawer */}

@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Logo from '../components/Logo.jsx';
 import CTAButton from '../components/CTAButton.jsx';
+import Modal from '../components/Modal.jsx';
 import { cn } from '../lib/utils';
 
 // ═══════════════════════════════════════════
@@ -156,7 +157,7 @@ function PlatformSVG({ name, size = 20 }) {
 }
 
 // Main Component
-export default function DataConnectionPage({ config, onNext }) {
+export default function DataConnectionPage({ config, onNext, onHome }) {
   const [activeSetupArea, setActiveSetupArea] = useState('comms');
   const [fulfilledCapabilities, setFulfilledCapabilities] = useState([]);
   const [connectedPlatforms, setConnectedPlatforms] = useState([]);
@@ -454,7 +455,7 @@ against this mapping automatically.`);
               )}
               {!commsExpanded && (
                 <button
-                  className="inline-flex items-center gap-1.5 mt-5 py-3.5 px-8 text-base font-semibold text-black bg-white border border-gray-300 rounded-md cursor-pointer transition-all duration-200 ease-out leading-[1.4] hover:bg-gray-50"
+                  className="inline-flex items-center justify-center gap-1.5 mt-5 min-w-[120px] py-2 px-4 text-[13px] font-semibold text-foreground bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle"
                   onClick={() => setCommsExpanded(true)}
                 >
                   See more options
@@ -554,7 +555,7 @@ against this mapping automatically.`);
                             {meta.displayName}
                             {meta.recommended && <span className="inline-flex items-center ml-2 px-2 py-px text-[11px] font-semibold text-green-600 bg-green-50 rounded-full tracking-[0.01em] align-middle">Recommended</span>}
                           </div>
-                          <div className="text-[12.5px] text-foreground-faint leading-[1.4] mt-0.5">{meta.desc}</div>
+                          <div className="text-xs text-foreground-faint leading-[1.4] mt-0.5">{meta.desc}</div>
                         </div>
                         <svg className="text-gray-300 shrink-0" width="14" height="14" viewBox="0 0 16 16" fill="none">
                           <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -634,7 +635,7 @@ against this mapping automatically.`);
         {scopeLabels.length > 0 && (
           <div className="w-full pl-[30px] text-xs text-foreground-faint leading-[1.4]">
             {directions.map(dir => (
-              <span key={dir} className="inline-flex items-center px-1.5 text-[9px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]">{dir}</span>
+              <span key={dir} className="inline-flex items-center px-1.5 text-[11px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]">{dir}</span>
             ))}
             {scopeLabels.join(' · ')}
           </div>
@@ -681,24 +682,18 @@ against this mapping automatically.`);
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="py-3.5 px-12">
-        <Logo />
+    <div className="min-h-screen flex flex-col max-w-[1100px] mx-auto w-full px-12">
+      <header className="py-2.5 mb-6">
+        <Logo variant="mark" onClick={onHome} />
       </header>
 
-      <div className="flex-1 grid grid-cols-[280px_1fr] min-h-0 max-w-[1100px] mx-auto w-full">
+      <div className="flex-1 grid grid-cols-[280px_1fr] min-h-0">
         {/* Sidebar — scroll-spy nav */}
-        <div className="flex flex-col py-8 pr-5 pb-16 pl-8 overflow-y-auto overflow-x-hidden border-r border-border-light sticky top-0 h-screen self-start">
-          <button className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground-muted cursor-pointer mb-6 transition-colors duration-150 ease-out hover:text-foreground" onClick={() => alert('Navigating back')}>
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M10 4l-4 4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Save & Exit
-          </button>
-          <div style={{ padding: '0 12px 12px', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
+        <div className="flex flex-col py-4 pr-5 pb-16 overflow-y-auto overflow-x-hidden border-r border-border-light sticky top-0 h-screen self-start">
+          <div className="text-sm font-medium text-foreground-muted mb-4">
             Integration Setup
           </div>
-          <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint py-4 px-3 pb-1.5" style={{ marginTop: 0 }}>
+          <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint pt-4 pb-1.5">
             Required
           </div>
           {Object.entries(SETUP_AREAS)
@@ -709,12 +704,12 @@ against this mapping automatically.`);
               return (
                 <div
                   key={id}
-                  className={cn('flex items-center gap-2.5 py-2.5 px-3 rounded-sm cursor-pointer transition-all duration-150 ease-out mb-0.5 border-l-[3px] border-l-transparent hover:bg-gray-50', isActive && 'bg-gray-50 border-l-black')}
+                  className={cn('flex items-center gap-2.5 py-2.5 px-3 rounded-sm cursor-pointer transition-all duration-150 ease-out mb-0.5 border-l-[3px] border-l-transparent hover:bg-gray-50', isActive && 'bg-gray-50 border-l-brand')}
                   onClick={() => sectionRefs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 >
-                  <span className="text-sm font-medium text-foreground-muted">{a.title}</span>
+                  <span className={cn('text-sm font-medium', isActive ? 'text-brand' : 'text-foreground-muted')}>{a.title}</span>
                   {isFulfilled && (
-                    <svg className="ml-auto text-green-500 shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <svg className="ml-auto text-brand shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path
                         d="M3 8.5l3.5 3.5 6.5-7"
                         stroke="currentColor"
@@ -727,7 +722,7 @@ against this mapping automatically.`);
                 </div>
               );
             })}
-          <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint py-4 px-3 pb-1.5">Enhance your program</div>
+          <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint pt-4 pb-1.5">Enhance your program</div>
           {Object.entries(SETUP_AREAS)
             .filter(([_, a]) => !a.required)
             .map(([id, a]) => {
@@ -736,12 +731,12 @@ against this mapping automatically.`);
               return (
                 <div
                   key={id}
-                  className={cn('flex items-center gap-2.5 py-2.5 px-3 rounded-sm cursor-pointer transition-all duration-150 ease-out mb-0.5 border-l-[3px] border-l-transparent hover:bg-gray-50', isActive && 'bg-gray-50 border-l-black')}
+                  className={cn('flex items-center gap-2.5 py-2.5 px-3 rounded-sm cursor-pointer transition-all duration-150 ease-out mb-0.5 border-l-[3px] border-l-transparent hover:bg-gray-50', isActive && 'bg-gray-50 border-l-brand')}
                   onClick={() => sectionRefs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 >
-                  <span className="text-sm font-medium text-foreground-muted">{a.title}</span>
+                  <span className={cn('text-sm font-medium', isActive ? 'text-brand' : 'text-foreground-muted')}>{a.title}</span>
                   {isFulfilled && (
-                    <svg className="ml-auto text-green-500 shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <svg className="ml-auto text-brand shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path
                         d="M3 8.5l3.5 3.5 6.5-7"
                         stroke="currentColor"
@@ -784,7 +779,7 @@ against this mapping automatically.`);
                       </div>
                       <div className="text-base font-semibold text-foreground flex-1 leading-[1.3]">
                         {section.question}
-                        <span className="inline-flex items-center px-1.5 text-[9px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]" style={{ marginLeft: '8px', verticalAlign: 'middle' }}>{getSectionDirection(sectionId)}</span>
+                        <span className="inline-flex items-center px-1.5 text-[11px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]" style={{ marginLeft: '8px', verticalAlign: 'middle' }}>{getSectionDirection(sectionId)}</span>
                       </div>
                       <svg
                         className="shrink-0 text-foreground-faint transition-transform duration-150 ease-out"
@@ -815,7 +810,7 @@ against this mapping automatically.`);
                         </div>
                         <div className="text-base font-semibold text-foreground flex-1 leading-[1.3]">
                           {section.question}
-                          <span className="inline-flex items-center px-1.5 text-[9px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]" style={{ marginLeft: '8px', verticalAlign: 'middle' }}>{getSectionDirection(sectionId)}</span>
+                          <span className="inline-flex items-center px-1.5 text-[11px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]" style={{ marginLeft: '8px', verticalAlign: 'middle' }}>{getSectionDirection(sectionId)}</span>
                         </div>
                         <svg
                           className="shrink-0 text-foreground-faint transition-transform duration-150 ease-out rotate-180"
@@ -839,7 +834,7 @@ against this mapping automatically.`);
                             {!isFulfilled && (
                               <div className="text-[32px] font-semibold text-foreground leading-[1.3] mb-2 tracking-tight">
                                 {section.question}
-                                <span className="inline-flex items-center px-1.5 text-[9px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]" style={{ marginLeft: '12px', verticalAlign: 'middle', fontSize: '10px' }}>{getSectionDirection(sectionId)}</span>
+                                <span className="inline-flex items-center px-1.5 text-[11px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]" style={{ marginLeft: '12px', verticalAlign: 'middle' }}>{getSectionDirection(sectionId)}</span>
                               </div>
                             )}
                             {!hasConnections && (
@@ -859,9 +854,9 @@ against this mapping automatically.`);
           {/* Finish Setup Button */}
           <div style={{ marginTop: '32px' }}>
             <CTAButton
+              variant="brand"
               onClick={() => onNext?.()}
               disabled={!allRequiredFulfilled}
-              style={{ width: '100%' }}
             >
               Finish Setup
             </CTAButton>
@@ -871,20 +866,11 @@ against this mapping automatically.`);
 
       {/* Modal */}
       {modal && (
-        <div className="fixed inset-0 bg-black/25 z-[100] flex items-center justify-center animate-fade-in" onClick={closeModal}>
-          <div
-            className="bg-surface rounded-lg p-8 max-w-[440px] w-[calc(100%-32px)] shadow-lg animate-modal-slide relative ${['webhooks', 'api', 'filedrop'].includes(modal.type) ? 'max-w-[680px]' : ''}"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-sm cursor-pointer text-foreground-faint transition-all duration-150 ease-out hover:bg-accent-subtle hover:text-foreground" onClick={closeModal}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M11 3L3 11M3 3L11 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </div>
+        <Modal onClose={closeModal} wide={['webhooks', 'api', 'filedrop'].includes(modal.type)}>
 
             {modal.type === 'validating' && (
               <div style={{ textAlign: 'center' }}>
-                <div className="w-8 h-8 border-[3px] border-gray-200 border-t-gray-700 rounded-full animate-spin mx-auto mb-4" />
+                <div className="w-8 h-8 border-[3px] border-border border-t-foreground rounded-full animate-spin mx-auto mb-4" />
                 <div className="text-lg font-semibold text-foreground mb-2">Verifying permissions...</div>
                 <div className="text-sm text-foreground-muted">Checking scopes for {modal.platform}</div>
               </div>
@@ -892,17 +878,11 @@ against this mapping automatically.`);
 
             {modal.type === 'preauth' && (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-                  <PlatformSVG name={modal.platform} size={32} />
-                  <div>
-                    <div className="text-lg font-semibold text-foreground mb-4" style={{ marginBottom: 0 }}>
-                      Connecting {modal.platform}
-                    </div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-                      Permissions required for this integration:
-                    </div>
-                  </div>
-                </div>
+                <Modal.Header
+                  icon={<PlatformSVG name={modal.platform} size={32} />}
+                  title={`Connecting ${modal.platform}`}
+                  subtitle="Permissions required for this integration:"
+                />
                 <ul className="list-none mb-5 [&_li]:flex [&_li]:items-start [&_li]:gap-2 [&_li]:py-2 [&_li]:text-sm [&_li]:text-foreground-muted [&_li]:leading-[1.4] [&_li+li]:border-t [&_li+li]:border-border-light">
                   {INTEGRATION_CATALOG[modal.platform].capabilities.map(cap => {
                     const desc = INTEGRATION_CATALOG[modal.platform].scopeDescriptions[cap] || cap;
@@ -914,41 +894,31 @@ against this mapping automatically.`);
                             <path d="M2 5L4 7L8 3" stroke="var(--color-green-600)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         </div>
-                        <span><span className="inline-flex items-center px-1.5 text-[9px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]">{dir}</span> {desc}</span>
+                        <span><span className="inline-flex items-center px-1.5 text-[11px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]">{dir}</span> {desc}</span>
                       </li>
                     );
                   })}
                 </ul>
-                <button className="w-full py-3 text-base font-semibold rounded-md bg-black text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-gray-800" onClick={() => handlePlatformConnect(modal.platform)}>
-                  Connect {modal.platform}
-                </button>
-                <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                    <path d="M8 1a4 4 0 00-4 4v3H3a1 1 0 00-1 1v5a1 1 0 001 1h10a1 1 0 001-1V9a1 1 0 00-1-1h-1V5a4 4 0 00-4-4zm-2 4a2 2 0 114 0v3H6V5z" fill="var(--text-tertiary)" />
-                  </svg>
-                  <span>Encrypted and secure. Vincor only requests the minimum data required to run your referral strategy.</span>
-                </div>
+                <Modal.Footer securityText="Encrypted and secure. Vincor only requests the minimum data required to run your referral strategy.">
+                  <button className="w-full py-3.5 text-base font-semibold rounded-md bg-surface text-brand border-2 border-brand cursor-pointer transition-all duration-200 ease-out hover:-translate-y-px hover:shadow-md" onClick={() => handlePlatformConnect(modal.platform)}>
+                    Connect {modal.platform}
+                  </button>
+                </Modal.Footer>
               </>
             )}
 
             {modal.type === 'webhooks' && (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-                  <PlatformSVG name={modal.platform} size={32} />
-                  <div>
-                    <div className="text-lg font-semibold text-foreground mb-4" style={{ marginBottom: 0 }}>
-                      Configure Webhooks
-                    </div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-                      Point your system to this secure endpoint to stream real-time events.
-                    </div>
-                  </div>
-                </div>
+                <Modal.Header
+                  icon={<PlatformSVG name={modal.platform} size={32} />}
+                  title="Configure Webhooks"
+                  subtitle="Point your system to this secure endpoint to stream real-time events."
+                />
                 <div style={{ marginBottom: '16px' }}>
                   <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-2">Webhook URL</div>
                   <div className="flex items-center gap-2 bg-gray-50 border border-border rounded-sm py-2.5 px-3">
                     <code className="flex-1 text-[13px] text-foreground font-mono break-all leading-[1.4]">https://api.vincor.ai/v1/webhooks/tx_9982x...</code>
-                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-white border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-100 hover:text-foreground" onClick={(e) => handleCopy('https://api.vincor.ai/v1/webhooks/tx_9982x...', e)}>Copy Webhook URL</button>
+                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:text-foreground" onClick={(e) => handleCopy('https://api.vincor.ai/v1/webhooks/tx_9982x...', e)}>Copy Webhook URL</button>
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
@@ -987,53 +957,43 @@ against this mapping automatically.`);
                   </div>
                   <div className="text-xs text-foreground-faint mb-3 leading-[1.4]">Paste your system's standard webhook payload to automatically map the fields.</div>
                   <textarea
-                    className="w-full min-h-[80px] py-2.5 px-3 text-[13px] font-mono text-foreground bg-gray-50 border border-border rounded-sm resize-y leading-normal transition-colors duration-150 ease-out focus:outline-none focus:border-gray-400 placeholder:text-foreground-faint placeholder:font-sans placeholder:not-italic placeholder:text-[12.5px]"
+                    className="w-full min-h-[80px] py-2.5 px-3 text-[13px] font-mono text-foreground bg-gray-50 border border-border rounded-sm resize-y leading-normal transition-colors duration-150 ease-out focus:outline-none focus:border-gray-400 placeholder:text-foreground-faint placeholder:font-sans placeholder:not-italic placeholder:text-xs"
                     placeholder='{"event":"charge.succeeded","data":{"id":"ch_1N","amount":4999,"currency":"usd","customer":"cus_9s6"}}'
                     value={agenticInput}
                     onChange={e => setAgenticInput(e.target.value)}
                   />
-                  <button className="inline-flex items-center gap-1.5 mt-2.5 py-2 px-4 text-[13px] font-semibold text-black bg-white border border-gray-300 rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-50 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateWebhookMapping}>
+                  <button className="inline-flex items-center justify-center gap-1.5 mt-2.5 min-w-[120px] py-2 px-4 text-[13px] font-semibold text-foreground bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateWebhookMapping}>
                     Map Fields
                   </button>
-                  {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-[#e2e8f0] bg-[#1e293b] rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
+                  {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-gray-100 bg-gray-900 rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
                 </div>
-                <button className="w-full py-3 text-base font-semibold rounded-md bg-black text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-gray-800" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
-                  Mark as Configured
-                </button>
-                <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                    <path d="M8 1a4 4 0 00-4 4v3H3a1 1 0 00-1 1v5a1 1 0 001 1h10a1 1 0 001-1V9a1 1 0 00-1-1h-1V5a4 4 0 00-4-4zm-2 4a2 2 0 114 0v3H6V5z" fill="var(--text-tertiary)" />
-                  </svg>
-                  <span>Encrypted and secure. Share this endpoint with your engineering team.</span>
-                </div>
+                <Modal.Footer securityText="Encrypted and secure. Share this endpoint with your engineering team.">
+                  <button className="w-full py-3.5 text-base font-semibold rounded-md bg-surface text-brand border-2 border-brand cursor-pointer transition-all duration-200 ease-out hover:-translate-y-px hover:shadow-md" onClick={() => handlePlatformConnect(modal.platform)}>
+                    Mark as Configured
+                  </button>
+                </Modal.Footer>
               </>
             )}
 
             {modal.type === 'api' && (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-                  <PlatformSVG name={modal.platform} size={32} />
-                  <div>
-                    <div className="text-lg font-semibold text-foreground mb-4" style={{ marginBottom: 0 }}>
-                      Developer API Keys
-                    </div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-                      Store this key securely. Do not expose it in client-side code.
-                    </div>
-                  </div>
-                </div>
+                <Modal.Header
+                  icon={<PlatformSVG name={modal.platform} size={32} />}
+                  title="Developer API Keys"
+                  subtitle="Store this key securely. Do not expose it in client-side code."
+                />
                 <div style={{ marginBottom: '16px' }}>
                   <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-2">Secret Key</div>
                   <div className="flex items-center gap-2 bg-gray-50 border border-border rounded-sm py-2.5 px-3">
                     <code className="flex-1 text-[13px] text-foreground font-mono break-all leading-[1.4]">vincor_live_*******************</code>
-                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-white border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-100 hover:text-foreground" onClick={(e) => handleCopy('vincor_live_sk_7f8a3b2c1d9e4f6a', e)}>Reveal & Copy Key</button>
+                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:text-foreground" onClick={(e) => handleCopy('vincor_live_sk_7f8a3b2c1d9e4f6a', e)}>Reveal & Copy Key</button>
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
                   <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-2">API Endpoint</div>
                   <div className="flex items-center gap-2 bg-gray-50 border border-border rounded-sm py-2.5 px-3">
                     <code className="flex-1 text-[13px] text-foreground font-mono break-all leading-[1.4]">POST https://api.vincor.ai/v1/transactions</code>
-                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-white border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-100 hover:text-foreground" onClick={(e) => handleCopy('POST https://api.vincor.ai/v1/transactions', e)}>Copy</button>
+                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:text-foreground" onClick={(e) => handleCopy('POST https://api.vincor.ai/v1/transactions', e)}>Copy</button>
                   </div>
                 </div>
                 <hr className="border-0 border-t border-border my-5" />
@@ -1043,46 +1003,36 @@ against this mapping automatically.`);
                   </div>
                   <div className="text-xs text-foreground-faint mb-3 leading-[1.4]">Paste a sample row from your database to instantly generate a ready-to-run integration script.</div>
                   <textarea
-                    className="w-full min-h-[80px] py-2.5 px-3 text-[13px] font-mono text-foreground bg-gray-50 border border-border rounded-sm resize-y leading-normal transition-colors duration-150 ease-out focus:outline-none focus:border-gray-400 placeholder:text-foreground-faint placeholder:font-sans placeholder:not-italic placeholder:text-[12.5px]"
+                    className="w-full min-h-[80px] py-2.5 px-3 text-[13px] font-mono text-foreground bg-gray-50 border border-border rounded-sm resize-y leading-normal transition-colors duration-150 ease-out focus:outline-none focus:border-gray-400 placeholder:text-foreground-faint placeholder:font-sans placeholder:not-italic placeholder:text-xs"
                     placeholder='{"user_account_id":"usr_482","usd_amount":49.99,"event_type":"purchase","created_at":"2026-03-15T14:30:00Z"}'
                     value={agenticInput}
                     onChange={e => setAgenticInput(e.target.value)}
                   />
-                  <button className="inline-flex items-center gap-1.5 mt-2.5 py-2 px-4 text-[13px] font-semibold text-black bg-white border border-gray-300 rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-50 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateAPIScript}>
+                  <button className="inline-flex items-center justify-center gap-1.5 mt-2.5 min-w-[120px] py-2 px-4 text-[13px] font-semibold text-foreground bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateAPIScript}>
                     Generate Script
                   </button>
-                  {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-[#e2e8f0] bg-[#1e293b] rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
+                  {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-gray-100 bg-gray-900 rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
                 </div>
-                <button className="w-full py-3 text-base font-semibold rounded-md bg-black text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-gray-800" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
-                  Mark as Configured
-                </button>
-                <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                    <path d="M8 1a4 4 0 00-4 4v3H3a1 1 0 00-1 1v5a1 1 0 001 1h10a1 1 0 001-1V9a1 1 0 00-1-1h-1V5a4 4 0 00-4-4zm-2 4a2 2 0 114 0v3H6V5z" fill="var(--text-tertiary)" />
-                  </svg>
-                  <span>Encrypted and secure. Share these credentials with your engineering team.</span>
-                </div>
+                <Modal.Footer securityText="Encrypted and secure. Share these credentials with your engineering team.">
+                  <button className="w-full py-3.5 text-base font-semibold rounded-md bg-surface text-brand border-2 border-brand cursor-pointer transition-all duration-200 ease-out hover:-translate-y-px hover:shadow-md" onClick={() => handlePlatformConnect(modal.platform)}>
+                    Mark as Configured
+                  </button>
+                </Modal.Footer>
               </>
             )}
 
             {modal.type === 'filedrop' && (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-                  <PlatformSVG name={modal.platform} size={32} />
-                  <div>
-                    <div className="text-lg font-semibold text-foreground mb-4" style={{ marginBottom: 0 }}>
-                      Secure Bucket Provisioned
-                    </div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-                      Vincor has provisioned an isolated AWS S3 bucket for your daily batch uploads.
-                    </div>
-                  </div>
-                </div>
+                <Modal.Header
+                  icon={<PlatformSVG name={modal.platform} size={32} />}
+                  title="Secure Bucket Provisioned"
+                  subtitle="Vincor has provisioned an isolated AWS S3 bucket for your daily batch uploads."
+                />
                 <div style={{ marginBottom: '16px' }}>
                   <div className="text-[11px] font-semibold tracking-[0.05em] uppercase text-foreground-faint mb-2">S3 Bucket ARN</div>
                   <div className="flex items-center gap-2 bg-gray-50 border border-border rounded-sm py-2.5 px-3">
                     <code className="flex-1 text-[13px] text-foreground font-mono break-all leading-[1.4]">arn:aws:s3:::vincor-client-drop-8821</code>
-                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-white border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-100 hover:text-foreground" onClick={(e) => handleCopy('arn:aws:s3:::vincor-client-drop-8821', e)}>Copy Credentials</button>
+                    <button className="shrink-0 py-1 px-2.5 text-[11px] font-semibold text-foreground-muted bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:text-foreground" onClick={(e) => handleCopy('arn:aws:s3:::vincor-client-drop-8821', e)}>Copy Credentials</button>
                   </div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
@@ -1121,31 +1071,26 @@ against this mapping automatically.`);
                   </div>
                   <div className="text-xs text-foreground-faint mb-3 leading-[1.4]">Paste a few rows from your export to auto-detect your schema and map columns.</div>
                   <textarea
-                    className="w-full min-h-[80px] py-2.5 px-3 text-[13px] font-mono text-foreground bg-gray-50 border border-border rounded-sm resize-y leading-normal transition-colors duration-150 ease-out focus:outline-none focus:border-gray-400 placeholder:text-foreground-faint placeholder:font-sans placeholder:not-italic placeholder:text-[12.5px]"
+                    className="w-full min-h-[80px] py-2.5 px-3 text-[13px] font-mono text-foreground bg-gray-50 border border-border rounded-sm resize-y leading-normal transition-colors duration-150 ease-out focus:outline-none focus:border-gray-400 placeholder:text-foreground-faint placeholder:font-sans placeholder:not-italic placeholder:text-xs"
                     placeholder='user_id,order_id,amount,currency,created_at
 usr_482,ord_1001,49.99,USD,2026-03-15
 usr_117,ord_1002,129.00,USD,2026-03-15'
                     value={agenticInput}
                     onChange={e => setAgenticInput(e.target.value)}
                   />
-                  <button className="inline-flex items-center gap-1.5 mt-2.5 py-2 px-4 text-[13px] font-semibold text-black bg-white border border-gray-300 rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-gray-50 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateFileMapping}>
+                  <button className="inline-flex items-center justify-center gap-1.5 mt-2.5 min-w-[120px] py-2 px-4 text-[13px] font-semibold text-foreground bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed" onClick={handleGenerateFileMapping}>
                     Detect Schema
                   </button>
-                  {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-[#e2e8f0] bg-[#1e293b] rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
+                  {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-gray-100 bg-gray-900 rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
                 </div>
-                <button className="w-full py-3 text-base font-semibold rounded-md bg-black text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:bg-gray-800" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
-                  Mark as Configured
-                </button>
-                <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                    <path d="M8 1a4 4 0 00-4 4v3H3a1 1 0 00-1 1v5a1 1 0 001 1h10a1 1 0 001-1V9a1 1 0 00-1-1h-1V5a4 4 0 00-4-4zm-2 4a2 2 0 114 0v3H6V5z" fill="var(--text-tertiary)" />
-                  </svg>
-                  <span>Encrypted and secure. Share bucket details with your data or infrastructure team.</span>
-                </div>
+                <Modal.Footer securityText="Encrypted and secure. Share bucket details with your data or infrastructure team.">
+                  <button className="w-full py-3.5 text-base font-semibold rounded-md bg-surface text-brand border-2 border-brand cursor-pointer transition-all duration-200 ease-out hover:-translate-y-px hover:shadow-md" onClick={() => handlePlatformConnect(modal.platform)}>
+                    Mark as Configured
+                  </button>
+                </Modal.Footer>
               </>
             )}
-          </div>
-        </div>
+        </Modal>
       )}
       {/* Dev Toolbar — jumpToState presets */}
       {process.env.NODE_ENV === 'development' && (

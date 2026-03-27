@@ -292,7 +292,7 @@ export default function WhatUsersSee() {
 
   return (
     <>
-      <h3 className="text-[32px] font-semibold tracking-[-0.02em] text-foreground mb-10 max-[860px]:text-[22px] max-[860px]:mb-8">
+      <h3 className="text-[32px] font-semibold tracking-[-0.02em] text-foreground-muted mb-10 max-[860px]:text-[22px] max-[860px]:mb-8">
         What Users See
       </h3>
 
@@ -401,8 +401,8 @@ export default function WhatUsersSee() {
             </div>
             <div className="w-5 h-px bg-border shrink-0 mx-1.5" />
             <div className="flex items-center gap-[5px]">
-              <div className="w-[5px] h-[5px] rounded-full bg-green-500 shrink-0 shadow-[0_0_0_2px_rgba(34,197,94,0.15)]" />
-              <div className="text-xs font-semibold text-green-600 whitespace-nowrap">1st Transaction</div>
+              <div className="w-[5px] h-[5px] rounded-full bg-brand shrink-0 shadow-[0_0_0_2px_rgba(107,29,42,0.15)]" />
+              <div className="text-xs font-semibold text-brand whitespace-nowrap">1st Transaction</div>
             </div>
           </div>
         </div>

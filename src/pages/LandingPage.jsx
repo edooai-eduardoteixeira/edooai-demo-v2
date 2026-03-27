@@ -3,58 +3,44 @@ import { cn } from '../lib/utils';
 import Logo from '../components/Logo.jsx';
 import CTAButton from '../components/CTAButton.jsx';
 
-export default function LandingPage({ config, onNext }) {
+export default function LandingPage({ config, onNext, onHome }) {
   const { landing } = config;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col max-w-[1100px] mx-auto w-full px-12">
       {/* Header */}
-      <header className="py-[14px] px-[48px]">
-        <Logo />
+      <header className="py-2.5 mb-6">
+        <Logo variant="full" onClick={onHome} />
       </header>
 
       {/* Hero */}
-      <section className="flex-1 flex items-center justify-center px-[48px]">
-        <main className="text-center max-w-[960px] w-full">
+      <section className="pt-20">
+        <main className="max-w-[800px] w-full">
           <h1
             className={cn(
-              'text-[48px] font-bold text-foreground',
-              'leading-[1.08] tracking-[-0.03em]',
-              'max-w-[792px] mx-auto mb-[48px]'
+              'font-display text-[56px] font-bold text-brand',
+              'leading-[1.08] tracking-[-0.02em]',
+              'mb-8'
             )}
           >
-            {landing.headline.split('customers ').length > 1 ? (
-              <>
-                {landing.headline.split('customers ')[0]}customers
-                <br className="br-desktop" />{' '}
-                {landing.headline.split('customers ')[1]}
-              </>
-            ) : (
-              landing.headline
-            )}
+            {landing.headline}
           </h1>
           <p
             className={cn(
               'text-[22px] font-medium text-foreground-muted',
-              'leading-[1.5] mb-[56px]'
+              'leading-[1.5] mb-10'
             )}
           >
-            {landing.subheadline.split('. ').length > 1 ? (
-              <>
-                {landing.subheadline.split('. ')[0]}.
-                <br className="br-desktop-wide" />{' '}
-                {landing.subheadline.split('. ').slice(1).join('. ')}
-              </>
-            ) : (
-              landing.subheadline
-            )}
+            {landing.subheadline}
           </p>
-          <CTAButton onClick={onNext}>{landing.ctaText}</CTAButton>
+          <CTAButton variant="brand" onClick={onNext}>{landing.ctaText}</CTAButton>
         </main>
       </section>
 
+      <div className="flex-1" />
+
       {/* Footer */}
-      <footer className="py-[24px] px-[48px] text-center">
+      <footer className="py-6">
         <p className="text-[15px] font-normal text-foreground-faint leading-[1.5]">
           {landing.missionLine}
         </p>
