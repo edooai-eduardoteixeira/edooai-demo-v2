@@ -212,7 +212,7 @@ export default function DashboardPage({ config, onHome }) {
 
         {/* CTA */}
         <div className="text-center pt-4">
-          <CTAButton onClick={handleBookCall}>
+          <CTAButton variant="brand" onClick={handleBookCall}>
             {dashboard30Day.ctaText}
           </CTAButton>
         </div>

@@ -280,7 +280,7 @@ flex flex-wrap gap-5
 
 | Size | Padding | Font | Radius | Width | Use |
 |---|---|---|---|---|---|
-| **Large** | `py-3.5 px-8` | 16px (`text-base`) semibold | `rounded-md` | `min-w-[200px]` on page, `w-full` in modals/cards | Page-level CTAs: "Launch Campaigns", "Connect to Data", landing CTA |
+| **Large** | `py-3.5 px-8` | 16px (`text-base`) semibold | `rounded-md` | `min-w-[200px]` on page, `w-full` in modals | Page CTAs (brand filled), modal confirms (brand outlined) |
 | **Medium** | `py-2 px-4` | 13px (`text-[13px]`) semibold | `rounded-sm` | `min-w-[120px]` | Section-level actions: "Map Fields", "Generate Script", inline form actions |
 | **Small** | `py-1 px-2.5` | 11px (`text-[11px]`) semibold | `rounded-sm` | Content-width (no minimum) | Utility actions: "Copy", "Reveal", compact triggers |
 
@@ -299,9 +299,14 @@ flex flex-wrap gap-5
 inline-flex items-center justify-center min-w-[200px] px-8 py-3.5 text-base font-semibold rounded-md bg-accent text-white hover:-translate-y-px hover:shadow-md
 ```
 
-**Brand** (Pure Wine — one per screen max):
+**Brand** (Pure Wine — page CTA, one per screen max):
 ```
 inline-flex items-center justify-center min-w-[200px] px-8 py-3.5 text-base font-semibold rounded-md bg-brand text-white hover:-translate-y-px hover:shadow-md
+```
+
+**Brand outline** (modal confirms — prominent but not filled):
+```
+w-full py-3.5 text-base font-semibold rounded-md bg-surface text-brand border-2 border-brand hover:-translate-y-px hover:shadow-md
 ```
 
 **Secondary** (outlined):

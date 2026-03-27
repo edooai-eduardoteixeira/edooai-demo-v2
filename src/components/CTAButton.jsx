@@ -9,6 +9,7 @@ const buttonVariants = cva(
       variant: {
         primary: 'bg-accent text-white hover:-translate-y-px hover:shadow-md disabled:bg-gray-300 disabled:opacity-60 disabled:cursor-not-allowed',
         brand: 'bg-brand text-white hover:-translate-y-px hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+        'brand-outline': 'bg-surface text-brand border-2 border-brand hover:-translate-y-px hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
         secondary: 'bg-surface text-foreground border border-border hover:bg-accent-subtle',
       },
     },

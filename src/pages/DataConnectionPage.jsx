@@ -454,7 +454,7 @@ against this mapping automatically.`);
               )}
               {!commsExpanded && (
                 <button
-                  className="inline-flex items-center justify-center gap-1.5 mt-5 min-w-[200px] py-3.5 px-8 text-base font-semibold text-foreground bg-surface border border-border rounded-md cursor-pointer transition-all duration-200 ease-out leading-[1.4] hover:bg-accent-subtle"
+                  className="inline-flex items-center justify-center gap-1.5 mt-5 min-w-[120px] py-2 px-4 text-[13px] font-semibold text-foreground bg-surface border border-border rounded-sm cursor-pointer transition-all duration-150 ease-out hover:bg-accent-subtle"
                   onClick={() => setCommsExpanded(true)}
                 >
                   See more options
@@ -857,11 +857,11 @@ against this mapping automatically.`);
           })}
 
           {/* Finish Setup Button */}
-          <div style={{ marginTop: '32px' }}>
+          <div style={{ marginTop: '32px', textAlign: 'center' }}>
             <CTAButton
+              variant="brand"
               onClick={() => onNext?.()}
               disabled={!allRequiredFulfilled}
-              style={{ width: '100%' }}
             >
               Finish Setup
             </CTAButton>
@@ -919,7 +919,7 @@ against this mapping automatically.`);
                     );
                   })}
                 </ul>
-                <button className="w-full py-3.5 text-base font-semibold rounded-md bg-accent text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:-translate-y-px hover:shadow-md" onClick={() => handlePlatformConnect(modal.platform)}>
+                <button className="w-full py-3.5 text-base font-semibold rounded-md bg-surface text-brand border-2 border-brand cursor-pointer transition-all duration-200 ease-out mt-4 hover:-translate-y-px hover:shadow-md" onClick={() => handlePlatformConnect(modal.platform)}>
                   Connect {modal.platform}
                 </button>
                 <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
@@ -997,7 +997,7 @@ against this mapping automatically.`);
                   </button>
                   {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-gray-100 bg-gray-900 rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
                 </div>
-                <button className="w-full py-3.5 text-base font-semibold rounded-md bg-accent text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:-translate-y-px hover:shadow-md" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
+                <button className="w-full py-3.5 text-base font-semibold rounded-md bg-surface text-brand border-2 border-brand cursor-pointer transition-all duration-200 ease-out mt-4 hover:-translate-y-px hover:shadow-md" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
                   Mark as Configured
                 </button>
                 <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
@@ -1053,7 +1053,7 @@ against this mapping automatically.`);
                   </button>
                   {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-gray-100 bg-gray-900 rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
                 </div>
-                <button className="w-full py-3.5 text-base font-semibold rounded-md bg-accent text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:-translate-y-px hover:shadow-md" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
+                <button className="w-full py-3.5 text-base font-semibold rounded-md bg-surface text-brand border-2 border-brand cursor-pointer transition-all duration-200 ease-out mt-4 hover:-translate-y-px hover:shadow-md" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
                   Mark as Configured
                 </button>
                 <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
@@ -1133,7 +1133,7 @@ usr_117,ord_1002,129.00,USD,2026-03-15'
                   </button>
                   {agenticOutput && <div className="w-full mt-3 py-3.5 px-4 text-xs font-mono text-gray-100 bg-gray-900 rounded-sm overflow-x-auto leading-[1.6] whitespace-pre animate-fade-in">{agenticOutput}</div>}
                 </div>
-                <button className="w-full py-3.5 text-base font-semibold rounded-md bg-accent text-white cursor-pointer transition-all duration-200 ease-out mt-4 hover:-translate-y-px hover:shadow-md" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
+                <button className="w-full py-3.5 text-base font-semibold rounded-md bg-surface text-brand border-2 border-brand cursor-pointer transition-all duration-200 ease-out mt-4 hover:-translate-y-px hover:shadow-md" onClick={() => handlePlatformConnect(modal.platform)} style={{ marginTop: '20px' }}>
                   Mark as Configured
                 </button>
                 <div className="flex items-center gap-2 text-[11px] text-foreground-faint pt-4 border-t border-border-light">
