@@ -14,7 +14,7 @@ export default function Logo({ size = 'default', variant = 'full', onClick, clas
     >
       <div className="shrink-0 w-8 h-8 overflow-hidden flex items-center justify-center">
         <img
-          src="/vincor-mark.png"
+          src="/vincor svg.svg"
           alt=""
           className="w-[54px] h-[54px] max-w-none"
         />
