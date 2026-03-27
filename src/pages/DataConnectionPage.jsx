@@ -852,7 +852,7 @@ against this mapping automatically.`);
           })}
 
           {/* Finish Setup Button */}
-          <div style={{ marginTop: '32px', textAlign: 'center' }}>
+          <div style={{ marginTop: '32px' }}>
             <CTAButton
               variant="brand"
               onClick={() => onNext?.()}

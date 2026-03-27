@@ -14,13 +14,13 @@ export default function LandingPage({ config, onNext, onHome }) {
       </header>
 
       {/* Hero */}
-      <section className="flex-1 flex items-center justify-center">
-        <main className="text-center max-w-[960px] w-full mx-auto">
+      <section className="flex-1 flex items-center">
+        <main className="max-w-[720px] w-full">
           <h1
             className={cn(
               'text-[48px] font-bold text-foreground',
               'leading-[1.08] tracking-[-0.03em]',
-              'max-w-[792px] mx-auto mb-[48px]'
+              'mb-[48px]'
             )}
           >
             {landing.headline.split('customers ').length > 1 ? (
@@ -54,7 +54,7 @@ export default function LandingPage({ config, onNext, onHome }) {
       </section>
 
       {/* Footer */}
-      <footer className="py-6 text-center">
+      <footer className="py-6">
         <p className="text-[15px] font-normal text-foreground-faint leading-[1.5]">
           {landing.missionLine}
         </p>
