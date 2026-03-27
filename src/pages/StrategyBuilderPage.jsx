@@ -1032,18 +1032,16 @@ export default function StrategyBuilderPage({ config, onNext }) {
               padding: '0 3rem',
             }}>
               <WhatUsersSee />
+
+              {/* CTA — conclusion of What Users See */}
+              {showCTA && (
+                <div style={{ textAlign: 'center', marginTop: 48, animation: 'fadeIn 0.4s ease forwards' }}>
+                  {approvalScope && <div style={{ fontSize: 14, color: 'var(--text-tertiary)', marginBottom: 16, lineHeight: 1.5 }}>{approvalScope}</div>}
+                  <CTAButton variant="brand" onClick={onNext}>Launch Campaigns</CTAButton>
+                </div>
+              )}
             </div>
           </section>
-        )}
-
-        {/* ════════════════════════════════════════════
-            CTA — Launch Campaigns
-            ════════════════════════════════════════════ */}
-        {showCTA && (
-          <div style={{ textAlign: 'center', marginTop: 32, animation: 'fadeIn 0.4s ease forwards' }}>
-            {approvalScope && <div style={{ fontSize: 14, color: 'var(--text-tertiary)', marginBottom: 16, lineHeight: 1.5 }}>{approvalScope}</div>}
-            <CTAButton variant="brand" onClick={onNext}>Launch Campaigns</CTAButton>
-          </div>
         )}
 
         {/* Strategy Rules Drawer */}
