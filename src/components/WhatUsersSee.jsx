@@ -292,7 +292,7 @@ export default function WhatUsersSee() {
 
   return (
     <>
-      <h3 className="text-[32px] font-semibold tracking-[-0.02em] text-foreground mb-10 max-[860px]:text-[22px] max-[860px]:mb-8">
+      <h3 className="text-[32px] font-semibold tracking-[-0.02em] text-foreground-muted mb-10 max-[860px]:text-[22px] max-[860px]:mb-8">
         What Users See
       </h3>
 
