@@ -331,7 +331,7 @@ export default function StrategyBuilderPage({ config, onNext }) {
       <main
         style={{
           flex: 1,
-          padding: '2rem 3rem 6rem',
+          padding: '2rem 3rem 0',
           maxWidth: '1100px',
           margin: '0 auto',
           width: '100%',
