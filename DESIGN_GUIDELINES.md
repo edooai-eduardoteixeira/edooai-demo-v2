@@ -349,9 +349,21 @@ w-full px-3.5 py-3 border-[1.5px] border-border rounded-md text-[15px] bg-surfac
 inline-flex items-center px-3 py-1 text-[11px] font-semibold rounded-full whitespace-nowrap
 ```
 
-### Modal
-- Overlay: `fixed inset-0 bg-black/50 flex items-center justify-center animate-fade-in`
-- Box: `max-w-[520px] w-full rounded-xl shadow-xl animate-modal-slide`
+### Modal (use Modal component — `src/components/Modal.jsx`)
+
+Always use the `<Modal>` component. Never build one-off modal markup.
+
+| Element | Spec |
+|---|---|
+| Overlay | `fixed inset-0 bg-black/40 z-[100] animate-fade-in` |
+| Box | `bg-surface rounded-xl shadow-xl animate-modal-slide` |
+| Box width | `max-w-[440px]` default, `max-w-[680px]` wide (pass `wide` prop) |
+| Padding | `pt-10 px-8 pb-6` (generous top for close button, tighter bottom) |
+| Close button | `absolute top-5 right-5 w-8 h-8` |
+| Header | Use `<Modal.Header icon={} title="" subtitle="" />` |
+| Footer | Use `<Modal.Footer securityText="">` wrapping the confirm button |
+| Confirm button | Brand-outlined: `w-full bg-surface text-brand border-2 border-brand` |
+| Dismiss | Click overlay or X button — both call `onClose` |
 
 ### Spinner
 ```
