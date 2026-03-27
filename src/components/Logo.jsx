@@ -5,8 +5,8 @@ export default function Logo({ size = 'default', variant = 'full', onClick, clas
   return (
     <div
       className={cn(
-        'font-bold text-brand tracking-tight cursor-pointer flex items-center gap-0',
-        variant === 'full' ? 'text-xl' : 'text-lg',
+        'font-bold text-brand tracking-tight cursor-pointer flex items-center',
+        variant === 'full' ? 'text-2xl gap-0.5' : 'text-lg',
         size === 'large' && 'text-2xl',
         className
       )}
@@ -16,7 +16,7 @@ export default function Logo({ size = 'default', variant = 'full', onClick, clas
       <img
         src="/vincor svg.svg"
         alt=""
-        className={cn('shrink-0', variant === 'full' ? 'w-16 h-16 -m-3' : 'w-10 h-10 -m-2')}
+        className={cn('shrink-0', variant === 'full' ? 'w-[54px] h-[54px] -m-2.5' : 'w-10 h-10 -m-2')}
       />
       {variant === 'full' && 'Vincor'}
     </div>
