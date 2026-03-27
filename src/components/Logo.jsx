@@ -12,13 +12,11 @@ export default function Logo({ size = 'default', variant = 'full', onClick, clas
       style={variant === 'full' ? { fontFamily: "'Playfair Display', serif" } : undefined}
       onClick={onClick}
     >
-      <div className="w-6 h-6 rounded-sm bg-brand overflow-hidden shrink-0 flex items-center justify-center">
-        <img
-          src="/vincor svg.svg"
-          alt=""
-          className="w-[18px] h-[18px] brightness-0 invert"
-        />
-      </div>
+      <img
+        src="/vincor svg.svg"
+        alt=""
+        className="w-6 h-6 shrink-0"
+      />
       {variant === 'full' && 'Vincor'}
     </div>
   );
