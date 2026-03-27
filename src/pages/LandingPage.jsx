@@ -12,7 +12,12 @@ export default function LandingPage({ config, onNext }) {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header style={{ padding: '10px 48px' }}>
-        <Logo variant="full" wordmark={logoWordmark} fontFamily={logoFont === 'playfair' ? "'Playfair Display', serif" : undefined} />
+        <Logo
+          variant="full"
+          wordmark={logoWordmark}
+          fontFamily={logoFont === 'playfair' ? "'Playfair Display', serif" : undefined}
+          className={logoFont === 'playfair' ? 'text-xl' : undefined}
+        />
       </header>
 
       {/* ── TEMPORARY: Logo font/name tester ── */}
