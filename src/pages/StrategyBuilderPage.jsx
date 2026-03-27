@@ -316,17 +316,12 @@ export default function StrategyBuilderPage({ config, onNext, onHome }) {
 
   /* ═══════ RENDER ═══════ */
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-      {/* Header — infrastructure, doesn't push content */}
-      <header className="absolute top-0 left-0 right-0 py-2.5 px-12 z-10 max-w-[1100px] mx-auto w-full">
+    <div className="min-h-screen flex flex-col max-w-[1100px] mx-auto w-full px-12">
+      <header className="py-2.5">
         <Logo variant="mark" onClick={onHome} />
       </header>
 
-      {/* Main Content */}
-      <main
-        className="flex-1 px-12 max-w-[1100px] mx-auto w-full"
-        style={{ paddingTop: '2rem' }}
-      >
+      <main className="flex-1">
         {/* ════════════════════════════════════════════
             HEADING — visible from frame 1
             ════════════════════════════════════════════ */}

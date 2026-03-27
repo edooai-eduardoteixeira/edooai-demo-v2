@@ -212,16 +212,14 @@ Use Tailwind's spacing scale. Common values:
 
 ## Header
 
-**Icon**: 24×24px (uses viewBox scaling from 28×28 SVG)
-**Height**: 44px total (10px vertical padding + 24px icon)
-**Horizontal padding**: 48px (matches main content)
+**All pages use the same outer container**: `max-w-[1100px] mx-auto w-full px-12`. The header sits inside this container in **normal flow** — it takes its height, content starts after it. No absolute positioning.
 
-| Page type | Logo variant | Positioning | Behavior |
-|---|---|---|---|
-| **Landing** | `full` (icon + "Vincor AI") | Static (normal flow) | Acts as a section — content starts after it |
-| **Internal** (strategy, connection, dashboard) | `mark` (icon only) | `position: absolute` | Infrastructure — content flows from top independently, header floats in corner |
+| Page type | Logo variant | Behavior |
+|---|---|---|
+| **Landing** | `full` (icon + "Vincor") | Full logo with Playfair Display wordmark |
+| **Internal** (strategy, connection, dashboard) | `mark` (icon only) | Mark only, same size as landing icon |
 
-**Content top padding is independent of the header.** The main content uses `padding-top: 2rem` (32px) as its own comfortable breathing room — not calculated from the header height. The header and content are separate design tokens. This matches Stripe (32px), Mercury (32px), and Linear (24px) benchmarks.
+**Logo always aligns with content** because both share the same container and padding. Never position the header separately from the content container.
 
 ---
 

@@ -156,12 +156,12 @@ export default function DashboardPage({ config, onHome }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative">
-      <header className="absolute top-0 left-0 right-0 py-2.5 px-12 z-10 max-w-[1100px] mx-auto w-full">
+    <div className="min-h-screen flex flex-col max-w-[1100px] mx-auto w-full px-12">
+      <header className="py-2.5">
         <Logo variant="mark" onClick={onHome} />
       </header>
 
-      <main className="flex-1 pt-8 px-12 max-w-[1100px] mx-auto w-full">
+      <main className="flex-1">
         <h2 className="text-2xl font-bold mb-2">
           Projected 30-Day Results
         </h2>

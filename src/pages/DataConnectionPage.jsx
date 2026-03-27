@@ -682,12 +682,12 @@ against this mapping automatically.`);
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative">
-      <header className="absolute top-0 left-0 right-0 py-2.5 px-12 z-10 max-w-[1100px] mx-auto w-full">
+    <div className="min-h-screen flex flex-col max-w-[1100px] mx-auto w-full px-12">
+      <header className="py-2.5">
         <Logo variant="mark" onClick={onHome} />
       </header>
 
-      <div className="flex-1 grid grid-cols-[280px_1fr] min-h-0 max-w-[1100px] mx-auto w-full">
+      <div className="flex-1 grid grid-cols-[280px_1fr] min-h-0">
         {/* Sidebar — scroll-spy nav */}
         <div className="flex flex-col py-8 pr-5 pb-16 pl-8 overflow-y-auto overflow-x-hidden border-r border-border-light sticky top-0 h-screen self-start">
           <button className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground-muted cursor-pointer mb-6 transition-colors duration-150 ease-out hover:text-foreground" onClick={() => alert('Navigating back')}>
