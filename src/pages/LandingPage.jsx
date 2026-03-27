@@ -14,7 +14,7 @@ export default function LandingPage({ config, onNext, onHome }) {
       </header>
 
       {/* Hero */}
-      <section className="flex-1 flex items-center">
+      <section className="pt-20">
         <main className="max-w-[800px] w-full">
           <h1
             className={cn(
@@ -23,15 +23,7 @@ export default function LandingPage({ config, onNext, onHome }) {
               'mb-8'
             )}
           >
-            {landing.headline.split('customers ').length > 1 ? (
-              <>
-                {landing.headline.split('customers ')[0]}customers
-                <br className="br-desktop" />{' '}
-                {landing.headline.split('customers ')[1]}
-              </>
-            ) : (
-              landing.headline
-            )}
+            {landing.headline}
           </h1>
           <p
             className={cn(
@@ -39,19 +31,13 @@ export default function LandingPage({ config, onNext, onHome }) {
               'leading-[1.5] mb-10'
             )}
           >
-            {landing.subheadline.split('. ').length > 1 ? (
-              <>
-                {landing.subheadline.split('. ')[0]}.
-                <br className="br-desktop-wide" />{' '}
-                {landing.subheadline.split('. ').slice(1).join('. ')}
-              </>
-            ) : (
-              landing.subheadline
-            )}
+            {landing.subheadline}
           </p>
           <CTAButton variant="brand" onClick={onNext}>{landing.ctaText}</CTAButton>
         </main>
       </section>
+
+      <div className="flex-1" />
 
       {/* Footer */}
       <footer className="py-6">

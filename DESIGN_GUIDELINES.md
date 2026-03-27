@@ -194,10 +194,21 @@ Use Tailwind's spacing scale. Common values:
 | `p-10` / `gap-10` | 40px | Section padding |
 | `p-12` / `gap-12` | 48px | Page padding |
 | `p-16` | 64px | Large sections |
-| `p-20` | 80px | Landing page side margins |
-| `p-20` | 80px | Hero spacing |
+| `p-20` | 80px | Landing hero top padding |
 
 **Never** use arbitrary spacing values like `p-[11px]` or `m-[23px]`. Stick to the Tailwind scale.
+
+### Landing page spacing
+
+| Element | Spacing | Tailwind | Rationale |
+|---|---|---|---|
+| Header bottom margin | 24px | `mb-6` | Same as all pages |
+| Hero section top | 80px | `pt-20` | Fixed distance from header — not vertically centered |
+| Headline → subtitle | 32px | `mb-8` | Unified hero message — tight coupling |
+| Subtitle → CTA | 40px | `mb-10` | Visual pause before the action |
+| Content max-width | 800px | `max-w-[800px]` | Readable line lengths at 22px subtitle |
+
+**No forced line breaks** (`<br>`) in hero text. Text flows naturally within the container width. Forced breaks are fragile across screen sizes.
 
 ---
 
