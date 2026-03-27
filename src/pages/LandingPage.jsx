@@ -2,6 +2,7 @@ import React from 'react';
 import { cn } from '../lib/utils';
 import Logo from '../components/Logo.jsx';
 import CTAButton from '../components/CTAButton.jsx';
+import HeroVisual from '../components/HeroVisual.jsx';
 
 export default function LandingPage({ config, onNext, onHome }) {
   const { landing } = config;
@@ -13,9 +14,9 @@ export default function LandingPage({ config, onNext, onHome }) {
         <Logo variant="full" onClick={onHome} />
       </header>
 
-      {/* Hero */}
-      <section className="pt-20">
-        <main className="max-w-[800px] w-full">
+      {/* Hero — two columns */}
+      <section className="pt-20 flex items-start justify-between gap-12">
+        <main className="max-w-[560px] w-full">
           <h1
             className={cn(
               'font-display text-[56px] font-bold text-brand',
@@ -35,6 +36,9 @@ export default function LandingPage({ config, onNext, onHome }) {
           </p>
           <CTAButton variant="brand" onClick={onNext}>{landing.ctaText}</CTAButton>
         </main>
+
+        {/* Right side — animated hero visual */}
+        <HeroVisual className="pt-6 hidden lg:flex" />
       </section>
 
       <div className="flex-1" />
