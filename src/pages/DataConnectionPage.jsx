@@ -555,7 +555,7 @@ against this mapping automatically.`);
                             {meta.displayName}
                             {meta.recommended && <span className="inline-flex items-center ml-2 px-2 py-px text-[11px] font-semibold text-green-600 bg-green-50 rounded-full tracking-[0.01em] align-middle">Recommended</span>}
                           </div>
-                          <div className="text-[12.5px] text-foreground-faint leading-[1.4] mt-0.5">{meta.desc}</div>
+                          <div className="text-xs text-foreground-faint leading-[1.4] mt-0.5">{meta.desc}</div>
                         </div>
                         <svg className="text-gray-300 shrink-0" width="14" height="14" viewBox="0 0 16 16" fill="none">
                           <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -840,7 +840,7 @@ against this mapping automatically.`);
                             {!isFulfilled && (
                               <div className="text-[32px] font-semibold text-foreground leading-[1.3] mb-2 tracking-tight">
                                 {section.question}
-                                <span className="inline-flex items-center px-1.5 text-[11px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]" style={{ marginLeft: '12px', verticalAlign: 'middle', fontSize: '10px' }}>{getSectionDirection(sectionId)}</span>
+                                <span className="inline-flex items-center px-1.5 text-[11px] font-bold tracking-[0.04em] rounded-[3px] align-middle mr-1 bg-gray-100 text-foreground-faint leading-[1.6]" style={{ marginLeft: '12px', verticalAlign: 'middle' }}>{getSectionDirection(sectionId)}</span>
                               </div>
                             )}
                             {!hasConnections && (
