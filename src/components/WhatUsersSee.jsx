@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Check } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 /* ── Channel config ── */
@@ -66,70 +67,6 @@ const ACT = {
   },
 };
 
-/* ── Redeem notification data ── */
-const RWD = {
-  success: {
-    referee: {
-      push: {
-        t: 'Netflix is officially unlocked! \u{1F4FA}',
-        b: "Nice move. Since you\u2019ve joined NeoBank, you and Gina both get a free month of Netflix. Head to the app to claim your reward and start streaming!",
-      },
-      sms: {
-        t: 'NeoBank \u00b7 72589',
-        b: "Nice move. Since you\u2019ve joined NeoBank, you and Gina both get a free month of Netflix. Head to the app to claim your reward and start streaming!",
-      },
-      email: {
-        t: 'Netflix is officially unlocked! \u{1F4FA}',
-        b: "Nice move. Since you\u2019ve joined NeoBank, you and Gina both get a free month of Netflix. Head to the app to claim your reward and start streaming!",
-      },
-    },
-    referrer: {
-      push: {
-        t: 'Your Netflix is on us! \u{1F37F}',
-        b: "Huge win\u2014you and Paul both just scored a free month of Netflix. Your reward is officially unlocked and ready to use in the app. Enjoy!",
-      },
-      sms: {
-        t: 'NeoBank \u00b7 72589',
-        b: "Huge win\u2014you and Paul both just scored a free month of Netflix. Your reward is officially unlocked and ready to use in the app. Enjoy!",
-      },
-      email: {
-        t: 'Your Netflix is on us! \u{1F37F}',
-        b: "Huge win\u2014you and Paul both just scored a free month of Netflix. Your reward is officially unlocked and ready to use in the app. Enjoy!",
-      },
-    },
-  },
-  reminder: {
-    referee: {
-      push: {
-        t: 'Your Netflix month is waiting \u{1F37F}',
-        b: "Make your first transaction and unlock a free month of Netflix \u2014 for you and for Gina. Don\u2019t miss out!",
-      },
-      sms: {
-        t: 'NeoBank \u00b7 72589',
-        b: "Your free Netflix month is waiting! \u{1F37F} Make your first transaction to unlock it \u2014 Gina gets one too. Expires in 7 days.",
-      },
-      email: {
-        t: 'A free Netflix month, one step away \u{1F37F}',
-        b: "Almost there \u2014 one transaction is all it takes to unlock a free month of Netflix for you and Gina. Don\u2019t miss out, it expires in 7 days!",
-      },
-    },
-    referrer: {
-      push: {
-        t: 'Almost there, Gina! \u{1F37F}',
-        b: "Paul hasn\u2019t completed their first transaction yet. Once they do, you both unlock a free month of Netflix. Hang tight!",
-      },
-      sms: {
-        t: 'NeoBank \u00b7 72589',
-        b: "Almost there! Paul hasn\u2019t completed their first transaction yet. Once they do, you both unlock a free month of Netflix. Hang tight!",
-      },
-      email: {
-        t: 'Almost there, Gina! \u{1F37F}',
-        b: "Paul hasn\u2019t completed their first transaction yet. Once they do, you both unlock a free month of Netflix. We\u2019ll let you know!",
-      },
-    },
-  },
-};
-
 /* ── Notification component ── */
 function Notif({ ch, title, body }) {
   const c = CH[ch];
@@ -166,20 +103,106 @@ function WANotif({ name, body }) {
   );
 }
 
+/* ── Redeem journey — in-app progression card ── */
+const REDEEM_STEPS = [
+  { label: 'Sign Up' },
+  { label: '1st Transaction' },
+  { label: 'Free Netflix unlocked \u{1F37F}', isReward: true },
+];
+
+function RedeemJourney() {
+  const [revealed, setRevealed] = useState(0);
+  const timerRef = useRef(null);
+  const hoveredRef = useRef(false);
+
+  const runSequence = useCallback(() => {
+    clearInterval(timerRef.current);
+    if (hoveredRef.current) return;
+
+    let step = 0;
+    setRevealed(0);
+
+    const tick = () => {
+      step++;
+      if (step <= REDEEM_STEPS.length) {
+        setRevealed(step);
+      } else {
+        // Hold on final state, then restart
+        clearInterval(timerRef.current);
+        timerRef.current = setTimeout(() => {
+          if (!hoveredRef.current) runSequence();
+        }, 2000);
+        return;
+      }
+    };
+
+    // First step appears after 400ms, then every 500ms
+    timerRef.current = setTimeout(() => {
+      tick();
+      timerRef.current = setInterval(tick, 500);
+    }, 400);
+  }, []);
+
+  useEffect(() => {
+    runSequence();
+    return () => {
+      clearInterval(timerRef.current);
+      clearTimeout(timerRef.current);
+    };
+  }, [runSequence]);
+
+  const onMouseEnter = () => {
+    hoveredRef.current = true;
+    clearInterval(timerRef.current);
+    clearTimeout(timerRef.current);
+  };
+
+  const onMouseLeave = () => {
+    hoveredRef.current = false;
+    runSequence();
+  };
+
+  return (
+    <div
+      className="max-w-[380px]"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      <div className="rounded-lg bg-surface shadow-sm overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px p-4">
+        <div className="text-xs font-medium text-foreground-faint mb-3">Paul Davis · NeoBank</div>
+        <div className="flex flex-col gap-2.5">
+          {REDEEM_STEPS.map((step, i) => {
+            const isVisible = i < revealed;
+            return (
+              <div
+                key={i}
+                className={cn(
+                  'flex items-center gap-2 transition-all duration-200',
+                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
+                )}
+              >
+                <Check size={14} className={cn('shrink-0', step.isReward ? 'text-foreground' : 'text-foreground-faint')} />
+                <span className={cn(
+                  step.isReward
+                    ? 'text-sm font-semibold text-foreground'
+                    : 'text-[13px] font-medium text-foreground-muted'
+                )}>
+                  {step.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Carousel variant definitions ── */
 const INVITE_VARIANTS = [
   { m: 'ask', c: 'push', label: 'Ask \u00b7 Push' },
   { m: 'ask', c: 'sms', label: 'Ask \u00b7 SMS' },
   { m: 'ask', c: 'email', label: 'Ask \u00b7 Email' },
-  { m: 'reminder', c: 'push', label: 'Reminder \u00b7 Push' },
-  { m: 'reminder', c: 'sms', label: 'Reminder \u00b7 SMS' },
-  { m: 'reminder', c: 'email', label: 'Reminder \u00b7 Email' },
-];
-
-const REDEEM_VARIANTS = [
-  { m: 'success', c: 'push', label: 'Success \u00b7 Push' },
-  { m: 'success', c: 'sms', label: 'Success \u00b7 SMS' },
-  { m: 'success', c: 'email', label: 'Success \u00b7 Email' },
   { m: 'reminder', c: 'push', label: 'Reminder \u00b7 Push' },
   { m: 'reminder', c: 'sms', label: 'Reminder \u00b7 SMS' },
   { m: 'reminder', c: 'email', label: 'Reminder \u00b7 Email' },
@@ -254,39 +277,20 @@ export default function WhatUsersSee() {
   const inviteV = INVITE_VARIANTS[invite.idx];
   const inviteMsg = ACT[inviteV.m]?.[inviteV.c];
 
-  /* ── Redeem carousel ── */
-  const redeem = useCarousel(REDEEM_VARIANTS, 3500);
-  const redeemV = REDEEM_VARIANTS[redeem.idx];
-  const redeemReferrer = RWD[redeemV.m]?.referrer?.[redeemV.c];
-  const redeemReferee = RWD[redeemV.m]?.referee?.[redeemV.c];
-
-  /* ── Height locking via ref measurement ── */
+  /* ── Refs ── */
   const inviteBodyRef = useRef(null);
-  const redeemGinaRef = useRef(null);
-  const redeemPaulRef = useRef(null);
   const timelineRef = useRef(null);
   const circle1Ref = useRef(null);
   const circle3Ref = useRef(null);
   const [inviteMinH, setInviteMinH] = useState(0);
-  const [redeemGinaMinH, setRedeemGinaMinH] = useState(0);
-  const [redeemPaulMinH, setRedeemPaulMinH] = useState(0);
   const [lineTop, setLineTop] = useState(0);
   const [lineHeight, setLineHeight] = useState(0);
 
   useEffect(() => {
-    // Measure after first render
     const measure = () => {
       if (inviteBodyRef.current) {
         const h = inviteBodyRef.current.scrollHeight;
         setInviteMinH((prev) => Math.max(prev, h));
-      }
-      if (redeemGinaRef.current) {
-        const h = redeemGinaRef.current.scrollHeight;
-        setRedeemGinaMinH((prev) => Math.max(prev, h));
-      }
-      if (redeemPaulRef.current) {
-        const h = redeemPaulRef.current.scrollHeight;
-        setRedeemPaulMinH((prev) => Math.max(prev, h));
       }
       if (timelineRef.current && circle1Ref.current && circle3Ref.current) {
         const container = timelineRef.current.getBoundingClientRect();
@@ -299,7 +303,6 @@ export default function WhatUsersSee() {
       }
     };
     measure();
-    // Re-measure on resize
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
   });
@@ -319,7 +322,6 @@ export default function WhatUsersSee() {
         {/* ═══ INVITE ═══ */}
         <div className="flex items-start gap-12 mb-10 max-[860px]:flex-col max-[860px]:gap-5">
           <div className="flex-[0_0_240px] pt-5 relative pl-12 max-[860px]:pl-0 max-[860px]:flex-none">
-            {/* Timeline numbered circle */}
             <div ref={circle1Ref} className="absolute left-0 top-5 w-7 h-7 rounded-full bg-foreground-faint text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">1</div>
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Invite</div>
           </div>
@@ -365,7 +367,6 @@ export default function WhatUsersSee() {
         {/* ═══ REFER ═══ */}
         <div className="flex items-start gap-12 mb-10 max-[860px]:flex-col max-[860px]:gap-5">
           <div className="flex-[0_0_240px] pt-5 relative pl-12 max-[860px]:pl-0 max-[860px]:flex-none">
-            {/* Timeline numbered circle */}
             <div className="absolute left-0 top-5 w-7 h-7 rounded-full bg-foreground-faint text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">2</div>
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Refer</div>
           </div>
@@ -397,93 +398,14 @@ export default function WhatUsersSee() {
           </div>
         </div>
 
-        {/* ═══ REFEREE JOURNEY — horizontal pill stepper ═══ */}
-        <div className="relative mb-10">
-          <div className="inline-flex items-center gap-0 ml-12 py-1.5 px-3.5 bg-surface rounded-[20px] relative z-[2] max-[860px]:ml-0 max-[860px]:flex-wrap max-[860px]:gap-1.5">
-            <div className="flex items-center gap-[5px]">
-              <div className="w-[5px] h-[5px] rounded-full bg-border shrink-0" />
-              <div className="text-xs font-medium text-foreground-faint whitespace-nowrap">Sign Up</div>
-            </div>
-            <div className="w-5 h-px bg-border shrink-0 mx-1.5" />
-            <div className="flex items-center gap-[5px]">
-              <div className="w-[5px] h-[5px] rounded-full bg-border shrink-0" />
-              <div className="text-xs font-medium text-foreground-faint whitespace-nowrap">KYC</div>
-            </div>
-            <div className="w-5 h-px bg-border shrink-0 mx-1.5" />
-            <div className="flex items-center gap-[5px]">
-              <div className="w-[5px] h-[5px] rounded-full bg-brand shrink-0 shadow-[0_0_0_2px_rgba(107,29,42,0.15)]" />
-              <div className="text-xs font-semibold text-brand whitespace-nowrap">1st Transaction</div>
-            </div>
-          </div>
-        </div>
-
-        {/* ═══ REDEEM — overlapping cards ═══ */}
+        {/* ═══ REDEEM — in-app journey ═══ */}
         <div className="flex items-start gap-12 max-[860px]:flex-col max-[860px]:gap-5">
           <div className="flex-[0_0_240px] pt-5 relative pl-12 max-[860px]:pl-0 max-[860px]:flex-none">
-            {/* Timeline numbered circle */}
             <div ref={circle3Ref} className="absolute left-0 top-5 w-7 h-7 rounded-full bg-foreground-faint text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">3</div>
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Redeem</div>
           </div>
-          <div
-            className="flex-1 relative min-h-[280px]"
-            onMouseEnter={redeem.onMouseEnter}
-            onMouseLeave={redeem.onMouseLeave}
-          >
-            <div className="relative max-w-[700px]">
-              {/* Gina — back layer, has carousel */}
-              <div className="relative z-[1] w-[380px] max-w-[380px]">
-                <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
-                  <div
-                    ref={redeemGinaRef}
-                    className="p-2.5"
-                    style={{
-                      transition: 'opacity 200ms ease',
-                      opacity: redeem.fading ? 0 : 1,
-                      ...(redeemGinaMinH ? { minHeight: redeemGinaMinH } : {}),
-                    }}
-                  >
-                    {redeemReferrer && (
-                      <Notif ch={redeemV.c} title={redeemReferrer.t} body={redeemReferrer.b} />
-                    )}
-                  </div>
-                </div>
-              </div>
-              {/* Paul — front layer */}
-              <div className="absolute top-[78%] left-[285px] z-[2] w-[380px] max-w-[380px] max-[860px]:relative max-[860px]:top-0 max-[860px]:left-0 max-[860px]:mt-4">
-                <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
-                  <div
-                    ref={redeemPaulRef}
-                    className="p-2.5"
-                    style={{
-                      transition: 'opacity 200ms ease',
-                      opacity: redeem.fading ? 0 : 1,
-                      ...(redeemPaulMinH ? { minHeight: redeemPaulMinH } : {}),
-                    }}
-                  >
-                    {redeemReferee && (
-                      <Notif ch={redeemV.c} title={redeemReferee.t} body={redeemReferee.b} />
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* Redeem nav — outside stack so mobile layout works */}
-            <div className="flex items-center gap-3 mt-2.5 px-1">
-              <div className="flex gap-1.5">
-                {REDEEM_VARIANTS.map((_, i) => (
-                  <button
-                    key={i}
-                    className={cn(
-                      'w-1.5 h-1.5 rounded-full bg-border border-none p-0 cursor-pointer transition-[background,transform] duration-200',
-                      'hover:bg-foreground-faint',
-                      i === redeem.idx && 'bg-foreground-muted scale-[1.3]'
-                    )}
-                    onClick={() => redeem.jumpTo(i)}
-                  />
-                ))}
-              </div>
-              <div className="text-xs font-medium text-foreground-faint transition-opacity duration-200 min-w-[100px]">{redeem.label}</div>
-            </div>
+          <div className="flex-1 pt-3">
+            <RedeemJourney />
           </div>
         </div>
       </div>
