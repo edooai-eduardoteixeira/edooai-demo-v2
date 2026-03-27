@@ -297,14 +297,14 @@ export default function WhatUsersSee() {
       </h3>
 
       <div className="relative">
-        {/* Timeline vertical line */}
-        <div className="absolute left-[13px] top-10 bottom-[18px] w-0.5 bg-border z-0 max-[860px]:hidden" />
+        {/* Timeline vertical line — connects circle 1 to circle 3, stops at last circle */}
+        <div className="absolute left-[13px] top-10 bottom-[290px] w-0.5 bg-border z-0 max-[860px]:hidden" />
 
         {/* ═══ INVITE ═══ */}
         <div className="flex items-start gap-12 mb-10 max-[860px]:flex-col max-[860px]:gap-5">
           <div className="flex-[0_0_240px] pt-5 relative pl-12 max-[860px]:pl-0 max-[860px]:flex-none">
             {/* Timeline numbered circle */}
-            <div className="absolute left-0 top-5 w-7 h-7 rounded-full bg-brand text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">1</div>
+            <div className="absolute left-0 top-5 w-7 h-7 rounded-full bg-foreground-muted text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">1</div>
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Invite</div>
           </div>
           <div className="flex-1 flex flex-col items-start">
@@ -350,7 +350,7 @@ export default function WhatUsersSee() {
         <div className="flex items-start gap-12 mb-10 max-[860px]:flex-col max-[860px]:gap-5">
           <div className="flex-[0_0_240px] pt-5 relative pl-12 max-[860px]:pl-0 max-[860px]:flex-none">
             {/* Timeline numbered circle */}
-            <div className="absolute left-0 top-5 w-7 h-7 rounded-full bg-brand text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">2</div>
+            <div className="absolute left-0 top-5 w-7 h-7 rounded-full bg-foreground-muted text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">2</div>
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Refer</div>
           </div>
           <div className="flex-1 relative min-h-[220px] max-[860px]:justify-start">
@@ -409,7 +409,7 @@ export default function WhatUsersSee() {
         <div className="flex items-start gap-12 max-[860px]:flex-col max-[860px]:gap-5">
           <div className="flex-[0_0_240px] pt-5 relative pl-12 max-[860px]:pl-0 max-[860px]:flex-none">
             {/* Timeline numbered circle */}
-            <div className="absolute left-0 top-5 w-7 h-7 rounded-full bg-brand text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">3</div>
+            <div className="absolute left-0 top-5 w-7 h-7 rounded-full bg-foreground-muted text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">3</div>
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Redeem</div>
           </div>
           <div
