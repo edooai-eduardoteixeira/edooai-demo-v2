@@ -191,6 +191,7 @@ Use Tailwind's spacing scale. Common values:
 | `p-10` / `gap-10` | 40px | Section padding |
 | `p-12` / `gap-12` | 48px | Page padding |
 | `p-16` | 64px | Large sections |
+| `p-20` | 80px | Landing page side margins |
 | `p-20` | 80px | Hero spacing |
 
 **Never** use arbitrary spacing values like `p-[11px]` or `m-[23px]`. Stick to the Tailwind scale.
