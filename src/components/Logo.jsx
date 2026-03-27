@@ -12,20 +12,28 @@ export default function Logo({ size = 'default', variant = 'full', onClick, clas
       style={variant === 'full' ? { fontFamily: "'Playfair Display', serif" } : undefined}
       onClick={onClick}
     >
-      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
-        <rect width="28" height="28" rx="6" fill="var(--color-brand)" />
-        <text
-          x="14"
-          y="19"
-          textAnchor="middle"
-          fill="white"
-          fontSize="16"
-          fontWeight="700"
-          fontFamily="'Playfair Display', serif"
-        >
-          V
-        </text>
-      </svg>
+      <div style={{
+        width: 24,
+        height: 24,
+        borderRadius: 6,
+        background: 'var(--color-brand)',
+        overflow: 'hidden',
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <img
+          src="/logomark.png"
+          alt="Vincor"
+          style={{
+            width: 20,
+            height: 20,
+            objectFit: 'contain',
+            filter: 'brightness(0) invert(1)',
+          }}
+        />
+      </div>
       {variant === 'full' && 'Vincor'}
     </div>
   );
