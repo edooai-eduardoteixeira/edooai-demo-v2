@@ -103,9 +103,11 @@ function WANotif({ name, body }) {
   );
 }
 
-/* ── Redeem journey — in-app progression card ── */
+/* ── Redeem journey — in-app reward progress card ── */
+const STEPS = ['Sign Up', '1st Transaction'];
+
 function RedeemJourney() {
-  // 0 = empty, 1 = sign up visible, 2 = 1st tx visible, 3 = reward visible
+  // 0 = empty, 1 = sign up done, 2 = 1st tx done, 3 = reward revealed
   const [revealed, setRevealed] = useState(0);
   const timerRef = useRef(null);
   const hoveredRef = useRef(false);
@@ -163,56 +165,51 @@ function RedeemJourney() {
       onMouseLeave={onMouseLeave}
     >
       <div
-        className="rounded-lg bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px"
+        className="rounded-lg bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px p-5"
         style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}
       >
-        <div className="p-2.5">
-          <div className="rounded-lg bg-surface p-[8px_10px]">
-            {/* App header — same pattern as Notif */}
-            <div className="flex items-center gap-1.5 mb-2.5">
-              <div className="w-5 h-5 rounded-sm bg-foreground flex items-center justify-center text-[11px] font-bold text-white shrink-0">
-                N
-              </div>
-              <span className="text-xs font-semibold text-foreground-muted">NeoBank</span>
-              <span className="text-[11px] text-foreground-faint ml-auto">now</span>
-            </div>
-
-            {/* In-app journey tracker */}
-            <div className="text-sm font-semibold mb-2">Paul, complete your setup</div>
-            <div className="relative pl-5">
-              {/* Vertical connector line */}
-              <div className="absolute left-[3px] top-1.5 bottom-1.5 w-0.5 bg-border" />
-
-              {/* Step: Sign Up */}
-              <div className={cn(
-                'flex items-center gap-2 pb-2.5 relative transition-all duration-200',
-                revealed >= 1 ? 'opacity-100' : 'opacity-0'
-              )}>
-                <div className="absolute left-[-18px] w-[7px] h-[7px] rounded-full bg-success z-[1]" />
-                <Check size={13} className="text-success shrink-0" />
-                <span className="text-[13px] text-foreground-muted">Sign Up</span>
-              </div>
-
-              {/* Step: 1st Transaction */}
-              <div className={cn(
-                'flex items-center gap-2 pb-2.5 relative transition-all duration-200',
-                revealed >= 2 ? 'opacity-100' : 'opacity-0'
-              )}>
-                <div className="absolute left-[-18px] w-[7px] h-[7px] rounded-full bg-success z-[1]" />
-                <Check size={13} className="text-success shrink-0" />
-                <span className="text-[13px] text-foreground-muted">1st Transaction</span>
-              </div>
-
-              {/* Reward */}
-              <div className={cn(
-                'relative transition-all duration-200',
-                revealed >= 3 ? 'opacity-100' : 'opacity-0'
-              )}>
-                <div className="absolute left-[-18px] top-2 w-[7px] h-[7px] rounded-full bg-success z-[1]" />
-                <div className="rounded-md bg-accent-subtle py-2 px-3">
-                  <div className="text-sm font-semibold text-foreground">Free Netflix unlocked! {'\u{1F37F}'}</div>
+        {/* Horizontal progress stepper */}
+        <div className="flex items-center mb-4">
+          {STEPS.map((label, i) => (
+            <React.Fragment key={i}>
+              {i > 0 && (
+                <div className={cn(
+                  'flex-1 h-px mx-2 transition-colors duration-300',
+                  revealed > i ? 'bg-success' : 'bg-border'
+                )} />
+              )}
+              <div className="flex flex-col items-center gap-1.5">
+                <div className={cn(
+                  'w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300',
+                  revealed > i
+                    ? 'bg-success text-white'
+                    : 'bg-accent-subtle text-foreground-faint'
+                )}>
+                  {revealed > i
+                    ? <Check size={13} strokeWidth={2.5} />
+                    : <span className="text-[11px] font-semibold">{i + 1}</span>
+                  }
                 </div>
+                <span className={cn(
+                  'text-[11px] font-medium whitespace-nowrap transition-colors duration-300',
+                  revealed > i ? 'text-foreground-muted' : 'text-foreground-faint'
+                )}>{label}</span>
               </div>
+            </React.Fragment>
+          ))}
+        </div>
+
+        {/* Reward confirmation */}
+        <div className={cn(
+          'transition-all duration-300',
+          revealed >= 3 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
+        )}>
+          <div className="rounded-md bg-accent-subtle p-3">
+            <div className="text-sm font-semibold text-foreground mb-0.5">
+              Free Netflix unlocked! {'\u{1F37F}'}
+            </div>
+            <div className="text-[13px] text-foreground-muted leading-[1.4]">
+              You and Gina both earned a free month of Netflix.
             </div>
           </div>
         </div>
