@@ -103,115 +103,45 @@ function WANotif({ name, body }) {
   );
 }
 
-/* ── Redeem journey — in-app reward progress card ── */
-const STEPS = ['Sign Up', '1st Transaction'];
-
-function RedeemJourney() {
-  // 0 = empty, 1 = sign up done, 2 = 1st tx done, 3 = reward revealed
-  const [revealed, setRevealed] = useState(0);
-  const timerRef = useRef(null);
-  const hoveredRef = useRef(false);
-
-  const runSequence = useCallback(() => {
-    clearInterval(timerRef.current);
-    clearTimeout(timerRef.current);
-    if (hoveredRef.current) return;
-
-    let step = 0;
-    setRevealed(0);
-
-    const tick = () => {
-      step++;
-      if (step <= 3) {
-        setRevealed(step);
-      } else {
-        clearInterval(timerRef.current);
-        timerRef.current = setTimeout(() => {
-          if (!hoveredRef.current) runSequence();
-        }, 2000);
-        return;
-      }
-    };
-
-    timerRef.current = setTimeout(() => {
-      tick();
-      timerRef.current = setInterval(tick, 500);
-    }, 400);
-  }, []);
-
-  useEffect(() => {
-    runSequence();
-    return () => {
-      clearInterval(timerRef.current);
-      clearTimeout(timerRef.current);
-    };
-  }, [runSequence]);
-
-  const onMouseEnter = () => {
-    hoveredRef.current = true;
-    clearInterval(timerRef.current);
-    clearTimeout(timerRef.current);
-  };
-
-  const onMouseLeave = () => {
-    hoveredRef.current = false;
-    runSequence();
-  };
-
+/* ── Redeem — phone mockup showing in-app reward screen ── */
+function RedeemPhone() {
   return (
-    <div
-      className="max-w-[380px]"
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    >
-      <div
-        className="rounded-lg bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px p-5"
-        style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}
-      >
-        {/* Horizontal progress stepper */}
-        <div className="flex items-center mb-4">
-          {STEPS.map((label, i) => (
-            <React.Fragment key={i}>
-              {i > 0 && (
-                <div className={cn(
-                  'flex-1 h-px mx-2 transition-colors duration-300',
-                  revealed > i ? 'bg-success' : 'bg-border'
-                )} />
-              )}
-              <div className="flex flex-col items-center gap-1.5">
-                <div className={cn(
-                  'w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300',
-                  revealed > i
-                    ? 'bg-success text-white'
-                    : 'bg-accent-subtle text-foreground-faint'
-                )}>
-                  {revealed > i
-                    ? <Check size={13} strokeWidth={2.5} />
-                    : <span className="text-[11px] font-semibold">{i + 1}</span>
-                  }
-                </div>
-                <span className={cn(
-                  'text-[11px] font-medium whitespace-nowrap transition-colors duration-300',
-                  revealed > i ? 'text-foreground-muted' : 'text-foreground-faint'
-                )}>{label}</span>
-              </div>
-            </React.Fragment>
-          ))}
+    <div className="max-w-[280px]">
+      {/* Phone frame — minimal outline */}
+      <div className="border-2 border-gray-300 rounded-[2rem] bg-surface overflow-hidden">
+        {/* Notch */}
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-16 h-1 rounded-full bg-gray-200" />
         </div>
 
-        {/* Reward confirmation */}
-        <div className={cn(
-          'transition-all duration-300',
-          revealed >= 3 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
-        )}>
-          <div className="rounded-md bg-accent-subtle p-3">
-            <div className="text-sm font-semibold text-foreground mb-0.5">
-              Free Netflix unlocked! {'\u{1F37F}'}
+        {/* Screen content */}
+        <div className="px-6 pb-8 pt-4">
+          {/* Checklist */}
+          <div className="flex flex-col gap-2.5 mb-6">
+            <div className="flex items-center gap-2">
+              <Check size={15} className="text-success shrink-0" />
+              <span className="text-[13px] text-foreground-muted">Account created</span>
             </div>
-            <div className="text-[13px] text-foreground-muted leading-[1.4]">
-              You and Gina both earned a free month of Netflix.
+            <div className="flex items-center gap-2">
+              <Check size={15} className="text-success shrink-0" />
+              <span className="text-[13px] text-foreground-muted">First purchase</span>
             </div>
           </div>
+
+          {/* Reward */}
+          <div className="mb-6">
+            <div className="text-base font-semibold text-foreground mb-1">
+              Netflix is officially unlocked! {'\u{1F37F}'}
+            </div>
+            <div className="text-[13px] text-foreground-muted leading-[1.4]">
+              You and Gina both get a free month.
+            </div>
+          </div>
+
+          {/* CTA — NeoBank's button, not Vincor's */}
+          <button className="w-full py-2.5 text-[13px] font-semibold rounded-md bg-accent text-white">
+            Claim Reward
+          </button>
         </div>
       </div>
     </div>
@@ -425,7 +355,7 @@ export default function WhatUsersSee() {
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Redeem</div>
           </div>
           <div className="flex-1 pt-3">
-            <RedeemJourney />
+            <RedeemPhone />
           </div>
         </div>
       </div>
