@@ -80,9 +80,22 @@ Every page uses: `max-w-[1100px] mx-auto w-full px-12`
 - Logo click navigates home
 
 ### Page Types
-- **Landing**: Left-aligned hero, `pt-20` fixed top, `max-w-[800px]` content
+- **Landing**: Two-column hero — left-aligned text (`max-w-[560px]`) + right-side animated visual. Hero text at `pt-20`, visual card at `pt-24`. Visual uses `bg-accent-subtle` (receding, not `bg-surface`) — it's a secondary illustration, not interactive UI. Hidden on mobile (`lg:flex`).
 - **Single column** (strategy, dashboard): Content starts after header
 - **Sidebar + content** (connection): 280px sidebar inside shared container, sidebar content aligns with logo
+
+### Agent Status Indicator
+The agent status pattern communicates "an autonomous agent is actively operating":
+- **Dot**: 8px (`w-2 h-2`) solid `bg-brand` circle — brand color is valid here (active state)
+- **Pulse ring**: Concentric `border-brand` ring that scales outward and fades (`agent-glow` keyframe) — the sonar/radar pattern
+- **Text**: `text-[13px] font-semibold text-foreground` — darkest neutral, top of card hierarchy
+- **Brand is the only color accent** in the dot. The rest of the card uses the neutral hierarchy.
+
+Landing page hero text hierarchy:
+1. Headline: `text-brand` (the landing page exception — brand as text)
+2. Subtitle: `text-foreground` (primary readable text, explains the value prop)
+3. Card content labels: `text-foreground-muted` (structural, frames the data)
+4. Card content data: `text-foreground-faint` (supporting evidence, recedes)
 
 ## Button System
 
@@ -156,6 +169,8 @@ Reusable `Modal` component enforces:
 8. No secondary accent color — one brand color, used with restraint
 9. No pink/blush — brand-light is warm linen #F0E8E5
 10. Modals: extracted to reusable component with brand-outline confirm buttons
+11. Landing hero visual: card with metrics → process diagram → referral network → agent-working card with customer list. Stripped brand color from card (was competing with headline). Card uses `bg-accent-subtle` (recedes) not `bg-surface` (pops). Labels > Data hierarchy — column headers more prominent than row content because user reads labels first in a 2-second glance.
+12. Agent status dot: soft box-shadow glow → sharp ring pulse (sonar pattern). Ring has a visible edge the eye tracks. Dot size 8px — standard status indicator, not a focal element.
 
 ## File References
 
@@ -165,3 +180,4 @@ Reusable `Modal` component enforces:
 - Button component: `src/components/CTAButton.jsx`
 - Modal component: `src/components/Modal.jsx`
 - Brand mark: `public/vincor svg.svg`
+- Hero visual: `src/components/HeroVisual.jsx`
