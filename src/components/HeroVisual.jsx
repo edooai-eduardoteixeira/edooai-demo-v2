@@ -78,57 +78,55 @@ export default function HeroVisual({ className }) {
   const visibleCustomers = CUSTOMERS.slice(0, visibleCount);
 
   return (
-      <div
-        className={cn('bg-accent-subtle rounded-xl w-[280px]', className)}
-      >
-        {/* Agent status */}
-        <div className="flex items-center gap-2.5 px-5 pt-5 pb-4">
-          <div className="relative flex items-center justify-center w-5 h-5">
-            <div className="absolute w-2 h-2 rounded-full bg-brand" />
-            <div className="absolute w-2 h-2 rounded-full border-[1.5px] border-brand animate-[agent-glow_2s_ease-out_infinite]" />
-          </div>
-          <span className="text-[13px] font-semibold text-foreground">
-            Agent acquiring customers
-          </span>
+    <div className={cn('bg-accent-subtle rounded-xl w-[280px]', className)}>
+      {/* Agent status */}
+      <div className="flex items-center gap-2.5 px-5 pt-5 pb-4">
+        <div className="relative flex items-center justify-center w-5 h-5">
+          <div className="absolute w-2 h-2 rounded-full bg-brand" />
+          <div className="absolute w-2 h-2 rounded-full border-[1.5px] border-brand animate-[agent-glow_2s_ease-out_infinite]" />
         </div>
-
-        {/* Divider */}
-        <div className="mx-5 border-b border-border-light" />
-
-        {/* Column headers — labels > data hierarchy */}
-        <div className="flex items-center justify-between px-7 pt-4 pb-2">
-          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-muted uppercase">
-            New Customers
-          </span>
-          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-muted uppercase">
-            CAC
-          </span>
-        </div>
-
-        {/* Customer list — fixed height, content animates inside */}
-        <div className="px-5 pb-5 flex flex-col gap-0.5 h-[160px]">
-          {visibleCustomers.map((customer) => (
-            <div
-              key={customer.name}
-              className="flex items-center justify-between py-2 px-2 rounded-md animate-fade-in"
-            >
-              <span className="text-[13px] font-medium text-foreground-faint">
-                {customer.name}
-              </span>
-              <span className="text-[13px] text-foreground-faint tabular-nums">
-                {customer.cac}
-              </span>
-            </div>
-          ))}
-
-          {/* Skeleton row */}
-          {showSkeleton && (
-            <div className="flex items-center justify-between py-2 px-2 rounded-md animate-fade-in">
-              <div className="h-3 w-20 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer" />
-              <div className="h-3 w-8 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer" />
-            </div>
-          )}
-        </div>
+        <span className="text-[13px] font-semibold text-foreground">
+          Agent acquiring customers
+        </span>
       </div>
+
+      {/* Divider */}
+      <div className="mx-5 border-b border-border-light" />
+
+      {/* Column headers — labels > data hierarchy */}
+      <div className="flex items-center justify-between px-7 pt-4 pb-2">
+        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-muted uppercase">
+          New Customers
+        </span>
+        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-muted uppercase">
+          CAC
+        </span>
+      </div>
+
+      {/* Customer list — fixed height, content animates inside */}
+      <div className="px-5 pb-5 flex flex-col gap-0.5 h-[160px]">
+        {visibleCustomers.map((customer) => (
+          <div
+            key={customer.name}
+            className="flex items-center justify-between py-2 px-2 rounded-md animate-fade-in"
+          >
+            <span className="text-[13px] font-medium text-foreground-faint">
+              {customer.name}
+            </span>
+            <span className="text-[13px] text-foreground-faint tabular-nums">
+              {customer.cac}
+            </span>
+          </div>
+        ))}
+
+        {/* Skeleton row */}
+        {showSkeleton && (
+          <div className="flex items-center justify-between py-2 px-2 rounded-md animate-fade-in">
+            <div className="h-3 w-20 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer" />
+            <div className="h-3 w-8 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer" />
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

@@ -80,7 +80,7 @@ Every page uses: `max-w-[1100px] mx-auto w-full px-12`
 - Logo click navigates home
 
 ### Page Types
-- **Landing**: Two-column hero — left-aligned text (`max-w-[560px]`) + right-side animated visual. Hero text at `pt-20`, visual card at `pt-24`. Visual uses `bg-accent-subtle` (receding, not `bg-surface`) — it's a secondary illustration, not interactive UI. Hidden on mobile (`lg:flex`).
+- **Landing**: Left-aligned text (`max-w-[660px]`) + absolutely positioned animated visual on the right. Hero text at `pt-20`, visual card at `absolute bottom-0 right-0` (bottom-aligned with CTA). Visual uses `bg-accent-subtle` (receding, not `bg-surface`) — it's a secondary illustration, not interactive UI. Hidden below `lg` (1024px).
 - **Single column** (strategy, dashboard): Content starts after header
 - **Sidebar + content** (connection): 280px sidebar inside shared container, sidebar content aligns with logo
 

@@ -206,24 +206,25 @@ Use Tailwind's spacing scale. Common values:
 | Hero section top | 80px | `pt-20` | Fixed distance from header — not vertically centered |
 | Headline → subtitle | 32px | `mb-8` | Unified hero message — tight coupling |
 | Subtitle → CTA | 40px | `mb-10` | Visual pause before the action |
-| Hero text max-width | 560px | `max-w-[560px]` | Readable line lengths, leaves room for visual |
-| Hero visual offset | 96px | `pt-24` | Vertically centered against left content block |
+| Hero text max-width | 660px | `max-w-[660px]` | Leaves room for visual card (280px) + gap (~64px) |
 
-**No forced line breaks** (`<br>`) in hero text. Text flows naturally within the container width. Forced breaks are fragile across screen sizes.
+**Subtitle line break**: On desktop (`lg:`), a responsive `<br>` splits the subtitle at the sentence boundary (one thought per line). On mobile, the `<br>` is hidden and text flows naturally. This is a semantic break between two distinct messages, not a brittle word-level break.
 
 ### Landing page hero layout
 
-Two-column: text left, animated visual right. The visual is a secondary illustration — it supports the headline, doesn't compete.
+Text left, animated visual right. The visual is absolutely positioned — it doesn't affect page flow, scroll, or footer position.
 
 ```
-section: pt-20 flex items-start justify-between gap-12
-  main: max-w-[560px] (headline + subtitle + CTA)
-  HeroVisual: pt-24 hidden lg:flex
+section: pt-20 relative
+  main: max-w-[660px] w-full (headline + subtitle + CTA)
+  HeroVisual: absolute bottom-0 right-0 hidden lg:block
 ```
+
+**Visual card positioning**: `absolute bottom-0 right-0` — card bottom aligns with CTA bottom, creating a shared baseline that closes the composition. Hidden below `lg` breakpoint (1024px).
 
 **Visual card surface**: `bg-accent-subtle rounded-xl` — not `bg-surface`. White cards pop; the visual should recede. No shadow, no border.
 
-**Visual card height**: Fixed. Content animates inside the container. The card never expands or shifts the layout.
+**Visual card height**: Fixed (`h-[160px]` list area). Content animates inside the container. The card never expands or shifts the layout.
 
 **Landing page text hierarchy**:
 
