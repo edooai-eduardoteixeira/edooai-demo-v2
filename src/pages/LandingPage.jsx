@@ -16,7 +16,7 @@ export default function LandingPage({ config, onNext, onHome }) {
 
       {/* Hero */}
       <section className="pt-20 relative">
-        <main className="max-w-[800px] w-full">
+        <main className="max-w-[660px] w-full">
           <h1
             className={cn(
               'font-display text-[56px] font-bold text-brand',
