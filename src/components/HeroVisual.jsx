@@ -88,7 +88,7 @@ export default function HeroVisual({ className }) {
     <div className={cn('flex items-start justify-center', className)}>
       <div
         className={cn(
-          'bg-surface rounded-xl shadow-sm w-[280px]',
+          'bg-accent-subtle rounded-xl w-[280px]',
           'transition-opacity duration-500 ease-out',
           phase === 'resetting' ? 'opacity-0' : 'opacity-100'
         )}
