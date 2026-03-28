@@ -97,6 +97,10 @@ export default function HeroVisual({ className, variant = 'data-above' }) {
     ? Math.round(CUSTOMERS.reduce((sum, c) => sum + parseInt(c.cac.slice(1)), 0) / CUSTOMERS.length)
     : 0;
 
+  const headerColor = variant === 'label-above' ? 'text-foreground-muted'
+    : variant === 'equal' ? 'text-foreground-muted' : 'text-foreground-faint';
+  const dataColor = variant === 'label-above' ? 'text-foreground-faint' : 'text-foreground-muted';
+
   return (
     <div className={cn('flex items-start justify-center', className)}>
       <div
@@ -122,16 +126,10 @@ export default function HeroVisual({ className, variant = 'data-above' }) {
 
         {/* Column headers */}
         <div className="flex items-center justify-between px-7 pt-4 pb-2">
-          <span className={cn(
-            'text-[11px] font-semibold tracking-[0.05em] uppercase',
-            variant === 'label-above' ? 'text-foreground-muted' : 'text-foreground-faint'
-          )}>
+          <span className={cn('text-[11px] font-semibold tracking-[0.05em] uppercase', headerColor)}>
             New Customers
           </span>
-          <span className={cn(
-            'text-[11px] font-semibold tracking-[0.05em] uppercase',
-            variant === 'label-above' ? 'text-foreground-muted' : 'text-foreground-faint'
-          )}>
+          <span className={cn('text-[11px] font-semibold tracking-[0.05em] uppercase', headerColor)}>
             CAC
           </span>
         </div>
@@ -143,16 +141,10 @@ export default function HeroVisual({ className, variant = 'data-above' }) {
               key={customer.name}
               className="flex items-center justify-between py-2 px-2 rounded-md animate-fade-in"
             >
-              <span className={cn(
-                'text-[13px] font-medium',
-                variant === 'label-above' ? 'text-foreground-faint' : 'text-foreground-muted'
-              )}>
+              <span className={cn('text-[13px] font-medium', dataColor)}>
                 {customer.name}
               </span>
-              <span className={cn(
-                'text-[13px] tabular-nums',
-                variant === 'label-above' ? 'text-foreground-faint' : 'text-foreground-muted'
-              )}>
+              <span className={cn('text-[13px] tabular-nums', dataColor)}>
                 {customer.cac}
               </span>
             </div>
