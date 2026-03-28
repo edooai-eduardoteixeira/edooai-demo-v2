@@ -13,10 +13,10 @@ import { cn } from '../lib/utils';
 */
 
 const CUSTOMERS = [
-  { name: 'Sarah M.', cac: '$60' },
-  { name: 'James K.', cac: '$90' },
-  { name: 'Rachel T.', cac: '$60' },
-  { name: 'David L.', cac: '$120' },
+  { name: 'Gina Miller', cac: '$60' },
+  { name: 'Paul Davis', cac: '$90' },
+  { name: 'Karen Walsh', cac: '$60' },
+  { name: 'Tom Bennett', cac: '$120' },
 ];
 
 const SKELETON_DURATION = 1500;
