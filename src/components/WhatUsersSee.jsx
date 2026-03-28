@@ -104,19 +104,15 @@ function WANotif({ name, body }) {
 }
 
 /* ── Redeem journey — in-app progression card ── */
-const REDEEM_STEPS = [
-  { label: 'Sign Up' },
-  { label: '1st Transaction' },
-  { label: 'Free Netflix unlocked \u{1F37F}', isReward: true },
-];
-
 function RedeemJourney() {
+  // 0 = empty, 1 = sign up visible, 2 = 1st tx visible, 3 = reward visible
   const [revealed, setRevealed] = useState(0);
   const timerRef = useRef(null);
   const hoveredRef = useRef(false);
 
   const runSequence = useCallback(() => {
     clearInterval(timerRef.current);
+    clearTimeout(timerRef.current);
     if (hoveredRef.current) return;
 
     let step = 0;
@@ -124,10 +120,9 @@ function RedeemJourney() {
 
     const tick = () => {
       step++;
-      if (step <= REDEEM_STEPS.length) {
+      if (step <= 3) {
         setRevealed(step);
       } else {
-        // Hold on final state, then restart
         clearInterval(timerRef.current);
         timerRef.current = setTimeout(() => {
           if (!hoveredRef.current) runSequence();
@@ -136,7 +131,6 @@ function RedeemJourney() {
       }
     };
 
-    // First step appears after 400ms, then every 500ms
     timerRef.current = setTimeout(() => {
       tick();
       timerRef.current = setInterval(tick, 500);
@@ -168,30 +162,59 @@ function RedeemJourney() {
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <div className="rounded-lg bg-surface shadow-sm overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px p-4">
-        <div className="text-xs font-medium text-foreground-faint mb-3">Paul Davis · NeoBank</div>
-        <div className="flex flex-col gap-2.5">
-          {REDEEM_STEPS.map((step, i) => {
-            const isVisible = i < revealed;
-            return (
-              <div
-                key={i}
-                className={cn(
-                  'flex items-center gap-2 transition-all duration-200',
-                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
-                )}
-              >
-                <Check size={14} className={cn('shrink-0', step.isReward ? 'text-foreground' : 'text-foreground-faint')} />
-                <span className={cn(
-                  step.isReward
-                    ? 'text-sm font-semibold text-foreground'
-                    : 'text-[13px] font-medium text-foreground-muted'
-                )}>
-                  {step.label}
-                </span>
+      <div
+        className="rounded-lg bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px"
+        style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}
+      >
+        <div className="p-2.5">
+          <div className="rounded-lg bg-surface p-[8px_10px]">
+            {/* App header — same pattern as Notif */}
+            <div className="flex items-center gap-1.5 mb-2.5">
+              <div className="w-5 h-5 rounded-sm bg-foreground flex items-center justify-center text-[11px] font-bold text-white shrink-0">
+                N
               </div>
-            );
-          })}
+              <span className="text-xs font-semibold text-foreground-muted">NeoBank</span>
+              <span className="text-[11px] text-foreground-faint ml-auto">now</span>
+            </div>
+
+            {/* In-app journey tracker */}
+            <div className="text-sm font-semibold mb-2">Paul, complete your setup</div>
+            <div className="relative pl-5">
+              {/* Vertical connector line */}
+              <div className="absolute left-[3px] top-1.5 bottom-1.5 w-0.5 bg-border" />
+
+              {/* Step: Sign Up */}
+              <div className={cn(
+                'flex items-center gap-2 pb-2.5 relative transition-all duration-200',
+                revealed >= 1 ? 'opacity-100' : 'opacity-0'
+              )}>
+                <div className="absolute left-[-18px] w-[7px] h-[7px] rounded-full bg-success z-[1]" />
+                <Check size={13} className="text-success shrink-0" />
+                <span className="text-[13px] text-foreground-muted">Sign Up</span>
+              </div>
+
+              {/* Step: 1st Transaction */}
+              <div className={cn(
+                'flex items-center gap-2 pb-2.5 relative transition-all duration-200',
+                revealed >= 2 ? 'opacity-100' : 'opacity-0'
+              )}>
+                <div className="absolute left-[-18px] w-[7px] h-[7px] rounded-full bg-success z-[1]" />
+                <Check size={13} className="text-success shrink-0" />
+                <span className="text-[13px] text-foreground-muted">1st Transaction</span>
+              </div>
+
+              {/* Reward */}
+              <div className={cn(
+                'relative transition-all duration-200',
+                revealed >= 3 ? 'opacity-100' : 'opacity-0'
+              )}>
+                <div className="absolute left-[-18px] top-2 w-[7px] h-[7px] rounded-full bg-success z-[1]" />
+                <div className="rounded-md bg-accent-subtle py-2 px-3">
+                  <div className="text-sm font-semibold text-foreground">Free Netflix unlocked! {'\u{1F37F}'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
