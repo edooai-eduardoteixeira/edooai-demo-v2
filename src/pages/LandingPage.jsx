@@ -16,7 +16,7 @@ export default function LandingPage({ config, onNext, onHome }) {
 
       {/* Hero — text left, visual right */}
       <section className="pt-20 flex items-start gap-16">
-        <main className="max-w-[560px] w-full">
+        <main className="max-w-[800px] w-full">
           <h1
             className={cn(
               'font-display text-[56px] font-bold text-brand',
