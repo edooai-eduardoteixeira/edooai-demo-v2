@@ -4,12 +4,13 @@ import { cn } from '../lib/utils';
 /*
   HeroVisual — "An agent is acquiring customers"
 
-  - Top: pulsing glow dot + "Agent working" text (agent presence)
-  - Column headers: "CUSTOMER" + "CAC" (frames the list)
-  - Body: name + CAC amount rows, growing one by one
-  - Bottom: skeleton row resolving into next customer
+  - Top: pulsing glow dot + "Agent working" (agent presence, emphasized)
+  - Column headers: "NEW CUSTOMERS" + "CAC"
+  - Body: name + CAC rows, growing one by one (slower, 4 customers)
+  - Bottom: skeleton resolving into next customer
+  - Summary: AI-computed insight appears after list completes
 
-  List grows from 2 to 6, holds, fades, loops.
+  List grows from 1 to 4, summary fades in, holds, loops.
 */
 
 const CUSTOMERS = [
@@ -17,18 +18,18 @@ const CUSTOMERS = [
   { name: 'James K.', cac: '$90' },
   { name: 'Rachel T.', cac: '$60' },
   { name: 'David L.', cac: '$120' },
-  { name: 'Ana P.', cac: '$90' },
-  { name: 'Marcus W.', cac: '$60' },
 ];
 
-const SKELETON_DURATION = 1200;
-const PAUSE_BETWEEN = 400;
+const SKELETON_DURATION = 1500;
+const PAUSE_BETWEEN = 600;
+const SUMMARY_DELAY = 500;
 const HOLD_AT_END = 2500;
 const FADE_OUT = 500;
 
 export default function HeroVisual({ className }) {
-  const [visibleCount, setVisibleCount] = useState(2);
+  const [visibleCount, setVisibleCount] = useState(1);
   const [showSkeleton, setShowSkeleton] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
   const [phase, setPhase] = useState('growing');
   const timeoutRef = useRef(null);
   const mountedRef = useRef(true);
@@ -55,16 +56,21 @@ export default function HeroVisual({ className }) {
 
       if (count >= CUSTOMERS.length) {
         setShowSkeleton(false);
-        setPhase('holding');
+        // Show AI summary
         schedule(() => {
-          setPhase('resetting');
+          setShowSummary(true);
+          setPhase('holding');
           schedule(() => {
-            setVisibleCount(2);
-            setShowSkeleton(false);
-            setPhase('growing');
-            schedule(() => addNext(2), 800);
-          }, FADE_OUT);
-        }, HOLD_AT_END);
+            setPhase('resetting');
+            schedule(() => {
+              setVisibleCount(1);
+              setShowSkeleton(false);
+              setShowSummary(false);
+              setPhase('growing');
+              schedule(() => addNext(1), 800);
+            }, FADE_OUT);
+          }, HOLD_AT_END);
+        }, SUMMARY_DELAY);
         return;
       }
 
@@ -76,7 +82,7 @@ export default function HeroVisual({ className }) {
       }, SKELETON_DURATION);
     }
 
-    schedule(() => addNext(2), 1000);
+    schedule(() => addNext(1), 1000);
 
     return () => {
       mountedRef.current = false;
@@ -86,22 +92,27 @@ export default function HeroVisual({ className }) {
 
   const visibleCustomers = CUSTOMERS.slice(0, visibleCount);
 
+  // Compute average CAC from visible customers
+  const avgCac = visibleCount >= CUSTOMERS.length
+    ? Math.round(CUSTOMERS.reduce((sum, c) => sum + parseInt(c.cac.slice(1)), 0) / CUSTOMERS.length)
+    : 0;
+
   return (
     <div className={cn('flex items-start justify-center', className)}>
       <div
         className={cn(
-          'bg-surface rounded-xl shadow-lg w-[280px]',
+          'bg-surface rounded-xl shadow-sm w-[280px]',
           'transition-opacity duration-500 ease-out',
           phase === 'resetting' ? 'opacity-0' : 'opacity-100'
         )}
       >
-        {/* Agent status */}
+        {/* Agent status — emphasized */}
         <div className="flex items-center gap-2.5 px-5 pt-5 pb-4">
-          <div className="relative flex items-center justify-center w-4 h-4">
-            <div className="absolute w-2 h-2 rounded-full bg-brand" />
-            <div className="absolute w-2 h-2 rounded-full bg-brand animate-[agent-glow_2s_ease-in-out_infinite]" />
+          <div className="relative flex items-center justify-center w-5 h-5">
+            <div className="absolute w-2.5 h-2.5 rounded-full bg-brand" />
+            <div className="absolute w-2.5 h-2.5 rounded-full bg-brand animate-[agent-glow_2s_ease-in-out_infinite]" />
           </div>
-          <span className="text-[13px] font-medium text-foreground-faint">
+          <span className="text-[13px] font-semibold text-foreground-faint">
             Agent working
           </span>
         </div>
@@ -112,7 +123,7 @@ export default function HeroVisual({ className }) {
         {/* Column headers */}
         <div className="flex items-center justify-between px-7 pt-4 pb-2">
           <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
-            Customer
+            New Customers
           </span>
           <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
             CAC
@@ -120,7 +131,7 @@ export default function HeroVisual({ className }) {
         </div>
 
         {/* Customer list */}
-        <div className="px-5 pb-5 flex flex-col gap-0.5">
+        <div className="px-5 pb-4 flex flex-col gap-0.5">
           {visibleCustomers.map((customer) => (
             <div
               key={customer.name}
@@ -135,7 +146,7 @@ export default function HeroVisual({ className }) {
             </div>
           ))}
 
-          {/* Skeleton row — next customer incoming */}
+          {/* Skeleton row */}
           {showSkeleton && (
             <div className="flex items-center justify-between py-2 px-2 rounded-md animate-fade-in">
               <div className="h-3 w-20 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer" />
@@ -143,6 +154,15 @@ export default function HeroVisual({ className }) {
             </div>
           )}
         </div>
+
+        {/* AI summary — computed context surface */}
+        {showSummary && (
+          <div className="mx-5 mb-5 bg-accent-subtle rounded-lg py-3 px-4 animate-fade-in">
+            <span className="text-[13px] text-foreground-muted">
+              {CUSTOMERS.length} acquired · ${avgCac} avg CAC
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

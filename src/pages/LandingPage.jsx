@@ -38,7 +38,7 @@ export default function LandingPage({ config, onNext, onHome }) {
         </main>
 
         {/* Right side — animated hero visual */}
-        <HeroVisual className="pt-6 hidden lg:flex" />
+        <HeroVisual className="pt-16 hidden lg:flex" />
       </section>
 
       <div className="flex-1" />
