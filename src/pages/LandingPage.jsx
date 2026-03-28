@@ -28,7 +28,7 @@ export default function LandingPage({ config, onNext, onHome }) {
           </h1>
           <p
             className={cn(
-              'text-[22px] font-medium text-foreground-muted',
+              'text-[22px] font-medium text-foreground',
               'leading-[1.5] mb-10'
             )}
           >
