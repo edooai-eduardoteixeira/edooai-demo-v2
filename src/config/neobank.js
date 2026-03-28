@@ -7,10 +7,10 @@ const neobank = {
 
   // Screen 1 — Landing Page
   landing: {
-    headline: 'Turn your best customers into your growth engine.',
+    headline: 'Your most powerful channel is untapped.',
     subheadline:
-      'Stop competing for expensive ads while your most powerful channel is untapped. We operate your referrals end-to-end to deliver active customers at a fraction of your CAC.',
-    ctaText: 'Start Now',
+      'We operate your referrals end-to-end. Active customers at a fraction of your CAC.',
+    ctaText: 'See the Demo',
     missionLine: 'On a mission to scale distribution for the best products on earth.',
   },
 

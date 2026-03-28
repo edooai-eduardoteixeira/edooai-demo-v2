@@ -206,9 +206,33 @@ Use Tailwind's spacing scale. Common values:
 | Hero section top | 80px | `pt-20` | Fixed distance from header — not vertically centered |
 | Headline → subtitle | 32px | `mb-8` | Unified hero message — tight coupling |
 | Subtitle → CTA | 40px | `mb-10` | Visual pause before the action |
-| Content max-width | 800px | `max-w-[800px]` | Readable line lengths at 22px subtitle |
+| Hero text max-width | 660px | `max-w-[660px]` | Leaves room for visual card (280px) + gap (~64px) |
 
-**No forced line breaks** (`<br>`) in hero text. Text flows naturally within the container width. Forced breaks are fragile across screen sizes.
+**Subtitle line break**: On desktop (`lg:`), a responsive `<br>` splits the subtitle at the sentence boundary (one thought per line). On mobile, the `<br>` is hidden and text flows naturally. This is a semantic break between two distinct messages, not a brittle word-level break.
+
+### Landing page hero layout
+
+Text left, animated visual right. The visual is absolutely positioned — it doesn't affect page flow, scroll, or footer position.
+
+```
+section: pt-20 relative
+  main: max-w-[660px] w-full (headline + subtitle + CTA)
+  HeroVisual: absolute bottom-0 right-0 hidden lg:block
+```
+
+**Visual card positioning**: `absolute bottom-0 right-0` — card bottom aligns with CTA bottom, creating a shared baseline that closes the composition. Hidden below `lg` breakpoint (1024px).
+
+**Visual card surface**: `bg-accent-subtle rounded-xl` — not `bg-surface`. White cards pop; the visual should recede. No shadow, no border.
+
+**Visual card height**: Fixed (`h-[160px]` list area). Content animates inside the container. The card never expands or shifts the layout.
+
+**Landing page text hierarchy**:
+
+| Element | Classes | Rationale |
+|---|---|---|
+| Headline | `font-display text-[56px] font-bold text-brand` | The brand moment — only place brand is text |
+| Subtitle | `text-[22px] font-medium text-foreground` | Primary readable text, explains value prop |
+| Footer | `text-[15px] font-normal text-foreground-faint` | Mission line, recedes |
 
 ---
 
@@ -374,6 +398,31 @@ inline-flex items-center justify-center py-1 px-2.5 text-[11px] font-semibold ro
 bg-surface border border-border rounded-lg shadow-sm overflow-hidden
 ```
 
+### Agent status indicator
+Used to show an autonomous agent is actively operating. Brand color only on the dot (active state). Everything else neutral.
+
+**Dot** (8px, solid brand):
+```
+w-2 h-2 rounded-full bg-brand
+```
+
+**Pulse ring** (8px, border-only, scales outward and fades):
+```
+w-2 h-2 rounded-full border-[1.5px] border-brand animate-[agent-glow_2s_ease-out_infinite]
+```
+
+**Status text**:
+```
+text-[13px] font-semibold text-foreground
+```
+
+**Container** (wraps dot + text):
+```
+flex items-center gap-2.5
+```
+
+See `agent-glow` keyframe in `src/styles/global.css`.
+
 ### Form Input
 ```
 w-full px-3.5 py-3 border-[1.5px] border-border rounded-md text-[15px] bg-surface text-foreground transition-all duration-200 ease-out focus:border-accent focus:shadow-glow
@@ -434,6 +483,7 @@ bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] an
 - Tab: `border-b-2 border-b-accent text-foreground font-medium`
 - Toggle on: `bg-brand`
 - Toggle off: `bg-gray-300`
+- Agent status: `bg-brand` dot (8px) + `border-brand` pulse ring (see Agent status indicator recipe)
 
 ### Loading states
 - Replace content with spinner (see Spinner recipe above)
@@ -454,6 +504,7 @@ bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] an
 | `animate-pulse` | Skeleton breathing |
 | `animate-shimmer` | Skeleton loading bars |
 | `animate-tooltip-fade-in` | Tooltip appearance |
+| `agent-glow` (via `animate-[agent-glow_2s_ease-out_infinite]`) | Agent status pulse ring — sonar/radar pattern |
 
 ---
 
