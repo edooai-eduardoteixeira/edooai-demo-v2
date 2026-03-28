@@ -106,13 +106,13 @@ export default function HeroVisual({ className }) {
           phase === 'resetting' ? 'opacity-0' : 'opacity-100'
         )}
       >
-        {/* Agent status — emphasized */}
-        <div className="flex items-center gap-2.5 px-5 pt-5 pb-4">
+        {/* Agent status — active state treatment */}
+        <div className="flex items-center gap-2.5 px-5 pt-5 pb-4 bg-brand-light rounded-t-xl">
           <div className="relative flex items-center justify-center w-5 h-5">
             <div className="absolute w-2.5 h-2.5 rounded-full bg-brand" />
             <div className="absolute w-2.5 h-2.5 rounded-full bg-brand animate-[agent-glow_2s_ease-in-out_infinite]" />
           </div>
-          <span className="text-[13px] font-semibold text-foreground-faint">
+          <span className="text-[13px] font-semibold text-brand">
             Agent working
           </span>
         </div>
