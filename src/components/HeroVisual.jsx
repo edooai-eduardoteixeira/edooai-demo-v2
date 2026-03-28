@@ -78,9 +78,8 @@ export default function HeroVisual({ className }) {
   const visibleCustomers = CUSTOMERS.slice(0, visibleCount);
 
   return (
-    <div className={cn('flex items-start justify-center', className)}>
       <div
-        className="bg-accent-subtle rounded-xl w-[280px]"
+        className={cn('bg-accent-subtle rounded-xl w-[280px]', className)}
       >
         {/* Agent status */}
         <div className="flex items-center gap-2.5 px-5 pt-5 pb-4">
@@ -131,6 +130,5 @@ export default function HeroVisual({ className }) {
           )}
         </div>
       </div>
-    </div>
   );
 }

@@ -8,15 +8,15 @@ export default function LandingPage({ config, onNext, onHome }) {
   const { landing } = config;
 
   return (
-    <div className="min-h-screen flex flex-col max-w-[1100px] mx-auto w-full px-12 overflow-hidden">
+    <div className="min-h-screen flex flex-col max-w-[1100px] mx-auto w-full px-12">
       {/* Header */}
       <header className="py-2.5 mb-6">
         <Logo variant="full" onClick={onHome} />
       </header>
 
-      {/* Hero — text left, visual right */}
-      <section className="pt-20 grid grid-cols-[1fr_280px] gap-12 items-start">
-        <main>
+      {/* Hero */}
+      <section className="pt-20 relative">
+        <main className="max-w-[800px] w-full">
           <h1
             className={cn(
               'font-display text-[56px] font-bold text-brand',
@@ -37,7 +37,7 @@ export default function LandingPage({ config, onNext, onHome }) {
           <CTAButton variant="brand" onClick={onNext}>{landing.ctaText}</CTAButton>
         </main>
 
-        <HeroVisual className="hidden lg:flex" />
+        <HeroVisual className="absolute top-20 right-0 hidden lg:block" />
       </section>
 
       <div className="flex-1" />
