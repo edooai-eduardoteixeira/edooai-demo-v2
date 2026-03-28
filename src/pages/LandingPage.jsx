@@ -14,8 +14,8 @@ export default function LandingPage({ config, onNext, onHome }) {
         <Logo variant="full" onClick={onHome} />
       </header>
 
-      {/* Hero — two columns */}
-      <section className="pt-20 flex items-start justify-between gap-12">
+      {/* Hero text */}
+      <section className="pt-20">
         <main className="max-w-[560px] w-full">
           <h1
             className={cn(
@@ -36,9 +36,22 @@ export default function LandingPage({ config, onNext, onHome }) {
           </p>
           <CTAButton variant="brand" onClick={onNext}>{landing.ctaText}</CTAButton>
         </main>
+      </section>
 
-        {/* Right side — animated hero visual */}
-        <HeroVisual className="pt-16 hidden lg:flex" />
+      {/* Hierarchy comparison — 3 variants side by side */}
+      <section className="pt-12 hidden lg:flex gap-6 justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">1. Data &gt; Labels</span>
+          <HeroVisual variant="data-above" />
+        </div>
+        <div className="flex flex-col items-center gap-3">
+          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">2. Labels &gt; Data</span>
+          <HeroVisual variant="label-above" />
+        </div>
+        <div className="flex flex-col items-center gap-3">
+          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">3. Data = Labels</span>
+          <HeroVisual variant="equal" />
+        </div>
       </section>
 
       <div className="flex-1" />

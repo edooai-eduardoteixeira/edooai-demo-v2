@@ -26,7 +26,7 @@ const SUMMARY_DELAY = 500;
 const HOLD_AT_END = 2500;
 const FADE_OUT = 500;
 
-export default function HeroVisual({ className }) {
+export default function HeroVisual({ className, variant = 'data-above' }) {
   const [visibleCount, setVisibleCount] = useState(1);
   const [showSkeleton, setShowSkeleton] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
@@ -122,10 +122,16 @@ export default function HeroVisual({ className }) {
 
         {/* Column headers */}
         <div className="flex items-center justify-between px-7 pt-4 pb-2">
-          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
+          <span className={cn(
+            'text-[11px] font-semibold tracking-[0.05em] uppercase',
+            variant === 'label-above' ? 'text-foreground-muted' : 'text-foreground-faint'
+          )}>
             New Customers
           </span>
-          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
+          <span className={cn(
+            'text-[11px] font-semibold tracking-[0.05em] uppercase',
+            variant === 'label-above' ? 'text-foreground-muted' : 'text-foreground-faint'
+          )}>
             CAC
           </span>
         </div>
@@ -137,10 +143,16 @@ export default function HeroVisual({ className }) {
               key={customer.name}
               className="flex items-center justify-between py-2 px-2 rounded-md animate-fade-in"
             >
-              <span className="text-[13px] font-medium text-foreground-muted">
+              <span className={cn(
+                'text-[13px] font-medium',
+                variant === 'label-above' ? 'text-foreground-faint' : 'text-foreground-muted'
+              )}>
                 {customer.name}
               </span>
-              <span className="text-[13px] text-foreground-muted tabular-nums">
+              <span className={cn(
+                'text-[13px] tabular-nums',
+                variant === 'label-above' ? 'text-foreground-faint' : 'text-foreground-muted'
+              )}>
                 {customer.cac}
               </span>
             </div>
