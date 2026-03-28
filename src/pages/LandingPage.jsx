@@ -14,8 +14,8 @@ export default function LandingPage({ config, onNext, onHome }) {
         <Logo variant="full" onClick={onHome} />
       </header>
 
-      {/* Hero — two columns */}
-      <section className="pt-20 flex items-start justify-between gap-12">
+      {/* Hero — text left, visual right */}
+      <section className="pt-20 relative">
         <main className="max-w-[560px] w-full">
           <h1
             className={cn(
@@ -37,8 +37,8 @@ export default function LandingPage({ config, onNext, onHome }) {
           <CTAButton variant="brand" onClick={onNext}>{landing.ctaText}</CTAButton>
         </main>
 
-        {/* Right side — animated hero visual */}
-        <HeroVisual className="pt-6 hidden lg:flex" />
+        {/* Visual — absolutely positioned, doesn't affect layout flow */}
+        <HeroVisual className="absolute top-20 right-0 hidden lg:flex" />
       </section>
 
       <div className="flex-1" />
