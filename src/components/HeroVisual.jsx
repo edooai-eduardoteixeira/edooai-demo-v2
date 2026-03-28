@@ -4,13 +4,12 @@ import { cn } from '../lib/utils';
 /*
   HeroVisual — "An agent is acquiring customers"
 
-  - Top: pulsing glow dot + "Agent working" (agent presence, emphasized)
-  - Column headers: "NEW CUSTOMERS" + "CAC"
-  - Body: name + CAC rows, growing one by one (slower, 4 customers)
+  - Top: pulsing glow dot + "Agent working" (agent presence)
+  - Column headers: "NEW CUSTOMERS" + "CAC" (labels > data hierarchy)
+  - Body: name + CAC rows, growing one by one
   - Bottom: skeleton resolving into next customer
-  - Summary: AI-computed insight appears after list completes
 
-  List grows from 1 to 4, summary fades in, holds, loops.
+  List grows from 1 to 4, holds, fades, loops.
 */
 
 const CUSTOMERS = [
@@ -22,14 +21,12 @@ const CUSTOMERS = [
 
 const SKELETON_DURATION = 1500;
 const PAUSE_BETWEEN = 600;
-const SUMMARY_DELAY = 500;
 const HOLD_AT_END = 2500;
 const FADE_OUT = 500;
 
-export default function HeroVisual({ className, variant = 'data-above' }) {
+export default function HeroVisual({ className }) {
   const [visibleCount, setVisibleCount] = useState(1);
   const [showSkeleton, setShowSkeleton] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
   const [phase, setPhase] = useState('growing');
   const timeoutRef = useRef(null);
   const mountedRef = useRef(true);
@@ -56,21 +53,16 @@ export default function HeroVisual({ className, variant = 'data-above' }) {
 
       if (count >= CUSTOMERS.length) {
         setShowSkeleton(false);
-        // Show AI summary
+        setPhase('holding');
         schedule(() => {
-          setShowSummary(true);
-          setPhase('holding');
+          setPhase('resetting');
           schedule(() => {
-            setPhase('resetting');
-            schedule(() => {
-              setVisibleCount(1);
-              setShowSkeleton(false);
-              setShowSummary(false);
-              setPhase('growing');
-              schedule(() => addNext(1), 800);
-            }, FADE_OUT);
-          }, HOLD_AT_END);
-        }, SUMMARY_DELAY);
+            setVisibleCount(1);
+            setShowSkeleton(false);
+            setPhase('growing');
+            schedule(() => addNext(1), 800);
+          }, FADE_OUT);
+        }, HOLD_AT_END);
         return;
       }
 
@@ -91,15 +83,6 @@ export default function HeroVisual({ className, variant = 'data-above' }) {
   }, [clearTimer]);
 
   const visibleCustomers = CUSTOMERS.slice(0, visibleCount);
-
-  // Compute average CAC from visible customers
-  const avgCac = visibleCount >= CUSTOMERS.length
-    ? Math.round(CUSTOMERS.reduce((sum, c) => sum + parseInt(c.cac.slice(1)), 0) / CUSTOMERS.length)
-    : 0;
-
-  const headerColor = variant === 'label-above' ? 'text-foreground-muted'
-    : variant === 'equal' ? 'text-foreground-muted' : 'text-foreground-faint';
-  const dataColor = variant === 'label-above' ? 'text-foreground-faint' : 'text-foreground-muted';
 
   return (
     <div className={cn('flex items-start justify-center', className)}>
@@ -124,27 +107,27 @@ export default function HeroVisual({ className, variant = 'data-above' }) {
         {/* Divider */}
         <div className="mx-5 border-b border-border-light" />
 
-        {/* Column headers */}
+        {/* Column headers — labels > data hierarchy */}
         <div className="flex items-center justify-between px-7 pt-4 pb-2">
-          <span className={cn('text-[11px] font-semibold tracking-[0.05em] uppercase', headerColor)}>
+          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-muted uppercase">
             New Customers
           </span>
-          <span className={cn('text-[11px] font-semibold tracking-[0.05em] uppercase', headerColor)}>
+          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-muted uppercase">
             CAC
           </span>
         </div>
 
         {/* Customer list */}
-        <div className="px-5 pb-4 flex flex-col gap-0.5">
+        <div className="px-5 pb-5 flex flex-col gap-0.5">
           {visibleCustomers.map((customer) => (
             <div
               key={customer.name}
               className="flex items-center justify-between py-2 px-2 rounded-md animate-fade-in"
             >
-              <span className={cn('text-[13px] font-medium', dataColor)}>
+              <span className="text-[13px] font-medium text-foreground-faint">
                 {customer.name}
               </span>
-              <span className={cn('text-[13px] tabular-nums', dataColor)}>
+              <span className="text-[13px] text-foreground-faint tabular-nums">
                 {customer.cac}
               </span>
             </div>
@@ -158,15 +141,6 @@ export default function HeroVisual({ className, variant = 'data-above' }) {
             </div>
           )}
         </div>
-
-        {/* AI summary — computed context surface */}
-        {showSummary && (
-          <div className="mx-5 mb-5 bg-accent-subtle rounded-lg py-3 px-4 animate-fade-in">
-            <span className="text-[13px] text-foreground-muted">
-              {CUSTOMERS.length} acquired · ${avgCac} avg CAC
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );
