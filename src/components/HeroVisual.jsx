@@ -86,7 +86,7 @@ export default function HeroVisual({ className }) {
         <div className="flex items-center gap-2.5 px-5 pt-5 pb-4">
           <div className="relative flex items-center justify-center w-5 h-5">
             <div className="absolute w-2.5 h-2.5 rounded-full bg-brand" />
-            <div className="absolute w-2.5 h-2.5 rounded-full bg-brand animate-[agent-glow_2s_ease-in-out_infinite]" />
+            <div className="absolute w-2.5 h-2.5 rounded-full border-[1.5px] border-brand animate-[agent-glow_2s_ease-out_infinite]" />
           </div>
           <span className="text-[13px] font-semibold text-foreground">
             Agent acquiring customers
