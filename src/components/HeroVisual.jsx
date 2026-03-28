@@ -117,8 +117,8 @@ export default function HeroVisual({ className }) {
           </span>
         </div>
 
-        {/* Customer list */}
-        <div className="px-5 pb-5 flex flex-col gap-0.5">
+        {/* Customer list — fixed height, content animates inside */}
+        <div className="px-5 pb-5 flex flex-col gap-0.5 h-[180px]">
           {visibleCustomers.map((customer) => (
             <div
               key={customer.name}
