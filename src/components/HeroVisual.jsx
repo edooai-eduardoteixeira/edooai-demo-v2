@@ -140,7 +140,7 @@ export default function HeroVisual({ className }) {
               <span className="text-[13px] font-medium text-foreground-muted">
                 {customer.name}
               </span>
-              <span className="text-[13px] text-foreground-faint tabular-nums">
+              <span className="text-[13px] text-foreground-muted tabular-nums">
                 {customer.cac}
               </span>
             </div>
