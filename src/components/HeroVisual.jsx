@@ -22,12 +22,10 @@ const CUSTOMERS = [
 const SKELETON_DURATION = 1500;
 const PAUSE_BETWEEN = 600;
 const HOLD_AT_END = 2500;
-const FADE_OUT = 500;
 
 export default function HeroVisual({ className }) {
   const [visibleCount, setVisibleCount] = useState(1);
   const [showSkeleton, setShowSkeleton] = useState(false);
-  const [phase, setPhase] = useState('growing');
   const timeoutRef = useRef(null);
   const mountedRef = useRef(true);
 
@@ -53,15 +51,10 @@ export default function HeroVisual({ className }) {
 
       if (count >= CUSTOMERS.length) {
         setShowSkeleton(false);
-        setPhase('holding');
         schedule(() => {
-          setPhase('resetting');
-          schedule(() => {
-            setVisibleCount(1);
-            setShowSkeleton(false);
-            setPhase('growing');
-            schedule(() => addNext(1), 800);
-          }, FADE_OUT);
+          setVisibleCount(1);
+          setShowSkeleton(false);
+          schedule(() => addNext(1), 400);
         }, HOLD_AT_END);
         return;
       }
@@ -87,11 +80,7 @@ export default function HeroVisual({ className }) {
   return (
     <div className={cn('flex items-start justify-center', className)}>
       <div
-        className={cn(
-          'bg-accent-subtle rounded-xl w-[280px]',
-          'transition-opacity duration-500 ease-out',
-          phase === 'resetting' ? 'opacity-0' : 'opacity-100'
-        )}
+        className="bg-accent-subtle rounded-xl w-[280px]"
       >
         {/* Agent status */}
         <div className="flex items-center gap-2.5 px-5 pt-5 pb-4">
