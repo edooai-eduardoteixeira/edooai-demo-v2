@@ -16,7 +16,7 @@ export default function LandingPage({ config, onNext, onHome }) {
 
       {/* Hero */}
       <section className="pt-20 relative">
-        <main className="max-w-[640px] w-full">
+        <main className="max-w-[660px] w-full">
           <h1
             className={cn(
               'font-display text-[56px] font-bold text-brand',
@@ -32,7 +32,12 @@ export default function LandingPage({ config, onNext, onHome }) {
               'leading-[1.5] mb-10'
             )}
           >
-            {landing.subheadline}
+            {landing.subheadline.split('. ').map((sentence, i, arr) => (
+              <React.Fragment key={i}>
+                {i > 0 && <><br className="hidden lg:block" />{' '}</>}
+                {sentence}{i < arr.length - 1 ? '.' : ''}
+              </React.Fragment>
+            ))}
           </p>
           <CTAButton variant="brand" onClick={onNext}>{landing.ctaText}</CTAButton>
         </main>
