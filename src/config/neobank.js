@@ -10,7 +10,7 @@ const neobank = {
     headline: 'Your most powerful channel is untapped.',
     subheadline:
       'We operate your referrals end-to-end. Active customers at a fraction of your CAC.',
-    ctaText: 'Start Now',
+    ctaText: 'See the Demo',
     missionLine: 'On a mission to scale distribution for the best products on earth.',
   },
 
