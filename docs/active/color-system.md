@@ -127,7 +127,7 @@ Reusable `Modal` component enforces:
 ## Charts & Data Visualization
 
 - Chart lines: `var(--color-brand)` — brand carries the data story
-- Area fills: Warm taupe `#A89E94` at low opacity — not colored
+- Area fills: `var(--color-brand)` at 7% opacity — subtle brand tint that connects fill to line
 - Pre-threshold/uncertain: Warm taupe dashed lines
 - Axis labels: `var(--text-tertiary)`
 - Tooltips: Dark bg with white text
@@ -152,7 +152,7 @@ Reusable `Modal` component enforces:
 4. Logo: "V" letter → custom crystalline mark, Playfair Display wordmark, dropped "AI"
 5. Typography: single font (Inter) → dual font (Playfair Display for brand, Inter for product)
 6. Heading hierarchy: all same color → section titles demoted to foreground-muted
-7. Chart gradients: colored → gray → warm taupe (matching environment)
+7. Chart area fill: colored → gray → warm taupe → Pure Wine 7% (brand tint that connects fill to line)
 8. No secondary accent color — one brand color, used with restraint
 9. No pink/blush — brand-light is warm linen #F0E8E5
 10. Modals: extracted to reusable component with brand-outline confirm buttons

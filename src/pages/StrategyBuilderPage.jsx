@@ -239,14 +239,6 @@ export default function StrategyBuilderPage({ config, onNext, onHome }) {
   const [activeDrawer, setActiveDrawer] = useState(null);
 
   const [hoveredDay, setHoveredDay] = useState(null);
-  const CHART_FILL_OPTIONS = [
-    { label: 'Warm taupe 12%', color: '#A89E94', opacity: 0.14 },
-    { label: 'Pure Wine 7%', color: '#66001F', opacity: 0.07 },
-    { label: 'Pure Wine 12%', color: '#66001F', opacity: 0.12 },
-    { label: 'Pure Wine 20%', color: '#66001F', opacity: 0.20 },
-    { label: 'No fill', color: '#A89E94', opacity: 0 },
-  ];
-  const [chartFill, setChartFill] = useState(CHART_FILL_OPTIONS[0]);
   const [hoveredSparkline, setHoveredSparkline] = useState(null);
 
   const cancelRef = useRef(false);
@@ -892,11 +884,11 @@ export default function StrategyBuilderPage({ config, onNext, onHome }) {
                               <stop offset="60%" stopColor="#A89E94" stopOpacity="0.05" />
                               <stop offset="100%" stopColor="#A89E94" stopOpacity="0" />
                             </linearGradient>
-                            {/* Post-threshold area fill: uses chartFill state */}
+                            {/* Post-threshold area fill: Pure Wine at 7% */}
                             <linearGradient id="areaFillPost" x1="0" y1={chartTop} x2="0" y2={chartBottom} gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor={chartFill.color} stopOpacity={chartFill.opacity} />
-                              <stop offset="60%" stopColor={chartFill.color} stopOpacity={chartFill.opacity * 0.35} />
-                              <stop offset="100%" stopColor={chartFill.color} stopOpacity="0" />
+                              <stop offset="0%" stopColor="var(--color-brand)" stopOpacity="0.07" />
+                              <stop offset="60%" stopColor="var(--color-brand)" stopOpacity="0.025" />
+                              <stop offset="100%" stopColor="var(--color-brand)" stopOpacity="0" />
                             </linearGradient>
                             {/* Post-threshold stroke gradient: warm taupe → merlot */}
                             <linearGradient id="strokeGrad" x1={threshX} y1="0" x2={chartRight} y2="0" gradientUnits="userSpaceOnUse">
@@ -1004,22 +996,6 @@ export default function StrategyBuilderPage({ config, onNext, onHome }) {
               </div>
             )}
           </section>
-
-        {/* ── TEMPORARY: Chart fill tester ── */}
-        <div style={{
-          position: 'fixed', bottom: 20, right: 20, zIndex: 9999,
-          background: 'white', borderRadius: 12, padding: '16px 20px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12)', border: '1px solid var(--border)',
-          fontSize: 12, fontFamily: 'var(--font-family)',
-        }}>
-          <div style={{ fontWeight: 700, marginBottom: 10, color: 'var(--text-primary)' }}>Chart Area Fill</div>
-          {CHART_FILL_OPTIONS.map(opt => (
-            <label key={opt.label} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0', cursor: 'pointer' }}>
-              <input type="radio" name="chartFill" defaultChecked={opt.label === CHART_FILL_OPTIONS[0].label} onChange={() => setChartFill(opt)} />
-              <span style={{ color: 'var(--text-secondary)' }}>{opt.label}</span>
-            </label>
-          ))}
-        </div>
 
         {/* ════════════════════════════════════════════
             SECTION 2 — What Users See (grey background zone)
