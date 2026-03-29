@@ -215,10 +215,12 @@ export function computeProjection({ budget, params }) {
     const adjustedConvRate = effectiveBaseConvRate * rewardConvBoost;
 
     // Adaptive budget pacing: spread remaining budget evenly over remaining days.
-    // Each journey has an expected reward cost (reward per conversion × conversion probability).
+    // Cost per journey accounts for the efficiency split: well-targeted journeys
+    // convert at adjustedConvRate, poorly-targeted at accidentalConvRate.
     const remainingDays = 31 - day;
     const dailyBudget = remainingDays > 0 ? remainingBudget / remainingDays : 0;
-    const expectedCostPerJourney = dailyRewardCost * adjustedConvRate;
+    const expectedConvPerJourney = eff * adjustedConvRate + (1 - eff) * accidentalConvRate;
+    const expectedCostPerJourney = dailyRewardCost * expectedConvPerJourney;
     const budgetJourneyCap = expectedCostPerJourney > 0 ? dailyBudget / expectedCostPerJourney : Infinity;
     const journeysToday = remainingBudget <= 0 ? 0 : Math.min(supplyDailyTarget, remainingPool * maxDailyReachRate, budgetJourneyCap);
 

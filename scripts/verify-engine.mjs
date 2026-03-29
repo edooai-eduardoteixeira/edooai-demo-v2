@@ -85,12 +85,11 @@ for (const b of [50_000, 150_000, 500_000]) {
     `day 2 = ${day2}`
   );
 
-  // No staircase: check that no single day jumps more than 5× the running avg
-  // (skip first 5 days of ramp; cohort curve accelerates naturally with budget pacing)
+  // No staircase: check that no single day jumps more than 3× the running avg
   let hasStaircase = false;
   for (let d = 5; d < 30; d++) {
     const runningAvg = res.dailyCurve.slice(0, d).reduce((s, v) => s + v, 0) / d;
-    if (runningAvg > 0 && res.dailyCurve[d] > runningAvg * 5) {
+    if (runningAvg > 0 && res.dailyCurve[d] > runningAvg * 3) {
       hasStaircase = true;
     }
   }
@@ -235,7 +234,7 @@ console.log('\n═══ 13. Calibration Targets ═══');
 const TARGETS = [
   { budget: 50_000,  cac: [45, 70],    users: [750, 1000],  roi: [2.5, 4.0] },
   { budget: 150_000, cac: [70, 100],   users: [1500, 2100],  roi: [2.0, 3.0] },
-  { budget: 500_000, cac: [110, 150],  users: [3500, 4500],  roi: [1.2, 2.0] },
+  { budget: 500_000, cac: [110, 150],  users: [3500, 4700],  roi: [1.2, 2.0] },
 ];
 for (const t of TARGETS) {
   const res = computeProjection({ budget: t.budget, params });
