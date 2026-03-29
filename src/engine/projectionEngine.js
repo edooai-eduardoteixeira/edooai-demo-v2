@@ -214,11 +214,14 @@ export function computeProjection({ budget, params }) {
     const rewardConvBoost = 1 + rewardIntensity * (params.rewardConvElasticity || 0.5);
     const adjustedConvRate = effectiveBaseConvRate * rewardConvBoost;
 
-    // Adaptive budget pacing: spread remaining budget evenly over remaining days.
-    // Cost per journey accounts for the efficiency split: well-targeted journeys
-    // convert at adjustedConvRate, poorly-targeted at accidentalConvRate.
+    // Confidence-driven pacing: journeys scale with efficiency, like an ad network.
+    // Low confidence → few journeys (learning). High confidence → many journeys (scaling).
+    // Budget pacing: remaining budget / remaining days, but weighted by confidence —
+    // today gets a confidence-proportional share rather than an equal share.
     const remainingDays = 31 - day;
-    const dailyBudget = remainingDays > 0 ? remainingBudget / remainingDays : 0;
+    const avgFutureEff = (eff + 0.75) / 2;  // estimate: avg of current and ~peak efficiency
+    const confidenceWeight = remainingDays > 0 ? eff / ((eff + avgFutureEff * (remainingDays - 1)) / remainingDays) : 1;
+    const dailyBudget = remainingDays > 0 ? (remainingBudget / remainingDays) * confidenceWeight : 0;
     const expectedConvPerJourney = eff * adjustedConvRate + (1 - eff) * accidentalConvRate;
     const expectedCostPerJourney = dailyRewardCost * expectedConvPerJourney;
     const budgetJourneyCap = expectedCostPerJourney > 0 ? dailyBudget / expectedCostPerJourney : Infinity;
