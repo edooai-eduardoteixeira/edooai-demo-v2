@@ -45,9 +45,9 @@ function supplyFrontier(budget, N_max, B_half, alpha) {
 // ─── Allocation Efficiency ──────────────────────────────────────────
 // eff(day, cumN) = floor + (1 - floor) × timeFactor × volumeFactor
 // cumN counts only RESOLVED conversions, not pending ones.
-function allocationEfficiency(day, cumulativeN, p) {
+function allocationEfficiency(day, cumulativeResolved, p) {
   const timeFactor = 1 - Math.exp(-p.timeLearnRate * day);
-  const volumeFactor = cumulativeN / (cumulativeN + p.confHalfPoint);
+  const volumeFactor = cumulativeResolved / (cumulativeResolved + p.confHalfPoint);
   return p.effFloor + (1 - p.effFloor) * timeFactor * volumeFactor;
 }
 
@@ -170,7 +170,8 @@ export function computeProjection({ budget, params }) {
   const supplyDailyTarget = maxJourneys / 30;
 
   // Reach quality: wider net = lower quality per contact (structural, not temporal)
-  const reachPenetration = maxJourneys / audienceSize;
+  // Cap penetration at 0.99 to prevent degenerate quality factor (0^x = 0)
+  const reachPenetration = Math.min(maxJourneys / audienceSize, 0.99);
   const qualityFactor = Math.pow(1 - reachPenetration, reachDecayExponent);
   const effectiveBaseConvRate = baseConvRate * qualityFactor;
 
@@ -180,8 +181,10 @@ export function computeProjection({ budget, params }) {
 
   let remainingPool = audienceSize;
   let remainingBudget = budget;
-  let cumulativeN = 0;
+  let cumulativeResolved = 0;
+  let cumulativeGenerated = 0;
   let cumulativeValue = 0;
+  let cumulativeGeneratedValue = 0;
   let totalJourneysStarted = 0;
   const pendingConversions = []; // {resolveDay, count, value}
 
@@ -189,15 +192,14 @@ export function computeProjection({ budget, params }) {
   const confidenceCurve = [];
   const kpiCurves = { cac: [], roi: [], convRate: [], fraudSaved: [] };
   const dailyKPIs = { cac: [], roi: [], convRate: [], fraudSaved: [] };
-  let cumulativeRewardCost = 0;    // committed at generation (for budget pacing)
-  let cumulativeRewardsPaid = 0;    // paid at resolution (for CAC — only resolved users)
+  let cumulativeRewardCost = 0;
   let thresholdDay = 30;
   let thresholdFound = false;
 
   // ─── Daily Loop ────────────────────────────────────────────────────
   for (let day = 1; day <= 30; day++) {
     // Efficiency uses only RESOLVED conversions
-    const eff = allocationEfficiency(day, cumulativeN, params);
+    const eff = allocationEfficiency(day, cumulativeResolved, params);
     confidenceCurve.push(eff);
 
     // Reward cost: budget-driven tier distribution with learning discount.
@@ -234,42 +236,35 @@ export function computeProjection({ budget, params }) {
       (premiumRevenuePerUser - baseRevenuePerUser) * eff;
     const dailyValueGenerated = dailyConversionsGenerated * effectiveRevenuePerUser;
 
-    // Distribute conversions across future days using normal distribution
+    // Cohort attribution: count all generated conversions as acquired users.
+    // Budget is committed at generation time (reward is owed on conversion).
+    const generationRewardCost = dailyRewardCost * dailyConversionsGenerated;
+    cumulativeRewardCost += generationRewardCost;
+    remainingBudget -= generationRewardCost;
+    cumulativeGenerated += dailyConversionsGenerated;
+    cumulativeGeneratedValue += dailyValueGenerated;
+
+    // Distribute conversions across future days for the daily S-curve visual
     for (let delayIdx = 0; delayIdx < offerExpirationDays; delayIdx++) {
-      const delay = delayIdx + 1; // delays are 1..offerExpirationDays
+      const delay = delayIdx + 1;
       const resolveDay = day + delay;
       if (resolveDay <= 30) {
         pendingConversions.push({
           resolveDay,
           count: dailyConversionsGenerated * resolutionWeights[delayIdx],
-          value: dailyValueGenerated * resolutionWeights[delayIdx],
-          rewardCost: dailyRewardCost * dailyConversionsGenerated * resolutionWeights[delayIdx],
         });
       }
-      // Conversions resolving after day 30 are lost (conservative)
     }
 
-    // Resolve any conversions scheduled for today
+    // Resolve pending conversions scheduled for today (for S-curve display)
     let resolvedToday = 0;
-    let resolvedValueToday = 0;
-    let resolvedRewardToday = 0;
     for (const entry of pendingConversions) {
       if (entry.resolveDay === day) {
         resolvedToday += entry.count;
-        resolvedValueToday += entry.value;
-        resolvedRewardToday += entry.rewardCost;
       }
     }
-    cumulativeRewardsPaid += resolvedRewardToday;
-    // Commit reward cost at generation time. Budget is committed when conversions
-    // are generated (you owe the reward), even though payout is at resolution.
-    const generationRewardCost = dailyRewardCost * dailyConversionsGenerated;
-    cumulativeRewardCost += generationRewardCost;
-    remainingBudget -= generationRewardCost;
-
-    // Resolve pending conversions scheduled for today (for user count and value tracking)
-    cumulativeN += resolvedToday;
-    cumulativeValue += resolvedValueToday;
+    cumulativeResolved += resolvedToday;
+    cumulativeValue += dailyValueGenerated;
 
     // Pool dynamics
     remainingPool -= journeysToday;                                // journeys deplete pool
@@ -279,18 +274,18 @@ export function computeProjection({ budget, params }) {
 
     totalJourneysStarted += journeysToday;
 
-    // Threshold: cumulative resolved conversions reach statistical significance
-    if (!thresholdFound && cumulativeN >= (minSignalVolume || 40)) {
+    // Threshold: cumulative generated conversions reach statistical significance
+    if (!thresholdFound && cumulativeGenerated >= (minSignalVolume || 40)) {
       thresholdDay = day;
       thresholdFound = true;
     }
 
-    // Running cumulative KPI trajectories (using rewards actually paid, not committed)
-    kpiCurves.cac.push(cumulativeN > 0 ? Math.round(cumulativeRewardsPaid / cumulativeN) : 0);
-    kpiCurves.roi.push(cumulativeRewardsPaid > 0 ? Math.round((cumulativeValue / cumulativeRewardsPaid) * 10) / 10 : 0);
+    // Running cumulative KPI trajectories (cohort attribution — all generated conversions)
+    kpiCurves.cac.push(cumulativeGenerated > 0 ? Math.round(cumulativeRewardCost / cumulativeGenerated) : 0);
+    kpiCurves.roi.push(cumulativeRewardCost > 0 ? Math.round((cumulativeGeneratedValue / cumulativeRewardCost) * 10) / 10 : 0);
     kpiCurves.convRate.push(totalJourneysStarted > 0
-      ? Math.round((cumulativeN / totalJourneysStarted) * 10000) / 100 : 0);
-    kpiCurves.fraudSaved.push(Math.round(cumulativeRewardsPaid * fraudRate));
+      ? Math.round((cumulativeGenerated / totalJourneysStarted) * 10000) / 100 : 0);
+    kpiCurves.fraudSaved.push(Math.round(cumulativeRewardCost * fraudRate));
 
     // Daily KPI values (marginal, this day only — for sparkline trends)
     dailyKPIs.cac.push(dailyConversionsGenerated > 0 ? Math.round(generationRewardCost / dailyConversionsGenerated) : 0);
@@ -303,32 +298,38 @@ export function computeProjection({ budget, params }) {
     dailyCurve.push(Math.max(0, Math.round(resolvedToday)));
   }
 
-  // ─── Aggregate Metrics ─────────────────────────────────────────────
-  const activeUsers = dailyCurve.reduce((sum, v) => sum + v, 0);
+  // ─── Aggregate Metrics (Cohort Attribution) ─────────────────────────
+  // activeUsers = all conversions generated in the 30-day period.
+  // Uses cohort attribution: conversions are counted when generated,
+  // not when resolved. This is industry standard (Google Ads, Meta, etc.).
+  const activeUsers = Math.round(cumulativeGenerated);
 
-  // CAC = rewards paid to resolved users / resolved users (always ≤ max reward tier)
-  const cac = activeUsers > 0 ? Math.round(cumulativeRewardsPaid / activeUsers) : 999;
+  // dailyCurve shows resolved conversions per day (for S-curve visualization)
+  // activeUsers may be higher than sum(dailyCurve) due to pipeline conversions
 
-  // Budget utilization: how much of the budget was committed (includes pipeline)
+  // CAC = budget / users. Simple, verifiable by anyone.
+  // The engine generates enough users so that CAC ≤ max reward tier.
+  const cac = activeUsers > 0 ? Math.round(budget / activeUsers) : 999;
+
+  // Budget utilization: how much of the budget was committed to conversions
   const budgetUtilization = budget > 0 ? cumulativeRewardCost / budget : 0;
 
-  // ROI = revenue generated / rewards paid
-  const roi = cumulativeRewardsPaid > 0
-    ? Math.round((cumulativeValue / cumulativeRewardsPaid) * 10) / 10
+  // ROI = revenue generated / budget allocated
+  const roi = budget > 0
+    ? Math.round((cumulativeGeneratedValue / budget) * 10) / 10
     : 0;
 
   // Average value per user: shows engine finds better customers over time
   const avgValuePerUser = activeUsers > 0
-    ? Math.round(cumulativeValue / activeUsers)
+    ? Math.round(cumulativeGeneratedValue / activeUsers)
     : 0;
 
-  // Conversion rate: derived from simulation
-  // 2 decimal places — needed for coherence at low rates (~1%)
+  // Conversion rate: generated conversions / journeys started
   const convRate = totalJourneysStarted > 0
     ? Math.round((activeUsers / totalJourneysStarted) * 10000) / 100
     : 0;
 
-  const fraudSaved = Math.round(budget * fraudRate);
+  const fraudSaved = Math.round(cumulativeRewardCost * fraudRate);
 
   // ─── Guidance State ────────────────────────────────────────────────
   let guidanceState;
