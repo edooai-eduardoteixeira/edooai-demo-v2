@@ -38,94 +38,16 @@ const WA_ICON = (
 const ACT = {
   ask: {
     push: {
-      t: 'Free Netflix for you and a friend \u{1F37F}',
-      b: 'Gina, you spent $211 on streaming! \u{1F4B8} Claim one free month of Netflix for you now. Tap to share!',
+      t: 'Free Netflix for you + a friend \u{1F37F}',
+      b: 'Gina, you spent $211 on streaming. \u{1F4B8} Get a free month of Netflix for you + a friend. \u{1F37F} neobank.com/gina',
     },
     sms: {
       t: 'NeoBank \u00b7 72589',
-      b: 'Gina, you spent $211 on streaming! \u{1F4B8} Claim one free month of Netflix for you now. Tap to share https://nflx.it/gina \u{1F37F}',
+      b: 'Gina, you spent $211 on streaming. \u{1F4B8} Get a free month of Netflix for you + a friend. \u{1F37F} neobank.com/gina',
     },
     email: {
-      t: "Gina, let\u2019s get that $211 back? \u{1F37F}",
-      b: "Netflix for free, Gina. One for you, one for a friend. You spent $211 on streaming \u2014 let\u2019s get that back! Share with a friend and you both win!",
-    },
-  },
-  reminder: {
-    push: {
-      t: 'Still thinking about it, Gina? \u{1F37F}',
-      b: 'Your free Netflix month is still here. Share your link with a friend before it expires!',
-    },
-    sms: {
-      t: 'NeoBank \u00b7 72589',
-      b: "Gina, your free Netflix month is still up for grabs! \u{1F37F} Share with a friend before it expires: neo.bnk/r/gina",
-    },
-    email: {
-      t: 'Gina, your Netflix reward is still here \u{1F37F}',
-      b: "Don\u2019t let it expire, Gina. Your free month of Netflix is still waiting \u2014 share with a friend before it\u2019s gone. One for you, one for them!",
-    },
-  },
-};
-
-/* ── Redeem notification data ── */
-const RWD = {
-  success: {
-    referee: {
-      push: {
-        t: 'Netflix is officially unlocked! \u{1F4FA}',
-        b: "Nice move. Since you\u2019ve joined NeoBank, you and Gina both get a free month of Netflix. Head to the app to claim your reward and start streaming!",
-      },
-      sms: {
-        t: 'NeoBank \u00b7 72589',
-        b: "Nice move. Since you\u2019ve joined NeoBank, you and Gina both get a free month of Netflix. Head to the app to claim your reward and start streaming!",
-      },
-      email: {
-        t: 'Netflix is officially unlocked! \u{1F4FA}',
-        b: "Nice move. Since you\u2019ve joined NeoBank, you and Gina both get a free month of Netflix. Head to the app to claim your reward and start streaming!",
-      },
-    },
-    referrer: {
-      push: {
-        t: 'Your Netflix is on us! \u{1F37F}',
-        b: "Huge win\u2014you and Paul both just scored a free month of Netflix. Your reward is officially unlocked and ready to use in the app. Enjoy!",
-      },
-      sms: {
-        t: 'NeoBank \u00b7 72589',
-        b: "Huge win\u2014you and Paul both just scored a free month of Netflix. Your reward is officially unlocked and ready to use in the app. Enjoy!",
-      },
-      email: {
-        t: 'Your Netflix is on us! \u{1F37F}',
-        b: "Huge win\u2014you and Paul both just scored a free month of Netflix. Your reward is officially unlocked and ready to use in the app. Enjoy!",
-      },
-    },
-  },
-  reminder: {
-    referee: {
-      push: {
-        t: 'Your Netflix month is waiting \u{1F37F}',
-        b: "Make your first transaction and unlock a free month of Netflix \u2014 for you and for Gina. Don\u2019t miss out!",
-      },
-      sms: {
-        t: 'NeoBank \u00b7 72589',
-        b: "Your free Netflix month is waiting! \u{1F37F} Make your first transaction to unlock it \u2014 Gina gets one too. Expires in 7 days.",
-      },
-      email: {
-        t: 'A free Netflix month, one step away \u{1F37F}',
-        b: "Almost there \u2014 one transaction is all it takes to unlock a free month of Netflix for you and Gina. Don\u2019t miss out, it expires in 7 days!",
-      },
-    },
-    referrer: {
-      push: {
-        t: 'Almost there, Gina! \u{1F37F}',
-        b: "Paul hasn\u2019t completed their first transaction yet. Once they do, you both unlock a free month of Netflix. Hang tight!",
-      },
-      sms: {
-        t: 'NeoBank \u00b7 72589',
-        b: "Almost there! Paul hasn\u2019t completed their first transaction yet. Once they do, you both unlock a free month of Netflix. Hang tight!",
-      },
-      email: {
-        t: 'Almost there, Gina! \u{1F37F}',
-        b: "Paul hasn\u2019t completed their first transaction yet. Once they do, you both unlock a free month of Netflix. We\u2019ll let you know!",
-      },
+      t: 'Free Netflix for you + a friend \u{1F37F}',
+      b: 'Gina, you spent $211 on streaming. \u{1F4B8} Get a free month of Netflix for you + a friend. \u{1F37F} neobank.com/gina',
     },
   },
 };
@@ -168,21 +90,9 @@ function WANotif({ name, body }) {
 
 /* ── Carousel variant definitions ── */
 const INVITE_VARIANTS = [
-  { m: 'ask', c: 'push', label: 'Ask \u00b7 Push' },
-  { m: 'ask', c: 'sms', label: 'Ask \u00b7 SMS' },
-  { m: 'ask', c: 'email', label: 'Ask \u00b7 Email' },
-  { m: 'reminder', c: 'push', label: 'Reminder \u00b7 Push' },
-  { m: 'reminder', c: 'sms', label: 'Reminder \u00b7 SMS' },
-  { m: 'reminder', c: 'email', label: 'Reminder \u00b7 Email' },
-];
-
-const REDEEM_VARIANTS = [
-  { m: 'success', c: 'push', label: 'Success \u00b7 Push' },
-  { m: 'success', c: 'sms', label: 'Success \u00b7 SMS' },
-  { m: 'success', c: 'email', label: 'Success \u00b7 Email' },
-  { m: 'reminder', c: 'push', label: 'Reminder \u00b7 Push' },
-  { m: 'reminder', c: 'sms', label: 'Reminder \u00b7 SMS' },
-  { m: 'reminder', c: 'email', label: 'Reminder \u00b7 Email' },
+  { m: 'ask', c: 'push', label: 'Push' },
+  { m: 'ask', c: 'sms', label: 'SMS' },
+  { m: 'ask', c: 'email', label: 'Email' },
 ];
 
 /* ══════════════════════════════
@@ -254,38 +164,32 @@ export default function WhatUsersSee() {
   const inviteV = INVITE_VARIANTS[invite.idx];
   const inviteMsg = ACT[inviteV.m]?.[inviteV.c];
 
-  /* ── Redeem carousel ── */
-  const redeem = useCarousel(REDEEM_VARIANTS, 3500);
-  const redeemV = REDEEM_VARIANTS[redeem.idx];
-  const redeemReferrer = RWD[redeemV.m]?.referrer?.[redeemV.c];
-  const redeemReferee = RWD[redeemV.m]?.referee?.[redeemV.c];
-
-  /* ── Height locking via ref measurement ── */
+  /* ── Refs ── */
   const inviteBodyRef = useRef(null);
-  const redeemGinaRef = useRef(null);
-  const redeemPaulRef = useRef(null);
+  const timelineRef = useRef(null);
+  const circle1Ref = useRef(null);
+  const circle3Ref = useRef(null);
   const [inviteMinH, setInviteMinH] = useState(0);
-  const [redeemGinaMinH, setRedeemGinaMinH] = useState(0);
-  const [redeemPaulMinH, setRedeemPaulMinH] = useState(0);
+  const [lineTop, setLineTop] = useState(0);
+  const [lineHeight, setLineHeight] = useState(0);
 
   useEffect(() => {
-    // Measure after first render
     const measure = () => {
       if (inviteBodyRef.current) {
         const h = inviteBodyRef.current.scrollHeight;
         setInviteMinH((prev) => Math.max(prev, h));
       }
-      if (redeemGinaRef.current) {
-        const h = redeemGinaRef.current.scrollHeight;
-        setRedeemGinaMinH((prev) => Math.max(prev, h));
-      }
-      if (redeemPaulRef.current) {
-        const h = redeemPaulRef.current.scrollHeight;
-        setRedeemPaulMinH((prev) => Math.max(prev, h));
+      if (timelineRef.current && circle1Ref.current && circle3Ref.current) {
+        const container = timelineRef.current.getBoundingClientRect();
+        const r1 = circle1Ref.current.getBoundingClientRect();
+        const r3 = circle3Ref.current.getBoundingClientRect();
+        const c1Center = r1.top - container.top + r1.height / 2;
+        const c3Center = r3.top - container.top + r3.height / 2;
+        setLineTop(c1Center);
+        setLineHeight(c3Center - c1Center);
       }
     };
     measure();
-    // Re-measure on resize
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
   });
@@ -296,17 +200,17 @@ export default function WhatUsersSee() {
         What Users See
       </h3>
 
-      <div className="relative">
-        {/* Timeline vertical line (replaces ::before pseudo-element) */}
-        <div className="absolute left-[3px] top-8 bottom-[26px] w-px bg-border-light z-0 max-[860px]:hidden" />
+      <div ref={timelineRef} className="relative">
+        {/* Timeline vertical line — connects circle 1 center to circle 3 center */}
+        {lineHeight > 0 && (
+          <div className="absolute left-[13px] w-0.5 bg-border z-[1] max-[860px]:hidden" style={{ top: lineTop, height: lineHeight }} />
+        )}
 
         {/* ═══ INVITE ═══ */}
-        <div className="flex items-start gap-12 mb-12 max-[860px]:flex-col max-[860px]:gap-5">
-          <div className="flex-[0_0_240px] pt-5 relative pl-6 max-[860px]:pl-0 max-[860px]:flex-none">
-            {/* Timeline node dot (replaces ::before pseudo-element) */}
-            <div className="absolute left-0 top-[27px] w-[7px] h-[7px] rounded-full bg-foreground-faint z-[2] max-[860px]:hidden" />
+        <div className="flex items-start gap-12 mb-10 max-[860px]:flex-col max-[860px]:gap-5">
+          <div className="flex-[0_0_240px] pt-5 relative pl-12 max-[860px]:pl-0 max-[860px]:flex-none">
+            <div ref={circle1Ref} className="absolute left-0 top-5 w-7 h-7 rounded-full bg-foreground-faint text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">1</div>
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Invite</div>
-            <div className="text-sm font-normal text-foreground-muted leading-[1.4] mt-1">Engage your users</div>
           </div>
           <div className="flex-1 flex flex-col items-start">
             <div
@@ -348,12 +252,10 @@ export default function WhatUsersSee() {
         </div>
 
         {/* ═══ REFER ═══ */}
-        <div className="flex items-start gap-12 mb-8 max-[860px]:flex-col max-[860px]:gap-5">
-          <div className="flex-[0_0_240px] pt-5 relative pl-6 max-[860px]:pl-0 max-[860px]:flex-none">
-            {/* Timeline node dot */}
-            <div className="absolute left-0 top-[27px] w-[7px] h-[7px] rounded-full bg-foreground-faint z-[2] max-[860px]:hidden" />
+        <div className="flex items-start gap-12 mb-10 max-[860px]:flex-col max-[860px]:gap-5">
+          <div className="flex-[0_0_240px] pt-5 relative pl-12 max-[860px]:pl-0 max-[860px]:flex-none">
+            <div className="absolute left-0 top-5 w-7 h-7 rounded-full bg-foreground-faint text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">2</div>
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Refer</div>
-            <div className="text-sm font-normal text-foreground-muted leading-[1.4] mt-1">Share with friends</div>
           </div>
           <div className="flex-1 relative min-h-[220px] max-[860px]:justify-start">
             <div className="relative max-w-[700px]">
@@ -363,7 +265,7 @@ export default function WhatUsersSee() {
                   <div className="p-2.5">
                     <WANotif
                       name="Gina Miller"
-                      body="Hey Paul, check out NeoBank. I've been using and it's awesome—plus we both get free Netflix 🍿 neo.bnk/gina"
+                      body="Hey Paul, you should try Neobank. We both get free Netflix! 🍿 neobank.com/gina"
                     />
                   </div>
                 </div>
@@ -383,97 +285,38 @@ export default function WhatUsersSee() {
           </div>
         </div>
 
-        {/* ═══ REFEREE JOURNEY — horizontal pill stepper ═══ */}
-        <div className="relative mb-8">
-          {/* Dashed overlay on timeline segment (replaces ::before and ::after) */}
-          <div className="absolute left-[3px] top-[-8px] bottom-[-8px] w-[3px] bg-gray-50 z-[1] max-[860px]:hidden" />
-          <div className="absolute left-[3px] top-[-8px] bottom-[-8px] border-l border-dashed border-border z-[1] max-[860px]:hidden" />
-
-          <div className="inline-flex items-center gap-0 ml-6 py-1.5 px-3.5 bg-surface rounded-[20px] relative z-[2] max-[860px]:ml-0 max-[860px]:flex-wrap max-[860px]:gap-1.5">
-            <div className="flex items-center gap-[5px]">
-              <div className="w-[5px] h-[5px] rounded-full bg-border shrink-0" />
-              <div className="text-xs font-medium text-foreground-faint whitespace-nowrap">Sign Up</div>
-            </div>
-            <div className="w-5 h-px bg-border shrink-0 mx-1.5" />
-            <div className="flex items-center gap-[5px]">
-              <div className="w-[5px] h-[5px] rounded-full bg-border shrink-0" />
-              <div className="text-xs font-medium text-foreground-faint whitespace-nowrap">KYC</div>
-            </div>
-            <div className="w-5 h-px bg-border shrink-0 mx-1.5" />
-            <div className="flex items-center gap-[5px]">
-              <div className="w-[5px] h-[5px] rounded-full bg-brand shrink-0 shadow-[0_0_0_2px_rgba(107,29,42,0.15)]" />
-              <div className="text-xs font-semibold text-brand whitespace-nowrap">1st Transaction</div>
-            </div>
-          </div>
-        </div>
-
-        {/* ═══ REDEEM — overlapping cards ═══ */}
+        {/* ═══ REDEEM — three cascading in-app notifications ═══ */}
         <div className="flex items-start gap-12 max-[860px]:flex-col max-[860px]:gap-5">
-          <div className="flex-[0_0_240px] pt-5 relative pl-6 max-[860px]:pl-0 max-[860px]:flex-none">
-            {/* Timeline node dot */}
-            <div className="absolute left-0 top-[27px] w-[7px] h-[7px] rounded-full bg-foreground-faint z-[2] max-[860px]:hidden" />
+          <div className="flex-[0_0_240px] pt-5 relative pl-12 max-[860px]:pl-0 max-[860px]:flex-none">
+            <div ref={circle3Ref} className="absolute left-0 top-5 w-7 h-7 rounded-full bg-foreground-faint text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">3</div>
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Redeem</div>
-            <div className="text-sm font-normal text-foreground-muted leading-[1.4] mt-1">Both sides get rewarded</div>
           </div>
-          <div
-            className="flex-1 relative min-h-[280px]"
-            onMouseEnter={redeem.onMouseEnter}
-            onMouseLeave={redeem.onMouseLeave}
-          >
+          <div className="flex-1 relative min-h-[280px] max-[860px]:justify-start">
             <div className="relative max-w-[700px]">
-              {/* Gina — back layer, has carousel */}
+              {/* Card 1 — Account created (back layer) */}
               <div className="relative z-[1] w-[380px] max-w-[380px]">
                 <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
-                  <div
-                    ref={redeemGinaRef}
-                    className="p-2.5"
-                    style={{
-                      transition: 'opacity 200ms ease',
-                      opacity: redeem.fading ? 0 : 1,
-                      ...(redeemGinaMinH ? { minHeight: redeemGinaMinH } : {}),
-                    }}
-                  >
-                    {redeemReferrer && (
-                      <Notif ch={redeemV.c} title={redeemReferrer.t} body={redeemReferrer.b} />
-                    )}
+                  <div className="p-2.5">
+                    <Notif ch="push" title="Your account is ready, Paul" body="Make your first payment now." />
                   </div>
                 </div>
               </div>
-              {/* Paul — front layer */}
-              <div className="absolute top-[78%] left-[285px] z-[2] w-[380px] max-w-[380px] max-[860px]:relative max-[860px]:top-0 max-[860px]:left-0 max-[860px]:mt-4">
+              {/* Card 2 — First transaction (middle layer) */}
+              <div className="absolute top-[86px] left-[160px] z-[2] w-[380px] max-w-[380px] max-[860px]:relative max-[860px]:top-0 max-[860px]:left-0 max-[860px]:mt-4">
                 <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
-                  <div
-                    ref={redeemPaulRef}
-                    className="p-2.5"
-                    style={{
-                      transition: 'opacity 200ms ease',
-                      opacity: redeem.fading ? 0 : 1,
-                      ...(redeemPaulMinH ? { minHeight: redeemPaulMinH } : {}),
-                    }}
-                  >
-                    {redeemReferee && (
-                      <Notif ch={redeemV.c} title={redeemReferee.t} body={redeemReferee.b} />
-                    )}
+                  <div className="p-2.5">
+                    <Notif ch="push" title="Payment at Whole Foods" body="You paid $42.50." />
                   </div>
                 </div>
               </div>
-            </div>
-            {/* Redeem nav — outside stack so mobile layout works */}
-            <div className="flex items-center gap-3 mt-2.5 px-1">
-              <div className="flex gap-1.5">
-                {REDEEM_VARIANTS.map((_, i) => (
-                  <button
-                    key={i}
-                    className={cn(
-                      'w-1.5 h-1.5 rounded-full bg-border border-none p-0 cursor-pointer transition-[background,transform] duration-200',
-                      'hover:bg-foreground-faint',
-                      i === redeem.idx && 'bg-foreground-muted scale-[1.3]'
-                    )}
-                    onClick={() => redeem.jumpTo(i)}
-                  />
-                ))}
+              {/* Card 3 — Reward unlocked (front layer) */}
+              <div className="absolute top-[172px] left-[320px] z-[3] w-[380px] max-w-[380px] max-[860px]:relative max-[860px]:top-0 max-[860px]:left-0 max-[860px]:mt-4">
+                <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
+                  <div className="p-2.5">
+                    <Notif ch="push" title={'You + Gina = Free Netflix! \u{1F37F}'} body="Your reward is ready. Activate now!" />
+                  </div>
+                </div>
               </div>
-              <div className="text-xs font-medium text-foreground-faint transition-opacity duration-200 min-w-[100px]">{redeem.label}</div>
             </div>
           </div>
         </div>
