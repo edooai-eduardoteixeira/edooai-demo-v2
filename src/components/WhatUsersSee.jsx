@@ -314,7 +314,7 @@ export default function WhatUsersSee() {
               <div className="relative z-[1] w-[380px] max-w-[380px]">
                 <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
                   <div className="p-2.5">
-                    <Notif ch="push" title="Welcome to NeoBank!" body="Your account is ready, Paul." />
+                    <Notif ch="push" title="Your account is ready, Paul" body="Make your first payment now." />
                   </div>
                 </div>
               </div>
@@ -322,7 +322,7 @@ export default function WhatUsersSee() {
               <div className="absolute top-[86px] left-[160px] z-[2] w-[380px] max-w-[380px] max-[860px]:relative max-[860px]:top-0 max-[860px]:left-0 max-[860px]:mt-4">
                 <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
                   <div className="p-2.5">
-                    <Notif ch="push" title="Payment approved" body="Purchase of $42.50 approved at Whole Foods" />
+                    <Notif ch="push" title="Payment at Whole Foods" body="You paid $42.50." />
                   </div>
                 </div>
               </div>
@@ -330,7 +330,7 @@ export default function WhatUsersSee() {
               <div className="absolute top-[172px] left-[320px] z-[3] w-[380px] max-w-[380px] max-[860px]:relative max-[860px]:top-0 max-[860px]:left-0 max-[860px]:mt-4">
                 <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
                   <div className="p-2.5">
-                    <Notif ch="push" title={'Netflix is officially unlocked! \u{1F37F}'} body="You and Gina both get a free month." />
+                    <Notif ch="push" title={'You + Gina = Free Netflix! \u{1F37F}'} body="Your reward is ready. Activate now!" />
                   </div>
                 </div>
               </div>
