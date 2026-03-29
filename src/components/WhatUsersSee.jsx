@@ -282,7 +282,7 @@ export default function WhatUsersSee() {
                   <div className="p-2.5">
                     <WANotif
                       name="Gina Miller"
-                      body="Hey Paul, check out NeoBank. I've been using and it's awesome—plus we both get free Netflix 🍿 neo.bnk/gina"
+                      body="Hey Paul, you should try Neobank. We both get free Netflix! 🍿 neobank.com/gina"
                     />
                   </div>
                 </div>
