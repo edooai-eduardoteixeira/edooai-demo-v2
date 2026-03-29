@@ -161,32 +161,25 @@ export function computeProjection({ budget, params }) {
   const tierBudgetAlpha = params.tierBudgetAlpha || 0.7;
   const tierReach = Math.pow(Math.min(1, budget / tierBudgetCeiling), tierBudgetAlpha);
 
-  // Expected reward cost at this budget level (at mid efficiency for budget constraint)
   const effTierDiscount = params.effTierDiscount || 0.10;
-  const midBudgetRewardCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
-  const midEffDiscountFactor = 1 - 0.5 * effTierDiscount; // at mid efficiency
-  const adjMidEffReward = midBudgetRewardCost * midEffDiscountFactor;
 
-  // Budget-as-reward-pool constraint: can't convert more than budget can pay for.
-  // Only resolved conversions cost rewards (expired offers cost nothing),
-  // so we scale up by 1/realizationEstimate to account for resolution losses.
-  const realizationEstimate = params.budgetRealizationFactor || 0.55;
-  const maxAffordable = adjMidEffReward > 0 ? budget / adjMidEffReward / realizationEstimate : Infinity;
-  const effectiveN = Math.min(N_frontier, maxAffordable);
-
-  // Convert from conversion units to journey units
-  const totalJourneys = effectiveN / baseConvRate;
-  const dailyJourneyTarget = totalJourneys / 30;
+  // Supply frontier: max journeys at this budget level (audience constraint).
+  // Budget is paced adaptively in the daily loop — each day uses
+  // remainingBudget / remainingDays to determine daily spend.
+  const maxJourneys = N_frontier / baseConvRate;
+  const supplyDailyTarget = maxJourneys / 30;
 
   // Reach quality: wider net = lower quality per contact (structural, not temporal)
-  const reachPenetration = totalJourneys / audienceSize;
+  const reachPenetration = maxJourneys / audienceSize;
   const qualityFactor = Math.pow(1 - reachPenetration, reachDecayExponent);
   const effectiveBaseConvRate = baseConvRate * qualityFactor;
 
   // Pre-compute resolution distribution weights (once)
   const resolutionWeights = computeResolutionWeights(avgResolutionDays, offerExpirationDays);
 
+
   let remainingPool = audienceSize;
+  let remainingBudget = budget;
   let cumulativeN = 0;
   let cumulativeValue = 0;
   let totalJourneysStarted = 0;
@@ -196,8 +189,8 @@ export function computeProjection({ budget, params }) {
   const confidenceCurve = [];
   const kpiCurves = { cac: [], roi: [], convRate: [], fraudSaved: [] };
   const dailyKPIs = { cac: [], roi: [], convRate: [], fraudSaved: [] };
-  const dailySpend = budget / 30;
-  let cumulativeRewardCost = 0;
+  let cumulativeRewardCost = 0;    // committed at generation (for budget pacing)
+  let cumulativeRewardsPaid = 0;    // paid at resolution (for CAC — only resolved users)
   let thresholdDay = 30;
   let thresholdFound = false;
 
@@ -213,12 +206,19 @@ export function computeProjection({ budget, params }) {
     const baseTierCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
     const dailyRewardCost = baseTierCost * (1 - eff * effTierDiscount);
 
-    // Pace journeys: don't exhaust pool before learning
-    const journeysToday = Math.min(dailyJourneyTarget, remainingPool * maxDailyReachRate);
+    // Conversion rate: compute before journey pacing (needed for budget constraint)
     const maxTierCost = referrerTiers[referrerTiers.length - 1] + refereeTiers[refereeTiers.length - 1];
     const rewardIntensity = maxTierCost > 0 ? dailyRewardCost / maxTierCost : 0;
     const rewardConvBoost = 1 + rewardIntensity * (params.rewardConvElasticity || 0.5);
     const adjustedConvRate = effectiveBaseConvRate * rewardConvBoost;
+
+    // Adaptive budget pacing: spread remaining budget evenly over remaining days.
+    // Each journey has an expected reward cost (reward per conversion × conversion probability).
+    const remainingDays = 31 - day;
+    const dailyBudget = remainingDays > 0 ? remainingBudget / remainingDays : 0;
+    const expectedCostPerJourney = dailyRewardCost * adjustedConvRate;
+    const budgetJourneyCap = expectedCostPerJourney > 0 ? dailyBudget / expectedCostPerJourney : Infinity;
+    const journeysToday = remainingBudget <= 0 ? 0 : Math.min(supplyDailyTarget, remainingPool * maxDailyReachRate, budgetJourneyCap);
 
     // Targeting split
     const wellTargeted = journeysToday * eff;
@@ -243,6 +243,7 @@ export function computeProjection({ budget, params }) {
           resolveDay,
           count: dailyConversionsGenerated * resolutionWeights[delayIdx],
           value: dailyValueGenerated * resolutionWeights[delayIdx],
+          rewardCost: dailyRewardCost * dailyConversionsGenerated * resolutionWeights[delayIdx],
         });
       }
       // Conversions resolving after day 30 are lost (conservative)
@@ -251,14 +252,22 @@ export function computeProjection({ budget, params }) {
     // Resolve any conversions scheduled for today
     let resolvedToday = 0;
     let resolvedValueToday = 0;
+    let resolvedRewardToday = 0;
     for (const entry of pendingConversions) {
       if (entry.resolveDay === day) {
         resolvedToday += entry.count;
         resolvedValueToday += entry.value;
+        resolvedRewardToday += entry.rewardCost;
       }
     }
-    cumulativeRewardCost += dailyRewardCost * resolvedToday;
+    cumulativeRewardsPaid += resolvedRewardToday;
+    // Commit reward cost at generation time. Budget is committed when conversions
+    // are generated (you owe the reward), even though payout is at resolution.
+    const generationRewardCost = dailyRewardCost * dailyConversionsGenerated;
+    cumulativeRewardCost += generationRewardCost;
+    remainingBudget -= generationRewardCost;
 
+    // Resolve pending conversions scheduled for today (for user count and value tracking)
     cumulativeN += resolvedToday;
     cumulativeValue += resolvedValueToday;
 
@@ -276,21 +285,19 @@ export function computeProjection({ budget, params }) {
       thresholdFound = true;
     }
 
-    // Running cumulative KPI trajectories
-    const cumSpend = (budget / 30) * day;
-    kpiCurves.cac.push(cumulativeN > 0 ? Math.round(cumulativeRewardCost / cumulativeN) : 0);
-    kpiCurves.roi.push(cumSpend > 0 ? Math.round((cumulativeValue / cumSpend) * 10) / 10 : 0);
+    // Running cumulative KPI trajectories (using rewards actually paid, not committed)
+    kpiCurves.cac.push(cumulativeN > 0 ? Math.round(cumulativeRewardsPaid / cumulativeN) : 0);
+    kpiCurves.roi.push(cumulativeRewardsPaid > 0 ? Math.round((cumulativeValue / cumulativeRewardsPaid) * 10) / 10 : 0);
     kpiCurves.convRate.push(totalJourneysStarted > 0
       ? Math.round((cumulativeN / totalJourneysStarted) * 10000) / 100 : 0);
-    kpiCurves.fraudSaved.push(Math.round(cumSpend * fraudRate));
+    kpiCurves.fraudSaved.push(Math.round(cumulativeRewardsPaid * fraudRate));
 
     // Daily KPI values (marginal, this day only — for sparkline trends)
-    // Use generation-time values (not resolution-time) to avoid cohort mismatch
-    dailyKPIs.cac.push(dailyConversionsGenerated > 0 ? Math.round(dailyRewardCost) : 0);
-    dailyKPIs.roi.push(dailyConversionsGenerated > 0 ? Math.round((dailyValueGenerated / dailySpend) * 10) / 10 : 0);
+    dailyKPIs.cac.push(dailyConversionsGenerated > 0 ? Math.round(generationRewardCost / dailyConversionsGenerated) : 0);
+    dailyKPIs.roi.push(generationRewardCost > 0 ? Math.round((dailyValueGenerated / generationRewardCost) * 10) / 10 : 0);
     dailyKPIs.convRate.push(journeysToday > 0
       ? Math.round((dailyConversionsGenerated / journeysToday) * 10000) / 100 : 0);
-    dailyKPIs.fraudSaved.push(Math.round(dailySpend * fraudRate));
+    dailyKPIs.fraudSaved.push(Math.round(generationRewardCost * fraudRate));
 
     // Daily output: resolved conversions (rounded for display, minimum 0)
     dailyCurve.push(Math.max(0, Math.round(resolvedToday)));
@@ -298,11 +305,16 @@ export function computeProjection({ budget, params }) {
 
   // ─── Aggregate Metrics ─────────────────────────────────────────────
   const activeUsers = dailyCurve.reduce((sum, v) => sum + v, 0);
-  const cac = activeUsers > 0 ? Math.round(cumulativeRewardCost / activeUsers) : 999;
 
-  // ROI uses actual cumulative value generated (not fixed average)
-  const roi = cumulativeValue > 0 && budget > 0
-    ? Math.round((cumulativeValue / budget) * 10) / 10
+  // CAC = rewards paid to resolved users / resolved users (always ≤ max reward tier)
+  const cac = activeUsers > 0 ? Math.round(cumulativeRewardsPaid / activeUsers) : 999;
+
+  // Budget utilization: how much of the budget was committed (includes pipeline)
+  const budgetUtilization = budget > 0 ? cumulativeRewardCost / budget : 0;
+
+  // ROI = revenue generated / rewards paid
+  const roi = cumulativeRewardsPaid > 0
+    ? Math.round((cumulativeValue / cumulativeRewardsPaid) * 10) / 10
     : 0;
 
   // Average value per user: shows engine finds better customers over time
@@ -341,8 +353,9 @@ export function computeProjection({ budget, params }) {
     guidanceState,
     confidenceCurve,
     totalJourneysStarted: Math.round(totalJourneysStarted),
-    dailyJourneyTarget: Math.round(dailyJourneyTarget),
+    dailyJourneyTarget: Math.round(supplyDailyTarget),
     avgValuePerUser,
+    budgetUtilization: Math.round(budgetUtilization * 100),
     kpiCurves,
     dailyKPIs,
   };
