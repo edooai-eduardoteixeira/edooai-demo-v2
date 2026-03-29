@@ -38,16 +38,16 @@ const WA_ICON = (
 const ACT = {
   ask: {
     push: {
-      t: 'Free Netflix for you and a friend \u{1F37F}',
-      b: 'Gina, you spent $211 on streaming! \u{1F4B8} Claim one free month of Netflix for you now. Tap to share!',
+      t: 'Free Netflix for you + a friend \u{1F37F}',
+      b: 'Gina, you spent $211 on streaming. \u{1F4B8} Get a free month of Netflix for you + a friend. \u{1F37F} neobank.com/gina',
     },
     sms: {
       t: 'NeoBank \u00b7 72589',
-      b: 'Gina, you spent $211 on streaming! \u{1F4B8} Claim one free month of Netflix for you now. Tap to share https://nflx.it/gina \u{1F37F}',
+      b: 'Gina, you spent $211 on streaming. \u{1F4B8} Get a free month of Netflix for you + a friend. \u{1F37F} neobank.com/gina',
     },
     email: {
-      t: "Gina, let\u2019s get that $211 back? \u{1F37F}",
-      b: "Netflix for free, Gina. One for you, one for a friend. You spent $211 on streaming \u2014 let\u2019s get that back! Share with a friend and you both win!",
+      t: 'Free Netflix for you + a friend \u{1F37F}',
+      b: 'Gina, you spent $211 on streaming. \u{1F4B8} Get a free month of Netflix for you + a friend. \u{1F37F} neobank.com/gina',
     },
   },
 };
