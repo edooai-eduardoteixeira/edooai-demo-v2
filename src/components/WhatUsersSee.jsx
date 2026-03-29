@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Check } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 /* ── Channel config ── */
@@ -99,49 +98,6 @@ function WANotif({ name, body }) {
       </div>
       <div className="text-sm font-semibold mb-0.5 overflow-hidden text-ellipsis whitespace-nowrap">{name}</div>
       <div className="text-[13px] text-foreground-muted leading-[1.4] line-clamp-4">{body}</div>
-    </div>
-  );
-}
-
-/* ── Redeem — phone mockup showing in-app reward screen ── */
-function RedeemPhone() {
-  return (
-    <div className="max-w-[280px]">
-      {/* Phone frame — barely there */}
-      <div className="border border-gray-200 rounded-[2rem] bg-surface overflow-hidden">
-        {/* Notch */}
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-16 h-1 rounded-full bg-gray-200" />
-        </div>
-
-        {/* Screen content */}
-        <div className="px-6 pb-8 pt-6">
-          {/* Transaction confirmation — the trigger */}
-          <div className="flex flex-col items-center text-center mb-6">
-            <Check size={28} className="text-success mb-2" />
-            <div className="text-base font-semibold text-foreground">Payment successful</div>
-            <div className="text-[13px] text-foreground-muted mt-0.5">$42.50 · Whole Foods</div>
-          </div>
-
-          {/* Divider */}
-          <div className="h-px bg-border-light mb-6" />
-
-          {/* Reward unlocked — the output */}
-          <div className="mb-6">
-            <div className="text-base font-semibold text-foreground mb-1">
-              Netflix is officially unlocked! {'\u{1F37F}'}
-            </div>
-            <div className="text-[13px] text-foreground-muted leading-[1.4]">
-              You and Gina both get a free month.
-            </div>
-          </div>
-
-          {/* CTA — NeoBank's button, not Vincor's */}
-          <button className="w-full py-2.5 text-[13px] font-semibold rounded-md bg-accent text-white">
-            Claim Reward
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -346,14 +302,39 @@ export default function WhatUsersSee() {
           </div>
         </div>
 
-        {/* ═══ REDEEM — in-app journey ═══ */}
+        {/* ═══ REDEEM — three cascading in-app notifications ═══ */}
         <div className="flex items-start gap-12 max-[860px]:flex-col max-[860px]:gap-5">
           <div className="flex-[0_0_240px] pt-5 relative pl-12 max-[860px]:pl-0 max-[860px]:flex-none">
             <div ref={circle3Ref} className="absolute left-0 top-5 w-7 h-7 rounded-full bg-foreground-faint text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">3</div>
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Redeem</div>
           </div>
-          <div className="flex-1 pt-3">
-            <RedeemPhone />
+          <div className="flex-1 relative min-h-[220px] max-[860px]:justify-start">
+            <div className="relative max-w-[700px]">
+              {/* Card 1 — Account created (back layer) */}
+              <div className="relative z-[1] w-[380px] max-w-[380px]">
+                <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
+                  <div className="p-2.5">
+                    <Notif ch="push" title="Welcome to NeoBank!" body="Your account is ready, Paul." />
+                  </div>
+                </div>
+              </div>
+              {/* Card 2 — First transaction (middle layer) */}
+              <div className="absolute top-[55px] left-[70px] z-[2] w-[380px] max-w-[380px] max-[860px]:relative max-[860px]:top-0 max-[860px]:left-0 max-[860px]:mt-4">
+                <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
+                  <div className="p-2.5">
+                    <Notif ch="push" title="Payment approved" body="Purchase of $42.50 approved at Whole Foods" />
+                  </div>
+                </div>
+              </div>
+              {/* Card 3 — Reward unlocked (front layer) */}
+              <div className="absolute top-[110px] left-[140px] z-[3] w-[380px] max-w-[380px] max-[860px]:relative max-[860px]:top-0 max-[860px]:left-0 max-[860px]:mt-4">
+                <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
+                  <div className="p-2.5">
+                    <Notif ch="push" title={'Netflix is officially unlocked! \u{1F37F}'} body="You and Gina both get a free month." />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
