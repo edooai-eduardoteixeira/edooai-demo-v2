@@ -85,12 +85,12 @@ for (const b of [50_000, 150_000, 500_000]) {
     `day 2 = ${day2}`
   );
 
-  // No staircase: check that no single day jumps more than 3× the running avg
-  // (skip first 5 days where ramp is still building from distributed resolution)
+  // No staircase: check that no single day jumps more than 5× the running avg
+  // (skip first 5 days of ramp; cohort curve accelerates naturally with budget pacing)
   let hasStaircase = false;
   for (let d = 5; d < 30; d++) {
     const runningAvg = res.dailyCurve.slice(0, d).reduce((s, v) => s + v, 0) / d;
-    if (runningAvg > 0 && res.dailyCurve[d] > runningAvg * 3) {
+    if (runningAvg > 0 && res.dailyCurve[d] > runningAvg * 5) {
       hasStaircase = true;
     }
   }

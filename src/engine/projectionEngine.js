@@ -294,15 +294,15 @@ export function computeProjection({ budget, params }) {
       ? Math.round((dailyConversionsGenerated / journeysToday) * 10000) / 100 : 0);
     dailyKPIs.fraudSaved.push(Math.round(generationRewardCost * fraudRate));
 
-    // Daily output: resolved conversions (rounded for display, minimum 0)
-    dailyCurve.push(Math.max(0, Math.round(resolvedToday)));
+    // Daily output: generated conversions (cohort view — matches activeUsers total)
+    dailyCurve.push(Math.max(0, Math.round(dailyConversionsGenerated)));
   }
 
   // ─── Aggregate Metrics (Cohort Attribution) ─────────────────────────
   // activeUsers = all conversions generated in the 30-day period.
   // Uses cohort attribution: conversions are counted when generated,
   // not when resolved. This is industry standard (Google Ads, Meta, etc.).
-  const activeUsers = Math.round(cumulativeGenerated);
+  const activeUsers = dailyCurve.reduce((sum, v) => sum + v, 0);
 
   // dailyCurve shows resolved conversions per day (for S-curve visualization)
   // activeUsers may be higher than sum(dailyCurve) due to pipeline conversions
