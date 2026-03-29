@@ -308,7 +308,7 @@ export default function WhatUsersSee() {
             <div ref={circle3Ref} className="absolute left-0 top-5 w-7 h-7 rounded-full bg-foreground-faint text-white flex items-center justify-center text-[13px] font-semibold z-[2] max-[860px]:hidden">3</div>
             <div className="text-[28px] font-bold tracking-[-0.03em] leading-[1.1] text-foreground max-[860px]:text-2xl">Redeem</div>
           </div>
-          <div className="flex-1 relative min-h-[220px] max-[860px]:justify-start">
+          <div className="flex-1 relative min-h-[280px] max-[860px]:justify-start">
             <div className="relative max-w-[700px]">
               {/* Card 1 — Account created (back layer) */}
               <div className="relative z-[1] w-[380px] max-w-[380px]">
