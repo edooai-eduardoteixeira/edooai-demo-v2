@@ -319,7 +319,7 @@ export default function WhatUsersSee() {
                 </div>
               </div>
               {/* Card 2 — First transaction (middle layer) */}
-              <div className="absolute top-[66px] left-[160px] z-[2] w-[380px] max-w-[380px] max-[860px]:relative max-[860px]:top-0 max-[860px]:left-0 max-[860px]:mt-4">
+              <div className="absolute top-[86px] left-[160px] z-[2] w-[380px] max-w-[380px] max-[860px]:relative max-[860px]:top-0 max-[860px]:left-0 max-[860px]:mt-4">
                 <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
                   <div className="p-2.5">
                     <Notif ch="push" title="Payment approved" body="Purchase of $42.50 approved at Whole Foods" />
@@ -327,7 +327,7 @@ export default function WhatUsersSee() {
                 </div>
               </div>
               {/* Card 3 — Reward unlocked (front layer) */}
-              <div className="absolute top-[132px] left-[320px] z-[3] w-[380px] max-w-[380px] max-[860px]:relative max-[860px]:top-0 max-[860px]:left-0 max-[860px]:mt-4">
+              <div className="absolute top-[172px] left-[320px] z-[3] w-[380px] max-w-[380px] max-[860px]:relative max-[860px]:top-0 max-[860px]:left-0 max-[860px]:mt-4">
                 <div className="rounded-lg border-none bg-surface overflow-hidden transition-[box-shadow,transform] duration-200 ease-in-out hover:shadow-md hover:-translate-y-px" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06)' }}>
                   <div className="p-2.5">
                     <Notif ch="push" title={'Netflix is officially unlocked! \u{1F37F}'} body="You and Gina both get a free month." />
