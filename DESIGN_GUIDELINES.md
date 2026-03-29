@@ -168,7 +168,7 @@ All grays are warm. No blue or cool undertones.
 ### Chart and data visualization
 
 - **Chart lines**: `var(--color-brand)` — brand carries the data story
-- **Area fills**: Warm taupe at low opacity (`#A89E94` at 0.10-0.14) — not colored, not cool gray
+- **Area fills**: `var(--color-brand)` at 7% opacity — subtle brand tint that connects fill to line
 - **Pre-threshold / uncertain data**: Warm taupe `#A89E94` dashed lines
 - **Axis labels**: `var(--text-tertiary)`
 - **Gridlines**: `var(--border-light)`
