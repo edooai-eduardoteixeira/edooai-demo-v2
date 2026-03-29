@@ -50,20 +50,6 @@ const ACT = {
       b: "Netflix for free, Gina. One for you, one for a friend. You spent $211 on streaming \u2014 let\u2019s get that back! Share with a friend and you both win!",
     },
   },
-  reminder: {
-    push: {
-      t: 'Still thinking about it, Gina? \u{1F37F}',
-      b: 'Your free Netflix month is still here. Share your link with a friend before it expires!',
-    },
-    sms: {
-      t: 'NeoBank \u00b7 72589',
-      b: "Gina, your free Netflix month is still up for grabs! \u{1F37F} Share with a friend before it expires: neo.bnk/r/gina",
-    },
-    email: {
-      t: 'Gina, your Netflix reward is still here \u{1F37F}',
-      b: "Don\u2019t let it expire, Gina. Your free month of Netflix is still waiting \u2014 share with a friend before it\u2019s gone. One for you, one for them!",
-    },
-  },
 };
 
 /* ── Notification component ── */
@@ -104,12 +90,9 @@ function WANotif({ name, body }) {
 
 /* ── Carousel variant definitions ── */
 const INVITE_VARIANTS = [
-  { m: 'ask', c: 'push', label: 'Ask \u00b7 Push' },
-  { m: 'ask', c: 'sms', label: 'Ask \u00b7 SMS' },
-  { m: 'ask', c: 'email', label: 'Ask \u00b7 Email' },
-  { m: 'reminder', c: 'push', label: 'Reminder \u00b7 Push' },
-  { m: 'reminder', c: 'sms', label: 'Reminder \u00b7 SMS' },
-  { m: 'reminder', c: 'email', label: 'Reminder \u00b7 Email' },
+  { m: 'ask', c: 'push', label: 'Push' },
+  { m: 'ask', c: 'sms', label: 'SMS' },
+  { m: 'ask', c: 'email', label: 'Email' },
 ];
 
 /* ══════════════════════════════
