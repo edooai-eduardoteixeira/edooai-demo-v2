@@ -107,28 +107,26 @@ function WANotif({ name, body }) {
 function RedeemPhone() {
   return (
     <div className="max-w-[280px]">
-      {/* Phone frame — minimal outline */}
-      <div className="border-2 border-gray-300 rounded-[2rem] bg-surface overflow-hidden">
+      {/* Phone frame — barely there */}
+      <div className="border border-gray-200 rounded-[2rem] bg-surface overflow-hidden">
         {/* Notch */}
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-16 h-1 rounded-full bg-gray-200" />
         </div>
 
         {/* Screen content */}
-        <div className="px-6 pb-8 pt-4">
-          {/* Checklist */}
-          <div className="flex flex-col gap-2.5 mb-6">
-            <div className="flex items-center gap-2">
-              <Check size={15} className="text-success shrink-0" />
-              <span className="text-[13px] text-foreground-muted">Account created</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Check size={15} className="text-success shrink-0" />
-              <span className="text-[13px] text-foreground-muted">First purchase</span>
-            </div>
+        <div className="px-6 pb-8 pt-6">
+          {/* Transaction confirmation — the trigger */}
+          <div className="flex flex-col items-center text-center mb-6">
+            <Check size={28} className="text-success mb-2" />
+            <div className="text-base font-semibold text-foreground">Payment successful</div>
+            <div className="text-[13px] text-foreground-muted mt-0.5">$42.50 · Whole Foods</div>
           </div>
 
-          {/* Reward */}
+          {/* Divider */}
+          <div className="h-px bg-border-light mb-6" />
+
+          {/* Reward unlocked — the output */}
           <div className="mb-6">
             <div className="text-base font-semibold text-foreground mb-1">
               Netflix is officially unlocked! {'\u{1F37F}'}
