@@ -21,7 +21,6 @@ Challenge my requests when they conflict with the design system, introduce unnec
 - Use `cn()` from `src/lib/utils.js` for conditional classes
 - Before creating new components, check `src/components/` for existing patterns
 - For design tokens, color rules, and component recipes, follow `DESIGN_GUIDELINES.md`
-- For brand identity and color system, follow `docs/active/color-system.md`
 
 ## Link Rules
 
