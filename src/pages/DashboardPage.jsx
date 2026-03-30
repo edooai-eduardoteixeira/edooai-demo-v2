@@ -6,66 +6,64 @@ import { computeDashboardProjection } from '../engine/projectionEngine.js';
 // ─── Constants ────────────────────────────────────────────────────────
 const DAY_STOPS = [1, 10, 20, 30];
 const DAY_META = {
-  1: { label: 'Day 1', subtitle: 'Cold Start' },
-  10: { label: 'Day 10', subtitle: 'First Learnings' },
-  20: { label: 'Day 20', subtitle: 'Hitting Stride' },
-  30: { label: 'Day 30', subtitle: 'Mature Operation' },
+  1: { label: 'Day 1', sub: 'Cold Start' },
+  10: { label: 'Day 10', sub: 'First Learnings' },
+  20: { label: 'Day 20', sub: 'Hitting Stride' },
+  30: { label: 'Day 30', sub: 'Mature' },
 };
 
-// ─── Formatting helpers ──────────────────────────────────────────────
+// ─── Formatting ──────────────────────────────────────────────────────
 function fmt(n) { return Math.round(n).toLocaleString('en-US'); }
-function fmtK(n) { return n >= 1000 ? `${Math.round(n / 1000)}K` : fmt(n); }
+function fmtK(n) { return n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}K` : fmt(n); }
 function fmtDollar(n) { return '$' + fmt(n); }
 function fmtTime(h, m) {
-  const period = h >= 12 ? 'pm' : 'am';
-  const hour = h > 12 ? h - 12 : h === 0 ? 12 : h;
-  return `${hour}:${String(m).padStart(2, '0')}${period}`;
+  const p = h >= 12 ? 'pm' : 'am';
+  return `${h > 12 ? h - 12 : h || 12}:${String(m).padStart(2, '0')}${p}`;
 }
 
-// ─── Section Label ───────────────────────────────────────────────────
-function SectionLabel({ children }) {
+function SectionLabel({ children, className }) {
   return (
-    <h3 className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase mb-3">
+    <h3 className={cn('text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase', className)}>
       {children}
     </h3>
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// DAY SELECTOR
-// ═══════════════════════════════════════════════════════════════════════
-function DaySelector({ selected, onSelect, thresholdDay }) {
+// ─── Trend arrow: compares current to earlier value ──────────────────
+function TrendArrow({ current, previous, invertGood }) {
+  if (previous == null || current == null || previous === 0) return null;
+  const improving = invertGood ? current < previous : current > previous;
+  const flat = Math.abs(current - previous) / Math.max(Math.abs(previous), 1) < 0.02;
+  if (flat) return <span className="text-foreground-faint text-xs ml-1">→</span>;
   return (
-    <div className="flex items-center gap-2 mb-8">
+    <span className={cn('text-xs ml-1', improving ? 'text-success' : 'text-foreground-faint')}>
+      {improving ? (invertGood ? '↘' : '↗') : (invertGood ? '↗' : '↘')}
+    </span>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// DAY SELECTOR — compact horizontal strip
+// ═══════════════════════════════════════════════════════════════════════
+function DaySelector({ selected, onSelect }) {
+  return (
+    <div className="flex items-center gap-1">
       {DAY_STOPS.map((day, i) => {
         const active = selected === day;
-        const meta = DAY_META[day];
         return (
           <React.Fragment key={day}>
-            {i > 0 && (
-              <div className="flex-1 h-px bg-border-light max-w-12" />
-            )}
+            {i > 0 && <div className="w-6 h-px bg-border-light" />}
             <button
               onClick={() => onSelect(day)}
               className={cn(
-                'flex flex-col items-center px-5 py-2.5 rounded-md transition-all duration-200 ease-out min-w-[100px]',
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-sm transition-all duration-200',
                 active
-                  ? 'bg-surface border border-border shadow-sm'
-                  : 'hover:bg-accent-subtle'
+                  ? 'bg-surface border border-border shadow-xs text-foreground'
+                  : 'text-foreground-faint hover:text-foreground-muted hover:bg-accent-subtle'
               )}
             >
-              <span className={cn(
-                'text-sm font-semibold',
-                active ? 'text-foreground' : 'text-foreground-muted'
-              )}>
-                {meta.label}
-              </span>
-              <span className={cn(
-                'text-[11px] mt-0.5',
-                active ? 'text-foreground-muted' : 'text-foreground-faint'
-              )}>
-                {meta.subtitle}
-              </span>
+              <span className="text-[13px] font-semibold">{DAY_META[day].label}</span>
+              <span className="text-[11px] text-foreground-faint hidden sm:inline">{DAY_META[day].sub}</span>
             </button>
           </React.Fragment>
         );
@@ -75,241 +73,405 @@ function DaySelector({ selected, onSelect, thresholdDay }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// ZONE A: HORIZONTAL FUNNEL
+// POSITION 1: RESULTS — Funnel + Hero Chart + Inline KPIs
 // ═══════════════════════════════════════════════════════════════════════
-function HorizontalFunnel({ data, audienceSize }) {
+
+/* ── Condensed Funnel Row ── */
+function CondensedFunnel({ data, audienceSize }) {
   const stages = [
-    { label: 'Eligible', value: audienceSize, key: 'eligible' },
-    { label: 'Contacted', value: data.contacted, key: 'contacted' },
-    { label: 'Referral Sent', value: data.referralSent, key: 'referralSent' },
-    { label: 'Signed Up', value: data.signedUp, key: 'signedUp' },
-    { label: 'Active User', value: data.activeUser, key: 'activeUser' },
+    { label: 'Eligible', value: audienceSize },
+    { label: 'Contacted', value: data.contacted },
+    { label: 'Ref. Sent', value: data.referralSent },
+    { label: 'Signed Up', value: data.signedUp },
+    { label: 'Active', value: data.activeUser },
   ];
 
-  const maxValue = stages[0].value;
+  return (
+    <div className="flex items-center gap-0.5">
+      {stages.map((s, i) => {
+        const prev = i > 0 ? stages[i - 1].value : null;
+        const rate = prev && prev > 0 ? ((s.value / prev) * 100).toFixed(1) : null;
+        const isLast = i === stages.length - 1;
+        return (
+          <React.Fragment key={i}>
+            {i > 0 && (
+              <div className="flex items-center gap-0.5 px-1 shrink-0">
+                <svg width="8" height="8" className="text-foreground-faint">
+                  <path d="M 1 4 L 7 4 M 5 2 L 7 4 L 5 6" fill="none" stroke="currentColor" strokeWidth="1" />
+                </svg>
+                <span className="text-[10px] text-foreground-faint">{rate}%</span>
+              </div>
+            )}
+            <div className={cn(
+              'flex flex-col items-center min-w-0',
+              isLast ? 'flex-[1.2]' : 'flex-1'
+            )}>
+              <span className="text-[10px] text-foreground-faint uppercase tracking-[0.04em] truncate">
+                {s.label}
+              </span>
+              <span className={cn(
+                'text-[13px] font-semibold',
+                isLast ? 'text-foreground' : 'text-foreground-muted'
+              )}>
+                {fmtK(s.value)}
+              </span>
+            </div>
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Active Users Hero Chart ── */
+function ActiveUsersChart({ cumulativeCurve, currentDay, activeUsers }) {
+  const width = 520;
+  const height = 160;
+  const pad = { top: 16, right: 52, bottom: 24, left: 40 };
+  const cw = width - pad.left - pad.right;
+  const ch = height - pad.top - pad.bottom;
+
+  const slice = cumulativeCurve.slice(0, currentDay);
+  const fullMax = Math.max(...cumulativeCurve, 1);
+  const yMax = Math.ceil(fullMax / 200) * 200 || 200;
+
+  function toX(day) { return pad.left + ((day - 1) / 29) * cw; }
+  function toY(val) { return pad.top + ch - (val / yMax) * ch; }
+
+  const pathD = slice.map((v, i) => `${i === 0 ? 'M' : 'L'} ${toX(i + 1)} ${toY(v)}`).join(' ');
+  const lastX = slice.length > 0 ? toX(slice.length) : toX(1);
+  const lastY = slice.length > 0 ? toY(slice[slice.length - 1]) : toY(0);
 
   return (
-    <div className="bg-surface border border-border rounded-lg p-6 mb-6">
-      <div className="flex items-end gap-1">
-        {stages.map((stage, i) => {
-          const widthPct = Math.max(8, (stage.value / maxValue) * 100);
-          const prevValue = i > 0 ? stages[i - 1].value : null;
-          const convRate = prevValue && prevValue > 0
-            ? ((stage.value / prevValue) * 100).toFixed(1) + '%'
-            : null;
-
+    <div className="relative">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full">
+        {/* Grid */}
+        {[0, 0.5, 1].map((frac, i) => {
+          const y = toY(yMax * frac);
           return (
-            <div key={stage.key} className="flex items-end flex-1 min-w-0">
-              {i > 0 && (
-                <div className="flex flex-col items-center justify-end px-1 pb-6 shrink-0">
-                  <span className="text-[10px] text-foreground-faint">
-                    {convRate}
-                  </span>
-                  <svg width="12" height="10" className="text-foreground-faint mt-0.5">
-                    <path d="M 0 5 L 10 5 M 7 2 L 10 5 L 7 8" fill="none" stroke="currentColor" strokeWidth="1.2" />
-                  </svg>
-                </div>
-              )}
-              <div className="flex-1 min-w-0 flex flex-col items-center gap-1.5">
-                <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase truncate w-full text-center">
-                  {stage.label}
-                </span>
-                <div
-                  className={cn(
-                    'w-full rounded-sm transition-all duration-300',
-                    i === stages.length - 1 ? 'bg-brand' : 'bg-accent-subtle'
-                  )}
-                  style={{ height: `${Math.max(24, widthPct * 0.6)}px` }}
-                />
-                <span className={cn(
-                  'text-sm font-semibold',
-                  i === stages.length - 1 ? 'text-foreground' : 'text-foreground-muted'
-                )}>
-                  {stage.value >= 1000 ? fmtK(stage.value) : fmt(stage.value)}
-                </span>
-              </div>
-            </div>
+            <g key={i}>
+              <line x1={pad.left} y1={y} x2={width - pad.right} y2={y}
+                className="stroke-border-light" strokeWidth="1" />
+              <text x={pad.left - 6} y={y + 3} textAnchor="end"
+                className="fill-foreground-faint font-sans" fontSize="9">
+                {fmtK(Math.round(yMax * frac))}
+              </text>
+            </g>
           );
         })}
+
+        {/* X-axis */}
+        {[1, 10, 20, 30].map(d => (
+          <text key={d} x={toX(d)} y={height - 4} textAnchor="middle"
+            className="fill-foreground-faint font-sans" fontSize="9">
+            {d}
+          </text>
+        ))}
+
+        {/* Area + Line */}
+        {slice.length > 1 && (
+          <>
+            <path d={`${pathD} L ${lastX} ${toY(0)} L ${toX(1)} ${toY(0)} Z`}
+              fill="var(--color-brand)" opacity="0.06" />
+            <path d={pathD} fill="none" className="stroke-brand"
+              strokeWidth="2" strokeLinejoin="round" />
+            <circle cx={lastX} cy={lastY} r="3.5" className="fill-brand" />
+          </>
+        )}
+
+        {/* End value label */}
+        {slice.length > 0 && (
+          <text x={lastX + 6} y={lastY + 4}
+            className="fill-brand font-sans" fontSize="11" fontWeight="700">
+            {fmt(slice[slice.length - 1])}
+          </text>
+        )}
+      </svg>
+    </div>
+  );
+}
+
+/* ── Inline KPI Metric ── */
+function InlineKPI({ label, value, trend, trendInvert }) {
+  return (
+    <div className="flex items-baseline gap-1.5">
+      <span className="text-[10px] text-foreground-faint uppercase tracking-[0.04em] shrink-0">{label}</span>
+      <span className="text-[15px] font-bold text-foreground">{value}</span>
+      {trend}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// POSITION 2: LEARNINGS
+// ═══════════════════════════════════════════════════════════════════════
+
+/* ── Agentic vs Static Comparison Chart ── */
+function ComparisonChart({ agenticCurve, staticCurve, annotations, currentDay }) {
+  const width = 500;
+  const height = 200;
+  const pad = { top: 20, right: 56, bottom: 28, left: 40 };
+  const cw = width - pad.left - pad.right;
+  const ch = height - pad.top - pad.bottom;
+
+  const agSlice = agenticCurve.slice(0, currentDay);
+  const stSlice = staticCurve.slice(0, currentDay);
+  const fullMax = Math.max(...agenticCurve, ...staticCurve, 1);
+  const yMax = Math.ceil(fullMax / 200) * 200 || 200;
+
+  function toX(day) { return pad.left + ((day - 1) / 29) * cw; }
+  function toY(val) { return pad.top + ch - (val / yMax) * ch; }
+  function buildPath(data) {
+    return data.map((v, i) => `${i === 0 ? 'M' : 'L'} ${toX(i + 1)} ${toY(v)}`).join(' ');
+  }
+
+  const agPath = buildPath(agSlice);
+  const stPath = buildPath(stSlice);
+  const activeAnnotations = (annotations || []).filter(a => a.day <= currentDay);
+
+  return (
+    <div>
+      {/* Header row */}
+      <div className="flex items-center justify-between mb-2">
+        <SectionLabel>Agentic vs Static</SectionLabel>
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-1">
+            <span className="w-3 h-0.5 bg-brand rounded-full" />
+            <span className="text-[10px] text-foreground-faint">Agent</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-3 h-px bg-gray-300" />
+            <span className="text-[10px] text-foreground-faint">Static</span>
+          </span>
+        </div>
       </div>
 
-      {/* Pending pipeline bridge */}
-      {data.pending > 0 && (
-        <div className="mt-4 pt-3 border-t border-border-light flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-warn shrink-0" />
-          <span className="text-[13px] text-foreground-muted">
-            <span className="font-semibold">{fmt(data.pending)} offers in flight</span>
-            {' — '}cash-basis results to be realized from active cohorts
-          </span>
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full">
+        {/* Grid */}
+        {[0, 0.5, 1].map((frac, i) => {
+          const y = toY(yMax * frac);
+          return (
+            <g key={i}>
+              <line x1={pad.left} y1={y} x2={width - pad.right} y2={y}
+                className="stroke-border-light" strokeWidth="1" />
+              <text x={pad.left - 6} y={y + 3} textAnchor="end"
+                className="fill-foreground-faint font-sans" fontSize="9">
+                {fmtK(Math.round(yMax * frac))}
+              </text>
+            </g>
+          );
+        })}
+
+        {[1, 10, 20, 30].map(d => (
+          <text key={d} x={toX(d)} y={height - 4} textAnchor="middle"
+            className="fill-foreground-faint font-sans" fontSize="9">{d}</text>
+        ))}
+
+        {/* Static line */}
+        {stSlice.length > 1 && (
+          <path d={stPath} fill="none" stroke="#D1C8BE" strokeWidth="1.5"
+            strokeDasharray="4,3" strokeLinejoin="round" />
+        )}
+
+        {/* Agentic line */}
+        {agSlice.length > 1 && (
+          <>
+            <path d={`${agPath} L ${toX(agSlice.length)} ${toY(0)} L ${toX(1)} ${toY(0)} Z`}
+              fill="var(--color-brand)" opacity="0.05" />
+            <path d={agPath} fill="none" className="stroke-brand"
+              strokeWidth="2" strokeLinejoin="round" />
+            <circle cx={toX(agSlice.length)} cy={toY(agSlice[agSlice.length - 1])}
+              r="3" className="fill-brand" />
+          </>
+        )}
+
+        {/* End labels */}
+        {agSlice.length > 0 && (
+          <text x={toX(agSlice.length) + 5} y={toY(agSlice[agSlice.length - 1]) + 4}
+            className="fill-brand font-sans" fontSize="10" fontWeight="600">
+            {fmt(agSlice[agSlice.length - 1])}
+          </text>
+        )}
+        {stSlice.length > 0 && (
+          <text x={toX(stSlice.length) + 5} y={toY(stSlice[stSlice.length - 1]) + 4}
+            className="fill-foreground-faint font-sans" fontSize="10">
+            {fmt(stSlice[stSlice.length - 1])}
+          </text>
+        )}
+
+        {/* Annotation dots */}
+        {activeAnnotations.map((a, i) => {
+          const v = agSlice[a.day - 1] || 0;
+          return (
+            <g key={i}>
+              <circle cx={toX(a.day)} cy={toY(v)} r="5" fill="var(--color-brand)" opacity="0.12" />
+              <circle cx={toX(a.day)} cy={toY(v)} r="2" fill="var(--color-brand)" />
+            </g>
+          );
+        })}
+      </svg>
+
+      {/* Milestone annotations */}
+      {activeAnnotations.length > 0 && (
+        <div className="mt-2 space-y-1.5">
+          {activeAnnotations.map((a, i) => (
+            <div key={i} className="flex items-start gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand mt-1.5 shrink-0" />
+              <span className="text-[11px] text-foreground-muted leading-snug">
+                <span className="font-semibold">Day {a.day}:</span> {a.description}
+              </span>
+            </div>
+          ))}
         </div>
       )}
     </div>
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// ZONE A: KPI CARDS (Results to Date)
-// ═══════════════════════════════════════════════════════════════════════
-function KPICard({ label, value, detail, highlight }) {
-  return (
-    <div className="bg-surface border border-border rounded-md p-4">
-      <div className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase mb-2">
-        {label}
-      </div>
-      <div className={cn(
-        'text-[22px] font-bold tracking-tight',
-        highlight ? 'text-foreground' : 'text-foreground'
-      )}>
-        {value}
-      </div>
-      {detail && (
-        <div className="text-xs text-foreground-faint mt-1">{detail}</div>
-      )}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// ZONE A: COHORT CHART (Funnel Performance)
-// ═══════════════════════════════════════════════════════════════════════
+/* ── Cohort Chart ── */
 function CohortChart({ cohorts, currentDay }) {
-  const width = 480;
-  const height = 220;
-  const pad = { top: 24, right: 16, bottom: 32, left: 44 };
+  const width = 500;
+  const height = 150;
+  const pad = { top: 16, right: 32, bottom: 24, left: 40 };
   const cw = width - pad.left - pad.right;
   const ch = height - pad.top - pad.bottom;
 
-  // Pick representative cohorts visible at the current day stop
   const repDays = [2, 5, 10, 15, 20, 25].filter(d => d <= currentDay && cohorts[d]);
   if (repDays.length === 0 && cohorts[1]) repDays.push(1);
 
-  // Find max cumulative for Y scale
   let maxCum = 1;
   for (const d of repDays) {
-    const curve = cohorts[d]?.cumulativeResolved || [];
-    for (const v of curve) {
+    for (const v of (cohorts[d]?.cumulativeResolved || [])) {
       if (v > maxCum) maxCum = v;
     }
   }
-  maxCum = Math.ceil(maxCum / 5) * 5;
+  maxCum = Math.ceil(maxCum / 5) * 5 || 5;
 
-  // Color gradient: early cohorts lighter, later cohorts darker
-  const cohortColors = [
-    '#D1C8BE', '#A89E94', '#7D7368', '#6B5E54', '#4A3F37', '#2C2320',
-  ];
-
-  function toPoints(curve) {
-    const maxDays = Math.min(curve.length, 14);
-    return curve.slice(0, maxDays).map((v, i) => ({
-      x: pad.left + (i / 13) * cw,
-      y: pad.top + ch - (v / maxCum) * ch,
-    }));
-  }
+  const colors = ['#D1C8BE', '#A89E94', '#7D7368', '#6B5E54', '#4A3F37', '#2C2320'];
 
   return (
-    <div className="bg-surface border border-border rounded-lg p-4 h-full">
-      <SectionLabel>Funnel Performance</SectionLabel>
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <SectionLabel>Cohort Conversion Curves</SectionLabel>
+        <div className="flex items-center gap-2">
+          {repDays.slice(-3).map((day, idx) => {
+            const color = colors[Math.min(repDays.indexOf(day), colors.length - 1)];
+            return (
+              <span key={day} className="flex items-center gap-1">
+                <span className="w-2.5 h-0.5 rounded-full" style={{ backgroundColor: color }} />
+                <span className="text-[10px] text-foreground-faint">D{day} ({(cohorts[day]?.convRate || 0).toFixed(1)}%)</span>
+              </span>
+            );
+          })}
+        </div>
+      </div>
+
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full">
-        {/* Grid lines */}
-        {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => {
+        {[0, 0.5, 1].map((frac, i) => {
           const y = pad.top + ch * (1 - frac);
           return (
             <g key={i}>
               <line x1={pad.left} y1={y} x2={width - pad.right} y2={y}
                 className="stroke-border-light" strokeWidth="1" />
               <text x={pad.left - 6} y={y + 3} textAnchor="end"
-                className="fill-foreground-faint font-sans" fontSize="10">
+                className="fill-foreground-faint font-sans" fontSize="9">
                 {Math.round(maxCum * frac)}
               </text>
             </g>
           );
         })}
 
-        {/* X-axis labels */}
-        {[0, 3, 7, 10, 14].map(d => (
-          <text key={d} x={pad.left + (Math.min(d, 13) / 13) * cw} y={height - 6}
-            textAnchor="middle" className="fill-foreground-faint font-sans" fontSize="10">
+        {[0, 3, 7, 14].map(d => (
+          <text key={d} x={pad.left + (Math.min(d, 13) / 13) * cw} y={height - 4}
+            textAnchor="middle" className="fill-foreground-faint font-sans" fontSize="9">
             +{d}d
           </text>
         ))}
 
-        {/* Cohort lines */}
         {repDays.map((day, idx) => {
           const curve = cohorts[day]?.cumulativeResolved || [];
-          const points = toPoints(curve);
+          const points = curve.slice(0, 14).map((v, i) => ({
+            x: pad.left + (i / 13) * cw,
+            y: pad.top + ch - (v / maxCum) * ch,
+          }));
           if (points.length < 2) return null;
           const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-          const color = cohortColors[Math.min(idx, cohortColors.length - 1)];
+          const color = colors[Math.min(idx, colors.length - 1)];
           const isLatest = idx === repDays.length - 1;
           return (
-            <g key={day}>
-              <path d={pathD} fill="none" stroke={color}
-                strokeWidth={isLatest ? 2.5 : 1.5} strokeLinejoin="round"
-                opacity={isLatest ? 1 : 0.7} />
-              {/* End label */}
-              {points.length > 0 && (
-                <text x={points[points.length - 1].x + 4} y={points[points.length - 1].y + 3}
-                  className="font-sans" fontSize="9" fill={color} fontWeight={isLatest ? 600 : 400}>
-                  D{day}
-                </text>
-              )}
-            </g>
+            <path key={day} d={pathD} fill="none" stroke={color}
+              strokeWidth={isLatest ? 2 : 1.5} strokeLinejoin="round"
+              opacity={isLatest ? 1 : 0.6} />
           );
         })}
       </svg>
+    </div>
+  );
+}
 
-      {/* Legend */}
-      <div className="flex flex-wrap gap-3 mt-2">
-        {repDays.map((day, idx) => {
-          const color = cohortColors[Math.min(idx, cohortColors.length - 1)];
-          const rate = cohorts[day]?.convRate || 0;
-          return (
-            <div key={day} className="flex items-center gap-1.5">
-              <span className="w-3 h-0.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-              <span className="text-[10px] text-foreground-faint">
-                Day {day} ({rate.toFixed(1)}%)
-              </span>
-            </div>
-          );
-        })}
+/* ── Agent Insight ── */
+function AgentInsight({ dayData, currentDay, recommendation, staticDay }) {
+  let title, description, type;
+
+  if (currentDay <= 1) {
+    type = 'observing';
+    title = 'Agent initializing';
+    description = `${fmt(dayData.journeysToday)} contacts sent. ${fmt(dayData.funnelCumulative.pending)} offers now in flight. First conversion results expected by Day 3–4.`;
+  } else if (currentDay <= 10) {
+    type = 'learning';
+    title = 'Early signal';
+    description = `Conversion rate: ${dayData.kpiCumulative.convRate}%. ${fmt(dayData.cumulativeN)} active users from ${fmt(dayData.funnelCumulative.contacted)} contacts. Targeting accuracy at ${Math.round(dayData.efficiency * 100)}%.`;
+  } else if (recommendation && recommendation.availableFromDay <= currentDay) {
+    type = 'recommendation';
+    title = recommendation.title;
+    description = `${recommendation.description} ${recommendation.action}`;
+  } else {
+    type = 'monitoring';
+    const advantage = staticDay?.cumulativeN > 0
+      ? Math.round(((dayData.cumulativeN - staticDay.cumulativeN) / staticDay.cumulativeN) * 100) : 0;
+    title = 'System operating within guardrails';
+    description = `Conversion rate ${dayData.kpiCumulative.convRate}% vs ${staticDay?.kpiCumulative?.convRate || 0}% static. ${advantage > 0 ? `${advantage}% more conversions from same budget. ` : ''}Budget utilization: ${Math.round((dayData.cumulativeRewardCost / dayData.cumulativeSpend) * 100)}%.`;
+  }
+
+  const dots = { observing: 'bg-foreground-faint', learning: 'bg-warn', monitoring: 'bg-success', recommendation: 'bg-brand' };
+
+  return (
+    <div className="mt-3 pt-3 border-t border-border-light">
+      <div className="flex items-start gap-2">
+        <span className={cn('w-2 h-2 rounded-full mt-1 shrink-0', dots[type])} />
+        <div>
+          <span className="text-[11px] font-semibold text-foreground-muted">{title}</span>
+          <p className="text-[11px] text-foreground-faint leading-relaxed mt-0.5">{description}</p>
+        </div>
       </div>
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// ZONE B: DECISION FEED
+// POSITION 3: DECISIONS
 // ═══════════════════════════════════════════════════════════════════════
 const OUTCOME_STYLES = {
-  converted: { icon: '✓', className: 'bg-[#d1fae5] text-[#065f46]' },
-  pending: { icon: '⏳', className: 'bg-[#fef3c7] text-[#92400e]' },
-  expired: { icon: '✗', className: 'bg-border-light text-foreground-muted' },
+  converted: { icon: '✓', cls: 'bg-[#d1fae5] text-[#065f46]' },
+  pending: { icon: '⏳', cls: 'bg-[#fef3c7] text-[#92400e]' },
+  expired: { icon: '✗', cls: 'bg-border-light text-foreground-muted' },
 };
 
-const CHANNEL_ICONS = {
-  push: '📱',
-  email: '✉️',
-  sms: '💬',
-};
-
-function DecisionFeed({ decisions, referrerTiers, refereeTiers }) {
+function DecisionFeed({ decisions }) {
   const [expandedId, setExpandedId] = useState(null);
-
   if (!decisions || decisions.length === 0) return null;
 
   return (
-    <div className="bg-surface border border-border rounded-lg p-4 mb-6">
-      <div className="flex items-center justify-between mb-3">
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between mb-2">
         <SectionLabel>Live Decisions</SectionLabel>
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-brand" />
-          <span className="text-[11px] text-foreground-faint">
-            {decisions.length} decisions shown
-          </span>
+          <span className="w-1.5 h-1.5 rounded-full bg-brand" />
+          <span className="text-[10px] text-foreground-faint">{decisions.length} shown</span>
         </span>
       </div>
 
-      <div className="max-h-[200px] overflow-y-auto space-y-0">
+      <div className="flex-1 overflow-y-auto min-h-0 space-y-0">
         {decisions.map((d) => {
           const outcome = OUTCOME_STYLES[d.outcome] || OUTCOME_STYLES.expired;
           const expanded = expandedId === d.id;
@@ -319,85 +481,39 @@ function DecisionFeed({ decisions, referrerTiers, refereeTiers }) {
               <button
                 onClick={() => setExpandedId(expanded ? null : d.id)}
                 className={cn(
-                  'w-full flex items-center gap-3 py-2 px-2 rounded-sm text-left transition-colors duration-150',
+                  'w-full flex items-center gap-2 py-1.5 px-1.5 rounded-sm text-left transition-colors duration-150',
                   'hover:bg-accent-subtle',
                   expanded && 'bg-accent-subtle'
                 )}
               >
-                {/* Name */}
-                <span className="text-[13px] font-medium text-foreground w-28 truncate shrink-0">
-                  {d.name}
-                </span>
-
-                {/* Tier */}
-                <span className="text-xs text-foreground-muted w-24 shrink-0">
-                  {d.tierLabel} (${d.rewardReferrer}/${d.rewardReferee})
-                </span>
-
-                {/* Channel */}
-                <span className="text-xs text-foreground-faint w-12 shrink-0 text-center">
-                  {CHANNEL_ICONS[d.channel] || d.channel}
-                </span>
-
-                {/* Time */}
-                <span className="text-xs text-foreground-faint w-16 shrink-0">
-                  {fmtTime(d.hour, d.minute)}
-                </span>
-
-                {/* Outcome badge */}
+                <span className="text-[12px] font-medium text-foreground w-24 truncate shrink-0">{d.name}</span>
+                <span className="text-[11px] text-foreground-muted shrink-0">{d.tierLabel}</span>
+                <span className="text-[11px] text-foreground-faint shrink-0">{d.channel}</span>
+                <span className="text-[11px] text-foreground-faint shrink-0">{fmtTime(d.hour, d.minute)}</span>
                 <span className={cn(
-                  'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0',
-                  outcome.className
+                  'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold shrink-0 ml-auto',
+                  outcome.cls
                 )}>
                   {outcome.icon} {d.outcome}
-                  {d.outcome === 'converted' && d.resolvedDay && (
-                    <span className="font-normal"> (Day {d.resolvedDay})</span>
-                  )}
                 </span>
-
-                {/* Expand arrow */}
                 <svg className={cn(
-                  'w-3.5 h-3.5 text-foreground-faint ml-auto transition-transform duration-200 shrink-0',
+                  'w-3 h-3 text-foreground-faint transition-transform duration-200 shrink-0',
                   expanded && 'rotate-180'
                 )} fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                 </svg>
               </button>
 
-              {/* Expanded journey timeline */}
               {expanded && (
-                <div className="pl-4 pr-2 pb-3 ml-2 border-l-2 border-border-light">
-                  <div className="space-y-1.5 mt-1">
-                    <TimelineEvent
-                      label={`Contacted via ${d.channel}`}
-                      day={d.day}
-                    />
-                    {d.referralSentDay && (
-                      <TimelineEvent
-                        label="Referral link shared"
-                        day={d.referralSentDay}
-                      />
-                    )}
-                    {d.signedUpDay && (
-                      <TimelineEvent
-                        label="Referee signed up"
-                        day={d.signedUpDay}
-                      />
-                    )}
+                <div className="pl-3 pr-1 pb-2 ml-1.5 border-l-2 border-border-light">
+                  <div className="space-y-1 mt-0.5">
+                    <TlEvent label={`Contacted via ${d.channel}`} day={d.day} />
+                    {d.referralSentDay && <TlEvent label="Referral link shared" day={d.referralSentDay} />}
+                    {d.signedUpDay && <TlEvent label="Referee signed up" day={d.signedUpDay} />}
                     {d.outcome === 'converted' && d.resolvedDay && (
-                      <TimelineEvent
-                        label="First transaction — Converted"
-                        day={d.resolvedDay}
-                        highlight
-                      />
+                      <TlEvent label="First transaction — Converted" day={d.resolvedDay} highlight />
                     )}
-                    {d.outcome === 'expired' && (
-                      <TimelineEvent
-                        label="Offer expired"
-                        day={d.day + 14}
-                        muted
-                      />
-                    )}
+                    {d.outcome === 'expired' && <TlEvent label="Offer expired" day={d.day + 14} muted />}
                   </div>
                 </div>
               )}
@@ -409,239 +525,17 @@ function DecisionFeed({ decisions, referrerTiers, refereeTiers }) {
   );
 }
 
-function TimelineEvent({ label, day, highlight, muted }) {
+function TlEvent({ label, day, highlight, muted }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className={cn(
-        'w-1.5 h-1.5 rounded-full shrink-0',
+    <div className="flex items-center gap-1.5">
+      <span className={cn('w-1 h-1 rounded-full shrink-0',
         highlight ? 'bg-success' : muted ? 'bg-foreground-faint' : 'bg-border'
       )} />
-      <span className={cn(
-        'text-xs',
+      <span className={cn('text-[11px]',
         highlight ? 'text-success font-semibold' : muted ? 'text-foreground-faint' : 'text-foreground-muted'
       )}>
         Day {day}: {label}
       </span>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// ZONE C: AGENTIC vs STATIC COMPARISON CHART
-// ═══════════════════════════════════════════════════════════════════════
-function ComparisonChart({ agenticCurve, staticCurve, annotations, currentDay }) {
-  const width = 700;
-  const height = 280;
-  const pad = { top: 30, right: 80, bottom: 40, left: 50 };
-  const cw = width - pad.left - pad.right;
-  const ch = height - pad.top - pad.bottom;
-
-  // Slice curves to current day
-  const agSlice = agenticCurve.slice(0, currentDay);
-  const stSlice = staticCurve.slice(0, currentDay);
-
-  const maxVal = Math.max(
-    ...agenticCurve,
-    ...staticCurve,
-    1
-  );
-  const yMax = Math.ceil(maxVal / 200) * 200;
-
-  function toX(day) { return pad.left + ((day - 1) / 29) * cw; }
-  function toY(val) { return pad.top + ch - (val / yMax) * ch; }
-
-  function buildPath(data) {
-    return data.map((v, i) => `${i === 0 ? 'M' : 'L'} ${toX(i + 1)} ${toY(v)}`).join(' ');
-  }
-
-  const agPath = buildPath(agSlice);
-  const stPath = buildPath(stSlice);
-
-  // Active annotations (up to current day)
-  const activeAnnotations = (annotations || []).filter(a => a.day <= currentDay);
-
-  return (
-    <div className="bg-surface border border-border rounded-lg p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <SectionLabel>Agentic vs Static Execution</SectionLabel>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
-            <span className="w-4 h-0.5 bg-brand rounded-full" />
-            <span className="text-[11px] text-foreground-muted">Vincor Agent</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-4 h-0.5 bg-gray-300 rounded-full" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #D1C8BE, #D1C8BE 3px, transparent 3px, transparent 6px)' }} />
-            <span className="text-[11px] text-foreground-muted">Static Rules</span>
-          </div>
-        </div>
-      </div>
-
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full">
-        {/* Grid */}
-        {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => {
-          const y = toY(yMax * frac);
-          return (
-            <g key={i}>
-              <line x1={pad.left} y1={y} x2={width - pad.right} y2={y}
-                className="stroke-border-light" strokeWidth="1" />
-              <text x={pad.left - 8} y={y + 3} textAnchor="end"
-                className="fill-foreground-faint font-sans" fontSize="10">
-                {fmt(Math.round(yMax * frac))}
-              </text>
-            </g>
-          );
-        })}
-
-        {/* X-axis */}
-        {[1, 5, 10, 15, 20, 25, 30].map(day => (
-          <text key={day} x={toX(day)} y={height - 8} textAnchor="middle"
-            className="fill-foreground-faint font-sans" fontSize="10">
-            {day}
-          </text>
-        ))}
-        <text x={pad.left + cw / 2} y={height} textAnchor="middle"
-          className="fill-foreground-faint font-sans" fontSize="9">
-          Day
-        </text>
-
-        {/* Static line (dashed, gray) */}
-        {stSlice.length > 1 && (
-          <path d={stPath} fill="none" stroke="#D1C8BE" strokeWidth="1.5"
-            strokeDasharray="4,3" strokeLinejoin="round" />
-        )}
-
-        {/* Agentic line (solid, brand) */}
-        {agSlice.length > 1 && (
-          <>
-            {/* Area fill */}
-            <path d={`${agPath} L ${toX(agSlice.length)} ${toY(0)} L ${toX(1)} ${toY(0)} Z`}
-              fill="var(--color-brand)" opacity="0.06" />
-            <path d={agPath} fill="none" className="stroke-brand" strokeWidth="2.5" strokeLinejoin="round" />
-            {/* End dot */}
-            <circle cx={toX(agSlice.length)} cy={toY(agSlice[agSlice.length - 1])}
-              r="4" className="fill-brand" />
-          </>
-        )}
-
-        {/* Current day marker */}
-        <line x1={toX(currentDay)} y1={pad.top} x2={toX(currentDay)} y2={pad.top + ch}
-          stroke="var(--color-foreground-faint)" strokeWidth="1" strokeDasharray="2,3" opacity="0.4" />
-
-        {/* End labels */}
-        {agSlice.length > 0 && (
-          <text x={toX(agSlice.length) + 6} y={toY(agSlice[agSlice.length - 1]) + 4}
-            className="fill-brand font-sans" fontSize="11" fontWeight="600">
-            {fmt(agSlice[agSlice.length - 1])}
-          </text>
-        )}
-        {stSlice.length > 0 && (
-          <text x={toX(stSlice.length) + 6} y={toY(stSlice[stSlice.length - 1]) + 4}
-            className="fill-foreground-faint font-sans" fontSize="11">
-            {fmt(stSlice[stSlice.length - 1])}
-          </text>
-        )}
-
-        {/* Annotation markers */}
-        {activeAnnotations.map((a, i) => {
-          const agVal = agSlice[a.day - 1] || 0;
-          return (
-            <g key={i}>
-              <circle cx={toX(a.day)} cy={toY(agVal)} r="6"
-                fill="var(--color-brand)" opacity="0.15" />
-              <circle cx={toX(a.day)} cy={toY(agVal)} r="2.5"
-                fill="var(--color-brand)" />
-            </g>
-          );
-        })}
-      </svg>
-
-      {/* Annotations list */}
-      {activeAnnotations.length > 0 && (
-        <div className="mt-4 pt-3 border-t border-border-light space-y-2">
-          {activeAnnotations.map((a, i) => (
-            <div key={i} className="flex items-start gap-2">
-              <span className="w-2 h-2 rounded-full bg-brand mt-1.5 shrink-0" />
-              <div>
-                <span className="text-xs font-semibold text-foreground-muted">
-                  Day {a.day} — {a.title}
-                </span>
-                <p className="text-xs text-foreground-faint mt-0.5">
-                  {a.description}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// ZONE D: AGENT INSIGHT
-// ═══════════════════════════════════════════════════════════════════════
-function AgentInsight({ dayData, currentDay, recommendation, staticDay }) {
-  // Always show something — evolves with confidence
-  let title, description, type;
-
-  if (currentDay <= 1) {
-    type = 'observing';
-    title = 'Agent initializing';
-    description = `${fmt(dayData.journeysToday)} contacts sent. ${fmt(dayData.funnelCumulative.pending)} offers now in flight. First conversion results expected by Day 3–4.`;
-  } else if (currentDay <= 10) {
-    const actualConv = dayData.kpiCumulative.convRate;
-    type = 'learning';
-    title = 'Early signal';
-    description = `Conversion rate: ${actualConv}% — ${dayData.cumulativeN > 50 ? 'signal building' : 'early data'}. ` +
-      `${fmt(dayData.cumulativeN)} active users from ${fmt(dayData.funnelCumulative.contacted)} contacts. ` +
-      `Targeting accuracy at ${Math.round(dayData.efficiency * 100)}% (${Math.round(dayData.efficiency * 100) > 30 ? 'improving from' : 'starting at'} 30% baseline).`;
-  } else if (recommendation && recommendation.availableFromDay <= currentDay) {
-    type = 'recommendation';
-    title = recommendation.title;
-    description = `${recommendation.description} ${recommendation.action}`;
-  } else {
-    type = 'monitoring';
-    const agenticUsers = dayData.cumulativeN;
-    const staticUsers = staticDay?.cumulativeN || 0;
-    const advantage = staticUsers > 0 ? Math.round(((agenticUsers - staticUsers) / staticUsers) * 100) : 0;
-    title = 'System operating within guardrails';
-    description = `Conversion rate ${dayData.kpiCumulative.convRate}% vs ${staticDay?.kpiCumulative?.convRate || 0}% static baseline. ` +
-      `${advantage > 0 ? `${advantage}% more conversions from the same budget. ` : ''}` +
-      `Budget utilization: ${Math.round((dayData.cumulativeRewardCost / dayData.cumulativeSpend) * 100)}% of spend allocated to rewards.`;
-  }
-
-  const typeStyles = {
-    observing: 'border-foreground-faint',
-    learning: 'border-warn',
-    monitoring: 'border-success',
-    recommendation: 'border-brand',
-  };
-
-  const dotStyles = {
-    observing: 'bg-foreground-faint',
-    learning: 'bg-warn',
-    monitoring: 'bg-success',
-    recommendation: 'bg-brand',
-  };
-
-  return (
-    <div className={cn(
-      'border rounded-lg p-5 mb-8 transition-all duration-300',
-      'bg-surface',
-      typeStyles[type] || 'border-border'
-    )}>
-      <div className="flex items-center gap-2 mb-2">
-        <span className={cn('w-2 h-2 rounded-full shrink-0', dotStyles[type])} />
-        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
-          Agent Insight
-        </span>
-      </div>
-      <div className="text-sm font-semibold text-foreground mb-1">
-        {title}
-      </div>
-      <p className="text-[13px] text-foreground-muted leading-relaxed">
-        {description}
-      </p>
     </div>
   );
 }
@@ -652,119 +546,134 @@ function AgentInsight({ dayData, currentDay, recommendation, staticDay }) {
 export default function DashboardPage({ config, onHome }) {
   const [selectedDay, setSelectedDay] = useState(1);
 
-  // Run v4 engine once with recommended budget
   const projection = useMemo(() => {
     const budget = config.recommendedBudget?.amount || 150000;
     return computeDashboardProjection({ budget, params: config.engineParams });
   }, [config]);
 
-  // Current day data
   const dayData = projection.days[selectedDay - 1];
   const staticDayData = projection.staticBaseline.days[selectedDay - 1];
 
-  // Decisions for the selected day window
+  // Earlier day data for trend comparison
+  const earlierDay = Math.max(0, selectedDay - 6);
+  const earlierData = earlierDay > 0 ? projection.days[earlierDay - 1] : null;
+
   const decisions = useMemo(() => {
-    // Show decisions from a window around the selected day
     const start = Math.max(1, selectedDay - 1);
     const end = Math.min(30, selectedDay + 1);
     const all = [];
     for (let d = start; d <= end; d++) {
-      if (projection.decisionLog[d]) {
-        all.push(...projection.decisionLog[d]);
-      }
+      if (projection.decisionLog[d]) all.push(...projection.decisionLog[d]);
     }
-    return all.slice(0, 20);
+    return all.slice(0, 25);
   }, [projection, selectedDay]);
 
+  const cacTrend = earlierData && dayData.kpiCumulative.cac > 0 && earlierData.kpiCumulative.cac > 0
+    ? <TrendArrow current={dayData.kpiCumulative.cac} previous={earlierData.kpiCumulative.cac} invertGood />
+    : null;
+  const roiTrend = earlierData && dayData.kpiCumulative.roi > 0 && earlierData.kpiCumulative.roi > 0
+    ? <TrendArrow current={dayData.kpiCumulative.roi} previous={earlierData.kpiCumulative.roi} />
+    : null;
+
   return (
-    <div className="min-h-screen flex flex-col max-w-[1100px] mx-auto w-full px-12 animate-page-enter">
-      {/* Header */}
-      <header className="py-2.5 mb-6">
+    <div className="min-h-screen flex flex-col w-full px-6 animate-page-enter">
+      {/* ── Header: Logo + Day Selector ── */}
+      <header className="flex items-center justify-between py-2.5 mb-4">
         <Logo variant="mark" onClick={onHome} />
+        <DaySelector selected={selectedDay} onSelect={setSelectedDay} />
       </header>
 
-      <main className="flex-1 pb-16">
-        {/* Page title */}
-        <div className="mb-6">
-          <h2 className="text-[22px] font-bold text-foreground-muted tracking-tight">
-            30-Day Execution Dashboard
-          </h2>
-          <p className="text-[13px] text-foreground-faint mt-1">
-            ${fmtK(projection.budget)}/mo budget · {fmt(projection.audienceSize)} eligible customers
-          </p>
+      {/* ── POSITION 1: RESULTS (full-width top strip) ── */}
+      <section className="mb-4">
+        {/* Funnel row */}
+        <div className="mb-3">
+          <CondensedFunnel data={dayData.funnelCumulative} audienceSize={projection.audienceSize} />
         </div>
 
-        {/* Day Selector */}
-        <DaySelector
-          selected={selectedDay}
-          onSelect={setSelectedDay}
-          thresholdDay={projection.thresholdDay}
-        />
-
-        {/* Zone A: Funnel */}
-        <HorizontalFunnel
-          data={dayData.funnelCumulative}
-          audienceSize={projection.audienceSize}
-        />
-
-        {/* Zone A: Results to Date + Funnel Performance (side by side) */}
-        <div className="grid grid-cols-[1fr_1.5fr] gap-6 mb-6">
-          {/* Left: Results to Date (Cash Basis) */}
-          <div>
-            <SectionLabel>Results to Date</SectionLabel>
-            <div className="grid grid-cols-2 gap-3">
-              <KPICard
-                label="Active Users"
-                value={fmt(dayData.funnelCumulative.activeUser)}
-                highlight
-              />
-              <KPICard
-                label="CAC"
-                value={dayData.kpiCumulative.cac > 0 ? fmtDollar(dayData.kpiCumulative.cac) : '—'}
-                detail={dayData.kpiCumulative.cac > 0 ? `vs ${fmtDollar(projection.industryCACBenchmark)} industry` : 'Awaiting conversions'}
-              />
-              <KPICard
-                label="ROI"
-                value={dayData.kpiCumulative.roi > 0 ? `${dayData.kpiCumulative.roi}x` : '—'}
-                detail={dayData.kpiCumulative.roi > 0 ? `$${fmtK(dayData.cumulativeValue)} revenue` : 'Awaiting conversions'}
-              />
-              <KPICard
-                label="Fraud Saved"
-                value={fmtDollar(dayData.kpiCumulative.fraudSaved)}
-              />
+        {/* Hero chart + inline KPIs */}
+        <div className="flex gap-6">
+          {/* Active Users chart — the hero */}
+          <div className="flex-[2] min-w-0">
+            <div className="flex items-baseline gap-2 mb-1">
+              <span className="text-[28px] font-extrabold text-foreground tracking-tight leading-none">
+                {fmt(dayData.funnelCumulative.activeUser)}
+              </span>
+              <span className="text-[13px] text-foreground-muted">active users</span>
             </div>
+            <ActiveUsersChart
+              cumulativeCurve={projection.cumulativeCurve}
+              currentDay={selectedDay}
+              activeUsers={dayData.funnelCumulative.activeUser}
+            />
           </div>
 
-          {/* Right: Funnel Performance (Cohort Chart) */}
+          {/* Inline KPIs — contextualize the funnel result */}
+          <div className="flex-[0.8] flex flex-col justify-center gap-4 min-w-[180px]">
+            <InlineKPI
+              label="CAC"
+              value={dayData.kpiCumulative.cac > 0 ? fmtDollar(dayData.kpiCumulative.cac) : '—'}
+              trend={cacTrend}
+            />
+            <InlineKPI
+              label="ROI"
+              value={dayData.kpiCumulative.roi > 0 ? `${dayData.kpiCumulative.roi}x` : '—'}
+              trend={roiTrend}
+            />
+            <InlineKPI
+              label="Fraud saved"
+              value={fmtDollar(dayData.kpiCumulative.fraudSaved)}
+            />
+
+            {/* Pipeline bridge */}
+            {dayData.funnelCumulative.pending > 0 && (
+              <div className="pt-3 border-t border-border-light">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-warn shrink-0" />
+                  <span className="text-[12px] text-foreground-muted">
+                    <span className="font-semibold">{fmt(dayData.funnelCumulative.pending)}</span> offers in flight
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Divider between Position 1 and 2/3 ── */}
+      <div className="border-t border-border-light mb-4" />
+
+      {/* ── POSITION 2 + 3: Two columns ── */}
+      <section className="flex-1 flex gap-6 min-h-0 pb-4">
+        {/* Position 2: Learnings (left, wider) */}
+        <div className="flex-[1.3] min-w-0 flex flex-col gap-4">
+          {/* Agentic vs Static — the strongest element */}
+          <ComparisonChart
+            agenticCurve={projection.cumulativeCurve}
+            staticCurve={projection.staticCumulativeCurve}
+            annotations={projection.learningAnnotations}
+            currentDay={selectedDay}
+          />
+
+          {/* Cohort chart — proves learning */}
           <CohortChart
             cohorts={projection.cohorts}
             currentDay={selectedDay}
           />
+
+          {/* Agent Insight — bridges to Position 3 */}
+          <AgentInsight
+            dayData={dayData}
+            currentDay={selectedDay}
+            recommendation={projection.agentRecommendation}
+            staticDay={staticDayData}
+          />
         </div>
 
-        {/* Zone B: Decision Feed */}
-        <DecisionFeed
-          decisions={decisions}
-          referrerTiers={projection.referrerTiers}
-          refereeTiers={projection.refereeTiers}
-        />
-
-        {/* Zone C: Agentic vs Static */}
-        <ComparisonChart
-          agenticCurve={projection.cumulativeCurve}
-          staticCurve={projection.staticCumulativeCurve}
-          annotations={projection.learningAnnotations}
-          currentDay={selectedDay}
-        />
-
-        {/* Zone D: Agent Insight */}
-        <AgentInsight
-          dayData={dayData}
-          currentDay={selectedDay}
-          recommendation={projection.agentRecommendation}
-          staticDay={staticDayData}
-        />
-      </main>
+        {/* Position 3: Decisions (right, narrower) */}
+        <div className="flex-1 min-w-0 border-l border-border-light pl-6">
+          <DecisionFeed decisions={decisions} />
+        </div>
+      </section>
     </div>
   );
 }
