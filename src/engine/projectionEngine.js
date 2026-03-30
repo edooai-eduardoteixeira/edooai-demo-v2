@@ -1,3 +1,5 @@
+import { generateDayDecisions } from './nameGenerator.js';
+
 /**
  * Projection Engine v3/v4 — Journey Model with Distributed Resolution & Value Learning
  *
@@ -354,8 +356,6 @@ export function computeProjection({ budget, params }) {
 // Extends v3 with: funnel stages, cohort tracking, decision log,
 // static baseline, learning annotations, agent recommendations.
 // ═══════════════════════════════════════════════════════════════════════
-
-import { generateDayDecisions } from './nameGenerator.js';
 
 /**
  * Compute tier distribution weights for a given budget reach and efficiency.
