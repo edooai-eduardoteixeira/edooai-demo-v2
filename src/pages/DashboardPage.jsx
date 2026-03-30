@@ -677,93 +677,84 @@ export default function DashboardPage({ config, onHome }) {
   }, [projection, selectedDay]);
 
   return (
-    <div className="min-h-screen flex flex-col max-w-[1100px] mx-auto w-full px-12 animate-page-enter">
-      {/* Header */}
-      <header className="py-2.5 mb-6">
+    <div className="min-h-screen flex flex-col w-full px-6 animate-page-enter">
+      {/* Header: Logo + Day Selector */}
+      <header className="flex items-center justify-between py-2.5 mb-6">
         <Logo variant="mark" onClick={onHome} />
-      </header>
-
-      <main className="flex-1 pb-16">
-        {/* Page title */}
-        <div className="mb-6">
-          <h2 className="text-[22px] font-bold text-foreground-muted tracking-tight">
-            30-Day Execution Dashboard
-          </h2>
-          <p className="text-[13px] text-foreground-faint mt-1">
-            ${fmtK(projection.budget)}/mo budget · {fmt(projection.audienceSize)} eligible customers
-          </p>
-        </div>
-
-        {/* Day Selector */}
         <DaySelector
           selected={selectedDay}
           onSelect={setSelectedDay}
           thresholdDay={projection.thresholdDay}
         />
+      </header>
 
-        {/* Zone A: Funnel */}
+      <main className="flex-1 pb-16">
+        {/* ── POSITION 1: RESULTS ── */}
+        {/* Funnel */}
         <HorizontalFunnel
           data={dayData.funnelCumulative}
           audienceSize={projection.audienceSize}
         />
 
-        {/* Zone A: Results to Date + Funnel Performance (side by side) */}
-        <div className="grid grid-cols-[1fr_1.5fr] gap-6 mb-6">
-          {/* Left: Results to Date (Cash Basis) */}
-          <div>
-            <SectionLabel>Results to Date</SectionLabel>
-            <div className="grid grid-cols-2 gap-3">
-              <KPICard
-                label="Active Users"
-                value={fmt(dayData.funnelCumulative.activeUser)}
-                highlight
-              />
-              <KPICard
-                label="CAC"
-                value={dayData.kpiCumulative.cac > 0 ? fmtDollar(dayData.kpiCumulative.cac) : '—'}
-                detail={dayData.kpiCumulative.cac > 0 ? `vs ${fmtDollar(projection.industryCACBenchmark)} industry` : 'Awaiting conversions'}
-              />
-              <KPICard
-                label="ROI"
-                value={dayData.kpiCumulative.roi > 0 ? `${dayData.kpiCumulative.roi}x` : '—'}
-                detail={dayData.kpiCumulative.roi > 0 ? `$${fmtK(dayData.cumulativeValue)} revenue` : 'Awaiting conversions'}
-              />
-              <KPICard
-                label="Fraud Saved"
-                value={fmtDollar(dayData.kpiCumulative.fraudSaved)}
-              />
-            </div>
-          </div>
-
-          {/* Right: Funnel Performance (Cohort Chart) */}
-          <CohortChart
-            cohorts={projection.cohorts}
-            currentDay={selectedDay}
+        {/* KPIs — horizontal row alongside the funnel result */}
+        <div className="grid grid-cols-4 gap-3 mb-8">
+          <KPICard
+            label="Active Users"
+            value={fmt(dayData.funnelCumulative.activeUser)}
+            highlight
+          />
+          <KPICard
+            label="CAC"
+            value={dayData.kpiCumulative.cac > 0 ? fmtDollar(dayData.kpiCumulative.cac) : '—'}
+            detail={dayData.kpiCumulative.cac > 0 ? `$${fmtK(dayData.cumulativeValue)} revenue generated` : 'Awaiting conversions'}
+          />
+          <KPICard
+            label="ROI"
+            value={dayData.kpiCumulative.roi > 0 ? `${dayData.kpiCumulative.roi}x` : '—'}
+            detail={dayData.kpiCumulative.roi > 0 ? `$${fmtK(dayData.cumulativeSpend)} spend` : 'Awaiting conversions'}
+          />
+          <KPICard
+            label="Fraud Saved"
+            value={fmtDollar(dayData.kpiCumulative.fraudSaved)}
           />
         </div>
 
-        {/* Zone B: Decision Feed */}
-        <DecisionFeed
-          decisions={decisions}
-          referrerTiers={projection.referrerTiers}
-          refereeTiers={projection.refereeTiers}
-        />
+        {/* ── POSITION 2 + 3: LEARNINGS | DECISIONS ── */}
+        <div className="grid grid-cols-[1.3fr_1fr] gap-6">
+          {/* Position 2: Learnings */}
+          <div className="space-y-6">
+            {/* Agentic vs Static — strongest element, first */}
+            <ComparisonChart
+              agenticCurve={projection.cumulativeCurve}
+              staticCurve={projection.staticCumulativeCurve}
+              annotations={projection.learningAnnotations}
+              currentDay={selectedDay}
+            />
 
-        {/* Zone C: Agentic vs Static */}
-        <ComparisonChart
-          agenticCurve={projection.cumulativeCurve}
-          staticCurve={projection.staticCumulativeCurve}
-          annotations={projection.learningAnnotations}
-          currentDay={selectedDay}
-        />
+            {/* Cohort chart — proves learning */}
+            <CohortChart
+              cohorts={projection.cohorts}
+              currentDay={selectedDay}
+            />
 
-        {/* Zone D: Agent Insight */}
-        <AgentInsight
-          dayData={dayData}
-          currentDay={selectedDay}
-          recommendation={projection.agentRecommendation}
-          staticDay={staticDayData}
-        />
+            {/* Agent Insight — bridges to Position 3 */}
+            <AgentInsight
+              dayData={dayData}
+              currentDay={selectedDay}
+              recommendation={projection.agentRecommendation}
+              staticDay={staticDayData}
+            />
+          </div>
+
+          {/* Position 3: Decisions */}
+          <div>
+            <DecisionFeed
+              decisions={decisions}
+              referrerTiers={projection.referrerTiers}
+              refereeTiers={projection.refereeTiers}
+            />
+          </div>
+        </div>
       </main>
     </div>
   );
