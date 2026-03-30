@@ -64,53 +64,103 @@ These are **hard exclusions**. The agent cannot override them.
 
 **For the demo**: Each filter removes a percentage of the total customer base. These percentages are config values. Changing a filter changes the eligible pool size, which flows through to all downstream calculations. The only filter that isn't binary is NPS, but for the demo consider it binary (<=6 / >6).
 
-**Missing guardrail?** Consider: "Not available for CRM communication" — in reality, conflicts with other marketing efforts is an execution challenge. The agent may wish to communicate with a user today and be blocked by CRM rules (not a guardrail set by user, but an operational restriction).
+**Operational restriction — CRM availability**: The agent may wish to communicate with a user today and be blocked by CRM rules (e.g., another campaign is running, user hit global contact limits). This is NOT a guardrail set by the user — it's a callback from the CRM software after the agent attempts outreach. The agent should log it and reprocess: if 20 customers were blocked today, the agent sends 20 replacement offers. Customers blocked today become targets in the coming days.
 
-### 3.2 Communication Controls
+> **Frontend location**: Audience filters live under **Invite → Audience** in StrategyCards.
 
-These constrain the agent's **outreach frequency** and campaign-level offer expiration rules.
+### 3.2 Invite → Triggers
+
+The agent's outreach is initiated by two trigger types:
+
+| Trigger | Description | Engine effect |
+|---------|-------------|---------------|
+| Transactional | Referral ask triggered in post-transaction moments | Higher-intent context, better conversion rate |
+| Promotional | Referral ask AI-initiated via selected channels | Broader reach, lower conversion rate |
+
+Both can be toggled on/off by the user. The agent uses both when available.
+
+> **Frontend location**: **Invite → Triggers** in StrategyCards.
+
+### 3.3 Invite → Channels
+
+Available outreach channels, split into two categories:
+
+| Category | Channels | Best for |
+|----------|----------|----------|
+| **Active CRM** | Email, SMS, Push Notification | All segments. Only viable method for low-engagement (low propensity) |
+| **In-App Placement** | Home Screen, Post-Transaction, Onboarding Success, Invite Menu, AI Chat | High propensity (correlates with high engagement) |
+
+Each channel can be toggled on/off. In-App has its own global fatigue limit (cannot appear at all times, for everyone).
+
+> **Frontend location**: **Invite → Channels** in StrategyCards.
+
+### 3.4 Communication Controls
+
+These constrain the agent's **outreach frequency** and offer expiration rules.
+
+> **Frontend location**: **Communication Controls** in StrategyCards.
+
+#### Limits
 
 | Rule | Default | Engine effect |
 |------|---------|---------------|
-| Maximum reminder frequency | 2 | Agent can contact each person max 2 times while they're in a given funnel stage |
-| Rest period | 2 days | Must wait 2 days between touchpoints to same person |
-| Campaign ends every | 14 days | Offer expires after 14 days. Person re-enters pool |
+| Maximum Reminder Frequency | 2 | Agent can contact each person max 2 times per funnel stage |
+| Rest Period | 2 days | Must wait 2 days between touchpoints to same person |
+
+#### Expiration Date
+
+| Rule | Default | Engine effect |
+|------|---------|---------------|
+| Campaign ends every | 30 days | Campaign cycle resets. Outstanding offers expire. Customers re-enter pool. **Engine must model** — defines how long budget is committed per cycle. |
+| Friend must qualify within | 7 days | Per-referral conversion window. Referee has 7 days to complete reward trigger. **Engine should model** — shorter window = lower conversion probability, faster budget release. |
+| Earned reward expires in | 60 days | How long the earned reward credit is valid. **Display only** — doesn't affect the 30-day projection. |
 
 **Daily contactable capacity** is derived from these rules:
-- Each person occupies a "slot" for up to `offer_window` days
-- During that window, they can receive up to `max_touchpoints` messages, spaced by `rest_period`
-- After expiry (no conversion), person re-enters the eligible pool
+- Each person occupies a "slot" for up to `Campaign ends every` days
+- During that window, they can receive up to `Maximum Reminder Frequency` messages, spaced by `Rest Period`
+- After expiry (no conversion), person re-enters the eligible pool immediately (no cooldown)
 
 **Key question resolved**: When an offer expires, the person goes back to the pool. The agent can issue a new offer with a potentially different reward and strategy. This is the "shift without confusing the user" mechanism.
 
-**In-App Banner has its own fatigue**: Banner space competes with other in-app messaging. The agent must respect campaign-level frequency limits for banner too (i.e. it cannot appear at all times, for everyone).
+### 3.5 Budget Protection
 
-### 3.3 Financial Controls (HOW money is controlled)
+> **Frontend location**: **Budget Protection** in StrategyCards.
 
-These constrain the agent's **daily spending**.
+#### Spend Pace
 
 | Rule | Default | Engine effect |
 |------|---------|---------------|
-| Spend pace | 100% | Limits the agent's daily outreach, given the daily invite cap. Prevents front-loading. |
+| Spend Pace | 100% | Controls the agent's daily outreach rate relative to even daily spending. 100% = spend budget evenly over 30 days. |
 
-**Daily invite cap** is the ad-network daily budget cap. It equals `remainingBudget / remainingDays` adjusted by conversion expectations.
+**Daily invite cap** is derived from spend pace. At 100%: `remainingBudget / remainingDays` adjusted by conversion expectations (ad-network daily budget cap).
 
-### 3.4 Fraud Prevention (deterministic rules, NOT for the agent)
+#### Safeguards
+
+| Rule | Default | Engine effect |
+|------|---------|---------------|
+| Invite Stop | 5.0x daily pace | Deterministic rule that blocks the agent from issuing new referral asks if actual paid conversions spike beyond threshold in 24h. Not a "kill switch" — an automatic safety brake. |
+
+### 3.6 Fraud Prevention (deterministic rules, NOT for the agent)
 
 These are **payment-layer rules**. The agent doesn't make fraud decisions — the system catches fraud at conversion/payment time.
 
+> **Frontend location**: **Fraud Prevention** in StrategyCards, split into **Detection** and **Payment Hold**.
+
+#### Detection
+
 | Rule | Default | Engine effect on projection |
 |------|---------|---------------------------|
-| Self-referral blocker | Standard | Reduces fraudulent conversions (modeled as % of conversions rejected) |
-| Suspicious escrow | 3 in 24h → hold 7 days | Delays payment (not modeled in 30-day projection) |
-| Link hijacking limit | 5 per link | Caps payouts per referral link |
-| Both shield | Aggressive | Reduces fraudulent conversions |
+| Self-Referral Blocker | Standard | Reduces fraudulent conversions (modeled as % of conversions rejected) |
+| Bot Shield | Aggressive | Reduces fraudulent conversions |
 
-**Fraud saved** = conversions rejected by these rules × avg reward. It should not be anymore a percentage of budget, but grounded in the actual rules above (slight increase/decrease as rules tight/weaken).
+#### Payment Hold
 
-### 3.5 Safeguards (KILL SWITCH — external)
+| Rule | Default | Engine effect on projection |
+|------|---------|---------------------------|
+| Link Hijacking Limit | 5 per link | Caps payouts per referral link |
+| Suspicious Escrow | 3 in 24h → hold 7 days | Delays payment (not modeled in 30-day projection) |
 
-Not modeled in the engine. This is a manual override for when something goes wrong. The dashboard should show it exists (trust signal), but the projection doesn't simulate it.
+**Fraud saved** = conversions rejected by these rules × avg reward. Grounded in actual rules, not a flat percentage of budget. Slight increase/decrease as rules tighten/weaken.
 
 ---
 
