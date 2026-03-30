@@ -27,16 +27,6 @@ All components use **Tailwind utility classes**. No CSS modules.
 - Use `cn()` from `src/lib/utils.js` for conditional classes
 - Follow `DESIGN_GUIDELINES.md` for all design tokens and patterns
 
-### Key tokens:
-- **Brand**: `text-brand` / `bg-brand` (#66001F Pure Wine), `bg-brand-light` (#F0E8E5)
-- **Text**: `text-foreground` (#2C2320), `text-foreground-muted` (#6B5E54), `text-foreground-faint` (#A89E94)
-- **Surfaces**: `bg-surface` (white), `bg-accent-subtle` (#F5F1EB), body bg `#FAF7F2` (warm cream)
-- **Borders**: `border-border` (#E4DDD5), `border-border-light` (#EFEBE5)
-- **Semantic**: `text-success`, `text-danger`, `text-warn`
-- **Shadows**: `shadow-xs`, `shadow-sm`, `shadow-md`, `shadow-lg`, `shadow-xl`
-- **Radii**: `rounded-sm` (6px), `rounded-md` (10px), `rounded-lg` (14px), `rounded-xl` (20px), `rounded-full`
-- **Fonts**: `font-sans` (Inter), `font-display` (Playfair Display — logo and landing headline only)
-
 ### Rules:
 - **No raw hex colors** — use Tailwind color classes
 - **No CSS modules** — everything is Tailwind
