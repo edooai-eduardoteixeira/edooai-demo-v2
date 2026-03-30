@@ -20,19 +20,12 @@ Challenge my requests when they conflict with the design system, introduce unnec
 
 ## Styling
 
-All components use **Tailwind utility classes**. No CSS modules.
-
-- Use `className="..."` with Tailwind utilities — never inline `style={{}}`
+- Use `className="..."` with Tailwind utilities — no CSS modules, no inline `style={{}}`
 - Use CVA for component variants (see `Badge.jsx`, `CTAButton.jsx` for examples)
 - Use `cn()` from `src/lib/utils.js` for conditional classes
-- Follow `DESIGN_GUIDELINES.md` for all design tokens and patterns
-
-### Rules:
-- **No raw hex colors** — use Tailwind color classes
-- **No CSS modules** — everything is Tailwind
-- **No inline styles** except for truly dynamic values (computed positions, dynamic widths)
-- Platform brand colors in `PLATFORM_COLORS` (PlatformLogo.jsx) are the only hex exception
 - Before creating new components, check `src/components/` for existing patterns
+
+For design tokens, color rules, and component recipes, follow `DESIGN_GUIDELINES.md`.
 
 ## Environments & Links
 
