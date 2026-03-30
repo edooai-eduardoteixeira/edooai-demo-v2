@@ -162,6 +162,17 @@ const neobank = {
     // Budget realization — fraction of theoretical conversions that resolve within 30 days
     budgetRealizationFactor: 0.70,     // Fraction of started conversions that resolve within 30 days
 
+    // Funnel sub-stage rates — decompose journey → conversion into intermediate steps
+    // Overall: shareRate × signupRate × activationRate ≈ effectiveConvRate
+    // shareRate improves with efficiency (better targeting → people more likely to share)
+    baseShareRate: 0.55,               // P(referrer shares link | contacted) at baseline
+    shareLearnFactor: 0.35,            // How much efficiency improves share rate (shareRate × (1 + eff × factor))
+    signupRate: 0.28,                  // P(referee signs up | link shared) — roughly constant
+    // activationRate derived: effectiveConvRate / (effectiveShareRate × signupRate)
+
+    // Benchmark — for dashboard comparison
+    industryCACBenchmark: 140,         // Industry avg CAC for neobank user acquisition ($)
+
     // Reward tiers — matches StrategyCards defaults (referrer + referee per tier)
     // AI selects tier per customer based on predicted conversion difficulty
     referrerTiers: [0, 20, 50, 75],    // $ referrer reward per tier (Tier 1 = organic, Tier 4 = hard conversion)
