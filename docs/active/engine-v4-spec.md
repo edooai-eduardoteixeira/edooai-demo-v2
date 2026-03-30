@@ -391,51 +391,52 @@ The dashboard should highlight these insights over the 30-day period:
 
 ## 9. Execution Plan
 
-### Micro-step approach
+### Principle: Dashboard-first, engine-scoped-by-what's-shown
 
-Do NOT plan the full build upfront. Each step validates assumptions before the next step builds on them.
+The dashboard is the product. The engine exists to feed the dashboard. We design the dashboard first, then build only the engine data the dashboard actually needs. No over-engineering, no under-engineering.
 
-**Step 1: Lock the guardrails**
-- Audit current guardrails config against this spec
-- Add missing guardrails, remove ones that don't make sense
-- Define filter percentages and segment assumptions
-- Deliverable: updated `neobank.js` guardrails config
-- Validate: do the rules make sense? Does the eligible pool size make sense?
+**No open-ended validation checkpoints.** Each step has a hard deliverable and a done-when. Build, test, commit, move on. If something feels wrong later, fix it then — not before.
 
-**Step 2: Build the pool and capacity layer**
-- Compute eligible pool from filter chain
-- Compute daily contactable capacity from fatigue rules
-- Compute outstanding offers tracking
-- No learning yet — just the box
-- Deliverable: engine computes daily capacity from rules
-- Validate: move a guardrail slider → capacity changes logically
+---
 
-**Step 3: Add the offer lifecycle**
-- Track new offers, outstanding offers, follow-ups, expirations
-- Offers flow through the lifecycle states
-- Conversions counted at reward trigger
-- No learning yet — uniform targeting
-- Deliverable: engine produces a daily funnel with offer states
-- Validate: numbers make sense? Offers expire correctly? Pool replenishes?
+### Step 1: Dashboard wireframe
 
-**Step 4: Add the learning layer**
-- Agent improves targeting (conversion rate), tier selection, channel mix
-- A/B testing simulation across segments
-- Confidence-driven pacing (fewer offers when uncertain)
-- Deliverable: daily curve shows learning ramp
-- Validate: learning feels realistic? Not too fast, not too slow?
+Design what the user sees. This scopes everything else.
 
-**Step 5: Add the daily decision log**
-- Engine outputs rich per-day data for dashboard
-- Segment breakdowns, channel mix, tier distribution, insights
-- Deliverable: structured daily log schema
-- Validate: does the log contain everything the dashboard needs?
+- Propose 3-5 dashboard sections with rough content
+- For each section: what data it shows, what "aha moment" it delivers
+- List exactly what data the engine must output for each section
+- **Done when**: data requirements list is written down. That list IS the engine scope.
+- **Deliverable**: wireframe description + engine output schema
 
-**Step 6: Build the dashboard**
-- Consume the engine's daily logs
-- Show the intelligence story
-- Answer "Why Vincor, not DIY?"
-- Deliverable: dashboard page
-- Validate: does a Head of Growth say "I need this"?
+### Step 2: Update guardrails config
 
-Each step is a checkpoint. We validate before moving to the next. If something doesn't make sense, we adjust the plan — not force the execution.
+Lock the rules that constrain the engine.
+
+- Update `neobank.js` guardrails with filter percentages (what % each filter removes)
+- Add missing guardrails from Section 8
+- Remove or fix guardrails that don't make sense
+- **Done when**: config is committed. Eligible pool can be computed from filters.
+- **Deliverable**: updated `neobank.js`, committed
+
+### Step 3: Build the engine
+
+Build the engine to produce the data the dashboard needs (from Step 1). Built in layers, each committed independently:
+
+**3a — Pool and capacity**: Eligible pool from filter chain. Daily contactable capacity from fatigue rules. Outstanding offers tracking.
+- **Done when**: changing a guardrail value changes the pool/capacity numbers. Committed.
+
+**3b — Offer lifecycle and daily funnel**: New offers, follow-ups, expirations, conversions. Budget pacing (ad network model).
+- **Done when**: engine produces a 30-day daily funnel. Sum of daily = total users. CAC = budget / users. Committed.
+
+**3c — Learning layer**: Segment discovery, tier optimization, channel mix improvement. Confidence-driven pacing.
+- **Done when**: daily curve shows learning ramp. Day 1 < Day 30. Committed.
+
+**3d — Daily decision log**: Rich per-day output matching the schema from Step 1.
+- **Done when**: engine output matches what the dashboard needs. Committed.
+
+### Step 4: Build the dashboard
+
+Consume the engine's daily logs. Show the intelligence story. Answer "Why Vincor, not DIY?"
+
+- **Done when**: dashboard page renders with real engine data. Committed.
