@@ -13,8 +13,9 @@ The engine is **not a calculator**. It simulates an **AI agent** that operates a
 1. Decides **who** to create new offers for
 2. Decides **what reward** to assign each offer
 3. Decides **which channel** to use (SMS, Push, Email, In-App Banner)
-4. Manages **outstanding offers** (follow-ups, reminders)
-5. **Learns** from results and adjusts strategy
+4. Decides **ideal hook** to convert customers (message structure, 1:1 pesonalization)
+5. Manages **outstanding offers** (follow-ups, reminders)
+6. **Learns** from results and adjusts strategy
 
 The guardrails are the agent's **rulebook** — they define what it CAN and CANNOT do. The budget is the agent's **spending limit**. The learning is the agent's **intelligence** — what makes it better than a human running the program manually.
 
@@ -30,7 +31,7 @@ Three segments based on referral propensity (0–100% probability scale):
 | **Medium propensity** | Needs the right offer/timing | Moderate engagement, responds to incentives |
 | **Low propensity** | Needs strong incentive to convert | Low engagement, rarely opens comms, needs high reward |
 
-**No one is "non-viable"** if they pass the eligibility filters. Everyone has a probability. The agent's job is to learn these probabilities and allocate efficiently.
+**No one is "non-viable"** if they aren't blocked by guardrails. Everyone has a probability. The agent's job is to learn these probabilities and allocate efficiently, given the existing budget and guardrails.
 
 **Day 1**: Agent doesn't know who belongs where. Treats everyone as medium.
 **Day 30**: Agent has a model. Knows segments, allocates accordingly.
@@ -61,19 +62,19 @@ These are **hard exclusions**. The agent cannot override them.
 | Account too new | < 60 days excluded | Removes from eligible pool |
 | Inactive accounts | > 90 days no activity excluded | Removes from eligible pool |
 
-**For the demo**: Each filter removes a percentage of the total customer base. These percentages are config values. Changing a filter threshold (e.g., NPS from 6 to 4) changes the eligible pool size, which flows through to all downstream calculations.
+**For the demo**: Each filter removes a percentage of the total customer base. These percentages are config values. Changing a filter changes the eligible pool size, which flows through to all downstream calculations. The only filter that isn't binary is NPS, but for the demo consider it binary (<=6 / >6).
 
-**Missing guardrail?** Consider: "Recently contacted by another campaign" — avoids conflicting with other marketing efforts.
+**Missing guardrail?** Consider: "Not available for CRM communication" — in reality, conflicts with other marketing efforts is an execution challenge. The agent may wish to communicate with a user today and be blocked by CRM rules (not a guardrail set by user, but an operational restriction).
 
-### 3.2 Customer Fatigue (HOW people are treated)
+### 3.2 Communication Controls
 
-These constrain the agent's **outreach frequency**.
+These constrain the agent's **outreach frequency** and campaign-level offer expiration rules.
 
 | Rule | Default | Engine effect |
 |------|---------|---------------|
-| Max touchpoints per stage | 2 | Agent can contact each person max 2 times while they're in a given funnel stage |
-| Minimum rest period | 2 days | Must wait 2 days between touchpoints to same person |
-| Offer window | 14 days | Offer expires after 14 days. Person re-enters pool (with cooldown?) |
+| Maximum reminder frequency | 2 | Agent can contact each person max 2 times while they're in a given funnel stage |
+| Rest period | 2 days | Must wait 2 days between touchpoints to same person |
+| Campaign ends every | 14 days | Offer expires after 14 days. Person re-enters pool |
 
 **Daily contactable capacity** is derived from these rules:
 - Each person occupies a "slot" for up to `offer_window` days
@@ -82,7 +83,7 @@ These constrain the agent's **outreach frequency**.
 
 **Key question resolved**: When an offer expires, the person goes back to the pool. The agent can issue a new offer with a potentially different reward and strategy. This is the "shift without confusing the user" mechanism.
 
-**In-App Banner has its own fatigue**: Banner space competes with other in-app messaging. The agent must respect banner-specific frequency limits.
+**In-App Banner has its own fatigue**: Banner space competes with other in-app messaging. The agent must respect campaign-level frequency limits for banner too (i.e. it cannot appear at all times, for everyone).
 
 ### 3.3 Financial Controls (HOW money is controlled)
 
@@ -90,13 +91,9 @@ These constrain the agent's **daily spending**.
 
 | Rule | Default | Engine effect |
 |------|---------|---------------|
-| Daily invite cap | Auto (derived from budget) | Max new offers per day. Prevents front-loading. |
-| Max outstanding offers | budget × 2 | Hard limit on total $ exposure from unexpired offers. Pauses if hit. |
-| Spend anomaly pause | daily_pace × 5 | Emergency brake if conversions spike suspiciously. |
+| Spend pace | 100% | Limits the agent's daily outreach, given the daily invite cap. Prevents front-loading. |
 
 **Daily invite cap** is the ad-network daily budget cap. It equals `remainingBudget / remainingDays` adjusted by conversion expectations.
-
-**Max outstanding offers** constrains total exposure: if many offers are outstanding (issued but not yet converted or expired), the agent slows down to avoid over-committing the budget.
 
 ### 3.4 Fraud Prevention (deterministic rules, NOT for the agent)
 
@@ -107,9 +104,9 @@ These are **payment-layer rules**. The agent doesn't make fraud decisions — th
 | Self-referral blocker | Standard | Reduces fraudulent conversions (modeled as % of conversions rejected) |
 | Suspicious escrow | 3 in 24h → hold 7 days | Delays payment (not modeled in 30-day projection) |
 | Link hijacking limit | 5 per link | Caps payouts per referral link |
-| Network & botnet shield | Aggressive | Reduces fraudulent conversions |
+| Both shield | Aggressive | Reduces fraudulent conversions |
 
-**Fraud saved** = conversions rejected by these rules × avg reward. This is now grounded in actual rules, not a flat percentage of budget.
+**Fraud saved** = conversions rejected by these rules × avg reward. It should not be anymore a percentage of budget, but grounded in the actual rules above (slight increase/decrease as rules tight/weaken).
 
 ### 3.5 Safeguards (KILL SWITCH — external)
 
@@ -127,13 +124,13 @@ ELIGIBLE POOL
     │                         • Reward tier assigned (from pre-approved options)
     │                         • Channel selected (SMS/Push/Email/In-App)
     │                         • Personalized message crafted
-    │                         • Offer window starts (14 days)
+    │                         • Offer window starts
     │
     ▼
 OFFER OUTSTANDING ◄──────── Agent manages follow-ups
-    │                         • Has customer shared? → different follow-up
+    │                         • Has customer shared? → different follow-up (one referrer can refer >1 referee)
     │                         • Hasn't shared? → reminder via different channel
-    │                         • Max touchpoints and rest period respected
+    │                         • Maximum reminder frequency and rest period respected
     │                         • Cannot change reward mid-offer
     │
     ├──→ CUSTOMER SHARES referral link
@@ -144,14 +141,14 @@ OFFER OUTSTANDING ◄──────── Agent manages follow-ups
     │         │ Agent tracks progression, acts on funnel events
     │         │
     │         ├──→ CONVERSION (referee hits reward trigger)
-    │         │         • Referrer + referee both get rewards
-    │         │         • Fraud check at payment
-    │         │         • Referrer may re-enter pool as higher-propensity
-    │         │
-    │         └──→ DROP-OFF (referee abandons funnel)
-    │                   • Offer still open for referrer to share again
+    │                  • Referrer + referee both get rewards
+    │                  • Fraud check at payment
+    │                  • Referrer and referee may re-enter pool
+    │         
+    │         
+    │                   
     │
-    └──→ OFFER EXPIRES (14 days, no conversion)
+    └──→ OFFER EXPIRES
               • Customer re-enters eligible pool
               • Agent can issue new offer with different strategy
               • Learnings from this offer inform next attempt
@@ -163,7 +160,7 @@ Referee completes the reward trigger (first transaction for neobank). This is wh
 
 ### Shares we don't see
 
-P2P sharing (word of mouth, screen share, etc.) is invisible. We track: link copied, link shared via tracked channels, referee click, sign-up, KYC, transaction. Some conversions will appear "from nowhere" — that's organic lift from the program.
+P2P sharing (word of mouth, screen share, etc.) can be invisible. We track referrer actions (engaged with communications, link copied and share functionality used), but it has natural limitations. The referee funnel funnel (referee click, sign-up, KYC, transaction) is precisely measurable.
 
 ---
 
@@ -185,8 +182,7 @@ availablePool = eligiblePool
 ```
 dailyNewOfferCap = min(
   financialControls.dailyInviteCap,           // financial guardrail
-  availablePool × maxDailyReachRate,           // pool constraint
-  outstandingOffersHeadroom                    // max outstanding $ guardrail
+  availablePool × maxDailyReachRate           // pool constraint
 )
 ```
 
@@ -198,8 +194,8 @@ expectedROI(customer) = P(conversion | segment, channel, reward) × revenuePerCo
                       - rewardCost × P(conversion)
 ```
 
-Day 1: P(conversion) is uniform estimate. Ranking is near-random.
-Day 15: P(conversion) is segment-informed. Ranking is data-driven.
+Day 1: P(conversion) is a raw estimate based on generic assumptions. Ranking is limited.
+Day 15: P(conversion) is segment-informed. Ranking is client-specific, data-driven.
 
 ### Step 4: Allocate offers (confidence-driven)
 
@@ -209,19 +205,19 @@ offersToday = min(dailyNewOfferCap, confidenceTarget)
 confidenceTarget = maxCapacity × currentEfficiency
 ```
 
-Low confidence → fewer offers (learning, testing).
-High confidence → more offers (scaling what works).
-Daily budget cap is the hard ceiling.
+Low confidence → fewer offers (learning, testing, saving user pool and monthly budget).
+High confidence → more offers (scaling what works, ensuring monthly budget is used).
+Daily invite cap is the hard ceiling.
 
 For each offer:
 - Assign segment-optimal reward tier (from pre-approved tiers)
-- Select channel based on segment (high propensity → in-app banner; low → push/SMS)
-- Generate personalized message variant (for A/B testing)
+- Select channel based on segment (high propensity → in-app banner/push notification; low → push notification/SMS/Email)
+- Generate personalized message variant (structure variations for A/B testing, personalized individual hooks)
 
 ### Step 5: Manage outstanding offers
 
 For each outstanding offer:
-- Check funnel status (shared? referee signed up? etc.)
+- Check funnel status (engaged with communication? shared? referee signed up? etc.)
 - If touchpoints remaining and rest period satisfied → send follow-up
 - Select follow-up channel (may differ from initial)
 - Personalize follow-up message based on status
@@ -231,15 +227,16 @@ For each outstanding offer:
 - Referees who hit reward trigger today → count as conversions
 - Apply fraud rules (reject suspicious ones)
 - Pay rewards (or escrow if flagged)
-- Converted referrers → may re-enter pool with higher propensity score
+- Converted referrers and referees → may re-enter pool (learning = higher propensity score)
 
 ### Step 7: Learn and re-plan
 
 - Update segment models: which profiles converted?
+- Update customer distribution across segments: which customers should change from one segment to another?
 - Update channel effectiveness: which channel worked for which segment?
 - Update reward efficiency: which tier converted which segment?
 - Update message effectiveness: which variant performed better?
-- **Do NOT plan for the full remaining period** — plan only tomorrow based on today's learnings
+- **Plan only today's actions based on yesterday's learnings**
 
 ### Step 8: Record daily log
 
@@ -256,9 +253,10 @@ The agent runs like an **A/B testing machine**. It clusters customers, tests var
 | Variable | Day 1 (no data) | Day 30 (learned) |
 |----------|----------------|-------------------|
 | **Who converts** | Uniform probability across segments | Segment-specific conversion rates |
+| **Who belongs to each segment** | Generic assumptions | Client-specific, data-driven |
 | **Best reward per segment** | Blended average tier | Optimized: Tier 2 for high propensity, Tier 4 for low |
 | **Best channel per segment** | Even distribution | High propensity → in-app banner; Low → push/email |
-| **Message effectiveness** | Random variant | Winning variants identified per segment |
+| **Message effectiveness** | Random variant | Winning variants identified per segment + individual personalization |
 
 ### How learning works mechanically
 
@@ -275,8 +273,8 @@ The learning affects:
 
 ### Learning constraints
 
-- Agent only learns from **resolved outcomes** (conversions, expirations)
-- Offers in flight don't provide signal until they resolve
+- Agent learns mostly from **resolved outcomes** (conversions, expirations)
+- Agents also learn from **unresolved outcomes** (eg: users interacted but didn't convert, vs. users didn't interact at all)
 - Learning is **gradual** — no single day produces a revolution
 - Agent re-plans daily, not long-term — short feedback loops
 
@@ -286,7 +284,7 @@ A manual referral program would:
 - Send the same reward to everyone (no tier optimization)
 - Use one channel for all (no channel selection)
 - Never learn who converts (no targeting improvement)
-- Never test messages (no A/B optimization)
+- Never test messages (including what time to send or what to say)
 
 The dashboard must show the **delta** between "what a static program would produce" vs "what the agent produces." This is the ROI of intelligence.
 
@@ -313,9 +311,9 @@ The engine must output a **daily decision log** that the dashboard consumes.
 
   // Segment breakdown
   segments: {
-    high:   { offers: 1400, tier: 'Tier 2', channel: 'in-app',  convRate: 0.042 },
-    medium: { offers: 1000, tier: 'Tier 3', channel: 'push',    convRate: 0.025 },
-    low:    { offers: 400,  tier: 'Tier 4', channel: 'email',   convRate: 0.012 },
+    high:   { offers: 1400, tier: 'Tier 2', channel: 'in-app',  convRate: 0.06 },
+    medium: { offers: 1000, tier: 'Tier 3', channel: 'push',    convRate: 0.035 },
+    low:    { offers: 400,  tier: 'Tier 4', channel: 'email',   convRate: 0.01 },
   },
 
   // Outcomes
@@ -332,7 +330,7 @@ The engine must output a **daily decision log** that the dashboard consumes.
   // Learning
   efficiency: 0.52,
   topInsight: "High-tenure customers convert 3.2x better via in-app banner",
-  tierShift: "Moved 15% of medium segment from Tier 3 to Tier 2 (same conv rate, lower cost)",
+  tierShift: "Moved 15% of medium segment from Tier 3 to Tier 2 (conv rate increase, lower cost)",
   channelShift: "Push → in-app for high segment (+18% open rate)",
 
   // Cumulative
@@ -368,24 +366,24 @@ The dashboard should highlight these insights over the 30-day period:
 
 ### Guardrails to add or refine
 
-- [ ] **Post-expiry cooldown**: When an offer expires, how long before the person can receive a new offer? Currently undefined.
-- [ ] **Channel-specific fatigue**: In-app banner competes with other in-app messaging. Separate fatigue rules per channel? Or one global limit?
-- [ ] **Cross-campaign exclusion**: "Recently contacted by another campaign" — should the agent respect other marketing activities?
-- [ ] **Reward trigger definition**: Currently "first transaction." Should this be configurable? (e.g., KYC completion, first deposit, etc.)
+- [X] **Post-expiry cooldown**: When an offer expires, how long before the person can receive a new offer? Currently undefined. **Not restricted.**
+- [X] **Channel-specific fatigue**: In-app banner competes with other in-app messaging. Separate fatigue rules per channel? Or one global limit? **Global limit.**
+- [X] **Cross-campaign exclusion**: "Recently contacted by another campaign" — should the agent respect other marketing activities? **Not available for CRM communication: This is a callback from CRM software after the agent attempts to outreach a customer; the agent should log it and reprocess its output to ensure its daily goal (eg: if 20 customers were blocked, the agent should send 20 new). Customers blocked from a day should be a target in the coming days**
+- [X] **Reward trigger definition**: Currently "first transaction." Should this be configurable? (e.g., KYC completion, first deposit, etc.) **This is defined within the strategy. The agent proposes at the moment of the strategy definition. At that moment it's user configurable, but not during agentic execution.**
 
 ### Engine parameters to define
 
-- [ ] Filter percentages for each audience protection rule (what % of 847K does each filter remove?)
-- [ ] Segment distribution assumptions (currently proposed: 25/50/25 — needs validation)
-- [ ] Base conversion rates per segment (before learning)
-- [ ] Channel effectiveness multipliers per segment
-- [ ] Learning speed parameters (how fast does the agent improve?)
+- [X] Filter percentages for each audience protection rule (what % of 847K does each filter remove?) **You can define a random number for each. The sum must meet the final, defined number**
+- [X] Segment distribution assumptions (currently proposed: 25/50/25 — needs validation) **Start with 10/20/70. Gradually move toward 20/40/40 as learning kicks-in). Highlight if this conflicts with the current learning parameters**.
+- [X] Base conversion rates per segment (before learning) **High: 4%; Medium: 2%; Low: 0.5%**
+- [X] Channel effectiveness multipliers per segment **In-app and push notification for high propensity (which correlates to high engagement); Email/SMS as the only viable method for non-engaged (typically low propensity)**
+- [X] Learning speed parameters (how fast does the agent improve?) **Like an ad-network, learning should come from data volume (good and bad)**
 
 ### Dashboard questions
 
-- [ ] Do we show the static vs agent comparison on the dashboard? Or is it implicit?
-- [ ] How granular should the daily log be? Per-segment per-channel per-day? Or summary level?
-- [ ] Should the dashboard show individual "decisions" or aggregate patterns?
+- [X] Do we show the static vs agent comparison on the dashboard? Or is it implicit? **Yes**
+- [X] How granular should the daily log be? Per-segment per-channel per-day? Or summary level? **The more granular the better because it expands explainability; Summary-level is derived from granular logs**
+- [X] Should the dashboard show individual "decisions" or aggregate patterns? **Aggregate patterns, but customers may drill-down into individual decisions**
 
 ---
 
@@ -404,7 +402,7 @@ The dashboard is the product. The engine exists to feed the dashboard. We design
 Design what the user sees. This scopes everything else.
 
 - Propose 3-5 dashboard sections with rough content
-- For each section: what data it shows, what "aha moment" it delivers
+- For each section: what data it shows (outcomes), what "aha moment" (agentic intelligence) it delivers
 - List exactly what data the engine must output for each section
 - **Done when**: data requirements list is written down. That list IS the engine scope.
 - **Deliverable**: wireframe description + engine output schema
@@ -416,20 +414,20 @@ Lock the rules that constrain the engine.
 - Update `neobank.js` guardrails with filter percentages (what % each filter removes)
 - Add missing guardrails from Section 8
 - Remove or fix guardrails that don't make sense
-- **Done when**: config is committed. Eligible pool can be computed from filters.
+- **Done when**: config is committed. Guardrails' change impact in the agent's actions and outcomes.
 - **Deliverable**: updated `neobank.js`, committed
 
 ### Step 3: Build the engine
 
 Build the engine to produce the data the dashboard needs (from Step 1). Built in layers, each committed independently:
 
-**3a — Pool and capacity**: Eligible pool from filter chain. Daily contactable capacity from fatigue rules. Outstanding offers tracking.
+**3a — Pool and capacity**: Eligible pool from filter chain. Daily contactable capacity from communication controls. Outstanding offers tracking.
 - **Done when**: changing a guardrail value changes the pool/capacity numbers. Committed.
 
-**3b — Offer lifecycle and daily funnel**: New offers, follow-ups, expirations, conversions. Budget pacing (ad network model).
+**3b — Offer lifecycle and daily funnel**: New offers, follow-ups, expirations, referee funnel, conversions. Budget pacing (ad network model).
 - **Done when**: engine produces a 30-day daily funnel. Sum of daily = total users. CAC = budget / users. Committed.
 
-**3c — Learning layer**: Segment discovery, tier optimization, channel mix improvement. Confidence-driven pacing.
+**3c — Learning layer**: Segment discovery, tier optimization, channel mix improvement, message improvement increases top of funnel engagement. Confidence-driven pacing.
 - **Done when**: daily curve shows learning ramp. Day 1 < Day 30. Committed.
 
 **3d — Daily decision log**: Rich per-day output matching the schema from Step 1.
