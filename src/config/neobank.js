@@ -126,11 +126,11 @@ const neobank = {
   //   Distributed resolution: truncated normal distribution (no staircase)
   //   Value learning: engine finds super referrers → higher-value customers over time
   //
-  // Calibrated via scripts/calibrate-engine.mjs to hit:
-  //   $50K  → CAC ~$55, ROI ~1.8x (cherry-pick: cheap tier distribution)
-  //   $150K → CAC ~$85, ROI ~1.5x (scaling: mid-tier distribution)
-  //   $300K → CAC ~$110, ROI ~1.2x (full audience: expensive tier distribution)
-  // CAC = weighted avg reward per conversion (driven by budget-level tier distribution)
+  // Calibrated targets (CAC = budget / users, cohort attribution):
+  //   $50K  → CAC ~$58, ROI ~3.3x (cherry-pick: cheap tier distribution)
+  //   $150K → CAC ~$82, ROI ~2.5x (scaling: mid-tier distribution)
+  //   $300K → CAC ~$112, ROI ~1.9x (full audience: expensive tier distribution)
+  // CAC = budget / generated users (industry-standard cohort attribution)
   engineParams: {
     // Audience — derived: audienceSize = totalCustomers × eligibilityRate
     totalCustomers: 847000,            // Total customer base (from data ingestion)
@@ -158,9 +158,6 @@ const neobank = {
     avgResolutionDays: 3,              // Mean of normal distribution for resolution timing
     offerExpirationDays: 14,           // Max days before offer expires (right bound of distribution)
     referrerEligibilityRate: 0.4,      // Fraction of new converts who become eligible referrers
-
-    // Budget realization — fraction of theoretical conversions that resolve within 30 days
-    budgetRealizationFactor: 0.70,     // Fraction of started conversions that resolve within 30 days
 
     // Reward tiers — matches StrategyCards defaults (referrer + referee per tier)
     // AI selects tier per customer based on predicted conversion difficulty
@@ -313,12 +310,12 @@ const neobank = {
   // ─── Screen 4 — Dashboard (30-day projected results) ───
 
   dashboard30Day: {
-    activeUsers: 1362,
+    activeUsers: 1821,
     totalReferralsSent: 11000,
     totalSpend: 150000,
-    cac: 79,
-    roi: 1.7,
-    fraudSaved: 10500,
+    cac: 82,
+    roi: 2.5,
+    fraudSaved: 10114,
     chartPhases: [
       { label: 'Learning', days: '1\u20137', note: 'Small cohort' },
       { label: 'Scaling', days: '8\u201321', note: 'Acceleration' },
