@@ -30,9 +30,8 @@ For design tokens, color rules, and component recipes, follow `DESIGN_GUIDELINES
 ## Environments & Links
 
 - **Production**: https://demo-v2-production.up.railway.app (auto-deploys from `main`)
-- **Preview**: Railway Preview Environments (auto-deploy per PR — provide the full preview URL after every push)
+- **Preview**: Created via PR — Railway auto-deploys per PR
 
 ### Link Rules:
-- **NEVER give relative paths** like `/wines` or `/about`. Always use full URLs with the appropriate base domain.
-- When referencing any page or route, use the full production URL (e.g., `https://demo-v2-production.up.railway.app/wines`) or the full Railway preview URL if working on a PR.
-- **The repo is private** — do not link to GitHub raw file views, blob URLs, or commit pages as a way to "preview" changes. The PR link itself is fine (it's how I access the Railway preview).
+- Always use full URLs (e.g., `https://github.com/eduardofteixeira/demo-v2/blob/main/src/components/Modal.jsx`), never relative paths
+- The repo is private — do not link to GitHub raw/blob views as a way to preview changes
