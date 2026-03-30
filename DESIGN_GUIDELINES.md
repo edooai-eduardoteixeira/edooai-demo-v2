@@ -2,6 +2,15 @@
 
 These are **rules** — not suggestions. Follow them exactly for all CSS and UI work in this project.
 
+## Brand Identity
+
+**Name**: Vincor (not "Vincor AI" — dropped "AI" for brand confidence)
+**Logo**: Custom crystalline/crown mark + "Vincor" in Playfair Display serif
+**Brand color**: Pure Wine #66001F — a pure, zero-brown wine red
+**Font system**: Playfair Display (brand/display) + Inter (product UI)
+
+**Personality**: Premium, confident, warm. Think Cartier meets Stripe — luxury meets fintech. The product is an agentic referral engine. The design should feel calm, intelligent, and inevitable.
+
 ## Important: Use Tailwind Classes
 
 All new code must use **Tailwind utility classes** — never inline `style={{}}`. Use the `cn()` helper from `src/lib/utils.js` for conditional classes. Use CVA (`class-variance-authority`) for component variants.
