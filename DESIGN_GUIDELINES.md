@@ -561,3 +561,14 @@ Always pair with `transition-all` or specific properties (`transition-colors`, `
 7. **Every interactive element gets a transition** (duration-200 ease-out)
 8. **Focus states on everything** — never remove outlines without replacing them
 9. **Mobile-first** — design for small screens, enhance for large
+
+---
+
+## File References
+
+- Design tokens: `src/styles/global.css` @theme block
+- Logo component: `src/components/Logo.jsx`
+- Button component: `src/components/CTAButton.jsx`
+- Modal component: `src/components/Modal.jsx`
+- Brand mark: `public/vincor svg.svg`
+- Hero visual: `src/components/HeroVisual.jsx`
