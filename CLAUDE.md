@@ -1,5 +1,9 @@
 # Project: Vincor Demo (demo-v2)
 
+## Working Style
+
+Challenge my requests when they conflict with the design system, introduce unnecessary complexity, skip required steps to ensure high-quality standards, have broken or untested logic. Don't just execute — tell me when something is a bad idea and why. Prefer "no, here's why" over silent compliance.
+
 ## Brand & Design System
 
 **READ FIRST**: `docs/active/color-system.md` — complete brand identity, color system, typography, layout rules, button system, and design principles. This is the source of truth for all design decisions. `DESIGN_GUIDELINES.md` has the detailed implementation rules with Tailwind classes.
