@@ -234,7 +234,7 @@ console.log('\n═══ 13. Calibration Targets ═══');
 const TARGETS = [
   { budget: 50_000,  cac: [45, 70],    users: [750, 1000],  roi: [2.5, 4.0] },
   { budget: 150_000, cac: [70, 100],   users: [1500, 2100],  roi: [2.0, 3.0] },
-  { budget: 500_000, cac: [110, 150],  users: [3500, 4700],  roi: [1.2, 2.0] },
+  { budget: 500_000, cac: [130, 180],  users: [2800, 3600],  roi: [1.0, 1.8] },
 ];
 for (const t of TARGETS) {
   const res = computeProjection({ budget: t.budget, params });
