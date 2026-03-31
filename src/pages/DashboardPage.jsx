@@ -94,12 +94,6 @@ function ActiveUsersChart({ cumulativeCurve, currentDay }) {
 
   return (
     <div className="bg-surface border border-border rounded-lg p-4">
-      <div className="flex items-baseline gap-2 mb-2">
-        <span className="text-2xl font-extrabold text-foreground tracking-tight leading-none">
-          {fmt(lastVal)}
-        </span>
-        <span className="text-xs text-foreground-muted">active users</span>
-      </div>
       <Chart
         data={slice}
         maxValue={yMax}
