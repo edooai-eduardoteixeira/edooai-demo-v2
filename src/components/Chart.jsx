@@ -36,7 +36,7 @@ const TOKENS = {
   thresholdLabel: { fontSize: 11, fontFamily: 'var(--font-family)' },
 };
 
-const DEFAULT_PADDING = { top: 10, right: 0, bottom: 40, left: 28 };
+const DEFAULT_PADDING = { top: 10, right: 20, bottom: 40, left: 28 };
 const DEFAULT_HEIGHT = 210;
 const VIEWBOX_WIDTH = 828;
 const DEFAULT_GRIDLINE_COUNT = 2;
