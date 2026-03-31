@@ -541,18 +541,18 @@ export default function DashboardPage({ config, onHome }) {
       </header>
 
       <main className="flex-1 pb-8">
-        {/* ── POSITION 1: RESULTS — one unified area ── */}
-        <div className="bg-surface border border-border rounded-lg p-5 mb-5">
-          <div className="flex gap-5">
-            {/* LEFT COLUMN (~60%): KPI selector + hero chart */}
-            <div className="flex-[1.4] min-w-0 flex flex-col">
+        {/* ── POSITION 1: RESULTS — one unified area, fixed height ── */}
+        <div className="bg-surface border border-border rounded-lg p-5 mb-5 h-[340px]">
+          <div className="flex gap-5 h-full">
+            {/* LEFT COLUMN (60%): KPI selector + hero chart */}
+            <div className="flex-[3] min-w-0 flex flex-col">
               <KPISelector
                 selected={selectedKPI}
                 onSelect={setSelectedKPI}
                 dayData={dayData}
               />
-              {/* Hero chart fills remaining height */}
-              <div className="mt-2 flex-1 min-h-0">
+              {/* Hero chart fills remaining height — generous spacing per design guideline */}
+              <div className="mt-4 flex-1 min-h-0">
                 <HeroChart
                   selectedKPI={selectedKPI}
                   days={projection.days}
@@ -565,26 +565,28 @@ export default function DashboardPage({ config, onHome }) {
             {/* DIVIDER */}
             <div className="w-px bg-border-light shrink-0" />
 
-            {/* RIGHT COLUMN (~40%): Funnel (compact) + Cohort (gets more space) */}
-            <div className="flex-1 min-w-0 flex flex-col gap-4">
-              {/* Referral Funnel — compact */}
-              <div className="shrink-0">
-                <SectionLabel>Referral Funnel</SectionLabel>
-                <div className="mt-1">
-                  <FunnelChart
-                    stages={[
-                      { label: 'Eligible', value: projection.audienceSize },
-                      { label: 'Contacted', value: dayData.funnelCumulative.contacted },
-                      { label: 'Referral Sent', value: dayData.funnelCumulative.referralSent },
-                      { label: 'Signed Up', value: dayData.funnelCumulative.signedUp },
-                      { label: 'Active User', value: dayData.funnelCumulative.activeUser },
-                    ]}
-                    pending={dayData.funnelCumulative.pending}
-                  />
-                </div>
+            {/* MIDDLE COLUMN (20%): Referral Funnel */}
+            <div className="flex-1 min-w-0 flex flex-col">
+              <SectionLabel>Referral Funnel</SectionLabel>
+              <div className="mt-1 flex-1 min-h-0">
+                <FunnelChart
+                  stages={[
+                    { label: 'Eligible', value: projection.audienceSize },
+                    { label: 'Contacted', value: dayData.funnelCumulative.contacted },
+                    { label: 'Referral Sent', value: dayData.funnelCumulative.referralSent },
+                    { label: 'Signed Up', value: dayData.funnelCumulative.signedUp },
+                    { label: 'Active User', value: dayData.funnelCumulative.activeUser },
+                  ]}
+                  pending={dayData.funnelCumulative.pending}
+                />
               </div>
+            </div>
 
-              {/* Cohort chart — takes remaining vertical space */}
+            {/* DIVIDER */}
+            <div className="w-px bg-border-light shrink-0" />
+
+            {/* RIGHT COLUMN (20%): Funnel Performance (cohort chart) */}
+            <div className="flex-1 min-w-0 flex flex-col">
               <CohortChart
                 cohorts={projection.cohorts}
                 currentDay={selectedDay}
