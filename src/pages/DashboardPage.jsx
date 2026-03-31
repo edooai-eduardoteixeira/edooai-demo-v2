@@ -77,7 +77,6 @@ function DaySelector({ selected, onSelect, thresholdDay }) {
 }
 
 // Sequential warm palette — lightest (oldest cohort) to darkest (newest)
-// Uses the warm gray scale from design tokens for reliable visual separation
 const COHORT_COLORS = [
   'var(--color-gray-300)',
   'var(--color-gray-400)',
@@ -87,49 +86,102 @@ const COHORT_COLORS = [
   'var(--color-brand)',
 ];
 
-function ActiveUsersChart({ cumulativeCurve, currentDay }) {
-  const slice = cumulativeCurve.slice(0, currentDay);
-  const lastVal = slice.length > 0 ? slice[slice.length - 1] : 0;
-  const yMax = Math.ceil(Math.max(...slice, 1) / 200) * 200 || 200;
+// ═══════════════════════════════════════════════════════════════════════
+// KPI SELECTOR — tabs that control the hero chart
+// ═══════════════════════════════════════════════════════════════════════
+const KPI_DEFS = [
+  { key: 'activeUsers', label: 'Active Users', format: (v) => fmt(v) },
+  { key: 'cac', label: 'CAC', format: (v) => v > 0 ? fmtDollar(v) : '—' },
+  { key: 'roi', label: 'ROI', format: (v) => v > 0 ? `${v}x` : '—' },
+  { key: 'fraudSaved', label: 'Fraud Saved', format: (v) => fmtDollar(v) },
+];
 
+function KPISelector({ selected, onSelect, dayData }) {
   return (
-    <div className="bg-surface border border-border rounded-lg p-4">
-      <Chart
-        data={slice}
-        maxValue={yMax}
-        padding={{ left: 45 }}
-        xLabels={[1, 10, 20, 30].filter(d => d <= currentDay).map(d => ({ value: String(d), at: d }))}
-        yLabels={[0, yMax * 0.5, yMax]}
-        gridlines="from-labels"
-        fill={{ color: 'var(--color-brand)', opacity: 0.07 }}
-        endpointLabel={(v) => fmt(v)}
-      />
+    <div className="flex gap-1">
+      {KPI_DEFS.map((kpi) => {
+        const active = selected === kpi.key;
+        const value = kpi.key === 'activeUsers'
+          ? dayData.funnelCumulative.activeUser
+          : dayData.kpiCumulative[kpi.key];
+        return (
+          <button
+            key={kpi.key}
+            onClick={() => onSelect(kpi.key)}
+            className={cn(
+              'flex flex-col px-3 py-2 rounded-sm transition-all duration-200 min-w-0',
+              active
+                ? 'bg-accent-subtle'
+                : 'hover:bg-accent-subtle/50'
+            )}
+          >
+            <span className="text-[10px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
+              {kpi.label}
+            </span>
+            <span className={cn(
+              'text-[17px] font-bold tracking-tight leading-tight mt-0.5',
+              active ? 'text-foreground' : 'text-foreground-muted'
+            )}>
+              {kpi.format(value)}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// KPI CARDS
+// HERO CHART — renders the selected KPI's 30-day trend
 // ═══════════════════════════════════════════════════════════════════════
-function KPICard({ label, value, detail, highlight }) {
+function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve }) {
+  // Build the data slice for the selected KPI
+  let slice, yMax, formatLabel;
+
+  if (selectedKPI === 'activeUsers') {
+    slice = cumulativeCurve.slice(0, currentDay);
+    const maxVal = Math.max(...slice, 1);
+    yMax = Math.ceil(maxVal / 200) * 200 || 200;
+    formatLabel = (v) => fmt(v);
+  } else {
+    slice = days.slice(0, currentDay).map(d => d.kpiCumulative[selectedKPI]);
+    const maxVal = Math.max(...slice, 1);
+    if (selectedKPI === 'cac') {
+      yMax = Math.ceil(maxVal / 20) * 20 || 100;
+      formatLabel = (v) => fmtDollar(v);
+    } else if (selectedKPI === 'roi') {
+      yMax = Math.ceil(maxVal * 2) / 2 || 2;
+      formatLabel = (v) => `${v}x`;
+    } else {
+      yMax = Math.ceil(maxVal / 1000) * 1000 || 1000;
+      formatLabel = (v) => fmtDollar(v);
+    }
+  }
+
+  const yLabels = selectedKPI === 'roi'
+    ? [0, yMax * 0.5, yMax]
+    : [0, yMax * 0.5, yMax];
+
   return (
-    <div className="bg-surface border border-border rounded-md p-4">
-      <div className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase mb-2">
-        {label}
-      </div>
-      <div className={cn(
-        'text-[22px] font-bold tracking-tight',
-        highlight ? 'text-foreground' : 'text-foreground'
-      )}>
-        {value}
-      </div>
-      {detail && (
-        <div className="text-xs text-foreground-faint mt-1">{detail}</div>
-      )}
-    </div>
+    <Chart
+      data={slice}
+      maxValue={yMax}
+      padding={{ left: 50 }}
+      xLabels={[1, 10, 20, 30].filter(d => d <= currentDay).map(d => ({ value: String(d), at: d }))}
+      yLabels={yLabels.map(v => {
+        if (selectedKPI === 'roi') return Math.round(v * 10) / 10;
+        return Math.round(v);
+      })}
+      gridlines="from-labels"
+      fill={{ color: 'var(--color-brand)', opacity: 0.07 }}
+      endpointLabel={(v) => formatLabel(v)}
+    />
   );
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// COHORT CHART — funnel performance over time
+// ═══════════════════════════════════════════════════════════════════════
 function CohortChart({ cohorts, currentDay }) {
   const repDays = [2, 5, 10, 15, 20, 25].filter(d => d <= currentDay && cohorts[d]);
   if (repDays.length === 0 && cohorts[1]) repDays.push(1);
@@ -153,7 +205,7 @@ function CohortChart({ cohorts, currentDay }) {
   });
 
   return (
-    <div className="bg-surface border border-border rounded-lg p-4">
+    <div>
       <SectionLabel>Funnel Performance</SectionLabel>
       <Chart
         series={cohortSeries}
@@ -447,6 +499,7 @@ function AgentInsight({ dayData, currentDay, recommendation, staticDay }) {
 // ═══════════════════════════════════════════════════════════════════════
 export default function DashboardPage({ config, onHome }) {
   const [selectedDay, setSelectedDay] = useState(1);
+  const [selectedKPI, setSelectedKPI] = useState('activeUsers');
 
   // Run v4 engine once with recommended budget
   const projection = useMemo(() => {
@@ -460,7 +513,6 @@ export default function DashboardPage({ config, onHome }) {
 
   // Decisions for the selected day window
   const decisions = useMemo(() => {
-    // Show decisions from a window around the selected day
     const start = Math.max(1, selectedDay - 1);
     const end = Math.min(30, selectedDay + 1);
     const all = [];
@@ -485,64 +537,54 @@ export default function DashboardPage({ config, onHome }) {
       </header>
 
       <main className="flex-1 pb-16">
-        {/* ── POSITION 1: RESULTS ── */}
-        {/* Row 1: KPIs | Funnel | Hero chart | Cohort chart */}
-        <div className="flex gap-4 mb-6">
-          {/* KPIs — vertically stacked, beside funnel */}
-          <div className="w-[160px] shrink-0 flex flex-col gap-3">
-            <SectionLabel>Results</SectionLabel>
-            <KPICard
-              label="Active Users"
-              value={fmt(dayData.funnelCumulative.activeUser)}
-              highlight
-            />
-            <KPICard
-              label="CAC"
-              value={dayData.kpiCumulative.cac > 0 ? fmtDollar(dayData.kpiCumulative.cac) : '—'}
-            />
-            <KPICard
-              label="ROI"
-              value={dayData.kpiCumulative.roi > 0 ? `${dayData.kpiCumulative.roi}x` : '—'}
-            />
-            <KPICard
-              label="Fraud Saved"
-              value={fmtDollar(dayData.kpiCumulative.fraudSaved)}
-            />
-          </div>
-
-          {/* Funnel — fixed width, matching original */}
-          <div className="w-[280px] shrink-0">
-            <div className="bg-surface border border-border rounded-lg p-5">
-              <SectionLabel>Referral Funnel</SectionLabel>
+        {/* ── POSITION 1: RESULTS — one unified area ── */}
+        <div className="bg-surface border border-border rounded-lg p-6 mb-6">
+          <div className="flex gap-6">
+            {/* LEFT COLUMN (~60%): KPI selector + hero chart */}
+            <div className="flex-[1.4] min-w-0">
+              <KPISelector
+                selected={selectedKPI}
+                onSelect={setSelectedKPI}
+                dayData={dayData}
+              />
               <div className="mt-3">
-                <FunnelChart
-                  stages={[
-                    { label: 'Eligible', value: projection.audienceSize },
-                    { label: 'Contacted', value: dayData.funnelCumulative.contacted },
-                    { label: 'Referral Sent', value: dayData.funnelCumulative.referralSent },
-                    { label: 'Signed Up', value: dayData.funnelCumulative.signedUp },
-                    { label: 'Active User', value: dayData.funnelCumulative.activeUser },
-                  ]}
-                  pending={dayData.funnelCumulative.pending}
+                <HeroChart
+                  selectedKPI={selectedKPI}
+                  days={projection.days}
+                  currentDay={selectedDay}
+                  cumulativeCurve={projection.cumulativeCurve}
                 />
               </div>
             </div>
-          </div>
 
-          {/* Hero chart — takes more space */}
-          <div className="flex-[1.4] min-w-0">
-            <ActiveUsersChart
-              cumulativeCurve={projection.cumulativeCurve}
-              currentDay={selectedDay}
-            />
-          </div>
+            {/* DIVIDER */}
+            <div className="w-px bg-border-light shrink-0" />
 
-          {/* Cohort chart (Funnel Performance) — reduced */}
-          <div className="flex-[0.8] min-w-0">
-            <CohortChart
-              cohorts={projection.cohorts}
-              currentDay={selectedDay}
-            />
+            {/* RIGHT COLUMN (~40%): Funnel + Cohort stacked */}
+            <div className="flex-1 min-w-0 flex flex-col gap-5">
+              {/* Referral Funnel */}
+              <div>
+                <SectionLabel>Referral Funnel</SectionLabel>
+                <div className="mt-2">
+                  <FunnelChart
+                    stages={[
+                      { label: 'Eligible', value: projection.audienceSize },
+                      { label: 'Contacted', value: dayData.funnelCumulative.contacted },
+                      { label: 'Referral Sent', value: dayData.funnelCumulative.referralSent },
+                      { label: 'Signed Up', value: dayData.funnelCumulative.signedUp },
+                      { label: 'Active User', value: dayData.funnelCumulative.activeUser },
+                    ]}
+                    pending={dayData.funnelCumulative.pending}
+                  />
+                </div>
+              </div>
+
+              {/* Cohort chart */}
+              <CohortChart
+                cohorts={projection.cohorts}
+                currentDay={selectedDay}
+              />
+            </div>
           </div>
         </div>
 
