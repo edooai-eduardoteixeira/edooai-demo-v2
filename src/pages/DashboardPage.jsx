@@ -580,7 +580,6 @@ export default function DashboardPage({ config, onHome }) {
                     { label: 'Signed Up', value: dayData.funnelCumulative.signedUp },
                     { label: 'Active User', value: dayData.funnelCumulative.activeUser },
                   ]}
-                  pending={dayData.funnelCumulative.pending}
                 />
               </div>
             </div>
