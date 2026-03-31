@@ -16,21 +16,6 @@ function MetricRow({ label, value }) {
   );
 }
 
-function parsePhases(phases, dataLength) {
-  const parsed = (phases || []).map((phase) => {
-    const parts = phase.days.split(/[–\u2013-]/);
-    return { startDay: parseInt(parts[0]), endDay: parseInt(parts[1] || parts[0]), label: phase.label };
-  });
-  const boundaries = [];
-  for (let i = 0; i < parsed.length - 1; i++) {
-    boundaries.push(parsed[i].endDay);
-  }
-  const labels = parsed.map((p) => ({
-    midDay: (p.startDay + p.endDay) / 2,
-    label: p.label,
-  }));
-  return { boundaries, labels };
-}
 
 export default function DashboardPage({ config, onHome }) {
   const { dashboard30Day } = config;
@@ -88,17 +73,14 @@ export default function DashboardPage({ config, onHome }) {
           <h3 className="text-base font-semibold mb-4">
             Cumulative Active Users (30 Days)
           </h3>
-          <div className="flex justify-center max-w-[700px]">
+          <div>
             {(() => {
               const chartData = dashboard30Day.dailyData;
               const maxVal = Math.max(...chartData);
-              const { boundaries, labels } = parsePhases(dashboard30Day.chartPhases, chartData.length);
               return (
                 <Chart
                   data={chartData}
-                  height={280}
-                  aspectRatio={700 / 280}
-                  padding={{ top: 30, right: 20, bottom: 50, left: 60 }}
+                  padding={{ left: 45 }}
                   maxValue={maxVal}
                   xLabels={[
                     { value: 'Day 1', at: 1 },
@@ -111,41 +93,7 @@ export default function DashboardPage({ config, onHome }) {
                   gridlines="from-labels"
                   fill={{ color: 'var(--color-brand)', opacity: 0.07 }}
                   tooltip={false}
-                >
-                  {({ chartW, chartTop, chartH }) => (
-                    <>
-                      {boundaries.map((day, i) => {
-                        const x = ((day - 1) / (chartData.length - 1)) * chartW;
-                        return (
-                          <line
-                            key={`b-${i}`}
-                            x1={x} y1={chartTop}
-                            x2={x} y2={chartTop + chartH}
-                            stroke="var(--color-gray-300)"
-                            strokeWidth="1"
-                            strokeDasharray="4,4"
-                          />
-                        );
-                      })}
-                      {labels.map(({ midDay, label }, i) => {
-                        const x = ((midDay - 1) / (chartData.length - 1)) * chartW;
-                        return (
-                          <text
-                            key={`l-${i}`}
-                            x={x} y={chartTop - 8}
-                            textAnchor="middle"
-                            fontSize="11"
-                            fontWeight="500"
-                            fill="var(--text-tertiary)"
-                            fontFamily="var(--font-family)"
-                          >
-                            {label}
-                          </text>
-                        );
-                      })}
-                    </>
-                  )}
-                </Chart>
+                />
               );
             })()}
           </div>
