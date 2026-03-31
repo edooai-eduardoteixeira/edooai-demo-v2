@@ -226,7 +226,7 @@ Always use the `<FunnelChart>` component (`src/components/FunnelChart.jsx`).
 - Number outside bar, right side (13px, semibold)
 - 4px border-radius, 8px gap between bars
 - Last stage uses `bg-brand` with white text
-- Linear proportion for bar width (not sqrt)
+- Square root proportion for bar width (handles extreme value ratios like 600:1)
 
 ---
 
