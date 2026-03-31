@@ -1,26 +1,13 @@
-import { useState, useCallback, useLayoutEffect, useRef, useId } from 'react';
+import { useState, useCallback, useRef, useId } from 'react';
 
 /**
  * Reusable chart component that enforces the Vincor design system.
  *
- * Defaults (always enforced):
- * - Brand-colored line (var(--color-brand), 2.5px stroke)
- * - Axis labels (11px Inter, var(--text-tertiary)) — physically 11px regardless of chart size
- * - X-axis baseline (var(--border-light))
- * - Dashed gridlines (var(--border-light))
- * - Endpoint dot (brand, 3.5px) with optional label
- * - Hover tooltip (dark bg, white text, crosshair)
- * - Chart title (13px semibold, var(--text-secondary))
+ * All text labels are rendered as HTML (not SVG text) so font sizes
+ * are always in CSS pixels — guaranteed 11px regardless of chart
+ * dimensions or container width.
  *
- * Font sizes are measured in physical pixels, not viewBox units.
- * A ResizeObserver measures the container and adjusts SVG font sizes
- * so they always render at the design-system spec regardless of
- * chart dimensions or container width.
- *
- * Opt-in features:
- * - fill: area fill under line
- * - dashed: render line as dashed
- * - threshold: learning phase split with annotations
+ * The SVG handles only visual elements: lines, areas, gradients, dots.
  */
 
 // --- Design tokens (from DESIGN.md) ---
@@ -50,7 +37,7 @@ const TOKENS = {
 
 const DEFAULT_PADDING = { top: 10, right: 0, bottom: 40, left: 28 };
 const DEFAULT_HEIGHT = 210;
-const VIEWBOX_WIDTH = 828; // Fixed for all charts — guarantees identical font rendering
+const VIEWBOX_WIDTH = 828;
 const DEFAULT_GRIDLINE_COUNT = 2;
 
 function computePoints(data, chartLeft, chartTop, chartW, chartH, maxVal) {
@@ -93,6 +80,31 @@ function resolveXLabels(xLabels, data, chartLeft, chartW) {
   }));
 }
 
+// Convert SVG viewBox coordinate to CSS percentage position within the wrapper
+function toLeft(svgX, padLeft) {
+  return `${((svgX + padLeft) / VIEWBOX_WIDTH) * 100}%`;
+}
+function toTop(svgY, h) {
+  return `${(svgY / h) * 100}%`;
+}
+
+// Base style for all HTML text labels — guarantees fixed CSS-pixel font sizes
+const labelBase = {
+  position: 'absolute',
+  fontSize: TOKENS.axis.fontSize,
+  fontFamily: 'var(--font-family)',
+  color: TOKENS.axis.color,
+  lineHeight: 1,
+  whiteSpace: 'nowrap',
+  pointerEvents: 'none',
+};
+
+const anchorTransform = {
+  start: 'translateY(-50%)',
+  end: 'translate(-100%, -50%)',
+  middle: 'translate(-50%, -50%)',
+};
+
 export default function Chart({
   data,
   title,
@@ -110,24 +122,8 @@ export default function Chart({
   endpointLabel,
 }) {
   const [hoveredDay, setHoveredDay] = useState(null);
-  const [containerWidth, setContainerWidth] = useState(null);
-  const containerRef = useRef(null);
   const uid = useId();
   const safeId = uid.replace(/:/g, '_');
-
-  // Measure container width synchronously before paint (useLayoutEffect)
-  // then track resizes via ResizeObserver.
-  useLayoutEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    // Synchronous read — available before browser paints
-    setContainerWidth(el.getBoundingClientRect().width);
-    const observer = new ResizeObserver((entries) => {
-      setContainerWidth(entries[0].contentRect.width);
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   const padding = { ...DEFAULT_PADDING, ...paddingProp };
   if (title) padding.top = Math.max(padding.top, 30);
@@ -137,12 +133,6 @@ export default function Chart({
   const chartW = VIEWBOX_WIDTH - padding.left - padding.right;
   const chartH = height - padding.top - padding.bottom;
   const chartBottom = chartTop + chartH;
-
-  // pxScale: multiply a CSS-pixel value by this to get the equivalent viewBox units.
-  // VIEWBOX_WIDTH is fixed (828) for all charts, so the only variable is container width.
-  // This guarantees identical font sizes across all Chart instances.
-  const pxScale = containerWidth ? VIEWBOX_WIDTH / containerWidth : 1;
-  const px = (cssPixels) => cssPixels * pxScale;
 
   const maxVal = maxValue != null ? maxValue : Math.max(...data) * 1.08;
   const points = computePoints(data, chartLeft, chartTop, chartW, chartH, maxVal);
@@ -171,7 +161,7 @@ export default function Chart({
     }));
   }
 
-  // Gridlines — "from-labels" aligns with y-labels, otherwise evenly spaced interior lines
+  // Gridlines
   const gridlineItems = [];
   if (gridlines === 'from-labels') {
     yLabelItems.forEach((item) => {
@@ -216,21 +206,18 @@ export default function Chart({
     : '';
 
   return (
-    <div ref={containerRef}>
+    <div style={{ position: 'relative' }}>
+      {/* ── SVG: visual elements only (no text) ── */}
       <svg
         viewBox={viewBox}
         preserveAspectRatio="xMidYMid meet"
         style={{ width: '100%', height: 'auto', display: 'block' }}
       >
         <defs>
-          {/* Area fill gradient (opt-in) */}
           {fill && (
             <linearGradient
               id={`${safeId}-areaFill`}
-              x1="0"
-              y1={chartTop}
-              x2="0"
-              y2={chartBottom}
+              x1="0" y1={chartTop} x2="0" y2={chartBottom}
               gradientUnits="userSpaceOnUse"
             >
               <stop offset="0%" stopColor={fill.color || 'var(--color-brand)'} stopOpacity={fill.opacity || 0.07} />
@@ -239,16 +226,12 @@ export default function Chart({
             </linearGradient>
           )}
 
-          {/* Threshold-specific gradients and clips */}
           {hasThreshold && (
             <>
               {threshold.preFill && (
                 <linearGradient
                   id={`${safeId}-preFill`}
-                  x1="0"
-                  y1={chartTop}
-                  x2="0"
-                  y2={chartBottom}
+                  x1="0" y1={chartTop} x2="0" y2={chartBottom}
                   gradientUnits="userSpaceOnUse"
                 >
                   <stop offset="0%" stopColor={threshold.preFill.color || '#A89E94'} stopOpacity={threshold.preFill.opacity || 0.12} />
@@ -259,10 +242,7 @@ export default function Chart({
               {threshold.strokeGradient && (
                 <linearGradient
                   id={`${safeId}-strokeGrad`}
-                  x1={threshX}
-                  y1="0"
-                  x2={chartLeft + chartW}
-                  y2="0"
+                  x1={threshX} y1="0" x2={chartLeft + chartW} y2="0"
                   gradientUnits="userSpaceOnUse"
                 >
                   <stop offset="0%" stopColor={threshold.preStyle?.color || TOKENS.preLine.color} />
@@ -280,75 +260,25 @@ export default function Chart({
           )}
         </defs>
 
-        {/* Title */}
-        {title && (
-          <text
-            x={chartLeft}
-            y={chartTop - px(12)}
-            fontSize={px(TOKENS.title.fontSize)}
-            fontWeight={TOKENS.title.fontWeight}
-            fill={TOKENS.title.color}
-            fontFamily={TOKENS.title.fontFamily}
-          >
-            {title}
-          </text>
-        )}
-
         {/* Gridlines */}
         {gridlineItems.map((y, i) => (
           <line
             key={`grid-${i}`}
             x1={hasThreshold ? threshX : chartLeft}
-            y1={y}
-            x2={chartLeft + chartW}
-            y2={y}
-            stroke={TOKENS.gridline.color}
-            strokeWidth="1"
+            y1={y} x2={chartLeft + chartW} y2={y}
+            stroke={TOKENS.gridline.color} strokeWidth="1"
             strokeDasharray={TOKENS.gridline.dash}
           />
         ))}
 
         {/* X-axis baseline */}
         <line
-          x1={chartLeft}
-          y1={chartBottom}
-          x2={chartLeft + chartW}
-          y2={chartBottom}
-          stroke={TOKENS.baseline.color}
-          strokeWidth="1"
+          x1={chartLeft} y1={chartBottom}
+          x2={chartLeft + chartW} y2={chartBottom}
+          stroke={TOKENS.baseline.color} strokeWidth="1"
         />
 
-        {/* Y-axis labels */}
-        {yLabelItems.map((item, i) => (
-          <text
-            key={`y-${i}`}
-            x={-px(6)}
-            y={item.y < chartTop + 5 ? item.y + px(14) : item.y + px(4)}
-            fontSize={px(TOKENS.axis.fontSize)}
-            fill={TOKENS.axis.color}
-            textAnchor="end"
-            fontFamily={TOKENS.axis.fontFamily}
-          >
-            {Math.round(item.val)}
-          </text>
-        ))}
-
-        {/* X-axis labels */}
-        {resolvedXLabels.map((item, i) => (
-          <text
-            key={`x-${i}`}
-            x={item.x}
-            y={chartBottom + px(20)}
-            fontSize={px(TOKENS.axis.fontSize)}
-            fill={TOKENS.axis.color}
-            textAnchor={item.anchor}
-            fontFamily={TOKENS.axis.fontFamily}
-          >
-            {item.label}
-          </text>
-        ))}
-
-        {/* --- Area fills --- */}
+        {/* Area fills */}
         {hasThreshold && threshold.preFill && (
           <path
             d={buildAreaPath(pathD, lastPt.x, points[0].x, chartBottom)}
@@ -370,125 +300,75 @@ export default function Chart({
           />
         )}
 
-        {/* --- Line --- */}
+        {/* Line */}
         {hasThreshold ? (
           <>
-            {/* Pre-threshold: dashed warm taupe */}
             <path
-              d={pathD}
-              fill="none"
+              d={pathD} fill="none"
               stroke={threshold.preStyle?.color || TOKENS.preLine.color}
               strokeWidth={threshold.preStyle?.width || TOKENS.preLine.width}
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              strokeLinecap="round" strokeLinejoin="round"
               strokeDasharray={threshold.preStyle?.dashed !== false ? (threshold.preStyle?.dash || TOKENS.preLine.dash) : undefined}
               opacity={threshold.preStyle?.opacity ?? TOKENS.preLine.opacity}
               clipPath={`url(#${safeId}-clipPre)`}
             />
-            {/* Post-threshold: solid brand (or gradient) */}
             <path
-              d={pathD}
-              fill="none"
+              d={pathD} fill="none"
               stroke={threshold.strokeGradient ? `url(#${safeId}-strokeGrad)` : TOKENS.line.color}
               strokeWidth={TOKENS.line.width}
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              strokeLinecap="round" strokeLinejoin="round"
               clipPath={`url(#${safeId}-clipPost)`}
             />
           </>
         ) : (
           <path
-            d={pathD}
-            fill="none"
-            stroke={TOKENS.line.color}
-            strokeWidth={TOKENS.line.width}
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            d={pathD} fill="none"
+            stroke={TOKENS.line.color} strokeWidth={TOKENS.line.width}
+            strokeLinecap="round" strokeLinejoin="round"
             strokeDasharray={dashed ? '6,4' : undefined}
           />
         )}
 
-        {/* Threshold dashed vertical line + labels */}
+        {/* Threshold vertical line */}
         {hasThreshold && (
-          <>
-            <line
-              x1={threshX}
-              y1={chartTop}
-              x2={threshX}
-              y2={chartBottom}
-              stroke={TOKENS.thresholdLine.color}
-              strokeWidth="1"
-              strokeDasharray={TOKENS.thresholdLine.dash}
-              opacity={TOKENS.thresholdLine.opacity}
-            />
-            {threshold.label && (
-              <text
-                x={threshX - px(8)}
-                y={chartTop + px(16)}
-                fontSize={px(TOKENS.thresholdLabel.fontSize)}
-                fill={TOKENS.axis.color}
-                fontFamily={TOKENS.thresholdLabel.fontFamily}
-                fontWeight="500"
-                textAnchor="end"
-              >
-                {threshold.label}
-              </text>
-            )}
-            {threshold.sublabel && (
-              <text
-                x={threshX - px(8)}
-                y={chartTop + px(28)}
-                fontSize={px(TOKENS.thresholdLabel.fontSize)}
-                fill={TOKENS.axis.color}
-                fontFamily={TOKENS.thresholdLabel.fontFamily}
-                fontWeight="400"
-                opacity="0.6"
-                textAnchor="end"
-              >
-                {threshold.sublabel}
-              </text>
-            )}
-          </>
+          <line
+            x1={threshX} y1={chartTop} x2={threshX} y2={chartBottom}
+            stroke={TOKENS.thresholdLine.color} strokeWidth="1"
+            strokeDasharray={TOKENS.thresholdLine.dash}
+            opacity={TOKENS.thresholdLine.opacity}
+          />
         )}
 
         {/* Hover overlay */}
         {tooltip && (
           <rect
-            x={chartLeft}
-            y={chartTop}
-            width={chartW}
-            height={chartH}
-            fill="transparent"
-            style={{ cursor: 'crosshair' }}
+            x={chartLeft} y={chartTop}
+            width={chartW} height={chartH}
+            fill="transparent" style={{ cursor: 'crosshair' }}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
           />
         )}
 
-        {/* Tooltip */}
+        {/* Tooltip visuals (SVG — crosshair, dot, pill, text) */}
         {hoveredDay && (
           <>
             <line
-              x1={hoveredDay.x}
-              y1={chartTop}
-              x2={hoveredDay.x}
-              y2={chartBottom}
-              stroke={TOKENS.tooltip.crosshairColor}
-              strokeWidth="1"
+              x1={hoveredDay.x} y1={chartTop}
+              x2={hoveredDay.x} y2={chartBottom}
+              stroke={TOKENS.tooltip.crosshairColor} strokeWidth="1"
               strokeDasharray={TOKENS.tooltip.crosshairDash}
             />
             <circle
-              cx={hoveredDay.x}
-              cy={hoveredDay.y}
+              cx={hoveredDay.x} cy={hoveredDay.y}
               r={TOKENS.tooltip.dotRadius}
               fill={TOKENS.tooltip.bg}
               stroke={TOKENS.tooltip.dotStroke}
               strokeWidth={TOKENS.tooltip.dotStrokeWidth}
             />
             {(() => {
-              const charW = px(6.5);
-              const textLen = tooltipText.length * charW + px(16);
-              const boxW = Math.max(textLen, px(48));
+              const textLen = tooltipText.length * 6.5 + 16;
+              const boxW = Math.max(textLen, 48);
               const boxX = Math.max(
                 -padding.left,
                 Math.min(chartLeft + chartW - boxW, hoveredDay.x - boxW / 2),
@@ -496,17 +376,13 @@ export default function Chart({
               return (
                 <>
                   <rect
-                    x={boxX}
-                    y={hoveredDay.y - px(32)}
-                    width={boxW}
-                    height={px(22)}
-                    rx={TOKENS.tooltip.radius}
-                    fill={TOKENS.tooltip.bg}
+                    x={boxX} y={hoveredDay.y - 32}
+                    width={boxW} height={22}
+                    rx={TOKENS.tooltip.radius} fill={TOKENS.tooltip.bg}
                   />
                   <text
-                    x={boxX + boxW / 2}
-                    y={hoveredDay.y - px(17)}
-                    fontSize={px(TOKENS.tooltip.fontSize)}
+                    x={boxX + boxW / 2} y={hoveredDay.y - 17}
+                    fontSize={TOKENS.tooltip.fontSize}
                     fontWeight={TOKENS.tooltip.fontWeight}
                     fill={TOKENS.tooltip.text}
                     textAnchor="middle"
@@ -522,27 +398,86 @@ export default function Chart({
 
         {/* Endpoint dot */}
         <circle
-          cx={lastPt.x}
-          cy={lastPt.y}
-          r={TOKENS.endpoint.radius}
-          fill={TOKENS.endpoint.color}
+          cx={lastPt.x} cy={lastPt.y}
+          r={TOKENS.endpoint.radius} fill={TOKENS.endpoint.color}
         />
-
-        {/* Endpoint label */}
-        {endpointLabel && (
-          <text
-            x={lastPt.x - px(14)}
-            y={Math.max(px(10), lastPt.y - px(10))}
-            fontSize={px(TOKENS.axis.fontSize)}
-            fill={TOKENS.endpoint.color}
-            fontWeight="600"
-            textAnchor="end"
-            fontFamily={TOKENS.axis.fontFamily}
-          >
-            {endpointLabel(lastVal)}
-          </text>
-        )}
       </svg>
+
+      {/* ── HTML labels: always 11px CSS pixels, no SVG scaling ── */}
+
+      {/* Y-axis labels */}
+      {yLabelItems.map((item, i) => (
+        <span
+          key={`y-${i}`}
+          style={{
+            ...labelBase,
+            left: toLeft(-6, padding.left),
+            top: toTop(item.y, height),
+            transform: 'translate(-100%, -50%)',
+          }}
+        >
+          {Math.round(item.val)}
+        </span>
+      ))}
+
+      {/* X-axis labels */}
+      {resolvedXLabels.map((item, i) => (
+        <span
+          key={`x-${i}`}
+          style={{
+            ...labelBase,
+            left: toLeft(item.x, padding.left),
+            top: toTop(chartBottom + 12, height),
+            transform: anchorTransform[item.anchor],
+          }}
+        >
+          {item.label}
+        </span>
+      ))}
+
+      {/* Threshold labels */}
+      {hasThreshold && threshold.label && (
+        <span
+          style={{
+            ...labelBase,
+            left: toLeft(threshX - 8, padding.left),
+            top: toTop(chartTop + 8, height),
+            transform: 'translate(-100%, -50%)',
+            fontWeight: 500,
+          }}
+        >
+          {threshold.label}
+        </span>
+      )}
+      {hasThreshold && threshold.sublabel && (
+        <span
+          style={{
+            ...labelBase,
+            left: toLeft(threshX - 8, padding.left),
+            top: toTop(chartTop + 20, height),
+            transform: 'translate(-100%, -50%)',
+            opacity: 0.6,
+          }}
+        >
+          {threshold.sublabel}
+        </span>
+      )}
+
+      {/* Endpoint label */}
+      {endpointLabel && (
+        <span
+          style={{
+            ...labelBase,
+            left: toLeft(lastPt.x - 14, padding.left),
+            top: toTop(Math.max(10, lastPt.y - 10), height),
+            transform: 'translate(-100%, -50%)',
+            color: TOKENS.endpoint.color,
+            fontWeight: 600,
+          }}
+        >
+          {endpointLabel(lastVal)}
+        </span>
+      )}
     </div>
   );
 }
