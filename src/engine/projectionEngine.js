@@ -777,7 +777,7 @@ export function computeDashboardProjection({ budget, params }) {
     const dayData = agentic.days[day - 1];
     const totalContacted = dayData.journeysToday;
     // Show a sample: 15-20 decisions per day (for the feed)
-    const count = Math.min(Math.max(8, Math.round(totalContacted * 0.003)), 20);
+    const count = Math.min(Math.max(20, Math.round(totalContacted * 0.015)), 35);
 
     // Outcome rates for this day
     const convRateForDay = dayData.kpiCumulative.convRate / 100 || 0.02;

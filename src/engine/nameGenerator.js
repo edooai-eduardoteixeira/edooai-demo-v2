@@ -1,6 +1,14 @@
 /**
- * Deterministic name generator for synthetic decision log entries.
- * Uses a seeded PRNG so the same day + index always produces the same name.
+ * Deterministic decision generator for the dashboard feed.
+ * Uses a seeded PRNG so the same day + index always produces the same record.
+ *
+ * Decision types:
+ *   contact    — Agent contacted a customer (with channel, tier, timing reasoning)
+ *   reminder   — Agent sent a follow-up (referral shared but referee hasn't acted)
+ *   holdback   — Agent decided NOT to contact (support ticket, low NPS, fatigue)
+ *   conversion — A referee completed first transaction (reward paid)
+ *   reward_blocked — Suspicious pattern, reward held in escrow
+ *   expiration_batch — Consolidated: N offers expired (one reasoning, covers all)
  */
 
 const FIRST_NAMES = [
@@ -19,6 +27,21 @@ const LAST_INITIALS = [
 
 const CHANNELS = ['push', 'email', 'sms'];
 
+const HOLDBACK_REASONS = [
+  'Open support ticket since Day {d}',
+  'NPS score 4 — below threshold',
+  'Contacted 2 days ago — rest period active',
+  'Account flagged for compliance review',
+  'Inactive for 95 days — exceeds threshold',
+  'Already has active offer in flight',
+];
+
+const REWARD_BLOCK_REASONS = [
+  '3 conversions in 24h from same referrer — escrow pending',
+  'Referee IP matches referrer device — self-referral check',
+  'Referral link used 6 times — exceeds cap, under review',
+];
+
 // Simple seeded PRNG (mulberry32)
 function mulberry32(seed) {
   return function () {
@@ -30,85 +53,151 @@ function mulberry32(seed) {
   };
 }
 
-/**
- * Generate a synthetic decision record for the decision feed.
- * Deterministic: same (day, index, seed) → same record.
- */
-export function generateDecision({ day, index, seed = 42, tierDistribution, outcomes }) {
-  const rng = mulberry32(seed * 10000 + day * 100 + index);
-
+function pickName(rng) {
   const firstName = FIRST_NAMES[Math.floor(rng() * FIRST_NAMES.length)];
   const lastInitial = LAST_INITIALS[Math.floor(rng() * LAST_INITIALS.length)];
-  const name = `${firstName} ${lastInitial}.`;
+  return `${firstName} ${lastInitial}.`;
+}
 
-  // Time: business hours 8am-6pm, weighted toward mid-morning and early afternoon
-  const hourBase = 8 + Math.floor(rng() * 10);
-  const minute = Math.floor(rng() * 60);
+function pickTime(rng) {
+  return { hour: 8 + Math.floor(rng() * 10), minute: Math.floor(rng() * 60) };
+}
 
-  // Channel: weighted by effectiveness
-  const channelRoll = rng();
-  const channel = channelRoll < 0.45 ? 'push' : channelRoll < 0.80 ? 'email' : 'sms';
+function pickChannel(rng) {
+  const r = rng();
+  return r < 0.45 ? 'push' : r < 0.80 ? 'email' : 'sms';
+}
 
-  // Tier: based on day's tier distribution
-  let tierIndex = 0;
-  if (tierDistribution) {
-    const tierRoll = rng();
-    let cumulative = 0;
-    for (let i = 0; i < tierDistribution.length; i++) {
-      cumulative += tierDistribution[i];
-      if (tierRoll < cumulative) {
-        tierIndex = i;
-        break;
-      }
-    }
+function pickTier(rng, tierDistribution) {
+  if (!tierDistribution) return 0;
+  const roll = rng();
+  let cum = 0;
+  for (let i = 0; i < tierDistribution.length; i++) {
+    cum += tierDistribution[i];
+    if (roll < cum) return i;
   }
-
-  // Outcome: based on provided outcome probabilities
-  let outcome = 'expired';
-  let resolvedDay = null;
-  let referralSentDay = null;
-  let signedUpDay = null;
-
-  if (outcomes) {
-    const outcomeRoll = rng();
-    if (outcomeRoll < outcomes.convertedRate) {
-      outcome = 'converted';
-      // Resolution delay: 1-7 days typically
-      const delay = 1 + Math.floor(rng() * Math.min(7, 30 - day));
-      resolvedDay = day + delay;
-      referralSentDay = day + Math.max(1, Math.floor(delay * 0.3));
-      signedUpDay = day + Math.max(1, Math.floor(delay * 0.6));
-    } else if (outcomeRoll < outcomes.convertedRate + outcomes.pendingRate) {
-      outcome = 'pending';
-      referralSentDay = rng() < 0.6 ? day + 1 : null;
-    }
-  }
-
-  return {
-    id: day * 1000 + index,
-    name,
-    day,
-    hour: hourBase,
-    minute,
-    channel,
-    tierIndex,
-    outcome,
-    resolvedDay,
-    referralSentDay,
-    signedUpDay,
-  };
+  return 0;
 }
 
 /**
- * Generate a batch of decisions for a given day.
- * count: number of decisions to generate (sample of total journeys).
+ * Generate a full set of decisions for a given day.
+ * Returns a mix of decision types reflecting what the agent actually does.
  */
 export function generateDayDecisions({ day, count, seed = 42, tierDistribution, outcomes }) {
+  const rng = mulberry32(seed * 10000 + day * 777);
   const decisions = [];
-  for (let i = 0; i < count; i++) {
-    decisions.push(generateDecision({ day, index: i, seed, tierDistribution, outcomes }));
+  let id = day * 1000;
+
+  // Distribution of decision types per day
+  // Contacts are the majority, but include other types
+  const contactCount = Math.max(4, Math.round(count * 0.45));
+  const reminderCount = Math.max(1, Math.round(count * 0.15));
+  const holdbackCount = Math.max(1, Math.round(count * 0.12));
+  const conversionCount = Math.max(0, Math.round(count * 0.10));
+  const rewardBlockCount = day >= 5 ? Math.max(0, Math.round(count * 0.03)) : 0;
+  // Expiration batch is always 1 entry (covers many)
+  const hasExpirations = day >= 3;
+
+  // --- Contacts ---
+  for (let i = 0; i < contactCount; i++) {
+    const tierIndex = pickTier(rng, tierDistribution);
+    const channel = pickChannel(rng);
+    const time = pickTime(rng);
+    decisions.push({
+      id: id++,
+      type: 'contact',
+      name: pickName(rng),
+      day,
+      ...time,
+      channel,
+      tierIndex,
+      tierLabel: `Tier ${tierIndex + 1}`,
+    });
   }
+
+  // --- Reminders ---
+  for (let i = 0; i < reminderCount; i++) {
+    const time = pickTime(rng);
+    const sharedLink = rng() > 0.4;
+    decisions.push({
+      id: id++,
+      type: 'reminder',
+      name: pickName(rng),
+      day,
+      ...time,
+      channel: pickChannel(rng),
+      detail: sharedLink
+        ? 'Referral link shared — referee hasn\'t signed up yet'
+        : 'No referral shared yet — 2nd touchpoint',
+    });
+  }
+
+  // --- Holdbacks (decision NOT to contact) ---
+  for (let i = 0; i < holdbackCount; i++) {
+    const time = pickTime(rng);
+    const reasonTemplate = HOLDBACK_REASONS[Math.floor(rng() * HOLDBACK_REASONS.length)];
+    const reason = reasonTemplate.replace('{d}', Math.max(1, day - Math.floor(rng() * 5)));
+    decisions.push({
+      id: id++,
+      type: 'holdback',
+      name: pickName(rng),
+      day,
+      ...time,
+      reason,
+    });
+  }
+
+  // --- Conversions ---
+  const actualConversions = Math.min(conversionCount, Math.ceil((outcomes?.convertedRate || 0.05) * count * 3));
+  for (let i = 0; i < actualConversions; i++) {
+    const time = pickTime(rng);
+    const tierIndex = pickTier(rng, tierDistribution);
+    decisions.push({
+      id: id++,
+      type: 'conversion',
+      name: pickName(rng),
+      day,
+      ...time,
+      tierIndex,
+      tierLabel: `Tier ${tierIndex + 1}`,
+      contactedDay: Math.max(1, day - 1 - Math.floor(rng() * 5)),
+    });
+  }
+
+  // --- Reward blocks ---
+  for (let i = 0; i < rewardBlockCount; i++) {
+    const time = pickTime(rng);
+    const reason = REWARD_BLOCK_REASONS[Math.floor(rng() * REWARD_BLOCK_REASONS.length)];
+    decisions.push({
+      id: id++,
+      type: 'reward_blocked',
+      name: pickName(rng),
+      day,
+      ...time,
+      reason,
+    });
+  }
+
+  // --- Expiration batch ---
+  if (hasExpirations) {
+    const expiredCount = Math.max(3, Math.round(count * 0.8));
+    decisions.push({
+      id: id++,
+      type: 'expiration_batch',
+      day,
+      hour: 17,
+      minute: 0,
+      count: expiredCount,
+    });
+  }
+
   // Sort by time
   decisions.sort((a, b) => a.hour * 60 + a.minute - (b.hour * 60 + b.minute));
   return decisions;
+}
+
+// Legacy export for backward compat
+export function generateDecision({ day, index, seed = 42, tierDistribution, outcomes }) {
+  const decisions = generateDayDecisions({ day, count: index + 1, seed, tierDistribution, outcomes });
+  return decisions[decisions.length - 1];
 }
