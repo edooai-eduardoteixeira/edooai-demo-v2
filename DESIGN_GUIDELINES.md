@@ -165,35 +165,14 @@ All grays are warm. No blue or cool undertones.
 | `gray-800` | #2C2320 | Primary text, headings |
 | `gray-900` | #1A1512 | Maximum contrast |
 
-### Charts & data visualization
+### Chart and data visualization
 
-**Every chart must follow these specs.** No one-off styling.
-
-| Element | Spec | Value |
-|---|---|---|
-| **Chart line (primary)** | Brand color, 2.5px stroke, round joins | `stroke: var(--color-brand)`, `strokeWidth: 2.5`, `strokeLinejoin: round` |
-| **Area fill (post-threshold)** | Brand at 7% opacity, gradient to transparent | `stopColor: var(--color-brand)`, `stopOpacity: 0.07 → 0.025 → 0` |
-| **Pre-threshold line** | Warm taupe, dashed, 2px, 60% opacity | `stroke: #A89E94`, `strokeDasharray: 6,4`, `opacity: 0.6` |
-| **Pre-threshold fill** | Warm taupe at 12% opacity | `stopColor: #A89E94`, `stopOpacity: 0.12` |
-| **Stroke gradient (threshold transition)** | Taupe → brand | `#A89E94` at 0% → `var(--color-brand)` at 40-100% |
-| **Endpoint dot** | Brand, 3.5px radius | `fill: var(--color-brand)`, `r: 3.5` |
-| **Endpoint label** | 11px semibold, brand | `fontSize: 11`, `fontWeight: 600`, `fill: var(--color-brand)` |
-| **Chart title** | 13px semibold, foreground-muted | `text-[13px] font-semibold text-foreground-muted` |
-| **Axis labels (Y)** | 11px, foreground-faint | `fontSize: 11`, `fill: var(--text-tertiary)` |
-| **Axis labels (X)** | 11px, foreground-faint | `fontSize: 11`, `fill: var(--text-tertiary)` |
-| **Gridlines** | border-light, dashed | `stroke: var(--border-light)`, `strokeDasharray: 4,4` |
-| **X-axis baseline** | border-light, solid | `stroke: var(--border-light)`, `strokeWidth: 1` |
-| **Threshold line** | Warm taupe, dashed, 60% opacity | `stroke: #A89E94`, `strokeDasharray: 4,4`, `opacity: 0.6` |
-| **Annotation text** | 11px medium, foreground-faint | `fontSize: 11`, `fontWeight: 500`, `fill: var(--text-tertiary)` |
-| **Annotation subtext** | 11px normal, foreground-faint, 60% opacity | `fontSize: 11`, `opacity: 0.6` |
-| **Tooltip bg** | text-primary (dark), 4px radius | `fill: var(--text-primary)`, `rx: 4` |
-| **Tooltip text** | 11px semibold, white | `fontSize: 11`, `fontWeight: 600`, `fill: white` |
-| **Tooltip crosshair** | gray-300, dashed | `stroke: var(--color-gray-300)`, `strokeDasharray: 3,3` |
-| **Tooltip dot** | text-primary, white 2px stroke | `fill: var(--text-primary)`, `stroke: white`, `strokeWidth: 2` |
-
-**Font family**: All chart text uses `fontFamily: var(--font-family)` (Inter).
-
-**Minimum font size**: 11px — same as the rest of the product. No 9px or 10px text in charts.
+- **Chart lines**: `var(--color-brand)` — brand carries the data story
+- **Area fills**: `var(--color-brand)` at 7% opacity — subtle brand tint that connects fill to line
+- **Pre-threshold / uncertain data**: Warm taupe `#A89E94` dashed lines
+- **Axis labels**: `var(--text-tertiary)`
+- **Gridlines**: `var(--border-light)`
+- **Tooltips**: `var(--text-primary)` background with white text
 
 ---
 
