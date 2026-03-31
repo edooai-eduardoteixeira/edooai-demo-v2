@@ -153,7 +153,7 @@ function CohortChart({ cohorts, currentDay }) {
   });
 
   return (
-    <div className="bg-surface border border-border rounded-lg p-4 h-full">
+    <div className="bg-surface border border-border rounded-lg p-4">
       <SectionLabel>Funnel Performance</SectionLabel>
       <Chart
         series={cohortSeries}
