@@ -313,15 +313,6 @@ export default function Chart({
             </>
           )}
 
-          {/* Tooltip shadow filter */}
-          <filter id={`${safeId}-shadow`} x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow
-              dx={TOKENS.tooltip.shadow.dx}
-              dy={TOKENS.tooltip.shadow.dy}
-              stdDeviation={TOKENS.tooltip.shadow.blur / 2}
-              floodOpacity={TOKENS.tooltip.shadow.opacity}
-            />
-          </filter>
         </defs>
 
         {/* Gridlines — no X-axis baseline */}
@@ -363,7 +354,7 @@ export default function Chart({
 
         {/* Line with draw animation */}
         {hasThreshold ? (
-          <>
+          <g style={{ opacity: animated ? 1 : 0, transition: 'opacity 500ms ease-out' }}>
             <path
               d={pathD} fill="none"
               stroke={threshold.preStyle?.color || TOKENS.preLine.color}
@@ -380,7 +371,7 @@ export default function Chart({
               strokeLinecap="round" strokeLinejoin="round"
               clipPath={`url(#${safeId}-clipPost)`}
             />
-          </>
+          </g>
         ) : (
           <path
             d={pathD} fill="none"
@@ -413,7 +404,7 @@ export default function Chart({
           />
         )}
 
-        {/* Tooltip visuals */}
+        {/* Tooltip visuals (SVG: crosshair, dot, pill background) */}
         {hoveredDay && (
           <>
             <line
@@ -429,40 +420,6 @@ export default function Chart({
               stroke={TOKENS.tooltip.dotStroke}
               strokeWidth={TOKENS.tooltip.dotStrokeWidth}
             />
-            {(() => {
-              const textLen = tooltipText.length * 6.5 + 16;
-              const boxW = Math.max(textLen, 48);
-              const boxX = Math.max(
-                -padding.left,
-                Math.min(chartLeft + chartW - boxW, hoveredDay.x - boxW / 2),
-              );
-              // Flip tooltip below point when it would clip at the top
-              const tooltipAboveY = hoveredDay.y - 32;
-              const tooltipBelowY = hoveredDay.y + 14;
-              const flipBelow = tooltipAboveY < chartTop - 5;
-              const boxY = flipBelow ? tooltipBelowY : tooltipAboveY;
-              const textY = flipBelow ? tooltipBelowY + 15 : hoveredDay.y - 17;
-              return (
-                <>
-                  <rect
-                    x={boxX} y={boxY}
-                    width={boxW} height={22}
-                    rx={TOKENS.tooltip.radius} fill={TOKENS.tooltip.bg}
-                    filter={`url(#${safeId}-shadow)`}
-                  />
-                  <text
-                    x={boxX + boxW / 2} y={textY}
-                    fontSize={TOKENS.tooltip.fontSize}
-                    fontWeight={TOKENS.tooltip.fontWeight}
-                    fill={TOKENS.tooltip.text}
-                    textAnchor="middle"
-                    fontFamily={TOKENS.axis.fontFamily}
-                  >
-                    {tooltipText}
-                  </text>
-                </>
-              );
-            })()}
           </>
         )}
 
@@ -551,6 +508,36 @@ export default function Chart({
           {endpointLabel(lastVal)}
         </span>
       )}
+      {/* Tooltip label (HTML — fixed 11px) */}
+      {hoveredDay && (() => {
+        const tooltipAboveY = hoveredDay.y - 28;
+        const tooltipBelowY = hoveredDay.y + 18;
+        const flipBelow = tooltipAboveY < chartTop - 5;
+        const tipY = flipBelow ? tooltipBelowY : tooltipAboveY;
+        return (
+          <span
+            style={{
+              position: 'absolute',
+              left: toLeft(hoveredDay.x, padding.left),
+              top: toTop(tipY, height),
+              transform: 'translate(-50%, -50%)',
+              fontSize: TOKENS.tooltip.fontSize,
+              fontWeight: TOKENS.tooltip.fontWeight,
+              fontFamily: 'var(--font-family)',
+              color: TOKENS.tooltip.text,
+              background: TOKENS.tooltip.bg,
+              borderRadius: TOKENS.tooltip.radius,
+              padding: '4px 10px',
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+              boxShadow: `${TOKENS.tooltip.shadow.dx}px ${TOKENS.tooltip.shadow.dy}px ${TOKENS.tooltip.shadow.blur}px rgba(0,0,0,${TOKENS.tooltip.shadow.opacity})`,
+              lineHeight: 1,
+            }}
+          >
+            {tooltipText}
+          </span>
+        );
+      })()}
     </div>
   );
 }
