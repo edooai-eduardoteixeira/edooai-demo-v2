@@ -764,7 +764,7 @@ export default function DashboardPage({ config, onHome }) {
 
       <main className="flex-1 pb-16">
         {/* ── POSITION 1: RESULTS ── */}
-        {/* Row 1: KPIs | Funnel | Hero chart */}
+        {/* Row 1: KPIs | Funnel | Hero chart | Cohort chart */}
         <div className="flex gap-4 mb-6">
           {/* KPIs — vertically stacked, beside funnel */}
           <div className="w-[160px] shrink-0 flex flex-col gap-3">
@@ -796,21 +796,21 @@ export default function DashboardPage({ config, onHome }) {
             />
           </div>
 
-          {/* Hero chart — <=40% screen width */}
-          <div className="w-[38%] shrink-0">
+          {/* Hero chart */}
+          <div className="flex-1 min-w-0">
             <ActiveUsersChart
               cumulativeCurve={projection.cumulativeCurve}
               currentDay={selectedDay}
             />
           </div>
-        </div>
 
-        {/* Cohort chart — <40% screen width */}
-        <div className="mb-6 max-w-[38%]">
-          <CohortChart
-            cohorts={projection.cohorts}
-            currentDay={selectedDay}
-          />
+          {/* Cohort chart (Funnel Performance) */}
+          <div className="flex-1 min-w-0">
+            <CohortChart
+              cohorts={projection.cohorts}
+              currentDay={selectedDay}
+            />
+          </div>
         </div>
 
         {/* ── POSITION 2 + 3: LEARNINGS | DECISIONS ── */}
