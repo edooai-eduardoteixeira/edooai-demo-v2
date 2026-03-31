@@ -481,78 +481,6 @@ function ComparisonChart({ agenticCurve, staticCurve, annotations, currentDay })
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// ZONE D: AGENT INSIGHT
-// ═══════════════════════════════════════════════════════════════════════
-function AgentInsight({ dayData, currentDay, staticDay }) {
-  let title, description, type;
-
-  if (currentDay <= 1) {
-    type = 'observing';
-    title = 'Execution started';
-    description = `${fmt(dayData.journeysToday)} contacts sent across ${dayData.tierDistribution ? '4 reward tiers' : 'multiple tiers'}. ${fmt(dayData.funnelCumulative.pending)} offers now in flight. First conversion results expected by Day 3–4 as offers resolve.`;
-  } else if (currentDay <= 7) {
-    type = 'learning';
-    title = 'Building signal';
-    const effPct = Math.round(dayData.efficiency * 100);
-    description = `${fmt(dayData.cumulativeN)} conversions from ${fmt(dayData.funnelCumulative.contacted)} contacts. Targeting accuracy at ${effPct}% and climbing (baseline: 30%). The agent needs ~100 resolved conversions before patterns become statistically reliable.`;
-  } else if (currentDay <= 15) {
-    type = 'learning';
-    title = 'Patterns emerging';
-    const agenticUsers = dayData.cumulativeN;
-    const staticUsers = staticDay?.cumulativeN || 0;
-    const advantage = staticUsers > 0 ? Math.round(((agenticUsers - staticUsers) / staticUsers) * 100) : 0;
-    const effPct = Math.round(dayData.efficiency * 100);
-    description = `Targeting accuracy reached ${effPct}%. ${advantage > 0 ? `Already ${advantage}% ahead of static rules. ` : ''}` +
-      `The agent is discovering which customer segments convert without incentive (Tier 1) vs which need higher rewards. ` +
-      `Channel mix shifting based on observed open and share rates.`;
-  } else {
-    type = 'optimizing';
-    const agenticUsers = dayData.cumulativeN;
-    const staticUsers = staticDay?.cumulativeN || 0;
-    const advantage = staticUsers > 0 ? Math.round(((agenticUsers - staticUsers) / staticUsers) * 100) : 0;
-    const effPct = Math.round(dayData.efficiency * 100);
-    const tier0Pct = Math.round((dayData.tierDistribution?.[0] || 0) * 100);
-    const valuePerUser = dayData.effectiveRevenuePerUser;
-    title = `${advantage}% ahead of static rules`;
-    description = `Targeting accuracy at ${effPct}%. ${tier0Pct}% of conversions are organic (Tier 1, $0 reward cost). ` +
-      `Revenue per converted user: $${valuePerUser} (up from $100 baseline). ` +
-      `The agent is finding high-value referrer segments that bring better customers — this is why the curves are diverging.`;
-  }
-
-  const typeStyles = {
-    observing: 'border-foreground-faint',
-    learning: 'border-warn',
-    optimizing: 'border-success',
-  };
-
-  const dotStyles = {
-    observing: 'bg-foreground-faint',
-    learning: 'bg-warn',
-    optimizing: 'bg-success',
-  };
-
-  return (
-    <div className={cn(
-      'border rounded-lg p-5 mb-8 transition-all duration-300',
-      'bg-surface',
-      typeStyles[type] || 'border-border'
-    )}>
-      <div className="flex items-center gap-2 mb-2">
-        <span className={cn('w-2 h-2 rounded-full shrink-0', dotStyles[type])} />
-        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
-          Agent Insight
-        </span>
-      </div>
-      <div className="text-sm font-semibold text-foreground mb-1">
-        {title}
-      </div>
-      <p className="text-[13px] text-foreground-muted leading-relaxed">
-        {description}
-      </p>
-    </div>
-  );
-}
 
 // ═══════════════════════════════════════════════════════════════════════
 // MAIN DASHBOARD PAGE
@@ -569,7 +497,6 @@ export default function DashboardPage({ config, onHome }) {
 
   // Current day data
   const dayData = projection.days[selectedDay - 1];
-  const staticDayData = projection.staticBaseline.days[selectedDay - 1];
 
   // All daily briefings (for scrollable history)
   const briefings = projection.dailyBriefings;
@@ -648,11 +575,6 @@ export default function DashboardPage({ config, onHome }) {
               staticCurve={projection.staticCumulativeCurve}
               annotations={projection.learningAnnotations}
               currentDay={selectedDay}
-            />
-            <AgentInsight
-              dayData={dayData}
-              currentDay={selectedDay}
-              staticDay={staticDayData}
             />
           </div>
 
