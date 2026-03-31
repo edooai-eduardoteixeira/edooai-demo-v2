@@ -1,6 +1,7 @@
 import React from 'react';
 import Logo from '../components/Logo.jsx';
 import CTAButton from '../components/CTAButton.jsx';
+import Chart from '../components/Chart.jsx';
 
 function MetricRow({ label, value }) {
   return (
@@ -15,136 +16,6 @@ function MetricRow({ label, value }) {
   );
 }
 
-function SimpleLineChart({ data, phases }) {
-  const width = 700;
-  const height = 280;
-  const padding = { top: 30, right: 20, bottom: 50, left: 60 };
-  const chartW = width - padding.left - padding.right;
-  const chartH = height - padding.top - padding.bottom;
-
-  const maxVal = Math.max(...data);
-  const points = data.map((v, i) => ({
-    x: padding.left + (i / (data.length - 1)) * chartW,
-    y: padding.top + chartH - (v / maxVal) * chartH,
-  }));
-
-  const pathD = points
-    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
-    .join(' ');
-
-  const areaD = `${pathD} L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`;
-
-  const parsedPhases = (phases || []).map((phase) => {
-    const parts = phase.days.split(/[–\u2013-]/);
-    const startDay = parseInt(parts[0]);
-    const endDay = parseInt(parts[1] || parts[0]);
-    return { startDay, endDay, label: phase.label };
-  });
-
-  const boundaries = [];
-  for (let i = 0; i < parsedPhases.length - 1; i++) {
-    const boundaryDay = parsedPhases[i].endDay;
-    boundaries.push(padding.left + ((boundaryDay - 1) / (data.length - 1)) * chartW);
-  }
-
-  const phaseLabels = parsedPhases.map((phase) => {
-    const midDay = (phase.startDay + phase.endDay) / 2;
-    const x = padding.left + ((midDay - 1) / (data.length - 1)) * chartW;
-    return { x, label: phase.label };
-  });
-
-  return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      className="w-full max-w-[700px]"
-    >
-      <defs>
-        <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#78716C" stopOpacity="0.10" />
-          <stop offset="100%" stopColor="#78716C" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-
-      {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => {
-        const y = padding.top + chartH * (1 - frac);
-        const val = Math.round(maxVal * frac);
-        return (
-          <g key={i}>
-            <line
-              x1={padding.left}
-              y1={y}
-              x2={width - padding.right}
-              y2={y}
-              className="stroke-border"
-              strokeWidth="1"
-            />
-            <text
-              x={padding.left - 10}
-              y={y + 4}
-              textAnchor="end"
-              className="fill-foreground-faint font-sans"
-              fontSize="11"
-            >
-              {val}
-            </text>
-          </g>
-        );
-      })}
-
-      {[1, 7, 14, 21, 30].map((day) => {
-        const x = padding.left + ((day - 1) / (data.length - 1)) * chartW;
-        return (
-          <text
-            key={day}
-            x={x}
-            y={height - 10}
-            textAnchor="middle"
-            className="fill-foreground-faint font-sans"
-            fontSize="11"
-          >
-            Day {day}
-          </text>
-        );
-      })}
-
-      {boundaries.map((x, i) => (
-        <line
-          key={`boundary-${i}`}
-          x1={x}
-          y1={padding.top}
-          x2={x}
-          y2={padding.top + chartH}
-          className="stroke-gray-300"
-          strokeWidth="1"
-          strokeDasharray="4,4"
-        />
-      ))}
-
-      {phaseLabels.map(({ x, label }, i) => (
-        <text
-          key={`label-${i}`}
-          x={x}
-          y={padding.top - 8}
-          textAnchor="middle"
-          className="fill-foreground-faint font-sans"
-          fontSize="11"
-          fontWeight="500"
-        >
-          {label}
-        </text>
-      ))}
-
-      <path d={areaD} fill="url(#areaGradient)" />
-      <path d={pathD} fill="none" className="stroke-brand" strokeWidth="2.5" strokeLinejoin="round" />
-      <circle
-        cx={points[points.length - 1].x}
-        cy={points[points.length - 1].y}
-        r="4"
-        className="fill-brand"
-      />
-    </svg>
-  );
-}
 
 export default function DashboardPage({ config, onHome }) {
   const { dashboard30Day } = config;
@@ -202,11 +73,28 @@ export default function DashboardPage({ config, onHome }) {
           <h3 className="text-base font-semibold mb-4">
             Cumulative Active Users (30 Days)
           </h3>
-          <div className="flex justify-center">
-            <SimpleLineChart
-              data={dashboard30Day.dailyData}
-              phases={dashboard30Day.chartPhases}
-            />
+          <div>
+            {(() => {
+              const chartData = dashboard30Day.dailyData;
+              const maxVal = Math.max(...chartData);
+              return (
+                <Chart
+                  data={chartData}
+                  padding={{ left: 45 }}
+                  maxValue={maxVal}
+                  xLabels={[
+                    { value: 'Day 1', at: 1 },
+                    { value: 'Day 7', at: 7 },
+                    { value: 'Day 14', at: 14 },
+                    { value: 'Day 21', at: 21 },
+                    { value: 'Day 30', at: 30 },
+                  ]}
+                  yLabels={[0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(maxVal * f))}
+                  gridlines="from-labels"
+                  fill={{ color: 'var(--color-brand)', opacity: 0.07 }}
+                />
+              );
+            })()}
           </div>
         </div>
 
