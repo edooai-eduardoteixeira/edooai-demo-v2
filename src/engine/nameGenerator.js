@@ -138,9 +138,25 @@ function buildHoldback(rng, { day }) {
 }
 
 // ─── Strategy shift narratives ───────────────────────────────────────
-function buildStrategyShift(rng, { day, efficiency }) {
+// On annotation days, the shift matches the annotation's insight.
+// On other days, it's a plausible daily adjustment.
+function buildStrategyShift(rng, { day, efficiency, annotation }) {
   if (day <= 1) return 'Initial targeting: broad exploration across all eligible segments.';
   if (day <= 5) return 'Early data collection. Broad targeting with slight bias toward high-NPS customers.';
+
+  // If this day has a learning annotation, the strategy shift IS that learning
+  if (annotation) {
+    switch (annotation.type) {
+      case 'signal':
+        return `Signal threshold crossed — ${Math.round(efficiency * 100)}% targeting accuracy achieved. Shifting from exploration to exploitation: concentrating on segments with highest observed conversion.`;
+      case 'tier':
+        return `Tier optimization activated — identified customers who convert without incentive. Increasing Tier 1 (organic) allocation and redirecting savings to expand daily contact volume.`;
+      case 'value':
+        return `High-value segment discovery — referrer segments bringing ${(1.5 + rng() * 0.5).toFixed(1)}x higher-LTV customers identified. Shifting targeting to prioritize quality over volume.`;
+      case 'divergence':
+        return `Learning advantage now measurable — agentic targeting outperforming static rules by ${Math.floor(15 + rng() * 15)}%. Doubling down on data-driven segment allocation.`;
+    }
+  }
 
   const shifts = [
     `High-tenure segment (+${Math.floor(rng() * 15 + 5)}% allocation) after Day ${day - 1} showed ${(1.5 + rng()).toFixed(1)}x conversion rate for 6+ month customers.`,
@@ -164,7 +180,7 @@ function buildStrategyShift(rng, { day, efficiency }) {
  *   recommendation: { ... } | null,
  * }
  */
-export function generateDayBriefing({ day, dayData, prevDayData, seed = 42, tierDistribution }) {
+export function generateDayBriefing({ day, dayData, prevDayData, seed = 42, tierDistribution, annotation }) {
   const rng = mulberry32(seed * 10000 + day * 777);
 
   const contactCount = dayData?.journeysToday || 1788;
@@ -181,7 +197,7 @@ export function generateDayBriefing({ day, dayData, prevDayData, seed = 42, tier
     contactCount,
     eligibleCount,
     budgetToday,
-    strategyShift: buildStrategyShift(rng, { day, efficiency }),
+    strategyShift: buildStrategyShift(rng, { day, efficiency, annotation }),
   };
 
   // Sample contacts (~12)

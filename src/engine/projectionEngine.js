@@ -771,7 +771,16 @@ export function computeDashboardProjection({ budget, params }) {
   // Run static baseline (no learning — efficiency locked at floor)
   const static_ = runSimulation({ budget, params, staticMode: true });
 
-  // Generate daily briefings for each day
+  // Derive learning annotations FIRST (briefings reference them)
+  const learningAnnotations = deriveLearningAnnotations(agentic.days, static_.days, params);
+
+  // Build annotation lookup by day for briefing generation
+  const annotationByDay = {};
+  for (const a of learningAnnotations) {
+    annotationByDay[a.day] = a;
+  }
+
+  // Generate daily briefings — annotation days get matched strategy shifts
   const dailyBriefings = {};
   for (let day = 1; day <= 30; day++) {
     const dayData = agentic.days[day - 1];
@@ -783,11 +792,9 @@ export function computeDashboardProjection({ budget, params }) {
       prevDayData,
       seed: 42,
       tierDistribution: dayData.tierDistribution,
+      annotation: annotationByDay[day] || null,
     });
   }
-
-  // Derive learning annotations
-  const learningAnnotations = deriveLearningAnnotations(agentic.days, static_.days, params);
 
   // Derive agent recommendation
   const agentRecommendation = deriveAgentRecommendation(agentic.days, params, budget);
