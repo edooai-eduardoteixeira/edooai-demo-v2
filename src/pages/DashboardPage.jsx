@@ -76,11 +76,12 @@ function DaySelector({ selected, onSelect, thresholdDay }) {
   );
 }
 
-// Cohort color palette — warm gray scale from design tokens
-const COHORT_COLORS = [
-  'var(--color-gray-300)', 'var(--color-gray-400)', 'var(--color-gray-500)',
-  'var(--color-gray-600)', 'var(--color-gray-700)', 'var(--color-gray-800)',
-];
+// Sequential brand palette — lightest (oldest cohort) to darkest (newest)
+function cohortColor(index, total) {
+  const minOpacity = 0.25;
+  const opacity = minOpacity + ((index / Math.max(total - 1, 1)) * (1 - minOpacity));
+  return `color-mix(in srgb, var(--color-brand) ${Math.round(opacity * 100)}%, transparent)`;
+}
 
 function ActiveUsersChart({ cumulativeCurve, currentDay }) {
   const slice = cumulativeCurve.slice(0, currentDay);
@@ -150,12 +151,14 @@ function CohortChart({ cohorts, currentDay }) {
 
   const cohortSeries = repDays.map((day, idx) => {
     const isLatest = idx === repDays.length - 1;
+    const total = repDays.length;
     return {
       data: (cohorts[day]?.cumulativeResolved || []).slice(0, 14),
-      color: COHORT_COLORS[Math.min(idx, COHORT_COLORS.length - 1)],
+      color: cohortColor(idx, total),
       width: isLatest ? 2 : 1.5,
-      opacity: isLatest ? 1 : 0.7,
-      label: `D${day}`,
+      dotted: idx < total - 2,
+      dashed: idx === total - 2,
+      label: `Day ${day} (${(cohorts[day]?.convRate || 0).toFixed(1)}%)`,
     };
   });
 
@@ -175,22 +178,9 @@ function CohortChart({ cohorts, currentDay }) {
         ]}
         yLabels={[0, 0.25, 0.5, 0.75, 1].map(f => Math.round(maxCum * f))}
         gridlines="from-labels"
+        legend
         formatTooltip={(i, v) => Math.round(v).toLocaleString()}
       />
-      <div className="flex flex-wrap gap-3 mt-2">
-        {repDays.map((day, idx) => {
-          const color = COHORT_COLORS[Math.min(idx, COHORT_COLORS.length - 1)];
-          const rate = cohorts[day]?.convRate || 0;
-          return (
-            <div key={day} className="flex items-center gap-1.5">
-              <span className="w-3 h-0.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-              <span className="text-[10px] text-foreground-faint">
-                Day {day} ({rate.toFixed(1)}%)
-              </span>
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }
@@ -352,25 +342,14 @@ function ComparisonChart({ agenticCurve, staticCurve, annotations, currentDay })
 
   return (
     <div className="bg-surface border border-border rounded-lg p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <SectionLabel>Agentic vs Static Execution</SectionLabel>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
-            <span className="w-4 h-0.5 bg-brand rounded-full" />
-            <span className="text-[11px] text-foreground-muted">Vincor Agent</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-4 h-0.5 rounded-full" style={{ backgroundImage: 'repeating-linear-gradient(90deg, var(--color-gray-300), var(--color-gray-300) 3px, transparent 3px, transparent 6px)' }} />
-            <span className="text-[11px] text-foreground-muted">Static Rules</span>
-          </div>
-        </div>
-      </div>
+      <SectionLabel>Agentic vs Static Execution</SectionLabel>
 
       <Chart
         series={[
-          { data: agSlice, color: 'var(--color-brand)', label: fmt(agSlice[agSlice.length - 1] || 0) },
-          { data: stSlice, color: 'var(--color-gray-300)', dashed: true, width: 1.5, label: fmt(stSlice[stSlice.length - 1] || 0) },
+          { data: agSlice, color: 'var(--color-brand)', label: 'Vincor Agent' },
+          { data: stSlice, color: 'var(--color-gray-300)', dashed: true, width: 1.5, label: 'Static Rules' },
         ]}
+        legend
         maxValue={yMax}
         padding={{ left: 50, right: 20 }}
         xLabels={[1, 5, 10, 15, 20, 25, 30].map(d => ({ value: String(d), at: d }))}

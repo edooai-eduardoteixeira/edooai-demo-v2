@@ -171,6 +171,7 @@ export default function Chart({
   endpointLabel,
   annotations,
   marker,
+  legend,
 }) {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [animated, setAnimated] = useState(false);
@@ -406,7 +407,7 @@ export default function Chart({
               strokeWidth={s.width || TOKENS.line.width}
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeDasharray={s.dashed ? '6,4' : undefined}
+              strokeDasharray={s.dotted ? '2,3' : s.dashed ? '6,4' : undefined}
               opacity={s.opacity ?? 1}
               style={{ opacity: animated ? (s.opacity ?? 1) : 0, transition: 'opacity 500ms ease-out' }}
             />
@@ -684,6 +685,50 @@ export default function Chart({
           </span>
         );
       })()}
+
+      {/* Legend (HTML — standardized top-right) */}
+      {legend && series.length > 1 && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 16,
+            pointerEvents: 'none',
+          }}
+        >
+          {series.map((s, i) => (
+            s.label ? (
+              <span
+                key={i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontSize: 11,
+                  fontFamily: 'var(--font-family)',
+                  color: 'var(--text-tertiary)',
+                  lineHeight: 1,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    backgroundColor: s.color || TOKENS.line.color,
+                    flexShrink: 0,
+                  }}
+                />
+                {s.label}
+              </span>
+            ) : null
+          ))}
+        </div>
+      )}
     </div>
   );
 }

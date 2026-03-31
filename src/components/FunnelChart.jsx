@@ -3,9 +3,9 @@ import { cn } from '../lib/utils.js';
 /**
  * Reusable funnel chart component that enforces the Vincor design system.
  *
- * Renders a vertical funnel with decreasing-width bars, conversion rates
- * between stages, and an optional pending indicator. All styling uses
- * design tokens — no hardcoded colors or font sizes.
+ * Renders a vertical funnel with left-aligned horizontal bars, stage labels
+ * above each bar, and metrics to the right. Follows analytics-product
+ * conventions (Stripe, Amplitude, HubSpot).
  *
  * Usage:
  *   <FunnelChart
@@ -34,9 +34,9 @@ export default function FunnelChart({ stages, pending }) {
 
   return (
     <div>
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col gap-2">
         {stages.map((stage, i) => {
-          const widthPct = Math.max(20, Math.sqrt(stage.value / maxValue) * 100);
+          const widthPct = Math.max(18, (stage.value / maxValue) * 100);
           const prevValue = i > 0 ? stages[i - 1].value : null;
           const convRate = prevValue && prevValue > 0
             ? ((stage.value / prevValue) * 100).toFixed(1) + '%'
@@ -44,34 +44,34 @@ export default function FunnelChart({ stages, pending }) {
           const isLast = i === stages.length - 1;
 
           return (
-            <div key={stage.label} className="w-full flex flex-col items-center">
-              {convRate && (
-                <span className="text-[10px] text-foreground-faint leading-none py-0.5">
-                  {convRate}
+            <div key={stage.label} className="w-full">
+              {/* Stage label + conversion rate above bar */}
+              <div className="flex items-baseline justify-between mb-0.5">
+                <span className="text-[11px] font-medium text-foreground-muted">
+                  {stage.label}
                 </span>
-              )}
+                {convRate && (
+                  <span className="text-[10px] text-foreground-faint">
+                    {convRate}
+                  </span>
+                )}
+              </div>
 
-              <div className="w-full flex justify-center">
+              {/* Bar (left-aligned) + number to the right */}
+              <div className="flex items-center gap-2">
                 <div
                   className={cn(
-                    'flex items-center justify-between px-3 rounded-sm transition-all duration-300 h-9',
+                    'h-8 rounded-[4px] transition-all duration-300',
                     isLast ? 'bg-brand' : 'bg-accent-subtle'
                   )}
                   style={{ width: `${widthPct}%` }}
-                >
-                  <span className={cn(
-                    'text-xs font-medium truncate',
-                    isLast ? 'text-white' : 'text-foreground-muted'
-                  )}>
-                    {stage.label}
-                  </span>
-                  <span className={cn(
-                    'text-[13px] font-semibold shrink-0 ml-2',
-                    isLast ? 'text-white' : 'text-foreground'
-                  )}>
-                    {formatNumber(stage.value)}
-                  </span>
-                </div>
+                />
+                <span className={cn(
+                  'text-[13px] font-semibold shrink-0 tabular-nums',
+                  isLast ? 'text-brand' : 'text-foreground'
+                )}>
+                  {formatNumber(stage.value)}
+                </span>
               </div>
             </div>
           );
