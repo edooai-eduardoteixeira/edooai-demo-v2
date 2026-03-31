@@ -237,104 +237,22 @@ function CohortChart({ cohorts, currentDay }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// POSITION 3: DECISION FEED
+// ZONE B: DECISION FEED
 // ═══════════════════════════════════════════════════════════════════════
-const TYPE_BADGES = {
-  contact: { icon: '→', label: 'Contacted', cls: 'bg-accent-subtle text-foreground-muted' },
-  reminder: { icon: '↻', label: 'Follow-up', cls: 'bg-[#fef3c7] text-[#92400e]' },
-  holdback: { icon: '⏸', label: 'Held back', cls: 'bg-border-light text-foreground-muted' },
-  conversion: { icon: '✓', label: 'Converted', cls: 'bg-[#d1fae5] text-[#065f46]' },
-  reward_blocked: { icon: '⚠', label: 'Reward held', cls: 'bg-[#fee2e2] text-[#991b1b]' },
-  expiration_batch: { icon: '✗', label: 'Expired', cls: 'bg-border-light text-foreground-muted' },
+const OUTCOME_STYLES = {
+  contact: { icon: '→', className: 'bg-accent-subtle text-foreground-muted' },
+  reminder: { icon: '↻', className: 'bg-[#fef3c7] text-[#92400e]' },
+  holdback: { icon: '⏸', className: 'bg-border-light text-foreground-muted' },
+  conversion: { icon: '✓', className: 'bg-[#d1fae5] text-[#065f46]' },
+  reward_blocked: { icon: '⚠', className: 'bg-[#fee2e2] text-[#991b1b]' },
+  expiration_batch: { icon: '✗', className: 'bg-border-light text-foreground-muted' },
 };
 
-function DecisionRow({ decision: d, expanded, onToggle }) {
-  const badge = TYPE_BADGES[d.type] || TYPE_BADGES.contact;
-
-  // Render the one-line summary based on type
-  let summary;
-  switch (d.type) {
-    case 'contact':
-      summary = (
-        <>
-          <span className="text-[13px] font-medium text-foreground truncate">{d.name}</span>
-          <span className="text-xs text-foreground-faint">via {d.channel}</span>
-          <span className="text-xs text-foreground-faint">{d.tierLabel}</span>
-        </>
-      );
-      break;
-    case 'reminder':
-      summary = (
-        <>
-          <span className="text-[13px] font-medium text-foreground truncate">{d.name}</span>
-          <span className="text-xs text-foreground-faint truncate">{d.detail}</span>
-        </>
-      );
-      break;
-    case 'holdback':
-      summary = (
-        <>
-          <span className="text-[13px] font-medium text-foreground truncate">{d.name}</span>
-          <span className="text-xs text-foreground-faint truncate">{d.reason}</span>
-        </>
-      );
-      break;
-    case 'conversion':
-      summary = (
-        <>
-          <span className="text-[13px] font-medium text-foreground truncate">{d.name}</span>
-          <span className="text-xs text-foreground-faint">First transaction — {d.tierLabel}</span>
-        </>
-      );
-      break;
-    case 'reward_blocked':
-      summary = (
-        <>
-          <span className="text-[13px] font-medium text-foreground truncate">{d.name}</span>
-          <span className="text-xs text-foreground-faint truncate">{d.reason}</span>
-        </>
-      );
-      break;
-    case 'expiration_batch':
-      summary = (
-        <span className="text-xs text-foreground-faint">
-          {d.count} offers expired — no conversion within 14-day window
-        </span>
-      );
-      break;
-    default:
-      summary = <span className="text-xs text-foreground-faint">{d.type}</span>;
-  }
-
-  return (
-    <button
-      onClick={onToggle}
-      className={cn(
-        'w-full flex items-center gap-2 py-1.5 px-2 rounded-sm text-left transition-colors duration-150',
-        'hover:bg-accent-subtle',
-        expanded && 'bg-accent-subtle'
-      )}
-    >
-      {/* Time */}
-      <span className="text-[11px] text-foreground-faint w-12 shrink-0 tabular-nums">
-        {fmtTime(d.hour, d.minute)}
-      </span>
-
-      {/* Type badge */}
-      <span className={cn(
-        'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold shrink-0',
-        badge.cls
-      )}>
-        {badge.icon} {badge.label}
-      </span>
-
-      {/* Summary */}
-      <span className="flex items-center gap-2 min-w-0 flex-1 truncate">
-        {summary}
-      </span>
-    </button>
-  );
-}
+const CHANNEL_ICONS = {
+  push: '📱',
+  email: '✉️',
+  sms: '💬',
+};
 
 function DecisionFeed({ decisions }) {
   const [expandedId, setExpandedId] = useState(null);
@@ -348,25 +266,142 @@ function DecisionFeed({ decisions }) {
         <span className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-brand" />
           <span className="text-[11px] text-foreground-faint">
-            {decisions.length} events
+            {decisions.length} decisions shown
           </span>
         </span>
       </div>
 
-      <div className="max-h-[280px] overflow-y-auto space-y-0">
+      <div className="max-h-[200px] overflow-y-auto space-y-0">
         {decisions.map((d) => {
+          const outcome = OUTCOME_STYLES[d.type] || OUTCOME_STYLES.contact;
           const expanded = expandedId === d.id;
+
+          // Build display text based on decision type
+          let nameText = d.name || '';
+          let detailText = '';
+          let outcomeLabel = d.type;
+
+          switch (d.type) {
+            case 'contact':
+              detailText = `${d.tierLabel} · ${d.channel}`;
+              outcomeLabel = 'contacted';
+              break;
+            case 'reminder':
+              detailText = d.detail || 'follow-up';
+              outcomeLabel = 'follow-up';
+              break;
+            case 'holdback':
+              detailText = d.reason || 'held back';
+              outcomeLabel = 'held back';
+              break;
+            case 'conversion':
+              detailText = `${d.tierLabel} · contacted Day ${d.contactedDay}`;
+              outcomeLabel = 'converted';
+              break;
+            case 'reward_blocked':
+              detailText = d.reason || 'under review';
+              outcomeLabel = 'reward held';
+              break;
+            case 'expiration_batch':
+              nameText = `${d.count} offers`;
+              detailText = 'no conversion within 14-day window';
+              outcomeLabel = 'expired';
+              break;
+          }
+
           return (
             <div key={d.id}>
-              <DecisionRow
-                decision={d}
-                expanded={expanded}
-                onToggle={() => setExpandedId(expanded ? null : d.id)}
-              />
+              <button
+                onClick={() => setExpandedId(expanded ? null : d.id)}
+                className={cn(
+                  'w-full flex items-center gap-3 py-2 px-2 rounded-sm text-left transition-colors duration-150',
+                  'hover:bg-accent-subtle',
+                  expanded && 'bg-accent-subtle'
+                )}
+              >
+                {/* Name */}
+                <span className="text-[13px] font-medium text-foreground w-28 truncate shrink-0">
+                  {nameText}
+                </span>
+
+                {/* Detail */}
+                <span className="text-xs text-foreground-muted flex-1 truncate">
+                  {detailText}
+                </span>
+
+                {/* Time */}
+                <span className="text-xs text-foreground-faint w-16 shrink-0">
+                  {fmtTime(d.hour, d.minute)}
+                </span>
+
+                {/* Outcome badge */}
+                <span className={cn(
+                  'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0',
+                  outcome.className
+                )}>
+                  {outcome.icon} {outcomeLabel}
+                </span>
+
+                {/* Expand arrow */}
+                <svg className={cn(
+                  'w-3.5 h-3.5 text-foreground-faint ml-auto transition-transform duration-200 shrink-0',
+                  expanded && 'rotate-180'
+                )} fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+
+              {/* Expanded detail */}
+              {expanded && d.type === 'contact' && (
+                <div className="pl-4 pr-2 pb-3 ml-2 border-l-2 border-border-light">
+                  <div className="space-y-1.5 mt-1">
+                    <TimelineEvent label={`Contacted via ${d.channel}`} day={d.day} />
+                  </div>
+                </div>
+              )}
+              {expanded && d.type === 'conversion' && (
+                <div className="pl-4 pr-2 pb-3 ml-2 border-l-2 border-border-light">
+                  <div className="space-y-1.5 mt-1">
+                    <TimelineEvent label={`Contacted via referral program`} day={d.contactedDay} />
+                    <TimelineEvent label="First transaction — Converted" day={d.day} highlight />
+                  </div>
+                </div>
+              )}
+              {expanded && d.type === 'holdback' && (
+                <div className="pl-4 pr-2 pb-3 ml-2 border-l-2 border-border-light">
+                  <div className="space-y-1.5 mt-1">
+                    <TimelineEvent label={d.reason} day={d.day} muted />
+                  </div>
+                </div>
+              )}
+              {expanded && d.type === 'reward_blocked' && (
+                <div className="pl-4 pr-2 pb-3 ml-2 border-l-2 border-border-light">
+                  <div className="space-y-1.5 mt-1">
+                    <TimelineEvent label={d.reason} day={d.day} muted />
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function TimelineEvent({ label, day, highlight, muted }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className={cn(
+        'w-1.5 h-1.5 rounded-full shrink-0',
+        highlight ? 'bg-success' : muted ? 'bg-foreground-faint' : 'bg-border'
+      )} />
+      <span className={cn(
+        'text-xs',
+        highlight ? 'text-success font-semibold' : muted ? 'text-foreground-faint' : 'text-foreground-muted'
+      )}>
+        Day {day}: {label}
+      </span>
     </div>
   );
 }
