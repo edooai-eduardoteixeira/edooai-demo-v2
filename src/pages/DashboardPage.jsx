@@ -75,7 +75,7 @@ function DaySelector({ selected, onSelect, thresholdDay }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// VERTICAL FUNNEL — narrowing bars, wide at top, narrow at bottom
+// VERTICAL FUNNEL — large bars, labels + numbers inside, no wasted space
 // ═══════════════════════════════════════════════════════════════════════
 function VerticalFunnel({ data, audienceSize }) {
   const stages = [
@@ -89,12 +89,11 @@ function VerticalFunnel({ data, audienceSize }) {
   const maxValue = stages[0].value;
 
   return (
-    <div className="bg-surface border border-border rounded-lg p-6">
+    <div className="bg-surface border border-border rounded-lg p-5">
       <SectionLabel>Referral Funnel</SectionLabel>
-      <div className="flex flex-col items-center gap-0 mt-2">
+      <div className="flex flex-col items-center mt-3">
         {stages.map((stage, i) => {
-          // sqrt scale so bottom bars stay visible (linear makes them invisible at 424K → 686)
-          const widthPct = Math.max(12, Math.sqrt(stage.value / maxValue) * 100);
+          const widthPct = Math.max(20, Math.sqrt(stage.value / maxValue) * 100);
           const prevValue = i > 0 ? stages[i - 1].value : null;
           const convRate = prevValue && prevValue > 0
             ? ((stage.value / prevValue) * 100).toFixed(1) + '%'
@@ -103,32 +102,29 @@ function VerticalFunnel({ data, audienceSize }) {
 
           return (
             <div key={stage.key} className="w-full flex flex-col items-center">
-              {/* Conversion rate between stages */}
-              {i > 0 && (
-                <div className="flex items-center gap-1 py-1">
-                  <svg width="8" height="10" className="text-foreground-faint">
-                    <path d="M 4 0 L 4 8 M 2 6 L 4 8 L 6 6" fill="none" stroke="currentColor" strokeWidth="1" />
-                  </svg>
-                  <span className="text-[11px] text-foreground-faint">{convRate}</span>
-                </div>
+              {/* Conversion rate between stages — compact */}
+              {convRate && (
+                <span className="text-[10px] text-foreground-faint leading-none py-0.5">{convRate}</span>
               )}
 
-              {/* Bar + label row */}
-              <div className="w-full flex items-center gap-3">
-                <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase w-24 text-right shrink-0">
-                  {stage.label}
-                </span>
-                <div className="flex-1 flex items-center gap-2">
-                  <div
-                    className={cn(
-                      'h-7 rounded-sm transition-all duration-300',
-                      isLast ? 'bg-brand' : 'bg-accent-subtle'
-                    )}
-                    style={{ width: `${widthPct}%` }}
-                  />
+              {/* Bar: label left, number right, all inside */}
+              <div className="w-full flex justify-center">
+                <div
+                  className={cn(
+                    'flex items-center justify-between px-3 rounded-sm transition-all duration-300 h-9',
+                    isLast ? 'bg-brand' : 'bg-accent-subtle'
+                  )}
+                  style={{ width: `${widthPct}%` }}
+                >
                   <span className={cn(
-                    'text-sm font-semibold shrink-0',
-                    isLast ? 'text-foreground' : 'text-foreground-muted'
+                    'text-xs font-medium truncate',
+                    isLast ? 'text-white' : 'text-foreground-muted'
+                  )}>
+                    {stage.label}
+                  </span>
+                  <span className={cn(
+                    'text-[13px] font-semibold shrink-0 ml-2',
+                    isLast ? 'text-white' : 'text-foreground'
                   )}>
                     {stage.value >= 1000 ? fmtK(stage.value) : fmt(stage.value)}
                   </span>
@@ -141,11 +137,10 @@ function VerticalFunnel({ data, audienceSize }) {
 
       {/* Pending pipeline bridge */}
       {data.pending > 0 && (
-        <div className="mt-4 pt-3 border-t border-border-light flex items-center gap-2">
+        <div className="mt-3 pt-3 border-t border-border-light flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-warn shrink-0" />
           <span className="text-[13px] text-foreground-muted">
             <span className="font-semibold">{fmt(data.pending)} offers in flight</span>
-            {' — '}results to be realized from active cohorts
           </span>
         </div>
       )}
@@ -154,12 +149,12 @@ function VerticalFunnel({ data, audienceSize }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// ACTIVE USERS HERO CHART — the largest visual on the page
+// ACTIVE USERS HERO CHART — reduced ~50%, <=40% screen width
 // ═══════════════════════════════════════════════════════════════════════
 function ActiveUsersChart({ cumulativeCurve, currentDay }) {
-  const width = 600;
-  const height = 280;
-  const pad = { top: 30, right: 60, bottom: 40, left: 50 };
+  const width = 320;
+  const height = 150;
+  const pad = { top: 16, right: 44, bottom: 24, left: 40 };
   const cw = width - pad.left - pad.right;
   const ch = height - pad.top - pad.bottom;
 
@@ -174,56 +169,50 @@ function ActiveUsersChart({ cumulativeCurve, currentDay }) {
   const lastVal = slice.length > 0 ? slice[slice.length - 1] : 0;
 
   return (
-    <div className="bg-surface border border-border rounded-lg p-6">
-      <div className="flex items-baseline gap-3 mb-4">
-        <span className="text-[32px] font-extrabold text-foreground tracking-tight leading-none">
+    <div className="bg-surface border border-border rounded-lg p-4">
+      <div className="flex items-baseline gap-2 mb-2">
+        <span className="text-2xl font-extrabold text-foreground tracking-tight leading-none">
           {fmt(lastVal)}
         </span>
-        <span className="text-[15px] text-foreground-muted">active users acquired</span>
+        <span className="text-xs text-foreground-muted">active users</span>
       </div>
 
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full">
-        {/* Grid lines */}
-        {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => {
+        {[0, 0.5, 1].map((frac, i) => {
           const y = toY(yMax * frac);
           return (
             <g key={i}>
               <line x1={pad.left} y1={y} x2={width - pad.right} y2={y}
                 className="stroke-border-light" strokeWidth="1" />
-              <text x={pad.left - 8} y={y + 3} textAnchor="end"
-                className="fill-foreground-faint font-sans" fontSize="10">
+              <text x={pad.left - 6} y={y + 3} textAnchor="end"
+                className="fill-foreground-faint font-sans" fontSize="11">
                 {fmtK(Math.round(yMax * frac))}
               </text>
             </g>
           );
         })}
 
-        {/* X-axis labels */}
-        {[1, 5, 10, 15, 20, 25, 30].map(d => (
-          <text key={d} x={toX(d)} y={height - 8} textAnchor="middle"
-            className="fill-foreground-faint font-sans" fontSize="10">
-            Day {d}
+        {[1, 10, 20, 30].map(d => (
+          <text key={d} x={toX(d)} y={height - 4} textAnchor="middle"
+            className="fill-foreground-faint font-sans" fontSize="11">
+            {d}
           </text>
         ))}
 
-        {/* Area fill + line */}
         {slice.length > 1 && (
           <>
-            <path
-              d={`${pathD} L ${toX(slice.length)} ${toY(0)} L ${toX(1)} ${toY(0)} Z`}
-              fill="var(--color-brand)" opacity="0.07"
-            />
+            <path d={`${pathD} L ${toX(slice.length)} ${toY(0)} L ${toX(1)} ${toY(0)} Z`}
+              fill="var(--color-brand)" opacity="0.07" />
             <path d={pathD} fill="none" className="stroke-brand"
               strokeWidth="2.5" strokeLinejoin="round" />
             <circle cx={toX(slice.length)} cy={toY(lastVal)}
-              r="4" className="fill-brand" />
+              r="3.5" className="fill-brand" />
           </>
         )}
 
-        {/* End value on chart */}
         {slice.length > 0 && (
-          <text x={toX(slice.length) + 8} y={toY(lastVal) + 4}
-            className="fill-brand font-sans" fontSize="12" fontWeight="600">
+          <text x={toX(slice.length) + 5} y={toY(lastVal) + 4}
+            className="fill-brand font-sans" fontSize="11" fontWeight="600">
             {fmt(lastVal)}
           </text>
         )}
@@ -233,7 +222,7 @@ function ActiveUsersChart({ cumulativeCurve, currentDay }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// ZONE A: KPI CARDS (Results to Date)
+// KPI CARDS
 // ═══════════════════════════════════════════════════════════════════════
 function KPICard({ label, value, detail, highlight }) {
   return (
@@ -258,9 +247,9 @@ function KPICard({ label, value, detail, highlight }) {
 // ZONE A: COHORT CHART (Funnel Performance)
 // ═══════════════════════════════════════════════════════════════════════
 function CohortChart({ cohorts, currentDay }) {
-  const width = 480;
-  const height = 220;
-  const pad = { top: 24, right: 16, bottom: 32, left: 44 };
+  const width = 340;
+  const height = 155;
+  const pad = { top: 18, right: 16, bottom: 24, left: 36 };
   const cw = width - pad.left - pad.right;
   const ch = height - pad.top - pad.bottom;
 
@@ -303,7 +292,7 @@ function CohortChart({ cohorts, currentDay }) {
               <line x1={pad.left} y1={y} x2={width - pad.right} y2={y}
                 className="stroke-border-light" strokeWidth="1" />
               <text x={pad.left - 6} y={y + 3} textAnchor="end"
-                className="fill-foreground-faint font-sans" fontSize="10">
+                className="fill-foreground-faint font-sans" fontSize="11">
                 {Math.round(maxCum * frac)}
               </text>
             </g>
@@ -313,7 +302,7 @@ function CohortChart({ cohorts, currentDay }) {
         {/* X-axis labels */}
         {[0, 3, 7, 10, 14].map(d => (
           <text key={d} x={pad.left + (Math.min(d, 13) / 13) * cw} y={height - 6}
-            textAnchor="middle" className="fill-foreground-faint font-sans" fontSize="10">
+            textAnchor="middle" className="fill-foreground-faint font-sans" fontSize="11">
             +{d}d
           </text>
         ))}
@@ -775,39 +764,49 @@ export default function DashboardPage({ config, onHome }) {
 
       <main className="flex-1 pb-16">
         {/* ── POSITION 1: RESULTS ── */}
-        {/* Top row: Vertical Funnel (left) + Hero Chart (right) */}
-        <div className="grid grid-cols-[280px_1fr] gap-6 mb-6">
-          <VerticalFunnel
-            data={dayData.funnelCumulative}
-            audienceSize={projection.audienceSize}
-          />
-          <ActiveUsersChart
-            cumulativeCurve={projection.cumulativeCurve}
-            currentDay={selectedDay}
-          />
+        {/* Row 1: KPIs | Funnel | Hero chart */}
+        <div className="flex gap-4 mb-6">
+          {/* KPIs — vertically stacked, beside funnel */}
+          <div className="w-[160px] shrink-0 flex flex-col gap-3">
+            <SectionLabel>Results</SectionLabel>
+            <KPICard
+              label="Active Users"
+              value={fmt(dayData.funnelCumulative.activeUser)}
+              highlight
+            />
+            <KPICard
+              label="CAC"
+              value={dayData.kpiCumulative.cac > 0 ? fmtDollar(dayData.kpiCumulative.cac) : '—'}
+            />
+            <KPICard
+              label="ROI"
+              value={dayData.kpiCumulative.roi > 0 ? `${dayData.kpiCumulative.roi}x` : '—'}
+            />
+            <KPICard
+              label="Fraud Saved"
+              value={fmtDollar(dayData.kpiCumulative.fraudSaved)}
+            />
+          </div>
+
+          {/* Funnel — fills remaining space */}
+          <div className="flex-1 min-w-0">
+            <VerticalFunnel
+              data={dayData.funnelCumulative}
+              audienceSize={projection.audienceSize}
+            />
+          </div>
+
+          {/* Hero chart — <=40% screen width */}
+          <div className="w-[38%] shrink-0">
+            <ActiveUsersChart
+              cumulativeCurve={projection.cumulativeCurve}
+              currentDay={selectedDay}
+            />
+          </div>
         </div>
 
-        {/* KPIs + Funnel Performance (cohort chart) */}
-        <div className="grid grid-cols-[1fr_1.5fr] gap-6 mb-6">
-          <div>
-            <SectionLabel>Results to Date</SectionLabel>
-            <div className="grid grid-cols-3 gap-3">
-              <KPICard
-                label="CAC"
-                value={dayData.kpiCumulative.cac > 0 ? fmtDollar(dayData.kpiCumulative.cac) : '—'}
-                detail={dayData.kpiCumulative.cac > 0 ? `$${fmtK(dayData.cumulativeValue)} revenue` : 'Awaiting conversions'}
-              />
-              <KPICard
-                label="ROI"
-                value={dayData.kpiCumulative.roi > 0 ? `${dayData.kpiCumulative.roi}x` : '—'}
-                detail={dayData.kpiCumulative.roi > 0 ? `$${fmtK(dayData.cumulativeSpend)} spend` : 'Awaiting conversions'}
-              />
-              <KPICard
-                label="Fraud Saved"
-                value={fmtDollar(dayData.kpiCumulative.fraudSaved)}
-              />
-            </div>
-          </div>
+        {/* Cohort chart — <40% screen width */}
+        <div className="mb-6 max-w-[38%]">
           <CohortChart
             cohorts={projection.cohorts}
             currentDay={selectedDay}
