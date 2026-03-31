@@ -20,7 +20,7 @@ Challenge my requests when they conflict with the design system, introduce unnec
 - Use CVA for component variants (see `Badge.jsx`, `CTAButton.jsx` for examples)
 - Use `cn()` from `src/lib/utils.js` for conditional classes
 - Before creating new components, check `src/components/` for existing patterns
-- For design tokens, color rules, and component recipes, follow `DESIGN_GUIDELINES.md`
+- For design tokens, color rules, and component recipes, follow `DESIGN.md`
 
 ## Link Rules
 

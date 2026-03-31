@@ -18,7 +18,7 @@ import { useState, useCallback, useId } from 'react';
  * - threshold: learning phase split with annotations
  */
 
-// --- Design tokens (from DESIGN_GUIDELINES.md) ---
+// --- Design tokens (from DESIGN.md) ---
 const TOKENS = {
   line: { color: 'var(--color-brand)', width: 2.5 },
   axis: { fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font-family)' },
