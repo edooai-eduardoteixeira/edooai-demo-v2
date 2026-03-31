@@ -255,7 +255,7 @@ section: pt-20 relative
 
 ## Header
 
-**All pages use the same outer container**: `max-w-[1100px] mx-auto w-full px-12`. The header sits inside this container in **normal flow** — it takes its height, content starts after it. No absolute positioning.
+The header sits inside the page container (see Layout Patterns) in **normal flow** — it takes its height, content starts after it. No absolute positioning.
 
 | Page type | Logo variant | Behavior |
 |---|---|---|
