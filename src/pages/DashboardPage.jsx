@@ -90,7 +90,7 @@ const COHORT_COLORS = [
 function ActiveUsersChart({ cumulativeCurve, currentDay }) {
   const slice = cumulativeCurve.slice(0, currentDay);
   const lastVal = slice.length > 0 ? slice[slice.length - 1] : 0;
-  const yMax = Math.ceil(Math.max(...cumulativeCurve, 1) / 200) * 200 || 200;
+  const yMax = Math.ceil(Math.max(...slice, 1) / 200) * 200 || 200;
 
   return (
     <div className="bg-surface border border-border rounded-lg p-4">
@@ -333,7 +333,7 @@ function TimelineEvent({ label, day, highlight, muted }) {
 function ComparisonChart({ agenticCurve, staticCurve, annotations, currentDay }) {
   const agSlice = agenticCurve.slice(0, currentDay);
   const stSlice = staticCurve.slice(0, currentDay);
-  const yMax = Math.ceil(Math.max(...agenticCurve, ...staticCurve, 1) / 200) * 200;
+  const yMax = Math.ceil(Math.max(...agSlice, ...stSlice, 1) / 200) * 200;
   const activeAnnotations = (annotations || []).filter(a => a.day <= currentDay);
 
   return (
@@ -348,7 +348,7 @@ function ComparisonChart({ agenticCurve, staticCurve, annotations, currentDay })
         legend
         maxValue={yMax}
         padding={{ left: 50, right: 20 }}
-        xLabels={[1, 5, 10, 15, 20, 25, 30].map(d => ({ value: String(d), at: d }))}
+        xLabels={[1, 5, 10, 15, 20, 25, 30].filter(d => d <= currentDay).map(d => ({ value: String(d), at: d }))}
         yLabels={[0, 0.25, 0.5, 0.75, 1].map(f => Math.round(yMax * f))}
         gridlines="from-labels"
         fill={{ color: 'var(--color-brand)', opacity: 0.06 }}
