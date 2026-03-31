@@ -210,9 +210,19 @@ function CohortChart({ cohorts, currentDay }) {
   }
   maxPct = Math.ceil(maxPct);
 
+  // Compute narrative: how much later cohorts improved vs early ones
+  const earliestRate = repDays.length > 0 ? (cohorts[repDays[0]]?.convRate || 0) : 0;
+  const latestRate = repDays.length > 1 ? (cohorts[repDays[repDays.length - 1]]?.convRate || 0) : earliestRate;
+  const improvement = earliestRate > 0 ? Math.round(((latestRate - earliestRate) / earliestRate) * 100) : 0;
+
   return (
     <div className="flex-1 min-h-0 flex flex-col">
       <SectionLabel>Funnel Performance</SectionLabel>
+      {repDays.length > 1 && improvement > 0 && (
+        <p className="text-[11px] text-foreground-faint leading-relaxed mb-1">
+          Cohort Day {repDays[repDays.length - 1]} converts at {latestRate.toFixed(1)}% vs {earliestRate.toFixed(1)}% for Day {repDays[0]} — {improvement}% improvement as the agent learns.
+        </p>
+      )}
       <div className="flex-1 min-h-0">
       <Chart
         series={cohortSeries}
