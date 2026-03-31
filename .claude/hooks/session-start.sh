@@ -24,7 +24,12 @@ fi
 # Install Gstack if not already present
 if [ ! -d ~/.claude/skills/gstack ]; then
   git clone https://github.com/garrytan/gstack.git ~/.claude/skills/gstack
+
+  # Install Playwright system dependencies (libgbm, libnss3, etc.) so that
+  # gstack's setup script can launch Chromium and won't hard-exit before
+  # creating the per-skill symlinks.
+  npx playwright install-deps chromium 2>/dev/null || true
+
   cd ~/.claude/skills/gstack
-  # Setup may fail on Playwright browser download in cloud environments; that's OK
-  echo "1" | ./setup || true
+  echo "1" | ./setup
 fi
