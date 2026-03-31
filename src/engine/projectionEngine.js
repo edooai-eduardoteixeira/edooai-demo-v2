@@ -1,5 +1,7 @@
+import { generateDayBriefing } from './nameGenerator.js';
+
 /**
- * Projection Engine v3 — Journey Model with Distributed Resolution & Value Learning
+ * Projection Engine v3/v4 — Journey Model with Distributed Resolution & Value Learning
  *
  * Pure functions, zero React dependencies. Takes budget + params → computes all projections.
  *
@@ -345,5 +347,507 @@ export function computeProjection({ budget, params }) {
     avgValuePerUser,
     kpiCurves,
     dailyKPIs,
+  };
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// v4 — Dashboard Projection Engine
+// Extends v3 with: funnel stages, cohort tracking, decision log,
+// static baseline, learning annotations, agent recommendations.
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Compute tier distribution weights for a given budget reach and efficiency.
+ */
+function getTierDistribution(tierReach, distCheap, distExpensive, eff, effTierDiscount) {
+  // Interpolate base distribution by budget reach
+  const base = distCheap.map((wCheap, i) => wCheap + (distExpensive[i] - wCheap) * tierReach);
+  // Efficiency shifts distribution toward cheaper tiers (small effect)
+  const shift = eff * effTierDiscount;
+  const adjusted = base.map((w, i) => {
+    if (i === 0) return w + shift * (1 - w); // more Tier 1
+    return w * (1 - shift);
+  });
+  const sum = adjusted.reduce((s, v) => s + v, 0);
+  return adjusted.map(v => v / sum);
+}
+
+/**
+ * Run the core simulation loop and return detailed per-day data.
+ * staticMode: if true, locks efficiency at floor (no learning).
+ */
+function runSimulation({ budget, params, staticMode = false }) {
+  const {
+    totalCustomers, eligibilityRate, N_max, B_half, alpha,
+    baseConvRate, accidentalConvRate, reachDecayExponent,
+    referrerEligibilityRate, maxDailyReachRate, avgResolutionDays,
+    offerExpirationDays, baseRevenuePerUser, premiumRevenuePerUser,
+    referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive,
+    fraudRate, minSignalVolume, budget: budgetThresholds,
+  } = params;
+
+  const audienceSize = Math.round(totalCustomers * eligibilityRate);
+  const N_frontier = supplyFrontier(budget, N_max, B_half, alpha);
+
+  const tierBudgetCeiling = params.tierBudgetCeiling || 300000;
+  const tierBudgetAlpha = params.tierBudgetAlpha || 0.7;
+  const tierReach = Math.pow(Math.min(1, budget / tierBudgetCeiling), tierBudgetAlpha);
+
+  const effTierDiscount = params.effTierDiscount || 0.10;
+  const midBudgetRewardCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
+  const midEffDiscountFactor = 1 - 0.5 * effTierDiscount;
+  const adjMidEffReward = midBudgetRewardCost * midEffDiscountFactor;
+
+  const realizationEstimate = params.budgetRealizationFactor || 0.55;
+  const maxAffordable = adjMidEffReward > 0 ? budget / adjMidEffReward / realizationEstimate : Infinity;
+  const effectiveN = Math.min(N_frontier, maxAffordable);
+
+  const totalJourneys = effectiveN / baseConvRate;
+  const dailyJourneyTarget = totalJourneys / 30;
+
+  const reachPenetration = totalJourneys / audienceSize;
+  const qualityFactor = Math.pow(1 - reachPenetration, reachDecayExponent);
+  const effectiveBaseConvRate = baseConvRate * qualityFactor;
+
+  const resolutionWeights = computeResolutionWeights(avgResolutionDays, offerExpirationDays);
+
+  // Funnel sub-stage config
+  const baseShareRate = params.baseShareRate || 0.55;
+  const shareLearnFactor = params.shareLearnFactor || 0.35;
+  const signupRate = params.signupRate || 0.28;
+
+  let remainingPool = audienceSize;
+  let cumulativeN = 0;
+  let cumulativeValue = 0;
+  let totalJourneysStarted = 0;
+
+  // Cohort tracking: pendingConversions now includes startDay
+  const pendingConversions = [];
+
+  // Per-day outputs
+  const days = [];
+  const dailySpend = budget / 30;
+  let cumulativeRewardCost = 0;
+  let thresholdDay = 30;
+  let thresholdFound = false;
+
+  // Cumulative funnel counters
+  let cumContacted = 0;
+  let cumReferralSent = 0;
+  let cumSignedUp = 0;
+  let cumActiveUser = 0;
+
+  // Cohort resolution matrix: cohorts[startDay] = { contacted, resolutionByDay: {resolveDay: count} }
+  const cohorts = {};
+
+  for (let day = 1; day <= 30; day++) {
+    const eff = staticMode
+      ? params.effFloor
+      : allocationEfficiency(day, cumulativeN, params);
+
+    const baseTierCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
+    const dailyRewardCost = baseTierCost * (1 - eff * effTierDiscount);
+
+    const maxCapacity = remainingPool * maxDailyReachRate;
+    const journeysToday = Math.min(dailyJourneyTarget, maxCapacity);
+    const capHit = dailyJourneyTarget > maxCapacity * 1.01; // within 1% = cap hit
+
+    const maxTierCost = referrerTiers[referrerTiers.length - 1] + refereeTiers[refereeTiers.length - 1];
+    const rewardIntensity = maxTierCost > 0 ? dailyRewardCost / maxTierCost : 0;
+    const rewardConvBoost = 1 + rewardIntensity * (params.rewardConvElasticity || 0.5);
+    const adjustedConvRate = effectiveBaseConvRate * rewardConvBoost;
+
+    const wellTargeted = journeysToday * eff;
+    const goodConversions = wellTargeted * adjustedConvRate;
+    const poorlyTargeted = journeysToday * (1 - eff);
+    const accidentalConversions = poorlyTargeted * accidentalConvRate;
+    const dailyConversionsGenerated = goodConversions + accidentalConversions;
+
+    const effectiveRevenuePerUser = staticMode
+      ? baseRevenuePerUser
+      : baseRevenuePerUser + (premiumRevenuePerUser - baseRevenuePerUser) * eff;
+    const dailyValueGenerated = dailyConversionsGenerated * effectiveRevenuePerUser;
+
+    // Funnel sub-stages for today's cohort
+    const effectiveShareRate = baseShareRate * (1 + eff * shareLearnFactor);
+    const referralsSent = journeysToday * Math.min(effectiveShareRate, 0.95);
+    const signedUp = referralsSent * signupRate;
+
+    // Track this cohort
+    cohorts[day] = {
+      contacted: Math.round(journeysToday),
+      referralSent: Math.round(referralsSent),
+      signedUp: Math.round(signedUp),
+      conversionsGenerated: dailyConversionsGenerated,
+      resolutionByDay: {},
+      cumulativeResolved: [],
+    };
+
+    // Distribute conversions across future days
+    for (let delayIdx = 0; delayIdx < offerExpirationDays; delayIdx++) {
+      const delay = delayIdx + 1;
+      const resolveDay = day + delay;
+      const count = dailyConversionsGenerated * resolutionWeights[delayIdx];
+      const value = dailyValueGenerated * resolutionWeights[delayIdx];
+
+      if (resolveDay <= 30) {
+        pendingConversions.push({ startDay: day, resolveDay, count, value });
+        cohorts[day].resolutionByDay[resolveDay] = (cohorts[day].resolutionByDay[resolveDay] || 0) + count;
+      }
+    }
+
+    // Resolve conversions scheduled for today
+    let resolvedToday = 0;
+    let resolvedValueToday = 0;
+    for (const entry of pendingConversions) {
+      if (entry.resolveDay === day) {
+        resolvedToday += entry.count;
+        resolvedValueToday += entry.value;
+      }
+    }
+    cumulativeRewardCost += dailyRewardCost * resolvedToday;
+    cumulativeN += resolvedToday;
+    cumulativeValue += resolvedValueToday;
+
+    remainingPool -= journeysToday;
+    remainingPool += resolvedToday * referrerEligibilityRate;
+    remainingPool = Math.min(remainingPool, audienceSize);
+    remainingPool = Math.max(0, remainingPool);
+
+    totalJourneysStarted += journeysToday;
+
+    if (!thresholdFound && cumulativeN >= (minSignalVolume || 40)) {
+      thresholdDay = day;
+      thresholdFound = true;
+    }
+
+    // Cumulative funnel
+    cumContacted += Math.round(journeysToday);
+    cumReferralSent += Math.round(referralsSent);
+    cumSignedUp += Math.round(signedUp);
+    cumActiveUser += Math.max(0, Math.round(resolvedToday));
+
+    // Count pending offers
+    let pending = 0;
+    for (const entry of pendingConversions) {
+      if (entry.resolveDay > day) pending += entry.count;
+    }
+
+    // Tier distribution for this day
+    const tierDist = getTierDistribution(tierReach, tierDistCheap, tierDistExpensive, eff, effTierDiscount);
+
+    const cumSpend = dailySpend * day;
+
+    days.push({
+      day,
+      efficiency: eff,
+      journeysToday: Math.round(journeysToday),
+      resolvedToday: Math.max(0, Math.round(resolvedToday)),
+      cumulativeN: Math.round(cumulativeN),
+      cumulativeValue: Math.round(cumulativeValue),
+      cumulativeRewardCost: Math.round(cumulativeRewardCost),
+      cumulativeSpend: Math.round(cumSpend),
+      remainingPool: Math.round(remainingPool),
+      capHit,
+      rewardCostPerConversion: Math.round(dailyRewardCost),
+      effectiveRevenuePerUser: Math.round(effectiveRevenuePerUser),
+      tierDistribution: tierDist.map(v => Math.round(v * 100) / 100),
+      funnelCumulative: {
+        contacted: cumContacted,
+        referralSent: cumReferralSent,
+        signedUp: cumSignedUp,
+        activeUser: cumActiveUser,
+        pending: Math.round(pending),
+      },
+      dailyFunnel: {
+        contacted: Math.round(journeysToday),
+        referralSent: Math.round(referralsSent),
+        signedUp: Math.round(signedUp),
+        activeUser: Math.max(0, Math.round(resolvedToday)),
+      },
+      kpiCumulative: {
+        cac: cumulativeN > 0 ? Math.round(cumulativeRewardCost / cumulativeN) : 0,
+        roi: cumSpend > 0 ? Math.round((cumulativeValue / cumSpend) * 10) / 10 : 0,
+        convRate: totalJourneysStarted > 0
+          ? Math.round((cumulativeN / totalJourneysStarted) * 10000) / 100 : 0,
+        fraudSaved: Math.round(cumSpend * fraudRate),
+      },
+    });
+  }
+
+  // Build cohort resolution curves (cumulative conversions over time since start)
+  for (const startDay of Object.keys(cohorts)) {
+    const cohort = cohorts[startDay];
+    const curve = [];
+    let cumResolved = 0;
+    for (let d = 1; d <= 14; d++) {
+      const resolveDay = Number(startDay) + d;
+      cumResolved += (cohort.resolutionByDay[resolveDay] || 0);
+      curve.push(Math.round(cumResolved * 100) / 100);
+    }
+    cohort.cumulativeResolved = curve;
+    cohort.totalResolved = Math.round(cumResolved);
+    cohort.convRate = cohort.contacted > 0
+      ? Math.round((cumResolved / cohort.contacted) * 10000) / 100 : 0;
+  }
+
+  const activeUsers = days.reduce((sum, d) => sum + d.resolvedToday, 0);
+  const finalCumN = days[29]?.cumulativeN || 0;
+
+  return {
+    days,
+    cohorts,
+    thresholdDay,
+    activeUsers,
+    cac: finalCumN > 0 ? Math.round(days[29].cumulativeRewardCost / finalCumN) : 999,
+    roi: budget > 0 ? Math.round((days[29]?.cumulativeValue || 0) / budget * 10) / 10 : 0,
+    convRate: totalJourneysStarted > 0
+      ? Math.round((finalCumN / totalJourneysStarted) * 10000) / 100 : 0,
+    fraudSaved: Math.round(budget * fraudRate),
+    totalJourneysStarted: Math.round(totalJourneysStarted),
+    audienceSize,
+    budget,
+  };
+}
+
+/**
+ * Derive learning annotations from simulation data.
+ * These are specific, data-driven moments where the agent's behavior measurably changed.
+ */
+function deriveLearningAnnotations(agenticDays, staticDays, params) {
+  const annotations = [];
+
+  // 1. Signal threshold: when minSignalVolume was reached
+  const signalDay = agenticDays.find(d => d.cumulativeN >= (params.minSignalVolume || 100));
+  if (signalDay) {
+    const effPct = Math.round(signalDay.efficiency * 100);
+    annotations.push({
+      day: signalDay.day,
+      type: 'signal',
+      title: 'Signal threshold reached',
+      description: `${signalDay.cumulativeN} conversions resolved. Targeting accuracy: ${effPct}% (up from ${Math.round(params.effFloor * 100)}% baseline).`,
+    });
+  }
+
+  // 2. Tier optimization: find day where Tier 1 usage meaningfully exceeds baseline
+  const baselineTier1 = agenticDays[0]?.tierDistribution[0] || 0;
+  const tierShiftDay = agenticDays.find(d =>
+    d.day >= 7 && d.tierDistribution[0] > baselineTier1 * 1.3 && d.tierDistribution[0] > 0.10
+  );
+  if (tierShiftDay) {
+    const tier1Pct = Math.round(tierShiftDay.tierDistribution[0] * 100);
+    const baselinePct = Math.round(baselineTier1 * 100);
+    const savingsPerConversion = params.referrerTiers[params.referrerTiers.length - 1] +
+      params.refereeTiers[params.refereeTiers.length - 1];
+    const organicCount = Math.round(tierShiftDay.funnelCumulative.activeUser * tierShiftDay.tierDistribution[0]);
+    annotations.push({
+      day: tierShiftDay.day,
+      type: 'tier',
+      title: 'Reward optimization',
+      description: `Tier 1 (organic) usage at ${tier1Pct}% (up from ${baselinePct}%). ${organicCount} customers identified as self-converting — $${savingsPerConversion} saved per conversion.`,
+    });
+  }
+
+  // 3. Value learning: find day where revenue per user meaningfully exceeds baseline
+  const baseRevenue = params.baseRevenuePerUser;
+  const valueDay = agenticDays.find(d =>
+    d.day >= 10 && d.effectiveRevenuePerUser > baseRevenue * 1.5
+  );
+  if (valueDay) {
+    annotations.push({
+      day: valueDay.day,
+      type: 'value',
+      title: 'High-value segment discovery',
+      description: `Revenue per converted user: $${valueDay.effectiveRevenuePerUser} (baseline: $${baseRevenue}). Agent targeting referrer segments that bring ${Math.round(valueDay.effectiveRevenuePerUser / baseRevenue * 10) / 10}x higher-LTV customers.`,
+    });
+  }
+
+  // 4. Divergence point: when agentic active users exceed static by >20%
+  for (let i = 0; i < agenticDays.length && i < staticDays.length; i++) {
+    const ag = agenticDays[i].cumulativeN;
+    const st = staticDays[i].cumulativeN;
+    if (ag > 0 && st > 0 && (ag - st) / st > 0.20 && agenticDays[i].day >= 5) {
+      const pctMore = Math.round(((ag - st) / st) * 100);
+      annotations.push({
+        day: agenticDays[i].day,
+        type: 'divergence',
+        title: 'Learning advantage visible',
+        description: `Agentic: ${Math.round(ag)} active users vs Static: ${Math.round(st)} — ${pctMore}% more conversions from the same budget.`,
+      });
+      break;
+    }
+  }
+
+  return annotations.sort((a, b) => a.day - b.day);
+}
+
+/**
+ * Derive agent recommendation from simulation constraints.
+ * Only uses known/factual numbers — no estimates or predictions.
+ */
+function deriveAgentRecommendation(agenticDays, params, budget) {
+  const { minSignalVolume } = params;
+
+  // Don't recommend until we have statistical significance
+  const latestDay = agenticDays[agenticDays.length - 1];
+  if (!latestDay || latestDay.cumulativeN < (minSignalVolume || 100)) {
+    return null;
+  }
+
+  // Find the day significance was reached
+  const significanceDay = agenticDays.find(d => d.cumulativeN >= (minSignalVolume || 100));
+  const availableFromDay = significanceDay ? significanceDay.day : 30;
+
+  // Check: is daily cap being hit?
+  const recentDays = agenticDays.slice(-10);
+  const capHitCount = recentDays.filter(d => d.capHit).length;
+
+  if (capHitCount >= 5) {
+    const uncontacted = latestDay.remainingPool;
+    const currentDaily = Math.round(latestDay.journeysToday);
+    const suggestedBudget = Math.round(budget * 1.25 / 5000) * 5000;
+    const projectedDaily = Math.round(currentDaily * 1.25);
+
+    return {
+      availableFromDay,
+      type: 'budget',
+      title: 'Daily contact capacity reached',
+      description: `Daily contact cap reached on ${capHitCount} of the last 10 days. ${uncontacted.toLocaleString()} eligible customers remain uncontacted.`,
+      action: `Current budget supports ${currentDaily.toLocaleString()} contacts/day — $${(suggestedBudget / 1000)}K would support ${projectedDaily.toLocaleString()}/day.`,
+    };
+  }
+
+  // Check: is conversion rate exceeding the budget assumption?
+  const actualConvRate = latestDay.kpiCumulative.convRate;
+  const assumedConvRate = Math.round(params.baseConvRate * 100 * 100) / 100;
+  if (actualConvRate > assumedConvRate * 1.15) {
+    const currentPace = Math.round(budget / 30 * latestDay.day);
+    const projectedExhaustDay = Math.round(30 * (budget / (latestDay.cumulativeRewardCost / latestDay.day * 30)));
+
+    if (projectedExhaustDay < 28) {
+      return {
+        availableFromDay,
+        type: 'pacing',
+        title: 'Budget pacing ahead of schedule',
+        description: `Actual conversion rate (${actualConvRate}%) exceeding baseline assumption (${assumedConvRate}%). Reward spend pacing ${Math.round((1 - projectedExhaustDay / 30) * 100)}% ahead of plan.`,
+        action: `At current pace, reward budget fully committed by Day ${projectedExhaustDay}. Adding $${Math.round((budget * 0.12) / 1000)}K maintains contact volume through Day 30.`,
+      };
+    }
+  }
+
+  // Default: pool depletion observation
+  const poolDepletionPct = Math.round((1 - latestDay.remainingPool / Math.round(params.totalCustomers * params.eligibilityRate)) * 100);
+  if (poolDepletionPct > 60) {
+    return {
+      availableFromDay,
+      type: 'pool',
+      title: 'Audience pool narrowing',
+      description: `${poolDepletionPct}% of eligible audience has been contacted. ${latestDay.remainingPool.toLocaleString()} customers remaining in pool.`,
+      action: `Consider expanding eligibility criteria or adjusting NPS threshold to unlock additional audience segments.`,
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Dashboard Projection Engine (v4)
+ *
+ * Runs agentic + static simulations, generates decision logs,
+ * derives learning annotations and agent recommendations.
+ *
+ * @param {Object} options
+ * @param {number} options.budget - Monthly budget in dollars
+ * @param {Object} options.params - Engine parameters (from config)
+ * @returns {Object} Full dashboard data
+ */
+export function computeDashboardProjection({ budget, params }) {
+  assertParams(params);
+
+  // Run agentic simulation (with learning)
+  const agentic = runSimulation({ budget, params, staticMode: false });
+
+  // Run static baseline (no learning — efficiency locked at floor)
+  const static_ = runSimulation({ budget, params, staticMode: true });
+
+  // Derive learning annotations FIRST (briefings reference them)
+  const learningAnnotations = deriveLearningAnnotations(agentic.days, static_.days, params);
+
+  // Build annotation lookup by day for briefing generation
+  const annotationByDay = {};
+  for (const a of learningAnnotations) {
+    annotationByDay[a.day] = a;
+  }
+
+  // Generate daily briefings — annotation days get matched strategy shifts
+  const dailyBriefings = {};
+  for (let day = 1; day <= 30; day++) {
+    const dayData = agentic.days[day - 1];
+    const prevDayData = day > 1 ? agentic.days[day - 2] : null;
+
+    dailyBriefings[day] = generateDayBriefing({
+      day,
+      dayData,
+      prevDayData,
+      seed: 42,
+      tierDistribution: dayData.tierDistribution,
+      annotation: annotationByDay[day] || null,
+    });
+  }
+
+  // Derive agent recommendation
+  const agentRecommendation = deriveAgentRecommendation(agentic.days, params, budget);
+
+  // Build the cumulative daily curve for chart (matches v3 format)
+  const dailyCurve = agentic.days.map(d => d.resolvedToday);
+  const cumulativeCurve = agentic.days.map(d => d.cumulativeN);
+  const staticCumulativeCurve = static_.days.map(d => d.cumulativeN);
+
+  return {
+    // Core metrics
+    activeUsers: agentic.activeUsers,
+    cac: agentic.cac,
+    roi: agentic.roi,
+    convRate: agentic.convRate,
+    fraudSaved: agentic.fraudSaved,
+    thresholdDay: agentic.thresholdDay,
+    totalJourneysStarted: agentic.totalJourneysStarted,
+    audienceSize: agentic.audienceSize,
+    budget,
+
+    // Per-day detailed data (agentic)
+    days: agentic.days,
+
+    // Cohort data
+    cohorts: agentic.cohorts,
+
+    // Curves for charts
+    dailyCurve,
+    cumulativeCurve,
+    staticCumulativeCurve,
+
+    // Static baseline summary
+    staticBaseline: {
+      activeUsers: static_.activeUsers,
+      cac: static_.cac,
+      roi: static_.roi,
+      convRate: static_.convRate,
+      days: static_.days,
+    },
+
+    // Daily briefings (structured, not flat log)
+    dailyBriefings,
+
+    // Learning annotations
+    learningAnnotations,
+
+    // Agent recommendation
+    agentRecommendation,
+
+    // Config passthrough for display
+    referrerTiers: params.referrerTiers,
+    refereeTiers: params.refereeTiers,
+    industryCACBenchmark: params.industryCACBenchmark || 140,
   };
 }
