@@ -92,7 +92,6 @@ export default function DashboardPage({ config, onHome }) {
                   yLabels={[0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(maxVal * f))}
                   gridlines="from-labels"
                   fill={{ color: 'var(--color-brand)', opacity: 0.07 }}
-                  tooltip={false}
                 />
               );
             })()}
