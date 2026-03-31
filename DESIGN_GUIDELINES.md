@@ -11,10 +11,6 @@ These are **rules** — not suggestions. Follow them exactly for all CSS and UI 
 
 **Personality**: Premium, confident, warm. Think Cartier meets Stripe — luxury meets fintech. The product is an agentic referral engine. The design should feel calm, intelligent, and inevitable.
 
-## Important: Use Tailwind Classes
-
-All new code must use **Tailwind utility classes** — never inline `style={{}}`. Use the `cn()` helper from `src/lib/utils.js` for conditional classes. Use CVA (`class-variance-authority`) for component variants.
-
 ---
 
 ## Typography
