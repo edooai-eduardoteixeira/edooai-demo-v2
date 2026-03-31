@@ -125,9 +125,9 @@ export default function Chart({
   if (title) padding.top = Math.max(padding.top, 30);
 
   const width = Math.round(height * aspectRatio);
-  const chartLeft = padding.left;
+  const chartLeft = 0;
   const chartTop = padding.top;
-  const chartW = width - padding.left - padding.right;
+  const chartW = width - padding.right;
   const chartH = height - padding.top - padding.bottom;
   const chartBottom = chartTop + chartH;
 
@@ -302,8 +302,8 @@ export default function Chart({
       {yLabelItems.map((item, i) => (
         <text
           key={`y-${i}`}
-          x={chartLeft - 6}
-          y={item.y + 4}
+          x={-6}
+          y={item.y < chartTop + 5 ? item.y + 14 : item.y + 4}
           fontSize={TOKENS.axis.fontSize}
           fill={TOKENS.axis.color}
           textAnchor="end"
@@ -471,7 +471,7 @@ export default function Chart({
             const textLen = tooltipText.length * 6.5 + 16;
             const boxW = Math.max(textLen, 48);
             const boxX = Math.max(
-              chartLeft - padding.left,
+              -padding.left,
               Math.min(chartLeft + chartW - boxW, hoveredDay.x - boxW / 2),
             );
             return (
@@ -513,7 +513,7 @@ export default function Chart({
       {endpointLabel && (
         <text
           x={lastPt.x - 14}
-          y={Math.max(chartTop + 10, lastPt.y - 10)}
+          y={Math.max(10, lastPt.y - 10)}
           fontSize={TOKENS.axis.fontSize}
           fill={TOKENS.endpoint.color}
           fontWeight="600"
