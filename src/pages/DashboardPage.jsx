@@ -134,7 +134,7 @@ function KPISelector({ selected, onSelect, dayData }) {
 // ═══════════════════════════════════════════════════════════════════════
 // HERO CHART — renders the selected KPI's 30-day trend
 // ═══════════════════════════════════════════════════════════════════════
-function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve }) {
+function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve, height }) {
   // Build the data slice for the selected KPI
   let slice, yMax, formatLabel;
 
@@ -166,6 +166,7 @@ function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve }) {
     <Chart
       data={slice}
       maxValue={yMax}
+      height={height}
       padding={{ left: 50 }}
       xLabels={[1, 10, 20, 30].filter(d => d <= currentDay).map(d => ({ value: String(d), at: d }))}
       yLabels={yLabels.map(v => {
@@ -182,7 +183,7 @@ function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve }) {
 // ═══════════════════════════════════════════════════════════════════════
 // COHORT CHART — funnel performance over time
 // ═══════════════════════════════════════════════════════════════════════
-function CohortChart({ cohorts, currentDay }) {
+function CohortChart({ cohorts, currentDay, height }) {
   const repDays = [2, 5, 10, 15, 20, 25].filter(d => d <= currentDay && cohorts[d]);
   if (repDays.length === 0 && cohorts[1]) repDays.push(1);
 
@@ -215,6 +216,7 @@ function CohortChart({ cohorts, currentDay }) {
       <Chart
         series={cohortSeries}
         maxValue={maxPct}
+        height={height}
         padding={{ left: 40 }}
         xLabels={[
           { value: '+0d', at: 1 },
@@ -541,8 +543,8 @@ export default function DashboardPage({ config, onHome }) {
       </header>
 
       <main className="flex-1 pb-8">
-        {/* ── POSITION 1: RESULTS — one unified area, fixed height ── */}
-        <div className="bg-surface border border-border rounded-lg p-5 mb-5 h-[340px]">
+        {/* ── POSITION 1: RESULTS — one unified area ── */}
+        <div className="bg-surface border border-border rounded-lg p-5 mb-5 h-[380px]">
           <div className="flex gap-5 h-full">
             {/* LEFT COLUMN (60%): KPI selector + hero chart */}
             <div className="flex-[3] min-w-0 flex flex-col">
@@ -551,13 +553,14 @@ export default function DashboardPage({ config, onHome }) {
                 onSelect={setSelectedKPI}
                 dayData={dayData}
               />
-              {/* Hero chart fills remaining height — generous spacing per design guideline */}
+              {/* Hero chart fills remaining height */}
               <div className="mt-4 flex-1 min-h-0">
                 <HeroChart
                   selectedKPI={selectedKPI}
                   days={projection.days}
                   currentDay={selectedDay}
                   cumulativeCurve={projection.cumulativeCurve}
+                  height={250}
                 />
               </div>
             </div>
@@ -568,7 +571,7 @@ export default function DashboardPage({ config, onHome }) {
             {/* MIDDLE COLUMN (20%): Referral Funnel */}
             <div className="flex-1 min-w-0 flex flex-col">
               <SectionLabel>Referral Funnel</SectionLabel>
-              <div className="mt-1 flex-1 min-h-0">
+              <div className="mt-1 flex-1 min-h-0 overflow-hidden">
                 <FunnelChart
                   stages={[
                     { label: 'Eligible', value: projection.audienceSize },
@@ -590,6 +593,7 @@ export default function DashboardPage({ config, onHome }) {
               <CohortChart
                 cohorts={projection.cohorts}
                 currentDay={selectedDay}
+                height={290}
               />
             </div>
           </div>
