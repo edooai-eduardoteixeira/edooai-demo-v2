@@ -24,8 +24,6 @@ import { useState, useCallback, useLayoutEffect, useRef, useId } from 'react';
  */
 
 // --- Design tokens (from DESIGN.md) ---
-// Font sizes here are in physical CSS pixels — the component converts
-// them to viewBox units at render time via pxScale.
 const TOKENS = {
   line: { color: 'var(--color-brand)', width: 2.5 },
   axis: { fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font-family)' },
