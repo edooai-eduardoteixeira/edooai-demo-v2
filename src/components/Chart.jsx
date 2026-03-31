@@ -1,4 +1,4 @@
-import { useState, useCallback, useId, useRef, useEffect } from 'react';
+import { useState, useCallback, useId, useRef, useEffect, useLayoutEffect } from 'react';
 
 /**
  * Reusable chart component that enforces the Vincor design system.
@@ -150,7 +150,8 @@ const anchorTransform = {
 export default function Chart({
   data,
   title,
-  height = DEFAULT_HEIGHT,
+  height: heightProp = DEFAULT_HEIGHT,
+  cssHeight,
   padding: paddingProp,
   maxValue,
   xLabels,
@@ -165,9 +166,35 @@ export default function Chart({
 }) {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [animated, setAnimated] = useState(false);
+  const [containerDims, setContainerDims] = useState(null);
+  const containerRef = useRef(null);
   const svgRef = useRef(null);
   const uid = useId();
   const safeId = uid.replace(/:/g, '_');
+
+  // Measure container when cssHeight is used — match viewBox to container aspect ratio
+  useLayoutEffect(() => {
+    if (!cssHeight) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      setContainerDims({ width: rect.width, height: rect.height });
+    }
+    const observer = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      if (width > 0 && height > 0) {
+        setContainerDims({ width, height });
+      }
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [cssHeight]);
+
+  // Compute viewBox height: match container aspect ratio when cssHeight is set
+  const height = (cssHeight && containerDims)
+    ? containerDims.height / containerDims.width * VIEWBOX_WIDTH
+    : heightProp;
 
   // Entrance animation: draw line L→R
   useEffect(() => {
@@ -259,13 +286,23 @@ export default function Chart({
   const pathLen = chartW * 1.2;
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div
+      ref={containerRef}
+      style={{
+        position: 'relative',
+        ...(cssHeight ? { height: cssHeight } : {}),
+      }}
+    >
       {/* ── SVG: visual elements only (no text) ── */}
       <svg
         ref={svgRef}
         viewBox={viewBox}
         preserveAspectRatio="xMidYMid meet"
-        style={{ width: '100%', height: 'auto', display: 'block' }}
+        style={{
+          width: '100%',
+          height: cssHeight ? '100%' : 'auto',
+          display: 'block',
+        }}
       >
         <defs>
           {fill && (
