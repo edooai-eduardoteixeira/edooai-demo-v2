@@ -1,9 +1,13 @@
 /**
- * Deterministic decision generator for the dashboard feed.
- * Uses a seeded PRNG so the same day + index always produces the same record.
+ * Decision generator for the Live Decisions feed.
+ * Produces a daily briefing structure, not a flat log.
  *
- * Each decision includes REASONING — the agent's logic connecting
- * customer data → strategy config → guardrails → action.
+ * 5 agent decision types (judgment only, no guardrail events):
+ *   daily_plan  — campaign-level briefing for the day
+ *   contact     — agent contacted a customer (4 sub-decisions: message, tier, channel, timing)
+ *   follow_up   — agent sent a follow-up within fatigue constraints
+ *   holdback    — agent decided NOT to contact (with re-entry timing)
+ *   recommendation — agent suggests changing a guardrail based on data
  */
 
 const FIRST_NAMES = [
@@ -20,6 +24,10 @@ const LAST_INITIALS = [
   'B', 'N', 'D', 'G', 'H', 'F', 'A', 'V', 'Z', 'O',
 ];
 
+const MESSAGE_APPROACHES = [
+  'social proof', 'reward-led', 'urgency', 'personal milestone', 'community',
+];
+
 // Simple seeded PRNG (mulberry32)
 function mulberry32(seed) {
   return function () {
@@ -32,9 +40,7 @@ function mulberry32(seed) {
 }
 
 function pickName(rng) {
-  const firstName = FIRST_NAMES[Math.floor(rng() * FIRST_NAMES.length)];
-  const lastInitial = LAST_INITIALS[Math.floor(rng() * LAST_INITIALS.length)];
-  return `${firstName} ${lastInitial}.`;
+  return `${FIRST_NAMES[Math.floor(rng() * FIRST_NAMES.length)]} ${LAST_INITIALS[Math.floor(rng() * LAST_INITIALS.length)]}.`;
 }
 
 function pickTime(rng) {
@@ -43,7 +49,7 @@ function pickTime(rng) {
 
 function pickChannel(rng) {
   const r = rng();
-  return r < 0.45 ? 'push' : r < 0.80 ? 'email' : 'sms';
+  return r < 0.40 ? 'push' : r < 0.72 ? 'email' : r < 0.90 ? 'sms' : 'in-app';
 }
 
 function pickTier(rng, tierDistribution) {
@@ -57,229 +63,229 @@ function pickTier(rng, tierDistribution) {
   return 0;
 }
 
-// ─── Reasoning builders ──────────────────────────────────────────────
-// Each builds reasoning from the customer context + agent logic.
-// The reasoning answers: why THIS person, why THIS channel, why THIS tier, why NOW.
-
-function buildContactReasoning(rng, { channel, tierIndex, time, day }) {
+// ─── Contact reasoning ───────────────────────────────────────────────
+function buildContactReasoning(rng, { channel, tierIndex, hour, minute }) {
   const nps = 7 + Math.floor(rng() * 3);
   const tenure = 90 + Math.floor(rng() * 400);
   const pastReferrals = Math.floor(rng() * 4);
   const txLast30 = 2 + Math.floor(rng() * 8);
-  const channelOpenRate = 40 + Math.floor(rng() * 35);
+  const channelRate = 40 + Math.floor(rng() * 35);
 
-  // Why this person: customer profile signals
   const whyPerson = pastReferrals > 0
     ? `${pastReferrals} prior referral${pastReferrals > 1 ? 's' : ''}, NPS ${nps}, ${txLast30} transactions in last 30 days`
     : `NPS ${nps}, ${txLast30} transactions in last 30 days, ${tenure}-day tenure`;
 
-  // Why this channel: data-driven channel selection
-  const whyChannel = `${channel} selected — ${channelOpenRate}% open rate for this customer's segment`;
+  const whyChannel = `${channel} — ${channelRate}% open rate for this segment`;
 
-  // Why this tier: reward matches conversion difficulty
   const tierReasons = [
-    'organic candidate — high propensity, no incentive needed',
-    'light incentive — moderate propensity, small nudge sufficient',
-    'standard incentive — lower propensity segment, reward drives conversion',
-    'max incentive — hard-to-convert segment, high expected LTV justifies cost',
+    'organic candidate, no incentive needed',
+    'light incentive, moderate propensity',
+    'standard incentive, reward drives conversion',
+    'max incentive, high LTV justifies cost',
   ];
-  const whyTier = `Tier ${tierIndex + 1}: ${tierReasons[tierIndex] || tierReasons[0]}`;
 
-  return [whyPerson, whyChannel, whyTier].join('. ') + '.';
+  return `${whyPerson}. ${whyChannel}. Tier ${tierIndex + 1}: ${tierReasons[tierIndex] || tierReasons[0]}.`;
 }
 
-function buildReminderReasoning(rng, { channel, day }) {
-  const daysSinceContact = 1 + Math.floor(rng() * 4);
-  const sharedLink = rng() > 0.4;
-  const touchpoint = sharedLink ? 'link shared but referee inactive' : 'no share yet after first contact';
-  const guardrail = `Within fatigue guardrail: touchpoint ${sharedLink ? 2 : 2} of max 2 per stage`;
-
-  return `${touchpoint} (${daysSinceContact}d since contact). ${guardrail}. ${channel} re-engagement — rest period cleared.`;
+// ─── Follow-up reasoning ─────────────────────────────────────────────
+function buildFollowUpReasoning(rng, { channel, funnelStage }) {
+  const daysSince = 1 + Math.floor(rng() * 4);
+  const stageText = funnelStage === 'link_shared'
+    ? `link shared ${daysSince}d ago, referee hasn't signed up`
+    : `no referral shared after ${daysSince}d`;
+  return `${stageText}. ${channel} follow-up — rest period cleared, within touchpoint limit (2 of 2 per stage).`;
 }
 
-function buildHoldbackReasoning(rng, { day }) {
+// ─── Holdback reasoning ──────────────────────────────────────────────
+function buildHoldback(rng, { day }) {
   const reasons = [
     () => {
       const ticketDay = Math.max(1, day - Math.floor(rng() * 5));
       return {
-        short: `Open support ticket since Day ${ticketDay}`,
-        full: `Active support case opened Day ${ticketDay}. Audience protection guardrail: customers with open tickets are excluded. Will re-evaluate when ticket closes.`,
+        reason: `Open support ticket since Day ${ticketDay}`,
+        reasoning: `Active support case opened Day ${ticketDay}. Audience protection: customers with open tickets excluded. Will re-evaluate when ticket closes.`,
+        reenter: 'When ticket closes',
       };
     },
     () => {
       const nps = 3 + Math.floor(rng() * 3);
       return {
-        short: `NPS score ${nps} — below threshold`,
-        full: `NPS score ${nps}, below the configured threshold of 6. Contacting detractors risks negative brand association. Customer excluded until next NPS survey.`,
+        reason: `NPS score ${nps} — below threshold`,
+        reasoning: `NPS ${nps}, below configured threshold of 6. Contacting detractors risks brand damage. Excluded until next NPS survey.`,
+        reenter: 'Next NPS survey',
       };
     },
     () => {
       const daysAgo = 1 + Math.floor(rng() * 2);
       return {
-        short: `Contacted ${daysAgo} days ago — rest period active`,
-        full: `Last contacted ${daysAgo} day${daysAgo > 1 ? 's' : ''} ago. Customer fatigue guardrail: minimum 2-day rest period between touchpoints. Next eligible contact: Day ${day + (2 - daysAgo)}.`,
+        reason: `Contacted ${daysAgo}d ago — rest period`,
+        reasoning: `Last contacted ${daysAgo} day${daysAgo > 1 ? 's' : ''} ago. Fatigue guardrail: 2-day minimum rest between touchpoints. Next eligible: Day ${day + (2 - daysAgo)}.`,
+        reenter: `Day ${day + (2 - daysAgo)}`,
       };
     },
     () => ({
-      short: 'Account flagged for compliance review',
-      full: 'Compliance hold active on this account. Guardrail: all marketing communications paused until hold is lifted by compliance team.',
+      reason: 'Compliance hold active',
+      reasoning: 'Compliance hold on this account. All marketing paused until hold is lifted.',
+      reenter: 'When hold is lifted',
     }),
-    () => {
-      const inactiveDays = 90 + Math.floor(rng() * 30);
-      return {
-        short: `Inactive for ${inactiveDays} days`,
-        full: `No activity for ${inactiveDays} days, exceeding the 90-day inactivity threshold. Contacting inactive customers has <0.1% conversion rate. Excluded from outreach pool.`,
-      };
-    },
     () => ({
-      short: 'Already has active offer in flight',
-      full: 'Customer has an unexpired referral offer (sent 3 days ago). Financial controls guardrail: max 1 outstanding offer per customer. Will re-enter pool if offer expires without conversion.',
+      reason: 'Active offer in flight',
+      reasoning: 'Customer has an unexpired referral offer (sent 3 days ago). Max 1 outstanding offer per customer. Will re-enter if offer expires.',
+      reenter: 'When current offer resolves',
     }),
   ];
-
-  const picked = reasons[Math.floor(rng() * reasons.length)]();
-  return picked;
+  return reasons[Math.floor(rng() * reasons.length)]();
 }
 
-function buildConversionReasoning(rng, { tierIndex, contactedDay, day }) {
-  const channel = pickChannel(rng);
-  const shareDay = contactedDay + 1 + Math.floor(rng() * 2);
-  const signupDay = shareDay + Math.floor(rng() * 2);
-  const txAmount = 15 + Math.floor(rng() * 80);
+// ─── Strategy shift narratives ───────────────────────────────────────
+function buildStrategyShift(rng, { day, efficiency }) {
+  if (day <= 1) return 'Initial targeting: broad exploration across all eligible segments.';
+  if (day <= 5) return 'Early data collection. Broad targeting with slight bias toward high-NPS customers.';
 
-  return `Full journey: contacted Day ${contactedDay} via ${channel} → referral shared Day ${shareDay} → referee signed up Day ${signupDay} → first transaction ($${txAmount}) today. Tier ${tierIndex + 1} reward approved — both parties credited.`;
-}
-
-function buildRewardBlockReasoning(rng) {
-  const reasons = [
-    '3 conversions from this referrer in 24 hours. Suspicious escrow guardrail triggered: hold payout for 7 days. If signals clear, reward releases automatically.',
-    'Referee device fingerprint matches referrer\'s IP range. Self-referral blocker (standard mode): identical network detected. Reward held pending manual review.',
-    'Referral link used 6 times, exceeding the 5-payout cap. Link auto-invalidated. Existing approved conversions unaffected — this new conversion held for review.',
+  const shifts = [
+    `High-tenure segment (+${Math.floor(rng() * 15 + 5)}% allocation) after Day ${day - 1} showed ${(1.5 + rng()).toFixed(1)}x conversion rate for 6+ month customers.`,
+    `Shifted channel mix: push notifications up ${Math.floor(rng() * 10 + 8)}% — outperforming email ${(1.8 + rng() * 0.5).toFixed(1)}x for customers with 5+ monthly transactions.`,
+    `Tier 1 (organic) allocation increased to ${Math.floor(15 + rng() * 10)}% — identified ${Math.floor(500 + rng() * 2000)} customers who convert without incentive.`,
+    `Targeting accuracy at ${Math.round(efficiency * 100)}% (up from 30% baseline). Concentrating outreach on segments with highest observed conversion rates.`,
+    `Morning send window (9-11am) showing ${Math.floor(rng() * 20 + 15)}% higher open rates. Reallocating ${Math.floor(rng() * 30 + 20)}% of daily contacts to this window.`,
   ];
-  return reasons[Math.floor(rng() * reasons.length)];
+  return shifts[Math.floor(rng() * shifts.length)];
 }
 
 /**
- * Generate a full set of decisions for a given day.
+ * Generate a daily briefing with categorized decisions.
+ *
+ * Returns: {
+ *   dailyPlan: { ... },
+ *   contacts: [ ... ],
+ *   followUps: [ ... ],
+ *   holdbacks: [ ... ],
+ *   conversions: [ ... ],
+ *   recommendation: { ... } | null,
+ * }
  */
-export function generateDayDecisions({ day, count, seed = 42, tierDistribution, outcomes }) {
+export function generateDayBriefing({ day, dayData, prevDayData, seed = 42, tierDistribution }) {
   const rng = mulberry32(seed * 10000 + day * 777);
-  const decisions = [];
-  let id = day * 1000;
 
-  const contactCount = Math.max(4, Math.round(count * 0.45));
-  const reminderCount = Math.max(1, Math.round(count * 0.15));
-  const holdbackCount = Math.max(1, Math.round(count * 0.12));
-  const conversionCount = Math.max(0, Math.round(count * 0.10));
-  const rewardBlockCount = day >= 5 ? Math.max(0, Math.round(count * 0.03)) : 0;
-  const hasExpirations = day >= 3;
+  const contactCount = dayData?.journeysToday || 1788;
+  const eligibleCount = dayData?.funnelCumulative?.contacted
+    ? Math.round(dayData.remainingPool + contactCount)
+    : 423500;
+  const budgetToday = dayData?.cumulativeSpend
+    ? Math.round((dayData.cumulativeSpend - (prevDayData?.cumulativeSpend || 0)))
+    : 5000;
+  const efficiency = dayData?.efficiency || 0.3;
 
-  // --- Contacts ---
-  for (let i = 0; i < contactCount; i++) {
+  // Daily plan
+  const dailyPlan = {
+    contactCount,
+    eligibleCount,
+    budgetToday,
+    strategyShift: buildStrategyShift(rng, { day, efficiency }),
+  };
+
+  // Sample contacts (~12)
+  const sampleContactCount = Math.min(12, Math.max(4, Math.round(contactCount * 0.007)));
+  const contacts = [];
+  for (let i = 0; i < sampleContactCount; i++) {
     const tierIndex = pickTier(rng, tierDistribution);
     const channel = pickChannel(rng);
     const time = pickTime(rng);
-    decisions.push({
-      id: id++,
-      type: 'contact',
+    const messageApproach = MESSAGE_APPROACHES[Math.floor(rng() * MESSAGE_APPROACHES.length)];
+    contacts.push({
+      id: day * 1000 + i,
       name: pickName(rng),
-      day,
-      ...time,
       channel,
       tierIndex,
       tierLabel: `Tier ${tierIndex + 1}`,
-      reasoning: buildContactReasoning(rng, { channel, tierIndex, time, day }),
+      messageApproach,
+      ...time,
+      reasoning: buildContactReasoning(rng, { channel, tierIndex, ...time }),
     });
   }
 
-  // --- Reminders ---
-  for (let i = 0; i < reminderCount; i++) {
+  // Follow-ups (~4)
+  const followUps = [];
+  const followUpCount = day >= 2 ? Math.min(4, Math.max(1, Math.round(sampleContactCount * 0.3))) : 0;
+  for (let i = 0; i < followUpCount; i++) {
     const channel = pickChannel(rng);
     const time = pickTime(rng);
-    const sharedLink = rng() > 0.4;
-    decisions.push({
-      id: id++,
-      type: 'reminder',
+    const funnelStage = rng() > 0.4 ? 'link_shared' : 'no_share';
+    followUps.push({
+      id: day * 1000 + 100 + i,
       name: pickName(rng),
-      day,
-      ...time,
       channel,
-      detail: sharedLink
-        ? 'Referral link shared — referee hasn\'t signed up yet'
-        : 'No referral shared yet — 2nd touchpoint',
-      reasoning: buildReminderReasoning(rng, { channel, day }),
+      funnelStage,
+      funnelStageLabel: funnelStage === 'link_shared' ? 'Link shared, referee inactive' : 'No referral shared yet',
+      ...time,
+      reasoning: buildFollowUpReasoning(rng, { channel, funnelStage }),
     });
   }
 
-  // --- Holdbacks ---
+  // Holdbacks (~3)
+  const holdbacks = [];
+  const holdbackCount = Math.min(3, Math.max(1, Math.round(sampleContactCount * 0.25)));
   for (let i = 0; i < holdbackCount; i++) {
     const time = pickTime(rng);
-    const { short, full } = buildHoldbackReasoning(rng, { day });
-    decisions.push({
-      id: id++,
-      type: 'holdback',
+    const hb = buildHoldback(rng, { day });
+    holdbacks.push({
+      id: day * 1000 + 200 + i,
       name: pickName(rng),
-      day,
       ...time,
-      reason: short,
-      reasoning: full,
+      ...hb,
     });
   }
 
-  // --- Conversions ---
-  // No conversions on Day 1-2 (resolution lag: offers take 1-3 days to resolve)
-  const actualConversions = day <= 2 ? 0 : Math.min(conversionCount, Math.ceil((outcomes?.convertedRate || 0.05) * count * 3));
-  for (let i = 0; i < actualConversions; i++) {
-    const time = pickTime(rng);
-    const tierIndex = pickTier(rng, tierDistribution);
+  // Conversions (from engine data, shown as outcomes)
+  const resolvedToday = dayData?.resolvedToday || 0;
+  const conversions = [];
+  const convCount = Math.min(5, resolvedToday);
+  for (let i = 0; i < convCount; i++) {
     const contactedDay = Math.max(1, day - 1 - Math.floor(rng() * 5));
-    decisions.push({
-      id: id++,
-      type: 'conversion',
+    const tierIndex = pickTier(rng, tierDistribution);
+    const channel = pickChannel(rng);
+    const txAmount = 15 + Math.floor(rng() * 80);
+    conversions.push({
+      id: day * 1000 + 300 + i,
       name: pickName(rng),
-      day,
-      ...time,
       tierIndex,
       tierLabel: `Tier ${tierIndex + 1}`,
       contactedDay,
-      reasoning: buildConversionReasoning(rng, { tierIndex, contactedDay, day }),
+      channel,
+      txAmount,
     });
   }
 
-  // --- Reward blocks ---
-  for (let i = 0; i < rewardBlockCount; i++) {
-    const time = pickTime(rng);
-    const fullReason = buildRewardBlockReasoning(rng);
-    decisions.push({
-      id: id++,
-      type: 'reward_blocked',
-      name: pickName(rng),
-      day,
-      ...time,
-      reason: fullReason.split('.')[0],
-      reasoning: fullReason,
-    });
-  }
+  // Recommendation (rare — only when data supports it, from engine)
+  // For now: null. The AgentInsight component handles this.
+  // Will be moved here in a future iteration.
+  const recommendation = null;
 
-  // --- Expiration batch ---
-  if (hasExpirations) {
-    const expiredCount = Math.max(3, Math.round(count * 0.8));
-    decisions.push({
-      id: id++,
-      type: 'expiration_batch',
-      day,
-      hour: 17,
-      minute: 0,
-      count: expiredCount,
-      reasoning: `${expiredCount} offers reached the 14-day expiration window without conversion. Budget freed back to pool for reallocation. These customers re-enter the eligible pool after a rest period.`,
-    });
-  }
-
-  decisions.sort((a, b) => a.hour * 60 + a.minute - (b.hour * 60 + b.minute));
-  return decisions;
+  return {
+    day,
+    dailyPlan,
+    contacts,
+    followUps,
+    holdbacks,
+    conversions,
+    recommendation,
+  };
 }
 
-// Legacy export
+// Legacy exports for backward compat
+export function generateDayDecisions({ day, count, seed = 42, tierDistribution, outcomes }) {
+  const briefing = generateDayBriefing({ day, seed, tierDistribution });
+  // Flatten to legacy format
+  const all = [
+    ...briefing.contacts.map(c => ({ ...c, type: 'contact', day })),
+    ...briefing.followUps.map(f => ({ ...f, type: 'follow_up', day })),
+    ...briefing.holdbacks.map(h => ({ ...h, type: 'holdback', day })),
+    ...briefing.conversions.map(c => ({ ...c, type: 'conversion', day })),
+  ];
+  all.sort((a, b) => (a.hour * 60 + a.minute) - (b.hour * 60 + b.minute));
+  return all;
+}
+
 export function generateDecision({ day, index, seed = 42, tierDistribution, outcomes }) {
   const decisions = generateDayDecisions({ day, count: index + 1, seed, tierDistribution, outcomes });
   return decisions[decisions.length - 1];

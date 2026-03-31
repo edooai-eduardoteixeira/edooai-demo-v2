@@ -1,4 +1,4 @@
-import { generateDayDecisions } from './nameGenerator.js';
+import { generateDayBriefing } from './nameGenerator.js';
 
 /**
  * Projection Engine v3/v4 — Journey Model with Distributed Resolution & Value Learning
@@ -771,35 +771,19 @@ export function computeDashboardProjection({ budget, params }) {
   // Run static baseline (no learning — efficiency locked at floor)
   const static_ = runSimulation({ budget, params, staticMode: true });
 
-  // Generate decision logs for each day
-  const decisionLog = {};
+  // Generate daily briefings for each day
+  const dailyBriefings = {};
   for (let day = 1; day <= 30; day++) {
     const dayData = agentic.days[day - 1];
-    const totalContacted = dayData.journeysToday;
-    // Show a sample: 15-20 decisions per day (for the feed)
-    const count = Math.min(Math.max(20, Math.round(totalContacted * 0.015)), 35);
+    const prevDayData = day > 1 ? agentic.days[day - 2] : null;
 
-    // Outcome rates for this day
-    const convRateForDay = dayData.kpiCumulative.convRate / 100 || 0.02;
-    const pendingRate = day > 20 ? 0.05 : (30 - day) / 30 * 0.3;
-
-    decisionLog[day] = generateDayDecisions({
+    dailyBriefings[day] = generateDayBriefing({
       day,
-      count,
+      dayData,
+      prevDayData,
       seed: 42,
       tierDistribution: dayData.tierDistribution,
-      outcomes: {
-        convertedRate: Math.min(convRateForDay * 2, 0.4), // boost for visible variety in feed
-        pendingRate: pendingRate,
-      },
     });
-
-    // Enrich with tier reward amounts
-    for (const decision of decisionLog[day]) {
-      decision.rewardReferrer = params.referrerTiers[decision.tierIndex] || 0;
-      decision.rewardReferee = params.refereeTiers[decision.tierIndex] || 0;
-      decision.tierLabel = `Tier ${decision.tierIndex + 1}`;
-    }
   }
 
   // Derive learning annotations
@@ -845,8 +829,8 @@ export function computeDashboardProjection({ budget, params }) {
       days: static_.days,
     },
 
-    // Decision log
-    decisionLog,
+    // Daily briefings (structured, not flat log)
+    dailyBriefings,
 
     // Learning annotations
     learningAnnotations,

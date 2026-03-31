@@ -237,27 +237,48 @@ function CohortChart({ cohorts, currentDay }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// ZONE B: DECISION FEED
+// POSITION 3: LIVE DECISIONS — Daily briefing with drill-down
 // ═══════════════════════════════════════════════════════════════════════
-const OUTCOME_STYLES = {
-  contact: { icon: '→', className: 'bg-accent-subtle text-foreground-muted' },
-  reminder: { icon: '↻', className: 'bg-[#fef3c7] text-[#92400e]' },
-  holdback: { icon: '⏸', className: 'bg-border-light text-foreground-muted' },
-  conversion: { icon: '✓', className: 'bg-[#d1fae5] text-[#065f46]' },
-  reward_blocked: { icon: '⚠', className: 'bg-[#fee2e2] text-[#991b1b]' },
-  expiration_batch: { icon: '✗', className: 'bg-border-light text-foreground-muted' },
-};
 
-const CHANNEL_ICONS = {
-  push: '📱',
-  email: '✉️',
-  sms: '💬',
-};
+function BriefingCategory({ label, icon, count, items, renderItem }) {
+  const [expanded, setExpanded] = useState(false);
+  if (count === 0) return null;
 
-function DecisionFeed({ decisions }) {
-  const [expandedId, setExpandedId] = useState(null);
+  return (
+    <div>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className={cn(
+          'w-full flex items-center gap-2 py-2 px-2 rounded-sm text-left transition-colors duration-150',
+          'hover:bg-accent-subtle',
+          expanded && 'bg-accent-subtle'
+        )}
+      >
+        <span className="text-xs text-foreground-faint shrink-0">{icon}</span>
+        <span className="text-[13px] font-medium text-foreground">
+          {count} {label}
+        </span>
+        <svg className={cn(
+          'w-3.5 h-3.5 text-foreground-faint ml-auto transition-transform duration-200 shrink-0',
+          expanded && 'rotate-180'
+        )} fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+        </svg>
+      </button>
 
-  if (!decisions || decisions.length === 0) return null;
+      {expanded && (
+        <div className="pl-4 pr-2 pb-2 ml-2 border-l-2 border-border-light max-h-[180px] overflow-y-auto">
+          {items.map(renderItem)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DecisionFeed({ briefing }) {
+  if (!briefing) return null;
+
+  const { dailyPlan, contacts, followUps, holdbacks, conversions } = briefing;
 
   return (
     <div className="bg-surface border border-border rounded-lg p-4 mb-6">
@@ -265,121 +286,91 @@ function DecisionFeed({ decisions }) {
         <SectionLabel>Live Decisions</SectionLabel>
         <span className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-brand" />
-          <span className="text-[11px] text-foreground-faint">
-            {decisions.length} decisions shown
-          </span>
+          <span className="text-[11px] text-foreground-faint">Day {briefing.day}</span>
         </span>
       </div>
 
-      <div className="max-h-[200px] overflow-y-auto space-y-0">
-        {decisions.map((d) => {
-          const outcome = OUTCOME_STYLES[d.type] || OUTCOME_STYLES.contact;
-          const expanded = expandedId === d.id;
-
-          // Build display text based on decision type
-          let nameText = d.name || '';
-          let detailText = '';
-          let outcomeLabel = d.type;
-
-          switch (d.type) {
-            case 'contact':
-              detailText = `${d.tierLabel} · ${d.channel}`;
-              outcomeLabel = 'contacted';
-              break;
-            case 'reminder':
-              detailText = d.detail || 'follow-up';
-              outcomeLabel = 'follow-up';
-              break;
-            case 'holdback':
-              detailText = d.reason || 'held back';
-              outcomeLabel = 'held back';
-              break;
-            case 'conversion':
-              detailText = `${d.tierLabel} · contacted Day ${d.contactedDay}`;
-              outcomeLabel = 'converted';
-              break;
-            case 'reward_blocked':
-              detailText = d.reason || 'under review';
-              outcomeLabel = 'reward held';
-              break;
-            case 'expiration_batch':
-              nameText = `${d.count} offers`;
-              detailText = 'no conversion within 14-day window';
-              outcomeLabel = 'expired';
-              break;
-          }
-
-          return (
-            <div key={d.id}>
-              <button
-                onClick={() => setExpandedId(expanded ? null : d.id)}
-                className={cn(
-                  'w-full flex items-center gap-3 py-2 px-2 rounded-sm text-left transition-colors duration-150',
-                  'hover:bg-accent-subtle',
-                  expanded && 'bg-accent-subtle'
-                )}
-              >
-                {/* Name */}
-                <span className="text-[13px] font-medium text-foreground w-28 truncate shrink-0">
-                  {nameText}
-                </span>
-
-                {/* Detail */}
-                <span className="text-xs text-foreground-muted flex-1 truncate">
-                  {detailText}
-                </span>
-
-                {/* Time */}
-                <span className="text-xs text-foreground-faint w-16 shrink-0">
-                  {fmtTime(d.hour, d.minute)}
-                </span>
-
-                {/* Outcome badge */}
-                <span className={cn(
-                  'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0',
-                  outcome.className
-                )}>
-                  {outcome.icon} {outcomeLabel}
-                </span>
-
-                {/* Expand arrow */}
-                <svg className={cn(
-                  'w-3.5 h-3.5 text-foreground-faint ml-auto transition-transform duration-200 shrink-0',
-                  expanded && 'rotate-180'
-                )} fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                </svg>
-              </button>
-
-              {/* Expanded reasoning */}
-              {expanded && d.reasoning && (
-                <div className="pl-4 pr-2 pb-3 ml-2 border-l-2 border-border-light">
-                  <p className="text-xs text-foreground-muted leading-relaxed mt-1">
-                    {d.reasoning}
-                  </p>
-                </div>
-              )}
-            </div>
-          );
-        })}
+      {/* Daily Plan headline */}
+      <div className="bg-accent-subtle rounded-sm px-3 py-2.5 mb-3">
+        <div className="text-[13px] font-semibold text-foreground">
+          Contacting {fmt(dailyPlan.contactCount)} of {fmtK(dailyPlan.eligibleCount)} eligible · {fmtDollar(dailyPlan.budgetToday)} budget
+        </div>
+        <p className="text-xs text-foreground-muted mt-1 leading-relaxed">
+          {dailyPlan.strategyShift}
+        </p>
       </div>
-    </div>
-  );
-}
 
-function TimelineEvent({ label, day, highlight, muted }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className={cn(
-        'w-1.5 h-1.5 rounded-full shrink-0',
-        highlight ? 'bg-success' : muted ? 'bg-foreground-faint' : 'bg-border'
-      )} />
-      <span className={cn(
-        'text-xs',
-        highlight ? 'text-success font-semibold' : muted ? 'text-foreground-faint' : 'text-foreground-muted'
-      )}>
-        Day {day}: {label}
-      </span>
+      {/* Collapsible categories */}
+      <div className="space-y-0">
+        <BriefingCategory
+          label="new contacts"
+          icon="→"
+          count={contacts.length}
+          items={contacts}
+          renderItem={(c) => (
+            <div key={c.id} className="py-1.5 border-b border-border-light last:border-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-foreground">{c.name}</span>
+                <span className="text-[11px] text-foreground-faint">{c.channel} · {c.tierLabel} · {c.messageApproach}</span>
+                <span className="text-[11px] text-foreground-faint ml-auto">{fmtTime(c.hour, c.minute)}</span>
+              </div>
+              <p className="text-[11px] text-foreground-faint leading-relaxed mt-0.5">{c.reasoning}</p>
+            </div>
+          )}
+        />
+
+        {followUps.length > 0 && (
+          <BriefingCategory
+            label="follow-ups sent"
+            icon="↻"
+            count={followUps.length}
+            items={followUps}
+            renderItem={(f) => (
+              <div key={f.id} className="py-1.5 border-b border-border-light last:border-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-foreground">{f.name}</span>
+                  <span className="text-[11px] text-foreground-faint">{f.funnelStageLabel}</span>
+                </div>
+                <p className="text-[11px] text-foreground-faint leading-relaxed mt-0.5">{f.reasoning}</p>
+              </div>
+            )}
+          />
+        )}
+
+        <BriefingCategory
+          label="customers held back"
+          icon="⏸"
+          count={holdbacks.length}
+          items={holdbacks}
+          renderItem={(h) => (
+            <div key={h.id} className="py-1.5 border-b border-border-light last:border-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-foreground">{h.name}</span>
+                <span className="text-[11px] text-foreground-faint">{h.reason}</span>
+              </div>
+              <p className="text-[11px] text-foreground-faint leading-relaxed mt-0.5">{h.reasoning}</p>
+              <span className="text-[10px] text-foreground-faint">Re-enters: {h.reenter}</span>
+            </div>
+          )}
+        />
+
+        {conversions.length > 0 && (
+          <BriefingCategory
+            label="conversions"
+            icon="✓"
+            count={conversions.length}
+            items={conversions}
+            renderItem={(c) => (
+              <div key={c.id} className="py-1.5 border-b border-border-light last:border-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-foreground">{c.name}</span>
+                  <span className="text-[11px] text-foreground-faint">{c.tierLabel} · contacted Day {c.contactedDay} · ${c.txAmount} first tx</span>
+                </div>
+              </div>
+            )}
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -520,21 +511,8 @@ export default function DashboardPage({ config, onHome }) {
   const dayData = projection.days[selectedDay - 1];
   const staticDayData = projection.staticBaseline.days[selectedDay - 1];
 
-  // Decisions for the selected day window
-  const decisions = useMemo(() => {
-    const start = Math.max(1, selectedDay - 1);
-    const end = Math.min(30, selectedDay + 1);
-    const all = [];
-    for (let d = start; d <= end; d++) {
-      if (projection.decisionLog[d]) {
-        all.push(...projection.decisionLog[d]);
-      }
-    }
-    // Sort: conversions first, then reward blocks, contacts, reminders, holdbacks, expirations last
-    const order = { conversion: 0, reward_blocked: 1, contact: 2, reminder: 3, holdback: 4, expiration_batch: 5 };
-    all.sort((a, b) => (order[a.type] ?? 3) - (order[b.type] ?? 3) || (a.hour * 60 + a.minute) - (b.hour * 60 + b.minute));
-    return all;
-  }, [projection, selectedDay]);
+  // Daily briefing for the selected day
+  const briefing = projection.dailyBriefings?.[selectedDay] || null;
 
   return (
     <div className="min-h-screen flex flex-col w-full px-6 animate-page-enter">
@@ -621,7 +599,7 @@ export default function DashboardPage({ config, onHome }) {
 
           {/* Position 3: Decisions */}
           <div>
-            <DecisionFeed decisions={decisions} />
+            <DecisionFeed briefing={briefing} />
           </div>
         </div>
       </main>
