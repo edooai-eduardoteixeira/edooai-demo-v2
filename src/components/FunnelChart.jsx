@@ -36,7 +36,7 @@ export default function FunnelChart({ stages, pending }) {
     <div>
       <div className="flex flex-col gap-2">
         {stages.map((stage, i) => {
-          const widthPct = Math.max(18, (stage.value / maxValue) * 100);
+          const widthPct = Math.max(15, Math.sqrt(stage.value / maxValue) * 100);
           const prevValue = i > 0 ? stages[i - 1].value : null;
           const convRate = prevValue && prevValue > 0
             ? ((stage.value / prevValue) * 100).toFixed(1) + '%'
