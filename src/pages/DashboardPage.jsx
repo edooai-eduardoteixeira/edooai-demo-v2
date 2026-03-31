@@ -76,12 +76,16 @@ function DaySelector({ selected, onSelect, thresholdDay }) {
   );
 }
 
-// Sequential brand palette — lightest (oldest cohort) to darkest (newest)
-function cohortColor(index, total) {
-  const minOpacity = 0.25;
-  const opacity = minOpacity + ((index / Math.max(total - 1, 1)) * (1 - minOpacity));
-  return `color-mix(in srgb, var(--color-brand) ${Math.round(opacity * 100)}%, transparent)`;
-}
+// Sequential warm palette — lightest (oldest cohort) to darkest (newest)
+// Uses the warm gray scale from design tokens for reliable visual separation
+const COHORT_COLORS = [
+  'var(--color-gray-300)',
+  'var(--color-gray-400)',
+  'var(--color-gray-500)',
+  'var(--color-gray-600)',
+  'var(--color-gray-700)',
+  'var(--color-brand)',
+];
 
 function ActiveUsersChart({ cumulativeCurve, currentDay }) {
   const slice = cumulativeCurve.slice(0, currentDay);
@@ -100,12 +104,7 @@ function ActiveUsersChart({ cumulativeCurve, currentDay }) {
         data={slice}
         maxValue={yMax}
         padding={{ left: 45 }}
-        xLabels={[
-          { value: '1', at: 1 },
-          { value: '10', at: 10 },
-          { value: '20', at: 20 },
-          { value: '30', at: 30 },
-        ]}
+        xLabels={[1, 10, 20, 30].filter(d => d <= currentDay).map(d => ({ value: String(d), at: d }))}
         yLabels={[0, yMax * 0.5, yMax]}
         gridlines="from-labels"
         fill={{ color: 'var(--color-brand)', opacity: 0.07 }}
@@ -151,13 +150,10 @@ function CohortChart({ cohorts, currentDay }) {
 
   const cohortSeries = repDays.map((day, idx) => {
     const isLatest = idx === repDays.length - 1;
-    const total = repDays.length;
     return {
       data: (cohorts[day]?.cumulativeResolved || []).slice(0, 14),
-      color: cohortColor(idx, total),
+      color: COHORT_COLORS[Math.min(idx, COHORT_COLORS.length - 1)],
       width: isLatest ? 2 : 1.5,
-      dotted: idx < total - 2,
-      dashed: idx === total - 2,
       label: `Day ${day} (${(cohorts[day]?.convRate || 0).toFixed(1)}%)`,
     };
   });

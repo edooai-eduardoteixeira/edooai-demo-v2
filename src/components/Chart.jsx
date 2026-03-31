@@ -298,8 +298,55 @@ export default function Chart({
     ? chartLeft + (marker.at / Math.max(primaryData.length - 1, 1)) * chartW
     : null;
 
+  // Filter x-labels to only those within the primary data range
+  const clampedXLabels = resolvedXLabels.filter((item) => {
+    return item.x >= chartLeft && item.x <= chartLeft + chartW;
+  });
+
   return (
-    <div style={{ position: 'relative' }}>
+    <div>
+      {/* Legend (HTML — normal flow, above chart) */}
+      {legend && series.length > 1 && (
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '8px 16px',
+            marginBottom: 6,
+            justifyContent: 'flex-end',
+          }}
+        >
+          {series.map((s, i) => (
+            s.label ? (
+              <span
+                key={i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontSize: 11,
+                  fontFamily: 'var(--font-family)',
+                  color: 'var(--text-tertiary)',
+                  lineHeight: 1,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    backgroundColor: s.color || TOKENS.line.color,
+                    flexShrink: 0,
+                  }}
+                />
+                {s.label}
+              </span>
+            ) : null
+          ))}
+        </div>
+      )}
+      <div style={{ position: 'relative', overflow: 'hidden' }}>
       {/* ── SVG: visual elements only (no text) ── */}
       <svg
         ref={svgRef}
@@ -550,7 +597,7 @@ export default function Chart({
       ))}
 
       {/* X-axis labels */}
-      {resolvedXLabels.map((item, i) => (
+      {clampedXLabels.map((item, i) => (
         <span
           key={`x-${i}`}
           style={{
@@ -686,49 +733,7 @@ export default function Chart({
         );
       })()}
 
-      {/* Legend (HTML — standardized top-right) */}
-      {legend && series.length > 1 && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-            pointerEvents: 'none',
-          }}
-        >
-          {series.map((s, i) => (
-            s.label ? (
-              <span
-                key={i}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  fontSize: 11,
-                  fontFamily: 'var(--font-family)',
-                  color: 'var(--text-tertiary)',
-                  lineHeight: 1,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                <span
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: '50%',
-                    backgroundColor: s.color || TOKENS.line.color,
-                    flexShrink: 0,
-                  }}
-                />
-                {s.label}
-              </span>
-            ) : null
-          ))}
-        </div>
-      )}
+      </div>
     </div>
   );
 }
