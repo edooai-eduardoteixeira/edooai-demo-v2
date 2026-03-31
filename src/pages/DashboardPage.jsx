@@ -134,7 +134,7 @@ function KPISelector({ selected, onSelect, dayData }) {
 // ═══════════════════════════════════════════════════════════════════════
 // HERO CHART — renders the selected KPI's 30-day trend
 // ═══════════════════════════════════════════════════════════════════════
-function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve, height }) {
+function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve }) {
   // Build the data slice for the selected KPI
   let slice, yMax, formatLabel;
 
@@ -166,7 +166,7 @@ function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve, height }) {
     <Chart
       data={slice}
       maxValue={yMax}
-      height={height}
+      cssHeight="100%"
       padding={{ left: 50 }}
       xLabels={[1, 10, 20, 30].filter(d => d <= currentDay).map(d => ({ value: String(d), at: d }))}
       yLabels={yLabels.map(v => {
@@ -183,7 +183,7 @@ function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve, height }) {
 // ═══════════════════════════════════════════════════════════════════════
 // COHORT CHART — funnel performance over time
 // ═══════════════════════════════════════════════════════════════════════
-function CohortChart({ cohorts, currentDay, height }) {
+function CohortChart({ cohorts, currentDay }) {
   const repDays = [2, 5, 10, 15, 20, 25].filter(d => d <= currentDay && cohorts[d]);
   if (repDays.length === 0 && cohorts[1]) repDays.push(1);
 
@@ -211,12 +211,13 @@ function CohortChart({ cohorts, currentDay, height }) {
   maxPct = Math.ceil(maxPct);
 
   return (
-    <div className="flex-1 min-h-0">
+    <div className="flex-1 min-h-0 flex flex-col">
       <SectionLabel>Funnel Performance</SectionLabel>
+      <div className="flex-1 min-h-0">
       <Chart
         series={cohortSeries}
         maxValue={maxPct}
-        height={height}
+        cssHeight="100%"
         padding={{ left: 40 }}
         xLabels={[
           { value: '+0d', at: 1 },
@@ -230,6 +231,7 @@ function CohortChart({ cohorts, currentDay, height }) {
         legend
         formatTooltip={(i, v) => `${v.toFixed(2)}% (${Math.round(v * (cohorts[repDays[0]]?.contacted || 1) / 100)} users)`}
       />
+      </div>
     </div>
   );
 }
@@ -553,14 +555,13 @@ export default function DashboardPage({ config, onHome }) {
                 onSelect={setSelectedKPI}
                 dayData={dayData}
               />
-              {/* Hero chart fills remaining height */}
+              {/* Hero chart fills remaining height — cssHeight="100%" needs parent with explicit height */}
               <div className="mt-4 flex-1 min-h-0">
                 <HeroChart
                   selectedKPI={selectedKPI}
                   days={projection.days}
                   currentDay={selectedDay}
                   cumulativeCurve={projection.cumulativeCurve}
-                  height={250}
                 />
               </div>
             </div>
@@ -592,7 +593,6 @@ export default function DashboardPage({ config, onHome }) {
               <CohortChart
                 cohorts={projection.cohorts}
                 currentDay={selectedDay}
-                height={290}
               />
             </div>
           </div>
