@@ -227,7 +227,8 @@ export function generateDayDecisions({ day, count, seed = 42, tierDistribution, 
   }
 
   // --- Conversions ---
-  const actualConversions = Math.min(conversionCount, Math.ceil((outcomes?.convertedRate || 0.05) * count * 3));
+  // No conversions on Day 1-2 (resolution lag: offers take 1-3 days to resolve)
+  const actualConversions = day <= 2 ? 0 : Math.min(conversionCount, Math.ceil((outcomes?.convertedRate || 0.05) * count * 3));
   for (let i = 0; i < actualConversions; i++) {
     const time = pickTime(rng);
     const tierIndex = pickTier(rng, tierDistribution);
@@ -248,14 +249,15 @@ export function generateDayDecisions({ day, count, seed = 42, tierDistribution, 
   // --- Reward blocks ---
   for (let i = 0; i < rewardBlockCount; i++) {
     const time = pickTime(rng);
+    const fullReason = buildRewardBlockReasoning(rng);
     decisions.push({
       id: id++,
       type: 'reward_blocked',
       name: pickName(rng),
       day,
       ...time,
-      reason: buildRewardBlockReasoning(rng).split('.')[0],
-      reasoning: buildRewardBlockReasoning(rng),
+      reason: fullReason.split('.')[0],
+      reasoning: fullReason,
     });
   }
 
