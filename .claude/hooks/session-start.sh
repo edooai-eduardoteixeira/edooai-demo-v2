@@ -69,7 +69,7 @@ if [ -d "$GSTACK_DIR" ]; then
     echo "[session-start] Patching browser-manager for proxy support..."
     # Add proxy detection after the CONTAINER/CI sandbox block
     sed -i '/if (process\.env\.CI || process\.env\.CONTAINER) {/{
-      N; s/}$/}\
+      N;N; s/}$/}\
 \
     \/\/ Proxy support: parse HTTP(S)_PROXY env vars for environments behind\
     \/\/ an egress proxy (e.g. containerized CI with JWT-authenticated proxies).\
@@ -96,6 +96,13 @@ if [ -d "$GSTACK_DIR" ]; then
 
     # Add ignoreHTTPSErrors to context
     sed -i 's/viewport: { width: 1280, height: 720 },$/viewport: { width: 1280, height: 720 },\n      ...(proxyConfig ? { ignoreHTTPSErrors: true } : {}),/' "$BROWSER_MGR"
+
+    # Verify patches applied
+    if grep -q "proxyConfig" "$BROWSER_MGR"; then
+      echo "[session-start] Proxy patches verified."
+    else
+      echo "[session-start] WARNING: Proxy patch failed — browse will not work through proxy." >&2
+    fi
   fi
 
   # 3. Also auto-detect root user and add --no-sandbox without CONTAINER env
@@ -159,6 +166,9 @@ start_server() {
     sleep 0.5
   done
   echo "[browse] Server failed to start within 15s" >&2
+  echo "[browse] This container may kill background processes." >&2
+  echo "[browse] Start manually: CONTAINER=1 node $SERVER_SCRIPT" >&2
+  echo "[browse] (use Bash tool with run_in_background: true)" >&2
   return 1
 }
 
@@ -209,18 +219,28 @@ fi
 if [ "$COMMAND" = "goto" ]; then
   URL="$1"
   [ -n "$URL" ] || { echo "Usage: browse goto <url>" >&2; exit 1; }
+  # Record current URL so we detect when navigation actually completes
+  OLD_URL=$(curl -sf "http://127.0.0.1:$PORT/health" -H "Authorization: Bearer $TOKEN" 2>/dev/null \
+    | python3 -c "import json,sys; print(json.load(sys.stdin).get('currentUrl',''))" 2>/dev/null || echo "")
   JS_ARGS=$(python3 -c "import json,sys; print(json.dumps(['window.location.href='+json.dumps(sys.argv[1])]))" "$URL")
   send_cmd "js" "$JS_ARGS" > /dev/null 2>&1
   for i in $(seq 1 24); do
     sleep 0.5
     CUR=$(curl -sf "http://127.0.0.1:$PORT/health" -H "Authorization: Bearer $TOKEN" 2>/dev/null \
-      | python3 -c "import json,sys; print(json.load(sys.stdin).get('currentUrl',''))" 2>/dev/null)
-    if [ -n "$CUR" ] && [ "$CUR" != "about:blank" ]; then
+      | python3 -c "import json,sys; print(json.load(sys.stdin).get('currentUrl',''))" 2>/dev/null || echo "")
+    if [ -n "$CUR" ] && [ "$CUR" != "about:blank" ] && [ "$CUR" != "$OLD_URL" ]; then
       sleep 1  # let content render
       echo "Navigated to $URL ($CUR)"
       exit 0
     fi
   done
+  # Fallback: if URL didn't change, check if we're already on the target
+  CUR=$(curl -sf "http://127.0.0.1:$PORT/health" -H "Authorization: Bearer $TOKEN" 2>/dev/null \
+    | python3 -c "import json,sys; print(json.load(sys.stdin).get('currentUrl',''))" 2>/dev/null || echo "")
+  if [ -n "$CUR" ] && [ "$CUR" != "about:blank" ]; then
+    echo "Navigated to $URL ($CUR)"
+    exit 0
+  fi
   echo "Navigated to $URL (timeout)" >&2; exit 1
 fi
 

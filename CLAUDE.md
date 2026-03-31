@@ -27,6 +27,18 @@ Challenge my requests when they conflict with the design system, introduce unnec
 - Always use full URLs (e.g., `https://github.com/eduardofteixeira/demo-v2/blob/main/src/components/Modal.jsx`), never relative paths
 - The repo is private — do not link to GitHub raw/blob views as a way to preview changes
 
+## Browse server (cloud sessions)
+
+Before running any browse command (`/qa`, `/design-review`, `browse goto`, etc.),
+start the browse server using the Bash tool with `run_in_background: true`:
+
+```
+CONTAINER=1 node ~/.claude/skills/gstack/browse/dist/server-node.mjs
+```
+
+Wait 5s for it to become healthy, then browse commands will work. The session-start
+hook installs the CLI wrapper and patches automatically — this just starts the server.
+
 ## Skill routing
 
 When the user's request matches an available skill, ALWAYS invoke it using the Skill
