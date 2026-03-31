@@ -23,7 +23,7 @@ import { useState, useCallback, useLayoutEffect, useRef, useId } from 'react';
  * - threshold: learning phase split with annotations
  */
 
-// --- Design tokens (from DESIGN_GUIDELINES.md) ---
+// --- Design tokens (from DESIGN.md) ---
 // Font sizes here are in physical CSS pixels — the component converts
 // them to viewBox units at render time via pxScale.
 const TOKENS = {
