@@ -36,9 +36,9 @@ function SectionLabel({ children }) {
 // ═══════════════════════════════════════════════════════════════════════
 // DAY SELECTOR
 // ═══════════════════════════════════════════════════════════════════════
-function DaySelector({ selected, onSelect, thresholdDay }) {
+function DaySelector({ selected, onSelect }) {
   return (
-    <div className="flex items-center gap-2 mb-8">
+    <div className="flex items-center gap-2">
       {DAY_STOPS.map((day, i) => {
         const active = selected === day;
         const meta = DAY_META[day];
@@ -98,7 +98,7 @@ const KPI_DEFS = [
 
 function KPISelector({ selected, onSelect, dayData }) {
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-2">
       {KPI_DEFS.map((kpi) => {
         const active = selected === kpi.key;
         const value = kpi.key === 'activeUsers'
@@ -109,17 +109,17 @@ function KPISelector({ selected, onSelect, dayData }) {
             key={kpi.key}
             onClick={() => onSelect(kpi.key)}
             className={cn(
-              'flex flex-col px-3 py-2 rounded-sm transition-all duration-200 min-w-0',
+              'flex flex-col px-4 py-2.5 rounded-sm transition-all duration-200 min-w-0',
               active
                 ? 'bg-accent-subtle'
                 : 'hover:bg-accent-subtle/50'
             )}
           >
-            <span className="text-[10px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
+            <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
               {kpi.label}
             </span>
             <span className={cn(
-              'text-[17px] font-bold tracking-tight leading-tight mt-0.5',
+              'text-[22px] font-bold tracking-tight leading-tight mt-1',
               active ? 'text-foreground' : 'text-foreground-muted'
             )}>
               {kpi.format(value)}
@@ -186,30 +186,35 @@ function CohortChart({ cohorts, currentDay }) {
   const repDays = [2, 5, 10, 15, 20, 25].filter(d => d <= currentDay && cohorts[d]);
   if (repDays.length === 0 && cohorts[1]) repDays.push(1);
 
-  let maxCum = 1;
-  for (const d of repDays) {
-    for (const v of (cohorts[d]?.cumulativeResolved || [])) {
-      if (v > maxCum) maxCum = v;
-    }
-  }
-  maxCum = Math.ceil(maxCum / 5) * 5;
-
+  // Convert cumulative resolved to % of contacted for each cohort
   const cohortSeries = repDays.map((day, idx) => {
+    const contacted = cohorts[day]?.contacted || 1;
+    const resolved = (cohorts[day]?.cumulativeResolved || []).slice(0, 14);
+    const pctData = resolved.map(v => (v / contacted) * 100);
     const isLatest = idx === repDays.length - 1;
     return {
-      data: (cohorts[day]?.cumulativeResolved || []).slice(0, 14),
+      data: pctData,
       color: COHORT_COLORS[Math.min(idx, COHORT_COLORS.length - 1)],
       width: isLatest ? 2 : 1.5,
       label: `Day ${day} (${(cohorts[day]?.convRate || 0).toFixed(1)}%)`,
     };
   });
 
+  // Find max % for Y-axis
+  let maxPct = 1;
+  for (const s of cohortSeries) {
+    for (const v of s.data) {
+      if (v > maxPct) maxPct = v;
+    }
+  }
+  maxPct = Math.ceil(maxPct);
+
   return (
-    <div>
+    <div className="flex-1 min-h-0">
       <SectionLabel>Funnel Performance</SectionLabel>
       <Chart
         series={cohortSeries}
-        maxValue={maxCum}
+        maxValue={maxPct}
         padding={{ left: 40 }}
         xLabels={[
           { value: '+0d', at: 1 },
@@ -218,10 +223,10 @@ function CohortChart({ cohorts, currentDay }) {
           { value: '+10d', at: 11 },
           { value: '+14d', at: 14 },
         ]}
-        yLabels={[0, 0.25, 0.5, 0.75, 1].map(f => Math.round(maxCum * f))}
+        yLabels={[0, 0.25, 0.5, 0.75, 1].map(f => `${(maxPct * f).toFixed(1)}%`)}
         gridlines="from-labels"
         legend
-        formatTooltip={(i, v) => Math.round(v).toLocaleString()}
+        formatTooltip={(i, v) => `${v.toFixed(2)}% (${Math.round(v * (cohorts[repDays[0]]?.contacted || 1) / 100)} users)`}
       />
     </div>
   );
@@ -526,28 +531,28 @@ export default function DashboardPage({ config, onHome }) {
 
   return (
     <div className="min-h-screen flex flex-col w-full px-6 animate-page-enter">
-      {/* Header: Logo + Day Selector */}
-      <header className="flex items-center justify-between py-2.5 mb-6">
+      {/* Header: Logo + Day Selector — compact, left-aligned together */}
+      <header className="flex items-center gap-8 py-2 mb-2">
         <Logo variant="mark" onClick={onHome} />
         <DaySelector
           selected={selectedDay}
           onSelect={setSelectedDay}
-          thresholdDay={projection.thresholdDay}
         />
       </header>
 
-      <main className="flex-1 pb-16">
+      <main className="flex-1 pb-8">
         {/* ── POSITION 1: RESULTS — one unified area ── */}
-        <div className="bg-surface border border-border rounded-lg p-6 mb-6">
-          <div className="flex gap-6">
+        <div className="bg-surface border border-border rounded-lg p-5 mb-5">
+          <div className="flex gap-5">
             {/* LEFT COLUMN (~60%): KPI selector + hero chart */}
-            <div className="flex-[1.4] min-w-0">
+            <div className="flex-[1.4] min-w-0 flex flex-col">
               <KPISelector
                 selected={selectedKPI}
                 onSelect={setSelectedKPI}
                 dayData={dayData}
               />
-              <div className="mt-3">
+              {/* Hero chart fills remaining height */}
+              <div className="mt-2 flex-1 min-h-0">
                 <HeroChart
                   selectedKPI={selectedKPI}
                   days={projection.days}
@@ -560,12 +565,12 @@ export default function DashboardPage({ config, onHome }) {
             {/* DIVIDER */}
             <div className="w-px bg-border-light shrink-0" />
 
-            {/* RIGHT COLUMN (~40%): Funnel + Cohort stacked */}
-            <div className="flex-1 min-w-0 flex flex-col gap-5">
-              {/* Referral Funnel */}
-              <div>
+            {/* RIGHT COLUMN (~40%): Funnel (compact) + Cohort (gets more space) */}
+            <div className="flex-1 min-w-0 flex flex-col gap-4">
+              {/* Referral Funnel — compact */}
+              <div className="shrink-0">
                 <SectionLabel>Referral Funnel</SectionLabel>
-                <div className="mt-2">
+                <div className="mt-1">
                   <FunnelChart
                     stages={[
                       { label: 'Eligible', value: projection.audienceSize },
@@ -579,7 +584,7 @@ export default function DashboardPage({ config, onHome }) {
                 </div>
               </div>
 
-              {/* Cohort chart */}
+              {/* Cohort chart — takes remaining vertical space */}
               <CohortChart
                 cohorts={projection.cohorts}
                 currentDay={selectedDay}
