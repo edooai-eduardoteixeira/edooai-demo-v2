@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef, useId } from 'react';
+import { useState, useCallback, useLayoutEffect, useRef, useId } from 'react';
 
 /**
  * Reusable chart component that enforces the Vincor design system.
@@ -52,7 +52,7 @@ const TOKENS = {
 
 const DEFAULT_PADDING = { top: 10, right: 0, bottom: 40, left: 28 };
 const DEFAULT_HEIGHT = 210;
-const DEFAULT_ASPECT_RATIO = 800 / 210;
+const VIEWBOX_WIDTH = 828; // Fixed for all charts — guarantees identical font rendering
 const DEFAULT_GRIDLINE_COUNT = 2;
 
 function computePoints(data, chartLeft, chartTop, chartW, chartH, maxVal) {
@@ -99,7 +99,6 @@ export default function Chart({
   data,
   title,
   height = DEFAULT_HEIGHT,
-  aspectRatio = DEFAULT_ASPECT_RATIO,
   padding: paddingProp,
   maxValue,
   xLabels,
@@ -118,10 +117,13 @@ export default function Chart({
   const uid = useId();
   const safeId = uid.replace(/:/g, '_');
 
-  // Measure container to compute px→viewBox scale factor
-  useEffect(() => {
+  // Measure container width synchronously before paint (useLayoutEffect)
+  // then track resizes via ResizeObserver.
+  useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+    // Synchronous read — available before browser paints
+    setContainerWidth(el.getBoundingClientRect().width);
     const observer = new ResizeObserver((entries) => {
       setContainerWidth(entries[0].contentRect.width);
     });
@@ -132,19 +134,16 @@ export default function Chart({
   const padding = { ...DEFAULT_PADDING, ...paddingProp };
   if (title) padding.top = Math.max(padding.top, 30);
 
-  const width = Math.round(height * aspectRatio);
   const chartLeft = 0;
   const chartTop = padding.top;
-  const chartW = width - padding.right;
+  const chartW = VIEWBOX_WIDTH - padding.left - padding.right;
   const chartH = height - padding.top - padding.bottom;
   const chartBottom = chartTop + chartH;
 
-  const viewBoxWidth = width + padding.left;
-
   // pxScale: multiply a CSS-pixel value by this to get the equivalent viewBox units.
-  // When the SVG is rendered, viewBox units are scaled back down by (containerWidth / viewBoxWidth),
-  // so the text ends up at the original CSS-pixel size.
-  const pxScale = containerWidth ? viewBoxWidth / containerWidth : 1;
+  // VIEWBOX_WIDTH is fixed (828) for all charts, so the only variable is container width.
+  // This guarantees identical font sizes across all Chart instances.
+  const pxScale = containerWidth ? VIEWBOX_WIDTH / containerWidth : 1;
   const px = (cssPixels) => cssPixels * pxScale;
 
   const maxVal = maxValue != null ? maxValue : Math.max(...data) * 1.08;
@@ -188,7 +187,7 @@ export default function Chart({
     }
   }
 
-  const viewBox = `${-padding.left} 0 ${viewBoxWidth} ${height}`;
+  const viewBox = `${-padding.left} 0 ${VIEWBOX_WIDTH} ${height}`;
 
   const handleMouseMove = useCallback(
     (e) => {
