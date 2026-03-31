@@ -236,30 +236,81 @@ export function generateDayBriefing({ day, dayData, prevDayData, seed = 42, tier
     });
   }
 
-  // Conversions (from engine data, shown as outcomes)
-  const resolvedToday = dayData?.resolvedToday || 0;
-  const conversions = [];
-  const convCount = Math.min(5, resolvedToday);
-  for (let i = 0; i < convCount; i++) {
-    const contactedDay = Math.max(1, day - 1 - Math.floor(rng() * 5));
-    const tierIndex = pickTier(rng, tierDistribution);
-    const channel = pickChannel(rng);
-    const txAmount = 15 + Math.floor(rng() * 80);
-    conversions.push({
-      id: day * 1000 + 300 + i,
-      name: pickName(rng),
-      tierIndex,
-      tierLabel: `Tier ${tierIndex + 1}`,
-      contactedDay,
-      channel,
-      txAmount,
+  // Yesterday's learnings — what user actions tell the agent
+  // This is the learning loop: user actions → insights → strategy adjustment
+  const learnings = [];
+  if (day >= 2 && prevDayData) {
+    const prevResolved = prevDayData.resolvedToday || 0;
+    const prevContacted = prevDayData.journeysToday || 0;
+    const prevEfficiency = prevDayData.efficiency || 0.3;
+    const currEfficiency = dayData?.efficiency || 0.3;
+    const effImprovement = currEfficiency - prevEfficiency;
+
+    // Conversion outcomes from yesterday
+    if (prevResolved > 0) {
+      learnings.push({
+        id: day * 1000 + 400,
+        type: 'conversion_outcomes',
+        summary: `${prevResolved} conversions resolved yesterday from ${prevContacted} contacts (${((prevResolved / prevContacted) * 100).toFixed(2)}% rate)`,
+      });
+    }
+
+    // Channel performance insight
+    const channelInsights = [
+      `Push notifications converted ${(1.5 + rng() * 1).toFixed(1)}x better than email for customers with 5+ monthly transactions`,
+      `SMS re-engagement had ${Math.floor(20 + rng() * 25)}% higher response rate for customers contacted in the morning window`,
+      `In-app banners showed ${Math.floor(10 + rng() * 20)}% higher share rate for customers under 30 days tenure`,
+    ];
+    learnings.push({
+      id: day * 1000 + 401,
+      type: 'channel_insight',
+      summary: channelInsights[Math.floor(rng() * channelInsights.length)],
     });
+
+    // Tier optimization insight
+    if (day >= 7) {
+      const tierInsights = [
+        `Tier 1 (organic) customers converted ${Math.floor(500 + rng() * 1500)} referrals without incentive — ${Math.floor(15 + rng() * 10)}% of total conversions at $0 cost`,
+        `Tier 4 customers brought ${(1.5 + rng() * 1).toFixed(1)}x higher-LTV referees — cost justified by ${Math.floor(40 + rng() * 30)}% higher revenue per conversion`,
+        `Shifting ${Math.floor(5 + rng() * 10)}% of Tier 3 budget to Tier 2 — similar conversion rates at ${Math.floor(30 + rng() * 20)}% lower reward cost`,
+      ];
+      learnings.push({
+        id: day * 1000 + 402,
+        type: 'tier_insight',
+        summary: tierInsights[Math.floor(rng() * tierInsights.length)],
+      });
+    }
+
+    // Efficiency improvement
+    if (effImprovement > 0.005) {
+      learnings.push({
+        id: day * 1000 + 403,
+        type: 'efficiency',
+        summary: `Targeting accuracy improved to ${Math.round(currEfficiency * 100)}% (was ${Math.round(prevEfficiency * 100)}% yesterday). More contacts going to high-propensity segments.`,
+      });
+    }
   }
 
-  // Recommendation (rare — only when data supports it, from engine)
-  // For now: null. The AgentInsight component handles this.
-  // Will be moved here in a future iteration.
-  const recommendation = null;
+  // Recommendation — only when data is mature and constraints are binding
+  let recommendation = null;
+  if (day >= 10 && dayData) {
+    const capHit = dayData.capHit;
+    const poolPct = dayData.remainingPool / eligibleCount;
+
+    if (capHit) {
+      recommendation = {
+        title: 'Increase daily contact capacity',
+        observation: `Daily contact cap reached. ${Math.round(dayData.remainingPool).toLocaleString()} eligible customers remain uncontacted.`,
+        action: `Current budget supports ${contactCount.toLocaleString()} contacts/day. Increasing to $${Math.round(budgetToday * 1.25 / 1000)}K would support ~${Math.round(contactCount * 1.25).toLocaleString()}/day.`,
+      };
+    } else if (poolPct < 0.4 && day >= 20) {
+      recommendation = {
+        title: 'Audience pool narrowing',
+        observation: `${Math.round((1 - poolPct) * 100)}% of eligible audience has been contacted. ${Math.round(dayData.remainingPool).toLocaleString()} customers remaining.`,
+        action: 'Consider expanding eligibility criteria or adjusting NPS threshold to unlock additional segments.',
+      };
+    }
+  }
 
   return {
     day,
@@ -267,7 +318,7 @@ export function generateDayBriefing({ day, dayData, prevDayData, seed = 42, tier
     contacts,
     followUps,
     holdbacks,
-    conversions,
+    learnings,
     recommendation,
   };
 }
@@ -275,18 +326,11 @@ export function generateDayBriefing({ day, dayData, prevDayData, seed = 42, tier
 // Legacy exports for backward compat
 export function generateDayDecisions({ day, count, seed = 42, tierDistribution, outcomes }) {
   const briefing = generateDayBriefing({ day, seed, tierDistribution });
-  // Flatten to legacy format
   const all = [
     ...briefing.contacts.map(c => ({ ...c, type: 'contact', day })),
     ...briefing.followUps.map(f => ({ ...f, type: 'follow_up', day })),
     ...briefing.holdbacks.map(h => ({ ...h, type: 'holdback', day })),
-    ...briefing.conversions.map(c => ({ ...c, type: 'conversion', day })),
   ];
   all.sort((a, b) => (a.hour * 60 + a.minute) - (b.hour * 60 + b.minute));
   return all;
-}
-
-export function generateDecision({ day, index, seed = 42, tierDistribution, outcomes }) {
-  const decisions = generateDayDecisions({ day, count: index + 1, seed, tierDistribution, outcomes });
-  return decisions[decisions.length - 1];
 }

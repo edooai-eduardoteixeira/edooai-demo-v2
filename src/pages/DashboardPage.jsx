@@ -275,25 +275,15 @@ function BriefingCategory({ label, icon, count, items, renderItem }) {
   );
 }
 
-function DecisionFeed({ briefing }) {
-  if (!briefing) return null;
-
-  const { dailyPlan, contacts, followUps, holdbacks, conversions } = briefing;
+function DayBriefing({ briefing }) {
+  const { dailyPlan, contacts, followUps, holdbacks, learnings, recommendation } = briefing;
 
   return (
-    <div className="bg-surface border border-border rounded-lg p-4 mb-6">
-      <div className="flex items-center justify-between mb-3">
-        <SectionLabel>Live Decisions</SectionLabel>
-        <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-brand" />
-          <span className="text-[11px] text-foreground-faint">Day {briefing.day}</span>
-        </span>
-      </div>
-
+    <div>
       {/* Daily Plan headline */}
-      <div className="bg-accent-subtle rounded-sm px-3 py-2.5 mb-3">
+      <div className="bg-accent-subtle rounded-sm px-3 py-2.5 mb-2">
         <div className="text-[13px] font-semibold text-foreground">
-          Contacting {fmt(dailyPlan.contactCount)} of {fmtK(dailyPlan.eligibleCount)} eligible · {fmtDollar(dailyPlan.budgetToday)} budget
+          {fmt(dailyPlan.contactCount)} contacts · {fmtK(dailyPlan.eligibleCount)} eligible · {fmtDollar(dailyPlan.budgetToday)}
         </div>
         <p className="text-xs text-foreground-muted mt-1 leading-relaxed">
           {dailyPlan.strategyShift}
@@ -354,22 +344,65 @@ function DecisionFeed({ briefing }) {
           )}
         />
 
-        {conversions.length > 0 && (
+        {/* Yesterday's learnings — what user actions told the agent */}
+        {learnings.length > 0 && (
           <BriefingCategory
-            label="conversions"
-            icon="✓"
-            count={conversions.length}
-            items={conversions}
-            renderItem={(c) => (
-              <div key={c.id} className="py-1.5 border-b border-border-light last:border-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-foreground">{c.name}</span>
-                  <span className="text-[11px] text-foreground-faint">{c.tierLabel} · contacted Day {c.contactedDay} · ${c.txAmount} first tx</span>
-                </div>
+            label="learnings from yesterday"
+            icon="💡"
+            count={learnings.length}
+            items={learnings}
+            renderItem={(l) => (
+              <div key={l.id} className="py-1.5 border-b border-border-light last:border-0">
+                <p className="text-[11px] text-foreground-muted leading-relaxed">{l.summary}</p>
               </div>
             )}
           />
         )}
+      </div>
+
+      {/* Recommendation — only when data supports it */}
+      {recommendation && (
+        <div className="mt-2 border border-brand/20 rounded-sm px-3 py-2 bg-brand-light/30">
+          <div className="text-xs font-semibold text-foreground">{recommendation.title}</div>
+          <p className="text-[11px] text-foreground-muted mt-0.5 leading-relaxed">{recommendation.observation}</p>
+          <p className="text-[11px] text-foreground-muted mt-0.5 leading-relaxed">{recommendation.action}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DecisionFeed({ briefings, selectedDay }) {
+  if (!briefings) return null;
+
+  // Show all days up to selectedDay, most recent first
+  const days = [];
+  for (let d = selectedDay; d >= 1; d--) {
+    if (briefings[d]) days.push(briefings[d]);
+  }
+
+  return (
+    <div className="bg-surface border border-border rounded-lg p-4 mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <SectionLabel>Live Decisions</SectionLabel>
+        <span className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-brand" />
+          <span className="text-[11px] text-foreground-faint">{days.length} days</span>
+        </span>
+      </div>
+
+      <div className="max-h-[400px] overflow-y-auto space-y-4">
+        {days.map((briefing) => (
+          <div key={briefing.day}>
+            {/* Date header */}
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-px flex-1 bg-border-light" />
+              <span className="text-[11px] font-semibold text-foreground-faint shrink-0">Day {briefing.day}</span>
+              <div className="h-px flex-1 bg-border-light" />
+            </div>
+            <DayBriefing briefing={briefing} />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -511,8 +544,8 @@ export default function DashboardPage({ config, onHome }) {
   const dayData = projection.days[selectedDay - 1];
   const staticDayData = projection.staticBaseline.days[selectedDay - 1];
 
-  // Daily briefing for the selected day
-  const briefing = projection.dailyBriefings?.[selectedDay] || null;
+  // All daily briefings (for scrollable history)
+  const briefings = projection.dailyBriefings;
 
   return (
     <div className="min-h-screen flex flex-col w-full px-6 animate-page-enter">
@@ -599,7 +632,7 @@ export default function DashboardPage({ config, onHome }) {
 
           {/* Position 3: Decisions */}
           <div>
-            <DecisionFeed briefing={briefing} />
+            <DecisionFeed briefings={briefings} selectedDay={selectedDay} />
           </div>
         </div>
       </main>
