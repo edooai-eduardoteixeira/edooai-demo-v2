@@ -796,16 +796,16 @@ export default function DashboardPage({ config, onHome }) {
             />
           </div>
 
-          {/* Hero chart */}
-          <div className="flex-1 min-w-0">
+          {/* Hero chart — takes more space */}
+          <div className="flex-[1.4] min-w-0">
             <ActiveUsersChart
               cumulativeCurve={projection.cumulativeCurve}
               currentDay={selectedDay}
             />
           </div>
 
-          {/* Cohort chart (Funnel Performance) */}
-          <div className="flex-1 min-w-0">
+          {/* Cohort chart (Funnel Performance) — reduced */}
+          <div className="flex-[0.8] min-w-0">
             <CohortChart
               cohorts={projection.cohorts}
               currentDay={selectedDay}
