@@ -152,8 +152,8 @@ function VerticalFunnel({ data, audienceSize }) {
 // ACTIVE USERS HERO CHART — reduced ~50%, <=40% screen width
 // ═══════════════════════════════════════════════════════════════════════
 function ActiveUsersChart({ cumulativeCurve, currentDay }) {
-  const width = 480;
-  const height = 220;
+  const width = 510;
+  const height = 230;
   const pad = { top: 24, right: 50, bottom: 32, left: 44 };
   const cw = width - pad.left - pad.right;
   const ch = height - pad.top - pad.bottom;
@@ -247,8 +247,8 @@ function KPICard({ label, value, detail, highlight }) {
 // ZONE A: COHORT CHART (Funnel Performance)
 // ═══════════════════════════════════════════════════════════════════════
 function CohortChart({ cohorts, currentDay }) {
-  const width = 480;
-  const height = 170;
+  const width = 290;
+  const height = 130;
   const pad = { top: 20, right: 16, bottom: 28, left: 40 };
   const cw = width - pad.left - pad.right;
   const ch = height - pad.top - pad.bottom;
