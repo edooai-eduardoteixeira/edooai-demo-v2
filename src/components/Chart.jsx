@@ -46,7 +46,7 @@ const TOKENS = {
 const DEFAULT_PADDING = { top: 10, right: 0, bottom: 40, left: 28 };
 const DEFAULT_HEIGHT = 210;
 const DEFAULT_ASPECT_RATIO = 800 / 210;
-const GRIDLINE_COUNT = 3;
+const DEFAULT_GRIDLINE_COUNT = 2;
 
 function computePoints(data, chartLeft, chartTop, chartW, chartH, maxVal) {
   return data.map((v, i) => ({
@@ -105,6 +105,7 @@ export default function Chart({
   height = DEFAULT_HEIGHT,
   aspectRatio = DEFAULT_ASPECT_RATIO,
   padding: paddingProp,
+  maxValue,
   xLabels,
   yLabels = 'auto',
   gridlines = true,
@@ -124,13 +125,13 @@ export default function Chart({
   if (title) padding.top = Math.max(padding.top, 30);
 
   const width = Math.round(height * aspectRatio);
-  const chartLeft = padding.left;
+  const chartLeft = 0;
   const chartTop = padding.top;
-  const chartW = width - padding.left - padding.right;
+  const chartW = width - padding.right;
   const chartH = height - padding.top - padding.bottom;
   const chartBottom = chartTop + chartH;
 
-  const maxVal = Math.max(...data) * 1.08; // 8% headroom
+  const maxVal = maxValue != null ? maxValue : Math.max(...data) * 1.08;
   const points = computePoints(data, chartLeft, chartTop, chartW, chartH, maxVal);
   const pathD = buildPath(points);
   const lastPt = points[points.length - 1];
@@ -146,16 +147,23 @@ export default function Chart({
   // Y labels
   let yLabelItems = [];
   if (yLabels === 'auto') {
-    const vals = autoYLabels(maxVal, GRIDLINE_COUNT);
-    yLabelItems = vals.map((val) => ({
-      val,
-      y: chartBottom - (val / maxVal) * chartH,
-    }));
+    yLabelItems = [
+      { val: 0, y: chartBottom },
+      { val: Math.round(maxVal), y: chartTop },
+    ];
   } else if (Array.isArray(yLabels)) {
     yLabelItems = yLabels.map((val) => ({
       val,
       y: chartBottom - (val / maxVal) * chartH,
     }));
+  }
+
+  // Gridlines — independent of y-labels
+  const gridlineCount = gridlines === true ? DEFAULT_GRIDLINE_COUNT : typeof gridlines === 'number' ? gridlines : 0;
+  const gridlineItems = [];
+  for (let i = 1; i <= gridlineCount; i++) {
+    const frac = i / (gridlineCount + 1);
+    gridlineItems.push(chartTop + chartH * (1 - frac));
   }
 
   const viewBox = `${-padding.left} 0 ${width + padding.left} ${height}`;
@@ -267,21 +275,18 @@ export default function Chart({
       )}
 
       {/* Gridlines */}
-      {gridlines &&
-        yLabelItems
-          .filter((item) => item.val > 0)
-          .map((item, i) => (
-            <line
-              key={`grid-${i}`}
-              x1={hasThreshold ? threshX : chartLeft}
-              y1={item.y}
-              x2={chartLeft + chartW}
-              y2={item.y}
-              stroke={TOKENS.gridline.color}
-              strokeWidth="1"
-              strokeDasharray={TOKENS.gridline.dash}
-            />
-          ))}
+      {gridlineItems.map((y, i) => (
+        <line
+          key={`grid-${i}`}
+          x1={hasThreshold ? threshX : chartLeft}
+          y1={y}
+          x2={chartLeft + chartW}
+          y2={y}
+          stroke={TOKENS.gridline.color}
+          strokeWidth="1"
+          strokeDasharray={TOKENS.gridline.dash}
+        />
+      ))}
 
       {/* X-axis baseline */}
       <line
@@ -297,8 +302,8 @@ export default function Chart({
       {yLabelItems.map((item, i) => (
         <text
           key={`y-${i}`}
-          x={chartLeft - 6}
-          y={item.y + 4}
+          x={-6}
+          y={item.y < chartTop + 5 ? item.y + 14 : item.y + 4}
           fontSize={TOKENS.axis.fontSize}
           fill={TOKENS.axis.color}
           textAnchor="end"
@@ -466,7 +471,7 @@ export default function Chart({
             const textLen = tooltipText.length * 6.5 + 16;
             const boxW = Math.max(textLen, 48);
             const boxX = Math.max(
-              chartLeft - padding.left,
+              -padding.left,
               Math.min(chartLeft + chartW - boxW, hoveredDay.x - boxW / 2),
             );
             return (
@@ -508,7 +513,7 @@ export default function Chart({
       {endpointLabel && (
         <text
           x={lastPt.x - 14}
-          y={Math.max(chartTop + 10, lastPt.y - 10)}
+          y={Math.max(10, lastPt.y - 10)}
           fontSize={TOKENS.axis.fontSize}
           fill={TOKENS.endpoint.color}
           fontWeight="600"

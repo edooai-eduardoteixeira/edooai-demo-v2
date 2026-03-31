@@ -6,6 +6,7 @@ import Tooltip from '../components/Tooltip.jsx';
 import { useProjections } from '../hooks/useProjections.js';
 import StrategyCards, { GearIcon, ChevronRight } from '../components/StrategyCards.jsx';
 import WhatUsersSee from '../components/WhatUsersSee.jsx';
+import Chart from '../components/Chart.jsx';
 
 /* ───────── Sparkline helpers ───────── */
 
@@ -238,7 +239,6 @@ export default function StrategyBuilderPage({ config, onNext, onHome }) {
   const [showCTA, setShowCTA] = useState(false);
   const [activeDrawer, setActiveDrawer] = useState(null);
 
-  const [hoveredDay, setHoveredDay] = useState(null);
   const [hoveredSparkline, setHoveredSparkline] = useState(null);
 
   const cancelRef = useRef(false);
@@ -854,144 +854,22 @@ export default function StrategyBuilderPage({ config, onNext, onHome }) {
                 </div>
 
                 <div style={{ marginTop: 8 }}>
-                  <svg
-                    viewBox="-28 0 828 210"
-                    preserveAspectRatio="xMidYMid meet"
-                    style={{ width: '100%', height: 'auto', display: 'block' }}
-                  >
-                    {(() => {
-                      const maxVal = Math.max(...dailyCurve) + 2;
-                      const chartLeft = 0, chartRight = 800, chartBottom = 170, chartTop = 10;
-                      const chartW = chartRight - chartLeft, chartH = chartBottom - chartTop;
-                      const threshX = chartLeft + ((thresholdDay - 1) / 29) * chartW;
-
-                      const points = dailyCurve.map((v, i) => {
-                        const x = chartLeft + (i / 29) * chartW;
-                        const y = chartBottom - (v / maxVal) * chartH;
-                        return { x, y };
-                      });
-                      const pathD = `M${points.map(p => `${p.x},${p.y}`).join(' L')}`;
-                      const areaD = `${pathD} L${chartRight},${chartBottom} L${chartLeft},${chartBottom} Z`;
-                      const lastPt = points[points.length - 1];
-                      const lastVal = dailyCurve[dailyCurve.length - 1];
-
-                      return (
-                        <>
-                          <defs>
-                            {/* Pre-threshold area fill */}
-                            <linearGradient id="areaFillPre" x1="0" y1={chartTop} x2="0" y2={chartBottom} gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="#A89E94" stopOpacity="0.12" />
-                              <stop offset="60%" stopColor="#A89E94" stopOpacity="0.05" />
-                              <stop offset="100%" stopColor="#A89E94" stopOpacity="0" />
-                            </linearGradient>
-                            {/* Post-threshold area fill: Pure Wine at 7% */}
-                            <linearGradient id="areaFillPost" x1="0" y1={chartTop} x2="0" y2={chartBottom} gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="var(--color-brand)" stopOpacity="0.07" />
-                              <stop offset="60%" stopColor="var(--color-brand)" stopOpacity="0.025" />
-                              <stop offset="100%" stopColor="var(--color-brand)" stopOpacity="0" />
-                            </linearGradient>
-                            {/* Post-threshold stroke gradient: warm taupe → merlot */}
-                            <linearGradient id="strokeGrad" x1={threshX} y1="0" x2={chartRight} y2="0" gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="#A89E94" />
-                              <stop offset="40%" stopColor="var(--color-brand)" stopOpacity="0.7" />
-                              <stop offset="100%" stopColor="var(--color-brand)" />
-                            </linearGradient>
-                            <clipPath id="clipPost">
-                              <rect x={threshX} y="0" width={chartRight - threshX} height="210" />
-                            </clipPath>
-                            <clipPath id="clipPre">
-                              <rect x="0" y="0" width={threshX} height="210" />
-                            </clipPath>
-                          </defs>
-
-                          {/* Light gridlines — after learning zone only */}
-                          <line x1={threshX} y1={chartTop + chartH * 0.33} x2={chartRight} y2={chartTop + chartH * 0.33} stroke="var(--border-light)" strokeWidth="1" strokeDasharray="4,4" />
-                          <line x1={threshX} y1={chartTop + chartH * 0.66} x2={chartRight} y2={chartTop + chartH * 0.66} stroke="var(--border-light)" strokeWidth="1" strokeDasharray="4,4" />
-
-                          {/* X-axis baseline */}
-                          <line x1={chartLeft} y1={chartBottom} x2={chartRight} y2={chartBottom} stroke="var(--border-light)" strokeWidth="1" />
-
-                          {/* Y-axis: 0 and max */}
-                          <text x="-6" y={chartBottom + 4} fontSize="11" fill="var(--text-tertiary)" textAnchor="end" fontFamily="var(--font-family)">0</text>
-                          <text x="-6" y={chartTop + 14} fontSize="11" fill="var(--text-tertiary)" textAnchor="end" fontFamily="var(--font-family)">{Math.round(maxVal)}</text>
-
-                          {/* X-axis labels */}
-                          <text x={chartLeft} y="190" fontSize="11" fill="var(--text-tertiary)" textAnchor="start" fontFamily="var(--font-family)">Day 1</text>
-                          <text x={chartRight} y="190" fontSize="11" fill="var(--text-tertiary)" textAnchor="end" fontFamily="var(--font-family)">Day 30</text>
-
-                          {/* Area fill — pre-threshold (slate) */}
-                          <path d={areaD} fill="url(#areaFillPre)" clipPath="url(#clipPre)" />
-                          {/* Area fill — post-threshold (dark grey) */}
-                          <path d={areaD} fill="url(#areaFillPost)" clipPath="url(#clipPost)" />
-
-                          {/* Pre-threshold curve — dashed, warm taupe */}
-                          <path d={pathD} fill="none" stroke="#A89E94" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="6,4" opacity="0.6" clipPath="url(#clipPre)" />
-
-                          {/* Post-threshold curve — confident brand gradient */}
-                          <path d={pathD} fill="none" stroke="url(#strokeGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#clipPost)" />
-
-                          {/* Threshold dashed line — warm taupe */}
-                          <line x1={threshX} y1={chartTop} x2={threshX} y2={chartBottom} stroke="#A89E94" strokeWidth="1" strokeDasharray="4,4" opacity="0.6" />
-
-                          {/* Learning phase label — anchored near dashed line */}
-                          <text x={threshX - 8} y={chartTop + 16} fontSize="11" fill="var(--text-tertiary)" fontFamily="var(--font-family)" fontWeight="500" textAnchor="end">Learning phase</text>
-                          <text x={threshX - 8} y={chartTop + 28} fontSize="11" fill="var(--text-tertiary)" fontFamily="var(--font-family)" fontWeight="400" opacity="0.6" textAnchor="end">AI calibrating signals</text>
-
-                          {/* Hover overlay */}
-                          <rect
-                            x={chartLeft} y={chartTop}
-                            width={chartW} height={chartH}
-                            fill="transparent"
-                            style={{ cursor: 'crosshair' }}
-                            onMouseMove={(e) => {
-                              const svg = e.currentTarget.closest('svg');
-                              const pt = svg.createSVGPoint();
-                              pt.x = e.clientX; pt.y = e.clientY;
-                              const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
-                              const dayIdx = Math.round(((svgP.x - chartLeft) / chartW) * 29);
-                              const clamped = Math.max(0, Math.min(29, dayIdx));
-                              setHoveredDay({ day: clamped + 1, value: dailyCurve[clamped], x: chartLeft + (clamped / 29) * chartW, y: chartBottom - (dailyCurve[clamped] / maxVal) * chartH });
-                            }}
-                            onMouseLeave={() => setHoveredDay(null)}
-                          />
-
-                          {/* Tooltip */}
-                          {hoveredDay && (
-                            <>
-                              <line x1={hoveredDay.x} y1={chartTop} x2={hoveredDay.x} y2={chartBottom} stroke="var(--color-gray-300)" strokeWidth="1" strokeDasharray="3,3" />
-                              <circle cx={hoveredDay.x} cy={hoveredDay.y} r="4" fill="var(--text-primary)" stroke="white" strokeWidth="2" />
-                              <rect
-                                x={Math.max(-20, Math.min(chartRight - 52, hoveredDay.x - 36))} y={hoveredDay.y - 32}
-                                width="72" height="22" rx="4"
-                                fill="var(--text-primary)"
-                              />
-                              <text
-                                x={Math.max(16, Math.min(chartRight - 16, hoveredDay.x))} y={hoveredDay.y - 17}
-                                fontSize="11" fontWeight="600" fill="white"
-                                textAnchor="middle" fontFamily="var(--font-family)"
-                              >
-                                Day {hoveredDay.day}: {hoveredDay.value}
-                              </text>
-                            </>
-                          )}
-
-                          {/* Endpoint */}
-                          <circle cx={lastPt.x} cy={lastPt.y} r="3.5" fill="var(--color-brand)" />
-                          <text
-                            x={lastPt.x - 14}
-                            y={Math.max(10, lastPt.y - 10)}
-                            fontSize="11"
-                            fill="var(--color-brand)"
-                            fontWeight="600"
-                            textAnchor="end"
-                            fontFamily="var(--font-family)"
-                          >
-                            {lastVal}/day
-                          </text>
-                        </>
-                      );
-                    })()}
-                  </svg>
+                  <Chart
+                    data={dailyCurve}
+                    maxValue={Math.max(...dailyCurve) + 2}
+                    xLabels={['Day 1', 'Day 30']}
+                    yLabels={[0, Math.round(Math.max(...dailyCurve) + 2)]}
+                    fill={{ color: 'var(--color-brand)', opacity: 0.07 }}
+                    threshold={{
+                      at: thresholdDay - 1,
+                      label: 'Learning phase',
+                      sublabel: 'AI calibrating signals',
+                      strokeGradient: true,
+                      preFill: { color: '#A89E94', opacity: 0.12 },
+                    }}
+                    formatTooltip={(i, v) => `Day ${i + 1}: ${v}`}
+                    endpointLabel={(v) => `${v}/day`}
+                  />
                 </div>
               </div>
             )}
