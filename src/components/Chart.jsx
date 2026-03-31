@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useId } from 'react';
+import { useState, useCallback, useId, useRef, useEffect } from 'react';
 
 /**
  * Reusable chart component that enforces the Vincor design system.
@@ -12,22 +12,23 @@ import { useState, useCallback, useRef, useId } from 'react';
 
 // --- Design tokens (from DESIGN.md) ---
 const TOKENS = {
-  line: { color: 'var(--color-brand)', width: 2.5 },
+  line: { color: 'var(--color-brand)', width: 2 },
   axis: { fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font-family)' },
-  baseline: { color: 'var(--border-light)' },
-  gridline: { color: 'var(--border-light)', dash: '4,4' },
+  gridline: { color: 'var(--border-light)', dash: '4,4', opacity: 0.45 },
   endpoint: { radius: 3.5, color: 'var(--color-brand)' },
   tooltip: {
     bg: 'var(--text-primary)',
     text: 'white',
     fontSize: 11,
     fontWeight: 600,
-    radius: 4,
+    radius: 8,
     dotRadius: 4,
-    dotStroke: 'white',
+    dotFill: 'white',
+    dotStroke: 'var(--color-brand)',
     dotStrokeWidth: 2,
     crosshairColor: 'var(--color-gray-300)',
     crosshairDash: '3,3',
+    shadow: { dx: 0, dy: 2, blur: 8, opacity: 0.18 },
   },
   title: { fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'var(--font-family)' },
   preLine: { color: '#A89E94', dash: '6,4', opacity: 0.6, width: 2 },
@@ -40,6 +41,43 @@ const DEFAULT_HEIGHT = 210;
 const VIEWBOX_WIDTH = 828;
 const DEFAULT_GRIDLINE_COUNT = 2;
 
+// --- Monotone cubic interpolation (Fritsch-Carlson) ---
+function buildMonotonePath(points) {
+  if (points.length < 2) return points.length === 1 ? `M${points[0].x},${points[0].y}` : '';
+  if (points.length === 2) return `M${points[0].x},${points[0].y}L${points[1].x},${points[1].y}`;
+
+  const n = points.length;
+  const dx = [];
+  const dy = [];
+  const m = [];
+
+  for (let i = 0; i < n - 1; i++) {
+    dx.push(points[i + 1].x - points[i].x);
+    dy.push(points[i + 1].y - points[i].y);
+    m.push(dy[i] / dx[i]);
+  }
+
+  const tangents = [m[0]];
+  for (let i = 1; i < n - 1; i++) {
+    if (m[i - 1] * m[i] <= 0) {
+      tangents.push(0);
+    } else {
+      tangents.push(3 * (dx[i - 1] + dx[i]) / ((2 * dx[i] + dx[i - 1]) / m[i - 1] + (dx[i] + 2 * dx[i - 1]) / m[i]));
+    }
+  }
+  tangents.push(m[n - 2]);
+
+  let d = `M${points[0].x},${points[0].y}`;
+  for (let i = 0; i < n - 1; i++) {
+    const cp1x = points[i].x + dx[i] / 3;
+    const cp1y = points[i].y + tangents[i] * dx[i] / 3;
+    const cp2x = points[i + 1].x - dx[i] / 3;
+    const cp2y = points[i + 1].y - tangents[i + 1] * dx[i] / 3;
+    d += `C${cp1x},${cp1y},${cp2x},${cp2y},${points[i + 1].x},${points[i + 1].y}`;
+  }
+  return d;
+}
+
 function computePoints(data, chartLeft, chartTop, chartW, chartH, maxVal) {
   return data.map((v, i) => ({
     x: chartLeft + (i / Math.max(data.length - 1, 1)) * chartW,
@@ -47,12 +85,17 @@ function computePoints(data, chartLeft, chartTop, chartW, chartH, maxVal) {
   }));
 }
 
-function buildPath(points) {
-  return points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+function buildAreaPath(curveD, lastX, firstX, bottom) {
+  return `${curveD}L${lastX},${bottom}L${firstX},${bottom}Z`;
 }
 
-function buildAreaPath(pathD, lastX, firstX, bottom) {
-  return `${pathD} L${lastX},${bottom} L${firstX},${bottom} Z`;
+function formatCompact(val) {
+  const rounded = Math.round(val);
+  if (rounded >= 1000) {
+    const k = rounded / 1000;
+    return k % 1 === 0 ? `${k}k` : `${k.toFixed(1)}k`;
+  }
+  return String(rounded);
 }
 
 function resolveXLabels(xLabels, data, chartLeft, chartW) {
@@ -80,7 +123,6 @@ function resolveXLabels(xLabels, data, chartLeft, chartW) {
   }));
 }
 
-// Convert SVG viewBox coordinate to CSS percentage position within the wrapper
 function toLeft(svgX, padLeft) {
   return `${((svgX + padLeft) / VIEWBOX_WIDTH) * 100}%`;
 }
@@ -88,7 +130,6 @@ function toTop(svgY, h) {
   return `${(svgY / h) * 100}%`;
 }
 
-// Base style for all HTML text labels — guarantees fixed CSS-pixel font sizes
 const labelBase = {
   position: 'absolute',
   fontSize: TOKENS.axis.fontSize,
@@ -97,6 +138,7 @@ const labelBase = {
   lineHeight: 1,
   whiteSpace: 'nowrap',
   pointerEvents: 'none',
+  fontVariantNumeric: 'tabular-nums',
 };
 
 const anchorTransform = {
@@ -122,8 +164,16 @@ export default function Chart({
   endpointLabel,
 }) {
   const [hoveredDay, setHoveredDay] = useState(null);
+  const [animated, setAnimated] = useState(false);
+  const svgRef = useRef(null);
   const uid = useId();
   const safeId = uid.replace(/:/g, '_');
+
+  // Entrance animation: draw line L→R
+  useEffect(() => {
+    const timer = setTimeout(() => setAnimated(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
 
   const padding = { ...DEFAULT_PADDING, ...paddingProp };
   if (title) padding.top = Math.max(padding.top, 30);
@@ -136,7 +186,7 @@ export default function Chart({
 
   const maxVal = maxValue != null ? maxValue : Math.max(...data) * 1.08;
   const points = computePoints(data, chartLeft, chartTop, chartW, chartH, maxVal);
-  const pathD = buildPath(points);
+  const pathD = buildMonotonePath(points);
   const lastPt = points[points.length - 1];
   const lastVal = data[data.length - 1];
 
@@ -205,10 +255,14 @@ export default function Chart({
       : `${hoveredDay.value}`
     : '';
 
+  // Approximate path length for draw animation
+  const pathLen = chartW * 1.2;
+
   return (
     <div style={{ position: 'relative' }}>
       {/* ── SVG: visual elements only (no text) ── */}
       <svg
+        ref={svgRef}
         viewBox={viewBox}
         preserveAspectRatio="xMidYMid meet"
         style={{ width: '100%', height: 'auto', display: 'block' }}
@@ -258,9 +312,19 @@ export default function Chart({
               </clipPath>
             </>
           )}
+
+          {/* Tooltip shadow filter */}
+          <filter id={`${safeId}-shadow`} x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow
+              dx={TOKENS.tooltip.shadow.dx}
+              dy={TOKENS.tooltip.shadow.dy}
+              stdDeviation={TOKENS.tooltip.shadow.blur / 2}
+              floodOpacity={TOKENS.tooltip.shadow.opacity}
+            />
+          </filter>
         </defs>
 
-        {/* Gridlines */}
+        {/* Gridlines — no X-axis baseline */}
         {gridlineItems.map((y, i) => (
           <line
             key={`grid-${i}`}
@@ -268,15 +332,9 @@ export default function Chart({
             y1={y} x2={chartLeft + chartW} y2={y}
             stroke={TOKENS.gridline.color} strokeWidth="1"
             strokeDasharray={TOKENS.gridline.dash}
+            opacity={TOKENS.gridline.opacity}
           />
         ))}
-
-        {/* X-axis baseline */}
-        <line
-          x1={chartLeft} y1={chartBottom}
-          x2={chartLeft + chartW} y2={chartBottom}
-          stroke={TOKENS.baseline.color} strokeWidth="1"
-        />
 
         {/* Area fills */}
         {hasThreshold && threshold.preFill && (
@@ -284,6 +342,7 @@ export default function Chart({
             d={buildAreaPath(pathD, lastPt.x, points[0].x, chartBottom)}
             fill={`url(#${safeId}-preFill)`}
             clipPath={`url(#${safeId}-clipPre)`}
+            style={{ opacity: animated ? 1 : 0, transition: 'opacity 300ms ease-out' }}
           />
         )}
         {hasThreshold && fill && (
@@ -291,16 +350,18 @@ export default function Chart({
             d={buildAreaPath(pathD, lastPt.x, points[0].x, chartBottom)}
             fill={`url(#${safeId}-areaFill)`}
             clipPath={`url(#${safeId}-clipPost)`}
+            style={{ opacity: animated ? 1 : 0, transition: 'opacity 300ms ease-out' }}
           />
         )}
         {!hasThreshold && fill && (
           <path
             d={buildAreaPath(pathD, lastPt.x, points[0].x, chartBottom)}
             fill={`url(#${safeId}-areaFill)`}
+            style={{ opacity: animated ? 1 : 0, transition: 'opacity 300ms ease-out' }}
           />
         )}
 
-        {/* Line */}
+        {/* Line with draw animation */}
         {hasThreshold ? (
           <>
             <path
@@ -325,7 +386,9 @@ export default function Chart({
             d={pathD} fill="none"
             stroke={TOKENS.line.color} strokeWidth={TOKENS.line.width}
             strokeLinecap="round" strokeLinejoin="round"
-            strokeDasharray={dashed ? '6,4' : undefined}
+            strokeDasharray={dashed ? '6,4' : (animated ? 'none' : `${pathLen}`)}
+            strokeDashoffset={animated ? 0 : pathLen}
+            style={{ transition: animated ? 'stroke-dashoffset 600ms ease-out' : 'none' }}
           />
         )}
 
@@ -350,7 +413,7 @@ export default function Chart({
           />
         )}
 
-        {/* Tooltip visuals (SVG — crosshair, dot, pill, text) */}
+        {/* Tooltip visuals */}
         {hoveredDay && (
           <>
             <line
@@ -362,7 +425,7 @@ export default function Chart({
             <circle
               cx={hoveredDay.x} cy={hoveredDay.y}
               r={TOKENS.tooltip.dotRadius}
-              fill={TOKENS.tooltip.bg}
+              fill={TOKENS.tooltip.dotFill}
               stroke={TOKENS.tooltip.dotStroke}
               strokeWidth={TOKENS.tooltip.dotStrokeWidth}
             />
@@ -373,15 +436,22 @@ export default function Chart({
                 -padding.left,
                 Math.min(chartLeft + chartW - boxW, hoveredDay.x - boxW / 2),
               );
+              // Flip tooltip below point when it would clip at the top
+              const tooltipAboveY = hoveredDay.y - 32;
+              const tooltipBelowY = hoveredDay.y + 14;
+              const flipBelow = tooltipAboveY < chartTop - 5;
+              const boxY = flipBelow ? tooltipBelowY : tooltipAboveY;
+              const textY = flipBelow ? tooltipBelowY + 15 : hoveredDay.y - 17;
               return (
                 <>
                   <rect
-                    x={boxX} y={hoveredDay.y - 32}
+                    x={boxX} y={boxY}
                     width={boxW} height={22}
                     rx={TOKENS.tooltip.radius} fill={TOKENS.tooltip.bg}
+                    filter={`url(#${safeId}-shadow)`}
                   />
                   <text
-                    x={boxX + boxW / 2} y={hoveredDay.y - 17}
+                    x={boxX + boxW / 2} y={textY}
                     fontSize={TOKENS.tooltip.fontSize}
                     fontWeight={TOKENS.tooltip.fontWeight}
                     fill={TOKENS.tooltip.text}
@@ -400,6 +470,7 @@ export default function Chart({
         <circle
           cx={lastPt.x} cy={lastPt.y}
           r={TOKENS.endpoint.radius} fill={TOKENS.endpoint.color}
+          style={{ opacity: animated ? 1 : 0, transition: 'opacity 200ms ease-out 400ms' }}
         />
       </svg>
 
@@ -416,7 +487,7 @@ export default function Chart({
             transform: 'translate(-100%, -50%)',
           }}
         >
-          {Math.round(item.val)}
+          {formatCompact(item.val)}
         </span>
       ))}
 
@@ -473,6 +544,8 @@ export default function Chart({
             transform: 'translate(-100%, -50%)',
             color: TOKENS.endpoint.color,
             fontWeight: 600,
+            opacity: animated ? 1 : 0,
+            transition: 'opacity 200ms ease-out 400ms',
           }}
         >
           {endpointLabel(lastVal)}
