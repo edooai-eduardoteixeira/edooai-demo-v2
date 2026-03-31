@@ -291,25 +291,17 @@ export function generateDayBriefing({ day, dayData, prevDayData, seed = 42, tier
     }
   }
 
-  // Recommendation — only when data is mature and constraints are binding
+  // Recommendation — simplified for current engine. Only on Day 30 (mature operation).
+  // Proper logic engine will drive this with real constraint analysis.
   let recommendation = null;
-  if (day >= 10 && dayData) {
-    const capHit = dayData.capHit;
-    const poolPct = dayData.remainingPool / eligibleCount;
-
-    if (capHit) {
-      recommendation = {
-        title: 'Increase daily contact capacity',
-        observation: `Daily contact cap reached. ${Math.round(dayData.remainingPool).toLocaleString()} eligible customers remain uncontacted.`,
-        action: `Current budget supports ${contactCount.toLocaleString()} contacts/day. Increasing to $${Math.round(budgetToday * 1.25 / 1000)}K would support ~${Math.round(contactCount * 1.25).toLocaleString()}/day.`,
-      };
-    } else if (poolPct < 0.4 && day >= 20) {
-      recommendation = {
-        title: 'Audience pool narrowing',
-        observation: `${Math.round((1 - poolPct) * 100)}% of eligible audience has been contacted. ${Math.round(dayData.remainingPool).toLocaleString()} customers remaining.`,
-        action: 'Consider expanding eligibility criteria or adjusting NPS threshold to unlock additional segments.',
-      };
-    }
+  if (day === 30 && dayData) {
+    const tier0Pct = dayData.tierDistribution[0] || 0;
+    const organicCount = Math.round(dayData.funnelCumulative.activeUser * tier0Pct);
+    recommendation = {
+      title: 'Organic referrer segment identified',
+      observation: `${Math.round(tier0Pct * 100)}% of conversions come from Tier 1 (no incentive). ${organicCount} customers converted organically. These customers don't need a reward to refer.`,
+      action: `Redirecting Tier 1 reward savings toward additional Tier 3-4 contacts could add ~${Math.round(organicCount * 0.3)} more contacts/day at no incremental cost.`,
+    };
   }
 
   return {
