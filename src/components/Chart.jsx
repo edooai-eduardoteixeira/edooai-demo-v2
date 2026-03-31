@@ -8,6 +8,10 @@ import { useState, useCallback, useId, useRef, useEffect, useLayoutEffect } from
  * dimensions or container width.
  *
  * The SVG handles only visual elements: lines, areas, gradients, dots.
+ *
+ * Supports multi-series via the `series` prop. The legacy `data` prop
+ * is normalized into `series` internally so all rendering shares one
+ * code path.
  */
 
 // --- Design tokens (from DESIGN.md) ---
@@ -34,6 +38,8 @@ const TOKENS = {
   preLine: { color: '#A89E94', dash: '6,4', opacity: 0.6, width: 2 },
   thresholdLine: { color: '#A89E94', dash: '4,4', opacity: 0.6 },
   thresholdLabel: { fontSize: 11, fontFamily: 'var(--font-family)' },
+  annotation: { color: 'var(--color-brand)', radius: 2.5, outerRadius: 6, outerOpacity: 0.15 },
+  marker: { color: 'var(--color-foreground-faint)', width: 1, dash: '2,3', opacity: 0.4 },
 };
 
 const DEFAULT_PADDING = { top: 10, right: 20, bottom: 40, left: 28 };
@@ -149,6 +155,7 @@ const anchorTransform = {
 
 export default function Chart({
   data,
+  series: seriesProp,
   title,
   height: heightProp = DEFAULT_HEIGHT,
   cssHeight,
@@ -163,6 +170,9 @@ export default function Chart({
   tooltip = true,
   formatTooltip,
   endpointLabel,
+  annotations,
+  marker,
+  legend,
 }) {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [animated, setAnimated] = useState(false);
@@ -196,6 +206,16 @@ export default function Chart({
     ? containerDims.height / containerDims.width * VIEWBOX_WIDTH
     : heightProp;
 
+  // --- Normalize data/series into a single series array ---
+  const series = seriesProp
+    ? seriesProp
+    : data
+      ? [{ data, color: TOKENS.line.color, width: TOKENS.line.width, dashed, label: undefined, opacity: 1 }]
+      : [{ data: [], color: TOKENS.line.color, width: TOKENS.line.width, label: undefined, opacity: 1 }];
+
+  // Primary series is always the first
+  const primaryData = series[0]?.data || [];
+
   // Entrance animation: draw line L→R
   useEffect(() => {
     const timer = setTimeout(() => setAnimated(true), 50);
@@ -211,18 +231,28 @@ export default function Chart({
   const chartH = height - padding.top - padding.bottom;
   const chartBottom = chartTop + chartH;
 
-  const maxVal = maxValue != null ? maxValue : Math.max(...data) * 1.08;
-  const points = computePoints(data, chartLeft, chartTop, chartW, chartH, maxVal);
-  const pathD = buildMonotonePath(points);
-  const lastPt = points[points.length - 1];
-  const lastVal = data[data.length - 1];
+  // Auto-compute maxValue from ALL series
+  const maxVal = maxValue != null
+    ? maxValue
+    : Math.max(...series.flatMap((s) => s.data || []), 0) * 1.08;
+
+  // Compute points for every series
+  const allSeriesPoints = series.map((s) =>
+    computePoints(s.data || [], chartLeft, chartTop, chartW, chartH, maxVal),
+  );
+  const allSeriesPaths = allSeriesPoints.map((pts) => buildMonotonePath(pts));
+
+  const primaryPoints = allSeriesPoints[0] || [];
+  const primaryPathD = allSeriesPaths[0] || '';
+  const lastPt = primaryPoints[primaryPoints.length - 1];
+  const lastVal = primaryData[primaryData.length - 1];
 
   const hasThreshold = threshold && threshold.at != null;
   const threshX = hasThreshold
-    ? chartLeft + (threshold.at / Math.max(data.length - 1, 1)) * chartW
+    ? chartLeft + (threshold.at / Math.max(primaryData.length - 1, 1)) * chartW
     : null;
 
-  const resolvedXLabels = resolveXLabels(xLabels, data, chartLeft, chartW);
+  const resolvedXLabels = resolveXLabels(xLabels, primaryData, chartLeft, chartW);
 
   // Y labels
   let yLabelItems = [];
@@ -262,47 +292,101 @@ export default function Chart({
       pt.x = e.clientX;
       pt.y = e.clientY;
       const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
-      const idx = Math.round(((svgP.x - chartLeft) / chartW) * (data.length - 1));
-      const clamped = Math.max(0, Math.min(data.length - 1, idx));
+      const idx = Math.round(((svgP.x - chartLeft) / chartW) * (primaryData.length - 1));
+      const clamped = Math.max(0, Math.min(primaryData.length - 1, idx));
+
+      // Compute values for ALL series at this index
+      const seriesValues = series.map((s, si) => ({
+        value: (s.data || [])[clamped],
+        color: s.color || TOKENS.line.color,
+        label: s.label,
+        y: allSeriesPoints[si]?.[clamped]?.y,
+      }));
+
       setHoveredDay({
         index: clamped,
-        value: data[clamped],
-        x: points[clamped].x,
-        y: points[clamped].y,
+        value: primaryData[clamped],
+        x: primaryPoints[clamped].x,
+        y: primaryPoints[clamped].y,
+        seriesValues,
       });
     },
-    [tooltip, chartLeft, chartW, data, points],
+    [tooltip, chartLeft, chartW, primaryData, primaryPoints, series, allSeriesPoints],
   );
 
   const handleMouseLeave = useCallback(() => setHoveredDay(null), []);
 
-  const tooltipText = hoveredDay
-    ? formatTooltip
-      ? formatTooltip(hoveredDay.index, hoveredDay.value)
-      : `${hoveredDay.value}`
-    : '';
-
   // Approximate path length for draw animation
   const pathLen = chartW * 1.2;
 
+  // Marker
+  const hasMarker = marker && marker.at != null;
+  const markerX = hasMarker
+    ? chartLeft + (marker.at / Math.max(primaryData.length - 1, 1)) * chartW
+    : null;
+
+  // Filter x-labels to only those within the primary data range
+  const clampedXLabels = resolvedXLabels.filter((item) => {
+    return item.x >= chartLeft && item.x <= chartLeft + chartW;
+  });
+
   return (
-    <div
-      ref={containerRef}
-      style={{
-        position: 'relative',
-        ...(cssHeight ? { height: cssHeight } : {}),
-      }}
-    >
+    <div>
+      {/* Legend (HTML — normal flow, above chart) */}
+      {legend && series.length > 1 && (
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '8px 16px',
+            marginBottom: 6,
+            justifyContent: 'flex-end',
+          }}
+        >
+          {series.map((s, i) => (
+            s.label ? (
+              <span
+                key={i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontSize: 11,
+                  fontFamily: 'var(--font-family)',
+                  color: 'var(--text-tertiary)',
+                  lineHeight: 1,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    backgroundColor: s.color || TOKENS.line.color,
+                    flexShrink: 0,
+                  }}
+                />
+                {s.label}
+              </span>
+            ) : null
+          ))}
+        </div>
+      )}
+      <div
+        ref={containerRef}
+        style={{
+          position: 'relative',
+          overflow: 'hidden',
+          ...(cssHeight ? { height: cssHeight } : {}),
+        }}
+      >
       {/* ── SVG: visual elements only (no text) ── */}
       <svg
         ref={svgRef}
         viewBox={viewBox}
         preserveAspectRatio="xMidYMid meet"
-        style={{
-          width: '100%',
-          height: cssHeight ? '100%' : 'auto',
-          display: 'block',
-        }}
+        style={{ width: '100%', height: cssHeight ? '100%' : 'auto', display: 'block' }}
       >
         <defs>
           {fill && (
@@ -364,60 +448,85 @@ export default function Chart({
           />
         ))}
 
-        {/* Area fills */}
-        {hasThreshold && threshold.preFill && (
+        {/* Area fills (primary series only) */}
+        {hasThreshold && threshold.preFill && primaryPoints.length >= 2 && (
           <path
-            d={buildAreaPath(pathD, lastPt.x, points[0].x, chartBottom)}
+            d={buildAreaPath(primaryPathD, lastPt.x, primaryPoints[0].x, chartBottom)}
             fill={`url(#${safeId}-preFill)`}
             clipPath={`url(#${safeId}-clipPre)`}
             style={{ opacity: animated ? 1 : 0, transition: 'opacity 300ms ease-out' }}
           />
         )}
-        {hasThreshold && fill && (
+        {hasThreshold && fill && primaryPoints.length >= 2 && (
           <path
-            d={buildAreaPath(pathD, lastPt.x, points[0].x, chartBottom)}
+            d={buildAreaPath(primaryPathD, lastPt.x, primaryPoints[0].x, chartBottom)}
             fill={`url(#${safeId}-areaFill)`}
             clipPath={`url(#${safeId}-clipPost)`}
             style={{ opacity: animated ? 1 : 0, transition: 'opacity 300ms ease-out' }}
           />
         )}
-        {!hasThreshold && fill && (
+        {!hasThreshold && fill && primaryPoints.length >= 2 && (
           <path
-            d={buildAreaPath(pathD, lastPt.x, points[0].x, chartBottom)}
+            d={buildAreaPath(primaryPathD, lastPt.x, primaryPoints[0].x, chartBottom)}
             fill={`url(#${safeId}-areaFill)`}
             style={{ opacity: animated ? 1 : 0, transition: 'opacity 300ms ease-out' }}
           />
         )}
 
-        {/* Line with draw animation */}
-        {hasThreshold ? (
-          <g style={{ opacity: animated ? 1 : 0, transition: 'opacity 500ms ease-out' }}>
+        {/* Secondary series lines (rendered before primary so primary sits on top) */}
+        {series.slice(1).map((s, si) => {
+          const idx = si + 1;
+          const pts = allSeriesPoints[idx];
+          const pathD = allSeriesPaths[idx];
+          if (!pts || pts.length < 2) return null;
+          return (
             <path
-              d={pathD} fill="none"
-              stroke={threshold.preStyle?.color || TOKENS.preLine.color}
-              strokeWidth={threshold.preStyle?.width || TOKENS.preLine.width}
-              strokeLinecap="round" strokeLinejoin="round"
-              strokeDasharray={threshold.preStyle?.dashed !== false ? (threshold.preStyle?.dash || TOKENS.preLine.dash) : undefined}
-              opacity={threshold.preStyle?.opacity ?? TOKENS.preLine.opacity}
-              clipPath={`url(#${safeId}-clipPre)`}
+              key={`series-${idx}`}
+              d={pathD}
+              fill="none"
+              stroke={s.color || TOKENS.line.color}
+              strokeWidth={s.width || TOKENS.line.width}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeDasharray={s.dotted ? '2,3' : s.dashed ? '6,4' : undefined}
+              opacity={s.opacity ?? 1}
+              style={{ opacity: animated ? (s.opacity ?? 1) : 0, transition: 'opacity 500ms ease-out' }}
             />
+          );
+        })}
+
+        {/* Primary series line with draw animation */}
+        {primaryPoints.length >= 2 && (
+          hasThreshold ? (
+            <g style={{ opacity: animated ? 1 : 0, transition: 'opacity 500ms ease-out' }}>
+              <path
+                d={primaryPathD} fill="none"
+                stroke={threshold.preStyle?.color || TOKENS.preLine.color}
+                strokeWidth={threshold.preStyle?.width || TOKENS.preLine.width}
+                strokeLinecap="round" strokeLinejoin="round"
+                strokeDasharray={threshold.preStyle?.dashed !== false ? (threshold.preStyle?.dash || TOKENS.preLine.dash) : undefined}
+                opacity={threshold.preStyle?.opacity ?? TOKENS.preLine.opacity}
+                clipPath={`url(#${safeId}-clipPre)`}
+              />
+              <path
+                d={primaryPathD} fill="none"
+                stroke={threshold.strokeGradient ? `url(#${safeId}-strokeGrad)` : (series[0]?.color || TOKENS.line.color)}
+                strokeWidth={series[0]?.width || TOKENS.line.width}
+                strokeLinecap="round" strokeLinejoin="round"
+                clipPath={`url(#${safeId}-clipPost)`}
+              />
+            </g>
+          ) : (
             <path
-              d={pathD} fill="none"
-              stroke={threshold.strokeGradient ? `url(#${safeId}-strokeGrad)` : TOKENS.line.color}
-              strokeWidth={TOKENS.line.width}
+              d={primaryPathD} fill="none"
+              stroke={series[0]?.color || TOKENS.line.color}
+              strokeWidth={series[0]?.width || TOKENS.line.width}
               strokeLinecap="round" strokeLinejoin="round"
-              clipPath={`url(#${safeId}-clipPost)`}
+              strokeDasharray={series[0]?.dashed ? '6,4' : (animated ? 'none' : `${pathLen}`)}
+              strokeDashoffset={animated ? 0 : pathLen}
+              style={{ transition: animated ? 'stroke-dashoffset 600ms ease-out' : 'none' }}
             />
-          </g>
-        ) : (
-          <path
-            d={pathD} fill="none"
-            stroke={TOKENS.line.color} strokeWidth={TOKENS.line.width}
-            strokeLinecap="round" strokeLinejoin="round"
-            strokeDasharray={dashed ? '6,4' : (animated ? 'none' : `${pathLen}`)}
-            strokeDashoffset={animated ? 0 : pathLen}
-            style={{ transition: animated ? 'stroke-dashoffset 600ms ease-out' : 'none' }}
-          />
+          )
         )}
 
         {/* Threshold vertical line */}
@@ -430,6 +539,39 @@ export default function Chart({
           />
         )}
 
+        {/* Marker vertical dashed line */}
+        {hasMarker && (
+          <line
+            x1={markerX} y1={chartTop} x2={markerX} y2={chartBottom}
+            stroke={TOKENS.marker.color}
+            strokeWidth={TOKENS.marker.width}
+            strokeDasharray={TOKENS.marker.dash}
+            opacity={TOKENS.marker.opacity}
+          />
+        )}
+
+        {/* Annotations on primary series */}
+        {annotations && annotations.map((ann, i) => {
+          const ai = ann.at;
+          if (ai < 0 || ai >= primaryPoints.length) return null;
+          const pt = primaryPoints[ai];
+          return (
+            <g key={`ann-${i}`}>
+              <circle
+                cx={pt.x} cy={pt.y}
+                r={TOKENS.annotation.outerRadius}
+                fill={TOKENS.annotation.color}
+                opacity={TOKENS.annotation.outerOpacity}
+              />
+              <circle
+                cx={pt.x} cy={pt.y}
+                r={TOKENS.annotation.radius}
+                fill={TOKENS.annotation.color}
+              />
+            </g>
+          );
+        })}
+
         {/* Hover overlay */}
         {tooltip && (
           <rect
@@ -441,7 +583,7 @@ export default function Chart({
           />
         )}
 
-        {/* Tooltip visuals (SVG: crosshair, dot, pill background) */}
+        {/* Tooltip visuals (SVG: crosshair, dot) */}
         {hoveredDay && (
           <>
             <line
@@ -450,6 +592,7 @@ export default function Chart({
               stroke={TOKENS.tooltip.crosshairColor} strokeWidth="1"
               strokeDasharray={TOKENS.tooltip.crosshairDash}
             />
+            {/* Hover dot on primary series */}
             <circle
               cx={hoveredDay.x} cy={hoveredDay.y}
               r={TOKENS.tooltip.dotRadius}
@@ -460,12 +603,14 @@ export default function Chart({
           </>
         )}
 
-        {/* Endpoint dot */}
-        <circle
-          cx={lastPt.x} cy={lastPt.y}
-          r={TOKENS.endpoint.radius} fill={TOKENS.endpoint.color}
-          style={{ opacity: animated ? 1 : 0, transition: 'opacity 200ms ease-out 400ms' }}
-        />
+        {/* Endpoint dot (primary series only) */}
+        {lastPt && (
+          <circle
+            cx={lastPt.x} cy={lastPt.y}
+            r={TOKENS.endpoint.radius} fill={TOKENS.endpoint.color}
+            style={{ opacity: animated ? 1 : 0, transition: 'opacity 200ms ease-out 400ms' }}
+          />
+        )}
       </svg>
 
       {/* ── HTML labels: always 11px CSS pixels, no SVG scaling ── */}
@@ -486,7 +631,7 @@ export default function Chart({
       ))}
 
       {/* X-axis labels */}
-      {resolvedXLabels.map((item, i) => (
+      {clampedXLabels.map((item, i) => (
         <span
           key={`x-${i}`}
           style={{
@@ -529,7 +674,7 @@ export default function Chart({
       )}
 
       {/* Endpoint label */}
-      {endpointLabel && (
+      {endpointLabel && lastPt && (
         <span
           style={{
             ...labelBase,
@@ -545,12 +690,26 @@ export default function Chart({
           {endpointLabel(lastVal)}
         </span>
       )}
+
       {/* Tooltip label (HTML — fixed 11px) */}
       {hoveredDay && (() => {
-        const tooltipAboveY = hoveredDay.y - 28;
+        const hasMutipleSeries = series.length > 1;
+        const tooltipAboveY = hoveredDay.y - (hasMutipleSeries ? 20 + series.length * 18 : 28);
         const tooltipBelowY = hoveredDay.y + 18;
         const flipBelow = tooltipAboveY < chartTop - 5;
         const tipY = flipBelow ? tooltipBelowY : tooltipAboveY;
+
+        const tooltipContent = hasMutipleSeries
+          ? hoveredDay.seriesValues
+          : null;
+
+        // Single-series: legacy tooltip text
+        const tooltipText = !hasMutipleSeries
+          ? (formatTooltip
+            ? formatTooltip(hoveredDay.index, hoveredDay.value)
+            : `${hoveredDay.value}`)
+          : null;
+
         return (
           <span
             style={{
@@ -564,17 +723,51 @@ export default function Chart({
               color: TOKENS.tooltip.text,
               background: TOKENS.tooltip.bg,
               borderRadius: TOKENS.tooltip.radius,
-              padding: '4px 10px',
+              padding: hasMutipleSeries ? '6px 10px' : '4px 10px',
               whiteSpace: 'nowrap',
               pointerEvents: 'none',
               boxShadow: `${TOKENS.tooltip.shadow.dx}px ${TOKENS.tooltip.shadow.dy}px ${TOKENS.tooltip.shadow.blur}px rgba(0,0,0,${TOKENS.tooltip.shadow.opacity})`,
               lineHeight: 1,
+              display: hasMutipleSeries ? 'flex' : undefined,
+              flexDirection: hasMutipleSeries ? 'column' : undefined,
+              gap: hasMutipleSeries ? 4 : undefined,
+              fontVariantNumeric: 'tabular-nums',
             }}
           >
-            {tooltipText}
+            {hasMutipleSeries
+              ? tooltipContent.map((sv, si) => {
+                const displayVal = formatTooltip
+                  ? formatTooltip(hoveredDay.index, sv.value)
+                  : sv.value != null ? `${sv.value}` : '—';
+                return (
+                  <span
+                    key={si}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: '50%',
+                        background: sv.color,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <span>{sv.label ? `${sv.label}: ` : ''}{displayVal}</span>
+                  </span>
+                );
+              })
+              : tooltipText}
           </span>
         );
       })()}
+
+      </div>
     </div>
   );
 }
