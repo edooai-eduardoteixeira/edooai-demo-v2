@@ -484,48 +484,52 @@ function ComparisonChart({ agenticCurve, staticCurve, annotations, currentDay })
 // ═══════════════════════════════════════════════════════════════════════
 // ZONE D: AGENT INSIGHT
 // ═══════════════════════════════════════════════════════════════════════
-function AgentInsight({ dayData, currentDay, recommendation, staticDay }) {
-  // Always show something — evolves with confidence
+function AgentInsight({ dayData, currentDay, staticDay }) {
   let title, description, type;
 
   if (currentDay <= 1) {
     type = 'observing';
-    title = 'Agent initializing';
-    description = `${fmt(dayData.journeysToday)} contacts sent. ${fmt(dayData.funnelCumulative.pending)} offers now in flight. First conversion results expected by Day 3–4.`;
-  } else if (currentDay <= 10) {
-    const actualConv = dayData.kpiCumulative.convRate;
+    title = 'Execution started';
+    description = `${fmt(dayData.journeysToday)} contacts sent across ${dayData.tierDistribution ? '4 reward tiers' : 'multiple tiers'}. ${fmt(dayData.funnelCumulative.pending)} offers now in flight. First conversion results expected by Day 3–4 as offers resolve.`;
+  } else if (currentDay <= 7) {
     type = 'learning';
-    title = 'Early signal';
-    description = `Conversion rate: ${actualConv}% — ${dayData.cumulativeN > 50 ? 'signal building' : 'early data'}. ` +
-      `${fmt(dayData.cumulativeN)} active users from ${fmt(dayData.funnelCumulative.contacted)} contacts. ` +
-      `Targeting accuracy at ${Math.round(dayData.efficiency * 100)}% (${Math.round(dayData.efficiency * 100) > 30 ? 'improving from' : 'starting at'} 30% baseline).`;
-  } else if (recommendation && recommendation.availableFromDay <= currentDay) {
-    type = 'recommendation';
-    title = recommendation.title;
-    description = `${recommendation.description} ${recommendation.action}`;
-  } else {
-    type = 'monitoring';
+    title = 'Building signal';
+    const effPct = Math.round(dayData.efficiency * 100);
+    description = `${fmt(dayData.cumulativeN)} conversions from ${fmt(dayData.funnelCumulative.contacted)} contacts. Targeting accuracy at ${effPct}% and climbing (baseline: 30%). The agent needs ~100 resolved conversions before patterns become statistically reliable.`;
+  } else if (currentDay <= 15) {
+    type = 'learning';
+    title = 'Patterns emerging';
     const agenticUsers = dayData.cumulativeN;
     const staticUsers = staticDay?.cumulativeN || 0;
     const advantage = staticUsers > 0 ? Math.round(((agenticUsers - staticUsers) / staticUsers) * 100) : 0;
-    title = 'System operating within guardrails';
-    description = `Conversion rate ${dayData.kpiCumulative.convRate}% vs ${staticDay?.kpiCumulative?.convRate || 0}% static baseline. ` +
-      `${advantage > 0 ? `${advantage}% more conversions from the same budget. ` : ''}` +
-      `Budget utilization: ${Math.round((dayData.cumulativeRewardCost / dayData.cumulativeSpend) * 100)}% of spend allocated to rewards.`;
+    const effPct = Math.round(dayData.efficiency * 100);
+    description = `Targeting accuracy reached ${effPct}%. ${advantage > 0 ? `Already ${advantage}% ahead of static rules. ` : ''}` +
+      `The agent is discovering which customer segments convert without incentive (Tier 1) vs which need higher rewards. ` +
+      `Channel mix shifting based on observed open and share rates.`;
+  } else {
+    type = 'optimizing';
+    const agenticUsers = dayData.cumulativeN;
+    const staticUsers = staticDay?.cumulativeN || 0;
+    const advantage = staticUsers > 0 ? Math.round(((agenticUsers - staticUsers) / staticUsers) * 100) : 0;
+    const effPct = Math.round(dayData.efficiency * 100);
+    const tier0Pct = Math.round((dayData.tierDistribution?.[0] || 0) * 100);
+    const valuePerUser = dayData.effectiveRevenuePerUser;
+    title = `${advantage}% ahead of static rules`;
+    description = `Targeting accuracy at ${effPct}%. ${tier0Pct}% of conversions are organic (Tier 1, $0 reward cost). ` +
+      `Revenue per converted user: $${valuePerUser} (up from $100 baseline). ` +
+      `The agent is finding high-value referrer segments that bring better customers — this is why the curves are diverging.`;
   }
 
   const typeStyles = {
     observing: 'border-foreground-faint',
     learning: 'border-warn',
-    monitoring: 'border-success',
-    recommendation: 'border-brand',
+    optimizing: 'border-success',
   };
 
   const dotStyles = {
     observing: 'bg-foreground-faint',
     learning: 'bg-warn',
-    monitoring: 'bg-success',
-    recommendation: 'bg-brand',
+    optimizing: 'bg-success',
   };
 
   return (
@@ -648,7 +652,6 @@ export default function DashboardPage({ config, onHome }) {
             <AgentInsight
               dayData={dayData}
               currentDay={selectedDay}
-              recommendation={projection.agentRecommendation}
               staticDay={staticDayData}
             />
           </div>
