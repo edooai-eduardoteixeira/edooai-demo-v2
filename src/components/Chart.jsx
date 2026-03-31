@@ -168,14 +168,15 @@ export default function Chart({
   const [animated, setAnimated] = useState(false);
   const [containerDims, setContainerDims] = useState(null);
   const containerRef = useRef(null);
+  const chartAreaRef = useRef(null);
   const svgRef = useRef(null);
   const uid = useId();
   const safeId = uid.replace(/:/g, '_');
 
-  // Measure container when cssHeight is used — match viewBox to container aspect ratio
+  // Measure the chart area (inner div) when cssHeight is used — match viewBox to its aspect ratio
   useLayoutEffect(() => {
     if (!cssHeight) return;
-    const el = containerRef.current;
+    const el = chartAreaRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
     if (rect.width > 0 && rect.height > 0) {
@@ -290,10 +291,11 @@ export default function Chart({
       ref={containerRef}
       style={{
         position: 'relative',
-        ...(cssHeight ? { height: cssHeight } : {}),
+        ...(cssHeight ? { height: cssHeight, display: 'flex', flexDirection: 'column' } : {}),
       }}
     >
       {/* ── SVG: visual elements only (no text) ── */}
+      <div ref={chartAreaRef} style={cssHeight ? { flex: 1, minHeight: 0, position: 'relative' } : { position: 'relative' }}>
       <svg
         ref={svgRef}
         viewBox={viewBox}
@@ -575,6 +577,7 @@ export default function Chart({
           </span>
         );
       })()}
+      </div>
     </div>
   );
 }
