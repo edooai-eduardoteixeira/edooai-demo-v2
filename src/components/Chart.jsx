@@ -158,12 +158,18 @@ export default function Chart({
     }));
   }
 
-  // Gridlines — independent of y-labels
-  const gridlineCount = gridlines === true ? DEFAULT_GRIDLINE_COUNT : typeof gridlines === 'number' ? gridlines : 0;
+  // Gridlines — "from-labels" aligns with y-labels, otherwise evenly spaced interior lines
   const gridlineItems = [];
-  for (let i = 1; i <= gridlineCount; i++) {
-    const frac = i / (gridlineCount + 1);
-    gridlineItems.push(chartTop + chartH * (1 - frac));
+  if (gridlines === 'from-labels') {
+    yLabelItems.forEach((item) => {
+      if (item.val > 0) gridlineItems.push(item.y);
+    });
+  } else {
+    const gridlineCount = gridlines === true ? DEFAULT_GRIDLINE_COUNT : typeof gridlines === 'number' ? gridlines : 0;
+    for (let i = 1; i <= gridlineCount; i++) {
+      const frac = i / (gridlineCount + 1);
+      gridlineItems.push(chartTop + chartH * (1 - frac));
+    }
   }
 
   const viewBox = `${-padding.left} 0 ${width + padding.left} ${height}`;
@@ -525,7 +531,9 @@ export default function Chart({
       )}
 
       {/* Escape hatch for custom SVG content */}
-      {children}
+      {typeof children === 'function'
+        ? children({ chartLeft, chartTop, chartW, chartH, chartBottom, points, maxVal, data })
+        : children}
     </svg>
   );
 }
