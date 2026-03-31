@@ -2,9 +2,14 @@
 
 These are **rules** — not suggestions. Follow them exactly for all CSS and UI work in this project.
 
-## Important: Use Tailwind Classes
+## Brand Identity
 
-All new code must use **Tailwind utility classes** — never inline `style={{}}`. Use the `cn()` helper from `src/lib/utils.js` for conditional classes. Use CVA (`class-variance-authority`) for component variants.
+**Name**: Vincor (not "Vincor AI" — dropped "AI" for brand confidence)
+**Logo**: Custom crystalline/crown mark + "Vincor" in Playfair Display serif
+**Brand color**: Pure Wine #66001F — a pure, zero-brown wine red
+**Font system**: Playfair Display (brand/display) + Inter (product UI)
+
+**Personality**: Premium, confident, warm. Think Cartier meets Stripe — luxury meets fintech. The product is an agentic referral engine. The design should feel calm, intelligent, and inevitable.
 
 ---
 
@@ -250,7 +255,7 @@ section: pt-20 relative
 
 ## Header
 
-**All pages use the same outer container**: `max-w-[1100px] mx-auto w-full px-12`. The header sits inside this container in **normal flow** — it takes its height, content starts after it. No absolute positioning.
+The header sits inside the page container (see Layout Patterns) in **normal flow** — it takes its height, content starts after it. No absolute positioning.
 
 | Page type | Logo variant | Behavior |
 |---|---|---|
@@ -552,3 +557,14 @@ Always pair with `transition-all` or specific properties (`transition-colors`, `
 7. **Every interactive element gets a transition** (duration-200 ease-out)
 8. **Focus states on everything** — never remove outlines without replacing them
 9. **Mobile-first** — design for small screens, enhance for large
+
+---
+
+## File References
+
+- Design tokens: `src/styles/global.css` @theme block
+- Logo component: `src/components/Logo.jsx`
+- Button component: `src/components/CTAButton.jsx`
+- Modal component: `src/components/Modal.jsx`
+- Brand mark: `public/vincor svg.svg`
+- Hero visual: `src/components/HeroVisual.jsx`
