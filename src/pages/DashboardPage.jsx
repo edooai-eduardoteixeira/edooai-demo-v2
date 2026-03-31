@@ -270,6 +270,50 @@ function DecisionFeed({ decisions, referrerTiers, refereeTiers }) {
 
       <div className="max-h-[200px] overflow-y-auto space-y-0">
         {decisions.map((d) => {
+          // Batch expiration summary row
+          if (d.type === 'batch') {
+            const expanded = expandedId === d.id;
+            return (
+              <div key={d.id}>
+                <button
+                  onClick={() => setExpandedId(expanded ? null : d.id)}
+                  className={cn(
+                    'w-full flex items-center gap-3 py-2 px-2 rounded-sm text-left transition-colors duration-150',
+                    'hover:bg-accent-subtle',
+                    expanded && 'bg-accent-subtle'
+                  )}
+                >
+                  <span className="text-xs text-foreground-faint">
+                    {d.count} offers expired — no conversion within offer window
+                  </span>
+                  <svg className={cn(
+                    'w-3.5 h-3.5 text-foreground-faint ml-auto transition-transform duration-200 shrink-0',
+                    expanded && 'rotate-180'
+                  )} fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                  </svg>
+                </button>
+                {expanded && (
+                  <div className="pl-4 pr-2 pb-2 ml-2 border-l-2 border-border-light">
+                    {d.items.map((item) => (
+                      <div key={item.id} className="flex items-center gap-2 py-0.5">
+                        <span className="text-[11px] text-foreground-faint">
+                          {item.name} · {item.tierLabel} · {item.channel}
+                        </span>
+                      </div>
+                    ))}
+                    {d.count > d.items.length && (
+                      <span className="text-[11px] text-foreground-faint">
+                        +{d.count - d.items.length} more
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          // Individual decision row (converted / pending)
           const outcome = OUTCOME_STYLES[d.outcome] || OUTCOME_STYLES.expired;
           const expanded = expandedId === d.id;
 
@@ -283,27 +327,18 @@ function DecisionFeed({ decisions, referrerTiers, refereeTiers }) {
                   expanded && 'bg-accent-subtle'
                 )}
               >
-                {/* Name */}
                 <span className="text-[13px] font-medium text-foreground w-28 truncate shrink-0">
                   {d.name}
                 </span>
-
-                {/* Tier */}
                 <span className="text-xs text-foreground-muted w-24 shrink-0">
                   {d.tierLabel} (${d.rewardReferrer}/${d.rewardReferee})
                 </span>
-
-                {/* Channel */}
                 <span className="text-xs text-foreground-faint w-12 shrink-0 text-center">
                   {CHANNEL_ICONS[d.channel] || d.channel}
                 </span>
-
-                {/* Time */}
                 <span className="text-xs text-foreground-faint w-16 shrink-0">
                   {fmtTime(d.hour, d.minute)}
                 </span>
-
-                {/* Outcome badge */}
                 <span className={cn(
                   'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0',
                   outcome.className
@@ -313,8 +348,6 @@ function DecisionFeed({ decisions, referrerTiers, refereeTiers }) {
                     <span className="font-normal"> (Day {d.resolvedDay})</span>
                   )}
                 </span>
-
-                {/* Expand arrow */}
                 <svg className={cn(
                   'w-3.5 h-3.5 text-foreground-faint ml-auto transition-transform duration-200 shrink-0',
                   expanded && 'rotate-180'
@@ -323,39 +356,17 @@ function DecisionFeed({ decisions, referrerTiers, refereeTiers }) {
                 </svg>
               </button>
 
-              {/* Expanded journey timeline */}
               {expanded && (
                 <div className="pl-4 pr-2 pb-3 ml-2 border-l-2 border-border-light">
                   <div className="space-y-1.5 mt-1">
-                    <TimelineEvent
-                      label={`Contacted via ${d.channel}`}
-                      day={d.day}
-                    />
-                    {d.referralSentDay && (
-                      <TimelineEvent
-                        label="Referral link shared"
-                        day={d.referralSentDay}
-                      />
-                    )}
-                    {d.signedUpDay && (
-                      <TimelineEvent
-                        label="Referee signed up"
-                        day={d.signedUpDay}
-                      />
-                    )}
+                    <TimelineEvent label={`Contacted via ${d.channel}`} day={d.day} />
+                    {d.referralSentDay && <TimelineEvent label="Referral link shared" day={d.referralSentDay} />}
+                    {d.signedUpDay && <TimelineEvent label="Referee signed up" day={d.signedUpDay} />}
                     {d.outcome === 'converted' && d.resolvedDay && (
-                      <TimelineEvent
-                        label="First transaction — Converted"
-                        day={d.resolvedDay}
-                        highlight
-                      />
+                      <TimelineEvent label="First transaction — Converted" day={d.resolvedDay} highlight />
                     )}
-                    {d.outcome === 'expired' && (
-                      <TimelineEvent
-                        label="Offer expired"
-                        day={d.day + 14}
-                        muted
-                      />
+                    {d.outcome === 'pending' && (
+                      <TimelineEvent label="Offer active — awaiting conversion" day={d.day} />
                     )}
                   </div>
                 </div>
@@ -530,7 +541,30 @@ export default function DashboardPage({ config, onHome }) {
         all.push(...projection.decisionLog[d]);
       }
     }
-    return all.slice(0, 20);
+
+    // Sort: conversions first, then pending, then expired
+    const converted = all.filter(d => d.outcome === 'converted');
+    const pending = all.filter(d => d.outcome === 'pending');
+    const expired = all.filter(d => d.outcome === 'expired');
+
+    // Build feed: individual rows for conversions + pending, summary for expirations
+    const feed = [
+      ...converted.slice(0, 10),
+      ...pending.slice(0, 5),
+    ];
+
+    // Batch expirations into a summary entry
+    if (expired.length > 0) {
+      feed.push({
+        id: 'expired-batch',
+        type: 'batch',
+        outcome: 'expired',
+        count: expired.length,
+        items: expired.slice(0, 5), // keep a few for expand
+      });
+    }
+
+    return feed;
   }, [projection, selectedDay]);
 
   return (
