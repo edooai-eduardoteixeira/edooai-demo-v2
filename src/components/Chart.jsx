@@ -1,0 +1,526 @@
+import { useState, useCallback, useId } from 'react';
+
+/**
+ * Reusable chart component that enforces the Vincor design system.
+ *
+ * Defaults (always enforced):
+ * - Brand-colored line (var(--color-brand), 2.5px stroke)
+ * - Axis labels (11px Inter, var(--text-tertiary))
+ * - X-axis baseline (var(--border-light))
+ * - Dashed gridlines (var(--border-light))
+ * - Endpoint dot (brand, 3.5px) with optional label
+ * - Hover tooltip (dark bg, white text, crosshair)
+ * - Chart title (13px semibold, var(--text-secondary))
+ *
+ * Opt-in features:
+ * - fill: area fill under line
+ * - dashed: render line as dashed
+ * - threshold: learning phase split with annotations
+ */
+
+// --- Design tokens (from DESIGN_GUIDELINES.md) ---
+const TOKENS = {
+  line: { color: 'var(--color-brand)', width: 2.5 },
+  axis: { fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font-family)' },
+  baseline: { color: 'var(--border-light)' },
+  gridline: { color: 'var(--border-light)', dash: '4,4' },
+  endpoint: { radius: 3.5, color: 'var(--color-brand)' },
+  tooltip: {
+    bg: 'var(--text-primary)',
+    text: 'white',
+    fontSize: 11,
+    fontWeight: 600,
+    radius: 4,
+    dotRadius: 4,
+    dotStroke: 'white',
+    dotStrokeWidth: 2,
+    crosshairColor: 'var(--color-gray-300)',
+    crosshairDash: '3,3',
+  },
+  title: { fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'var(--font-family)' },
+  preLine: { color: '#A89E94', dash: '6,4', opacity: 0.6, width: 2 },
+  thresholdLine: { color: '#A89E94', dash: '4,4', opacity: 0.6 },
+  thresholdLabel: { fontSize: 11, fontFamily: 'var(--font-family)' },
+};
+
+const DEFAULT_PADDING = { top: 10, right: 0, bottom: 40, left: 28 };
+const DEFAULT_HEIGHT = 210;
+const DEFAULT_ASPECT_RATIO = 800 / 210;
+const GRIDLINE_COUNT = 3;
+
+function computePoints(data, chartLeft, chartTop, chartW, chartH, maxVal) {
+  return data.map((v, i) => ({
+    x: chartLeft + (i / Math.max(data.length - 1, 1)) * chartW,
+    y: chartTop + chartH - (v / maxVal) * chartH,
+  }));
+}
+
+function buildPath(points) {
+  return points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+}
+
+function buildAreaPath(pathD, lastX, firstX, bottom) {
+  return `${pathD} L${lastX},${bottom} L${firstX},${bottom} Z`;
+}
+
+function autoYLabels(maxVal, count) {
+  const labels = [];
+  for (let i = 0; i <= count; i++) {
+    labels.push(Math.round((maxVal / count) * i));
+  }
+  return labels;
+}
+
+function resolveXLabels(xLabels, data, chartLeft, chartW) {
+  if (!xLabels || xLabels.length === 0) return [];
+  // Simple array of strings: place at start and end
+  if (typeof xLabels[0] === 'string') {
+    if (xLabels.length === 1) {
+      return [{ label: xLabels[0], x: chartLeft, anchor: 'start' }];
+    }
+    if (xLabels.length === 2) {
+      return [
+        { label: xLabels[0], x: chartLeft, anchor: 'start' },
+        { label: xLabels[1], x: chartLeft + chartW, anchor: 'end' },
+      ];
+    }
+    // 3+ strings: distribute evenly
+    return xLabels.map((label, i) => ({
+      label,
+      x: chartLeft + (i / (xLabels.length - 1)) * chartW,
+      anchor: i === 0 ? 'start' : i === xLabels.length - 1 ? 'end' : 'middle',
+    }));
+  }
+  // Array of { value, at } objects
+  return xLabels.map((item) => ({
+    label: String(item.value),
+    x: chartLeft + ((item.at - 1) / Math.max(data.length - 1, 1)) * chartW,
+    anchor: 'middle',
+  }));
+}
+
+export default function Chart({
+  data,
+  title,
+  height = DEFAULT_HEIGHT,
+  aspectRatio = DEFAULT_ASPECT_RATIO,
+  padding: paddingProp,
+  xLabels,
+  yLabels = 'auto',
+  gridlines = true,
+  fill,
+  dashed = false,
+  threshold,
+  tooltip = true,
+  formatTooltip,
+  endpointLabel,
+  children,
+}) {
+  const [hoveredDay, setHoveredDay] = useState(null);
+  const uid = useId();
+  const safeId = uid.replace(/:/g, '_');
+
+  const padding = { ...DEFAULT_PADDING, ...paddingProp };
+  if (title) padding.top = Math.max(padding.top, 30);
+
+  const width = Math.round(height * aspectRatio);
+  const chartLeft = padding.left;
+  const chartTop = padding.top;
+  const chartW = width - padding.left - padding.right;
+  const chartH = height - padding.top - padding.bottom;
+  const chartBottom = chartTop + chartH;
+
+  const maxVal = Math.max(...data) * 1.08; // 8% headroom
+  const points = computePoints(data, chartLeft, chartTop, chartW, chartH, maxVal);
+  const pathD = buildPath(points);
+  const lastPt = points[points.length - 1];
+  const lastVal = data[data.length - 1];
+
+  const hasThreshold = threshold && threshold.at != null;
+  const threshX = hasThreshold
+    ? chartLeft + (threshold.at / Math.max(data.length - 1, 1)) * chartW
+    : null;
+
+  const resolvedXLabels = resolveXLabels(xLabels, data, chartLeft, chartW);
+
+  // Y labels
+  let yLabelItems = [];
+  if (yLabels === 'auto') {
+    const vals = autoYLabels(maxVal, GRIDLINE_COUNT);
+    yLabelItems = vals.map((val) => ({
+      val,
+      y: chartBottom - (val / maxVal) * chartH,
+    }));
+  } else if (Array.isArray(yLabels)) {
+    yLabelItems = yLabels.map((val) => ({
+      val,
+      y: chartBottom - (val / maxVal) * chartH,
+    }));
+  }
+
+  const viewBox = `${-padding.left} 0 ${width + padding.left} ${height}`;
+
+  const handleMouseMove = useCallback(
+    (e) => {
+      if (!tooltip) return;
+      const svg = e.currentTarget.closest('svg');
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+      const idx = Math.round(((svgP.x - chartLeft) / chartW) * (data.length - 1));
+      const clamped = Math.max(0, Math.min(data.length - 1, idx));
+      setHoveredDay({
+        index: clamped,
+        value: data[clamped],
+        x: points[clamped].x,
+        y: points[clamped].y,
+      });
+    },
+    [tooltip, chartLeft, chartW, data, points],
+  );
+
+  const handleMouseLeave = useCallback(() => setHoveredDay(null), []);
+
+  const tooltipText = hoveredDay
+    ? formatTooltip
+      ? formatTooltip(hoveredDay.index, hoveredDay.value)
+      : `${hoveredDay.value}`
+    : '';
+
+  return (
+    <svg
+      viewBox={viewBox}
+      preserveAspectRatio="xMidYMid meet"
+      style={{ width: '100%', height: 'auto', display: 'block' }}
+    >
+      <defs>
+        {/* Area fill gradient (opt-in) */}
+        {fill && (
+          <linearGradient
+            id={`${safeId}-areaFill`}
+            x1="0"
+            y1={chartTop}
+            x2="0"
+            y2={chartBottom}
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0%" stopColor={fill.color || 'var(--color-brand)'} stopOpacity={fill.opacity || 0.07} />
+            <stop offset="60%" stopColor={fill.color || 'var(--color-brand)'} stopOpacity={(fill.opacity || 0.07) * 0.35} />
+            <stop offset="100%" stopColor={fill.color || 'var(--color-brand)'} stopOpacity={0} />
+          </linearGradient>
+        )}
+
+        {/* Threshold-specific gradients and clips */}
+        {hasThreshold && (
+          <>
+            {threshold.preFill && (
+              <linearGradient
+                id={`${safeId}-preFill`}
+                x1="0"
+                y1={chartTop}
+                x2="0"
+                y2={chartBottom}
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop offset="0%" stopColor={threshold.preFill.color || '#A89E94'} stopOpacity={threshold.preFill.opacity || 0.12} />
+                <stop offset="60%" stopColor={threshold.preFill.color || '#A89E94'} stopOpacity={(threshold.preFill.opacity || 0.12) * 0.4} />
+                <stop offset="100%" stopColor={threshold.preFill.color || '#A89E94'} stopOpacity={0} />
+              </linearGradient>
+            )}
+            {threshold.strokeGradient && (
+              <linearGradient
+                id={`${safeId}-strokeGrad`}
+                x1={threshX}
+                y1="0"
+                x2={chartLeft + chartW}
+                y2="0"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop offset="0%" stopColor={threshold.preStyle?.color || TOKENS.preLine.color} />
+                <stop offset="40%" stopColor="var(--color-brand)" stopOpacity="0.7" />
+                <stop offset="100%" stopColor="var(--color-brand)" />
+              </linearGradient>
+            )}
+            <clipPath id={`${safeId}-clipPre`}>
+              <rect x={chartLeft} y="0" width={threshX - chartLeft} height={height} />
+            </clipPath>
+            <clipPath id={`${safeId}-clipPost`}>
+              <rect x={threshX} y="0" width={chartLeft + chartW - threshX} height={height} />
+            </clipPath>
+          </>
+        )}
+      </defs>
+
+      {/* Title */}
+      {title && (
+        <text
+          x={chartLeft}
+          y={chartTop - 12}
+          fontSize={TOKENS.title.fontSize}
+          fontWeight={TOKENS.title.fontWeight}
+          fill={TOKENS.title.color}
+          fontFamily={TOKENS.title.fontFamily}
+        >
+          {title}
+        </text>
+      )}
+
+      {/* Gridlines */}
+      {gridlines &&
+        yLabelItems
+          .filter((item) => item.val > 0)
+          .map((item, i) => (
+            <line
+              key={`grid-${i}`}
+              x1={hasThreshold ? threshX : chartLeft}
+              y1={item.y}
+              x2={chartLeft + chartW}
+              y2={item.y}
+              stroke={TOKENS.gridline.color}
+              strokeWidth="1"
+              strokeDasharray={TOKENS.gridline.dash}
+            />
+          ))}
+
+      {/* X-axis baseline */}
+      <line
+        x1={chartLeft}
+        y1={chartBottom}
+        x2={chartLeft + chartW}
+        y2={chartBottom}
+        stroke={TOKENS.baseline.color}
+        strokeWidth="1"
+      />
+
+      {/* Y-axis labels */}
+      {yLabelItems.map((item, i) => (
+        <text
+          key={`y-${i}`}
+          x={chartLeft - 6}
+          y={item.y + 4}
+          fontSize={TOKENS.axis.fontSize}
+          fill={TOKENS.axis.color}
+          textAnchor="end"
+          fontFamily={TOKENS.axis.fontFamily}
+        >
+          {Math.round(item.val)}
+        </text>
+      ))}
+
+      {/* X-axis labels */}
+      {resolvedXLabels.map((item, i) => (
+        <text
+          key={`x-${i}`}
+          x={item.x}
+          y={chartBottom + 20}
+          fontSize={TOKENS.axis.fontSize}
+          fill={TOKENS.axis.color}
+          textAnchor={item.anchor}
+          fontFamily={TOKENS.axis.fontFamily}
+        >
+          {item.label}
+        </text>
+      ))}
+
+      {/* --- Area fills --- */}
+      {/* Threshold mode: separate pre/post fills */}
+      {hasThreshold && threshold.preFill && (
+        <path
+          d={buildAreaPath(pathD, lastPt.x, points[0].x, chartBottom)}
+          fill={`url(#${safeId}-preFill)`}
+          clipPath={`url(#${safeId}-clipPre)`}
+        />
+      )}
+      {hasThreshold && fill && (
+        <path
+          d={buildAreaPath(pathD, lastPt.x, points[0].x, chartBottom)}
+          fill={`url(#${safeId}-areaFill)`}
+          clipPath={`url(#${safeId}-clipPost)`}
+        />
+      )}
+      {/* Non-threshold area fill */}
+      {!hasThreshold && fill && (
+        <path
+          d={buildAreaPath(pathD, lastPt.x, points[0].x, chartBottom)}
+          fill={`url(#${safeId}-areaFill)`}
+        />
+      )}
+
+      {/* --- Line --- */}
+      {hasThreshold ? (
+        <>
+          {/* Pre-threshold: dashed warm taupe */}
+          <path
+            d={pathD}
+            fill="none"
+            stroke={threshold.preStyle?.color || TOKENS.preLine.color}
+            strokeWidth={threshold.preStyle?.width || TOKENS.preLine.width}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray={threshold.preStyle?.dashed !== false ? (threshold.preStyle?.dash || TOKENS.preLine.dash) : undefined}
+            opacity={threshold.preStyle?.opacity ?? TOKENS.preLine.opacity}
+            clipPath={`url(#${safeId}-clipPre)`}
+          />
+          {/* Post-threshold: solid brand (or gradient) */}
+          <path
+            d={pathD}
+            fill="none"
+            stroke={threshold.strokeGradient ? `url(#${safeId}-strokeGrad)` : TOKENS.line.color}
+            strokeWidth={TOKENS.line.width}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            clipPath={`url(#${safeId}-clipPost)`}
+          />
+        </>
+      ) : (
+        <path
+          d={pathD}
+          fill="none"
+          stroke={TOKENS.line.color}
+          strokeWidth={TOKENS.line.width}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeDasharray={dashed ? '6,4' : undefined}
+        />
+      )}
+
+      {/* Threshold dashed vertical line + labels */}
+      {hasThreshold && (
+        <>
+          <line
+            x1={threshX}
+            y1={chartTop}
+            x2={threshX}
+            y2={chartBottom}
+            stroke={TOKENS.thresholdLine.color}
+            strokeWidth="1"
+            strokeDasharray={TOKENS.thresholdLine.dash}
+            opacity={TOKENS.thresholdLine.opacity}
+          />
+          {threshold.label && (
+            <text
+              x={threshX - 8}
+              y={chartTop + 16}
+              fontSize={TOKENS.thresholdLabel.fontSize}
+              fill={TOKENS.axis.color}
+              fontFamily={TOKENS.thresholdLabel.fontFamily}
+              fontWeight="500"
+              textAnchor="end"
+            >
+              {threshold.label}
+            </text>
+          )}
+          {threshold.sublabel && (
+            <text
+              x={threshX - 8}
+              y={chartTop + 28}
+              fontSize={TOKENS.thresholdLabel.fontSize}
+              fill={TOKENS.axis.color}
+              fontFamily={TOKENS.thresholdLabel.fontFamily}
+              fontWeight="400"
+              opacity="0.6"
+              textAnchor="end"
+            >
+              {threshold.sublabel}
+            </text>
+          )}
+        </>
+      )}
+
+      {/* Hover overlay */}
+      {tooltip && (
+        <rect
+          x={chartLeft}
+          y={chartTop}
+          width={chartW}
+          height={chartH}
+          fill="transparent"
+          style={{ cursor: 'crosshair' }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        />
+      )}
+
+      {/* Tooltip */}
+      {hoveredDay && (
+        <>
+          <line
+            x1={hoveredDay.x}
+            y1={chartTop}
+            x2={hoveredDay.x}
+            y2={chartBottom}
+            stroke={TOKENS.tooltip.crosshairColor}
+            strokeWidth="1"
+            strokeDasharray={TOKENS.tooltip.crosshairDash}
+          />
+          <circle
+            cx={hoveredDay.x}
+            cy={hoveredDay.y}
+            r={TOKENS.tooltip.dotRadius}
+            fill={TOKENS.tooltip.bg}
+            stroke={TOKENS.tooltip.dotStroke}
+            strokeWidth={TOKENS.tooltip.dotStrokeWidth}
+          />
+          {(() => {
+            const textLen = tooltipText.length * 6.5 + 16;
+            const boxW = Math.max(textLen, 48);
+            const boxX = Math.max(
+              chartLeft - padding.left,
+              Math.min(chartLeft + chartW - boxW, hoveredDay.x - boxW / 2),
+            );
+            return (
+              <>
+                <rect
+                  x={boxX}
+                  y={hoveredDay.y - 32}
+                  width={boxW}
+                  height={22}
+                  rx={TOKENS.tooltip.radius}
+                  fill={TOKENS.tooltip.bg}
+                />
+                <text
+                  x={boxX + boxW / 2}
+                  y={hoveredDay.y - 17}
+                  fontSize={TOKENS.tooltip.fontSize}
+                  fontWeight={TOKENS.tooltip.fontWeight}
+                  fill={TOKENS.tooltip.text}
+                  textAnchor="middle"
+                  fontFamily={TOKENS.axis.fontFamily}
+                >
+                  {tooltipText}
+                </text>
+              </>
+            );
+          })()}
+        </>
+      )}
+
+      {/* Endpoint dot */}
+      <circle
+        cx={lastPt.x}
+        cy={lastPt.y}
+        r={TOKENS.endpoint.radius}
+        fill={TOKENS.endpoint.color}
+      />
+
+      {/* Endpoint label */}
+      {endpointLabel && (
+        <text
+          x={lastPt.x - 14}
+          y={Math.max(chartTop + 10, lastPt.y - 10)}
+          fontSize={TOKENS.axis.fontSize}
+          fill={TOKENS.endpoint.color}
+          fontWeight="600"
+          textAnchor="end"
+          fontFamily={TOKENS.axis.fontFamily}
+        >
+          {endpointLabel(lastVal)}
+        </text>
+      )}
+
+      {/* Escape hatch for custom SVG content */}
+      {children}
+    </svg>
+  );
+}
