@@ -207,6 +207,10 @@ Always use the `<Chart>` component (`src/components/Chart.jsx`). Never hand-code
 - Position: above chart, right-aligned, normal flow (not absolute)
 - Format: 6px colored circle + 11px muted label, 16px gap between items
 
+**Sizing:**
+- Default: chart determines its own height from the viewBox aspect ratio
+- `cssHeight` prop (e.g., `"100%"`, `"300px"`): chart fills the specified height, adjusting its internal coordinate system to match. No distortion — uniform scaling preserved. Use for dashboard layouts where the container dictates the size.
+
 **Animation:**
 - Line draws left-to-right (600ms ease-out)
 - Area fills fade in (300ms)
