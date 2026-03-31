@@ -351,34 +351,12 @@ function DecisionFeed({ decisions }) {
                 </svg>
               </button>
 
-              {/* Expanded detail */}
-              {expanded && d.type === 'contact' && (
+              {/* Expanded reasoning */}
+              {expanded && d.reasoning && (
                 <div className="pl-4 pr-2 pb-3 ml-2 border-l-2 border-border-light">
-                  <div className="space-y-1.5 mt-1">
-                    <TimelineEvent label={`Contacted via ${d.channel}`} day={d.day} />
-                  </div>
-                </div>
-              )}
-              {expanded && d.type === 'conversion' && (
-                <div className="pl-4 pr-2 pb-3 ml-2 border-l-2 border-border-light">
-                  <div className="space-y-1.5 mt-1">
-                    <TimelineEvent label={`Contacted via referral program`} day={d.contactedDay} />
-                    <TimelineEvent label="First transaction — Converted" day={d.day} highlight />
-                  </div>
-                </div>
-              )}
-              {expanded && d.type === 'holdback' && (
-                <div className="pl-4 pr-2 pb-3 ml-2 border-l-2 border-border-light">
-                  <div className="space-y-1.5 mt-1">
-                    <TimelineEvent label={d.reason} day={d.day} muted />
-                  </div>
-                </div>
-              )}
-              {expanded && d.type === 'reward_blocked' && (
-                <div className="pl-4 pr-2 pb-3 ml-2 border-l-2 border-border-light">
-                  <div className="space-y-1.5 mt-1">
-                    <TimelineEvent label={d.reason} day={d.day} muted />
-                  </div>
+                  <p className="text-xs text-foreground-muted leading-relaxed mt-1">
+                    {d.reasoning}
+                  </p>
                 </div>
               )}
             </div>
