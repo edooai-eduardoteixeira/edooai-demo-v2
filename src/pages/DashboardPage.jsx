@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import Logo from '../components/Logo.jsx';
+import Chart from '../components/Chart.jsx';
+import FunnelChart from '../components/FunnelChart.jsx';
 import { cn } from '../lib/utils.js';
 import { computeDashboardProjection } from '../engine/projectionEngine.js';
 
@@ -74,99 +76,16 @@ function DaySelector({ selected, onSelect, thresholdDay }) {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// VERTICAL FUNNEL — large bars, labels + numbers inside, no wasted space
-// ═══════════════════════════════════════════════════════════════════════
-function VerticalFunnel({ data, audienceSize }) {
-  const stages = [
-    { label: 'Eligible', value: audienceSize, key: 'eligible' },
-    { label: 'Contacted', value: data.contacted, key: 'contacted' },
-    { label: 'Referral Sent', value: data.referralSent, key: 'referralSent' },
-    { label: 'Signed Up', value: data.signedUp, key: 'signedUp' },
-    { label: 'Active User', value: data.activeUser, key: 'activeUser' },
-  ];
+// Cohort color palette — warm gray scale from design tokens
+const COHORT_COLORS = [
+  'var(--color-gray-300)', 'var(--color-gray-400)', 'var(--color-gray-500)',
+  'var(--color-gray-600)', 'var(--color-gray-700)', 'var(--color-gray-800)',
+];
 
-  const maxValue = stages[0].value;
-
-  return (
-    <div className="bg-surface border border-border rounded-lg p-5">
-      <SectionLabel>Referral Funnel</SectionLabel>
-      <div className="flex flex-col items-center mt-3">
-        {stages.map((stage, i) => {
-          const widthPct = Math.max(20, Math.sqrt(stage.value / maxValue) * 100);
-          const prevValue = i > 0 ? stages[i - 1].value : null;
-          const convRate = prevValue && prevValue > 0
-            ? ((stage.value / prevValue) * 100).toFixed(1) + '%'
-            : null;
-          const isLast = i === stages.length - 1;
-
-          return (
-            <div key={stage.key} className="w-full flex flex-col items-center">
-              {/* Conversion rate between stages — compact */}
-              {convRate && (
-                <span className="text-[10px] text-foreground-faint leading-none py-0.5">{convRate}</span>
-              )}
-
-              {/* Bar: label left, number right, all inside */}
-              <div className="w-full flex justify-center">
-                <div
-                  className={cn(
-                    'flex items-center justify-between px-3 rounded-sm transition-all duration-300 h-9',
-                    isLast ? 'bg-brand' : 'bg-accent-subtle'
-                  )}
-                  style={{ width: `${widthPct}%` }}
-                >
-                  <span className={cn(
-                    'text-xs font-medium truncate',
-                    isLast ? 'text-white' : 'text-foreground-muted'
-                  )}>
-                    {stage.label}
-                  </span>
-                  <span className={cn(
-                    'text-[13px] font-semibold shrink-0 ml-2',
-                    isLast ? 'text-white' : 'text-foreground'
-                  )}>
-                    {stage.value >= 1000 ? fmtK(stage.value) : fmt(stage.value)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Pending pipeline bridge */}
-      {data.pending > 0 && (
-        <div className="mt-3 pt-3 border-t border-border-light flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-warn shrink-0" />
-          <span className="text-[13px] text-foreground-muted">
-            <span className="font-semibold">{fmt(data.pending)} offers in flight</span>
-          </span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// ACTIVE USERS HERO CHART — reduced ~50%, <=40% screen width
-// ═══════════════════════════════════════════════════════════════════════
 function ActiveUsersChart({ cumulativeCurve, currentDay }) {
-  const width = 700;
-  const height = 310;
-  const pad = { top: 24, right: 50, bottom: 32, left: 44 };
-  const cw = width - pad.left - pad.right;
-  const ch = height - pad.top - pad.bottom;
-
   const slice = cumulativeCurve.slice(0, currentDay);
-  const fullMax = Math.max(...cumulativeCurve, 1);
-  const yMax = Math.ceil(fullMax / 200) * 200 || 200;
-
-  function toX(day) { return pad.left + ((day - 1) / 29) * cw; }
-  function toY(val) { return pad.top + ch - (val / yMax) * ch; }
-
-  const pathD = slice.map((v, i) => `${i === 0 ? 'M' : 'L'} ${toX(i + 1)} ${toY(v)}`).join(' ');
   const lastVal = slice.length > 0 ? slice[slice.length - 1] : 0;
+  const yMax = Math.ceil(Math.max(...cumulativeCurve, 1) / 200) * 200 || 200;
 
   return (
     <div className="bg-surface border border-border rounded-lg p-4">
@@ -176,47 +95,21 @@ function ActiveUsersChart({ cumulativeCurve, currentDay }) {
         </span>
         <span className="text-xs text-foreground-muted">active users</span>
       </div>
-
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full">
-        {[0, 0.5, 1].map((frac, i) => {
-          const y = toY(yMax * frac);
-          return (
-            <g key={i}>
-              <line x1={pad.left} y1={y} x2={width - pad.right} y2={y}
-                className="stroke-border-light" strokeWidth="1" />
-              <text x={pad.left - 6} y={y + 3} textAnchor="end"
-                className="fill-foreground-faint font-sans" fontSize="11">
-                {fmtK(Math.round(yMax * frac))}
-              </text>
-            </g>
-          );
-        })}
-
-        {[1, 10, 20, 30].map(d => (
-          <text key={d} x={toX(d)} y={height - 4} textAnchor="middle"
-            className="fill-foreground-faint font-sans" fontSize="11">
-            {d}
-          </text>
-        ))}
-
-        {slice.length > 1 && (
-          <>
-            <path d={`${pathD} L ${toX(slice.length)} ${toY(0)} L ${toX(1)} ${toY(0)} Z`}
-              fill="var(--color-brand)" opacity="0.07" />
-            <path d={pathD} fill="none" className="stroke-brand"
-              strokeWidth="2.5" strokeLinejoin="round" />
-            <circle cx={toX(slice.length)} cy={toY(lastVal)}
-              r="3.5" className="fill-brand" />
-          </>
-        )}
-
-        {slice.length > 0 && (
-          <text x={toX(slice.length) + 5} y={toY(lastVal) + 4}
-            className="fill-brand font-sans" fontSize="11" fontWeight="600">
-            {fmt(lastVal)}
-          </text>
-        )}
-      </svg>
+      <Chart
+        data={slice}
+        maxValue={yMax}
+        padding={{ left: 45 }}
+        xLabels={[
+          { value: '1', at: 1 },
+          { value: '10', at: 10 },
+          { value: '20', at: 20 },
+          { value: '30', at: 30 },
+        ]}
+        yLabels={[0, yMax * 0.5, yMax]}
+        gridlines="from-labels"
+        fill={{ color: 'var(--color-brand)', opacity: 0.07 }}
+        endpointLabel={(v) => fmt(v)}
+      />
     </div>
   );
 }
@@ -243,99 +136,50 @@ function KPICard({ label, value, detail, highlight }) {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// ZONE A: COHORT CHART (Funnel Performance)
-// ═══════════════════════════════════════════════════════════════════════
 function CohortChart({ cohorts, currentDay }) {
-  const width = 480;
-  const height = 215;
-  const pad = { top: 20, right: 16, bottom: 28, left: 40 };
-  const cw = width - pad.left - pad.right;
-  const ch = height - pad.top - pad.bottom;
-
-  // Pick representative cohorts visible at the current day stop
   const repDays = [2, 5, 10, 15, 20, 25].filter(d => d <= currentDay && cohorts[d]);
   if (repDays.length === 0 && cohorts[1]) repDays.push(1);
 
-  // Find max cumulative for Y scale
   let maxCum = 1;
   for (const d of repDays) {
-    const curve = cohorts[d]?.cumulativeResolved || [];
-    for (const v of curve) {
+    for (const v of (cohorts[d]?.cumulativeResolved || [])) {
       if (v > maxCum) maxCum = v;
     }
   }
   maxCum = Math.ceil(maxCum / 5) * 5;
 
-  // Color gradient: early cohorts lighter, later cohorts darker
-  const cohortColors = [
-    '#D1C8BE', '#A89E94', '#7D7368', '#6B5E54', '#4A3F37', '#2C2320',
-  ];
-
-  function toPoints(curve) {
-    const maxDays = Math.min(curve.length, 14);
-    return curve.slice(0, maxDays).map((v, i) => ({
-      x: pad.left + (i / 13) * cw,
-      y: pad.top + ch - (v / maxCum) * ch,
-    }));
-  }
+  const cohortSeries = repDays.map((day, idx) => {
+    const isLatest = idx === repDays.length - 1;
+    return {
+      data: (cohorts[day]?.cumulativeResolved || []).slice(0, 14),
+      color: COHORT_COLORS[Math.min(idx, COHORT_COLORS.length - 1)],
+      width: isLatest ? 2 : 1.5,
+      opacity: isLatest ? 1 : 0.7,
+      label: `D${day}`,
+    };
+  });
 
   return (
     <div className="bg-surface border border-border rounded-lg p-4 h-full">
       <SectionLabel>Funnel Performance</SectionLabel>
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full">
-        {/* Grid lines */}
-        {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => {
-          const y = pad.top + ch * (1 - frac);
-          return (
-            <g key={i}>
-              <line x1={pad.left} y1={y} x2={width - pad.right} y2={y}
-                className="stroke-border-light" strokeWidth="1" />
-              <text x={pad.left - 6} y={y + 3} textAnchor="end"
-                className="fill-foreground-faint font-sans" fontSize="11">
-                {Math.round(maxCum * frac)}
-              </text>
-            </g>
-          );
-        })}
-
-        {/* X-axis labels */}
-        {[0, 3, 7, 10, 14].map(d => (
-          <text key={d} x={pad.left + (Math.min(d, 13) / 13) * cw} y={height - 6}
-            textAnchor="middle" className="fill-foreground-faint font-sans" fontSize="11">
-            +{d}d
-          </text>
-        ))}
-
-        {/* Cohort lines */}
-        {repDays.map((day, idx) => {
-          const curve = cohorts[day]?.cumulativeResolved || [];
-          const points = toPoints(curve);
-          if (points.length < 2) return null;
-          const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-          const color = cohortColors[Math.min(idx, cohortColors.length - 1)];
-          const isLatest = idx === repDays.length - 1;
-          return (
-            <g key={day}>
-              <path d={pathD} fill="none" stroke={color}
-                strokeWidth={isLatest ? 2.5 : 1.5} strokeLinejoin="round"
-                opacity={isLatest ? 1 : 0.7} />
-              {/* End label */}
-              {points.length > 0 && (
-                <text x={points[points.length - 1].x + 4} y={points[points.length - 1].y + 3}
-                  className="font-sans" fontSize="9" fill={color} fontWeight={isLatest ? 600 : 400}>
-                  D{day}
-                </text>
-              )}
-            </g>
-          );
-        })}
-      </svg>
-
-      {/* Legend */}
+      <Chart
+        series={cohortSeries}
+        maxValue={maxCum}
+        padding={{ left: 40 }}
+        xLabels={[
+          { value: '+0d', at: 1 },
+          { value: '+3d', at: 4 },
+          { value: '+7d', at: 8 },
+          { value: '+10d', at: 11 },
+          { value: '+14d', at: 14 },
+        ]}
+        yLabels={[0, 0.25, 0.5, 0.75, 1].map(f => Math.round(maxCum * f))}
+        gridlines="from-labels"
+        formatTooltip={(i, v) => Math.round(v).toLocaleString()}
+      />
       <div className="flex flex-wrap gap-3 mt-2">
         {repDays.map((day, idx) => {
-          const color = cohortColors[Math.min(idx, cohortColors.length - 1)];
+          const color = COHORT_COLORS[Math.min(idx, COHORT_COLORS.length - 1)];
           const rate = cohorts[day]?.convRate || 0;
           return (
             <div key={day} className="flex items-center gap-1.5">
@@ -500,38 +344,10 @@ function TimelineEvent({ label, day, highlight, muted }) {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// ZONE C: AGENTIC vs STATIC COMPARISON CHART
-// ═══════════════════════════════════════════════════════════════════════
 function ComparisonChart({ agenticCurve, staticCurve, annotations, currentDay }) {
-  const width = 700;
-  const height = 280;
-  const pad = { top: 30, right: 80, bottom: 40, left: 50 };
-  const cw = width - pad.left - pad.right;
-  const ch = height - pad.top - pad.bottom;
-
-  // Slice curves to current day
   const agSlice = agenticCurve.slice(0, currentDay);
   const stSlice = staticCurve.slice(0, currentDay);
-
-  const maxVal = Math.max(
-    ...agenticCurve,
-    ...staticCurve,
-    1
-  );
-  const yMax = Math.ceil(maxVal / 200) * 200;
-
-  function toX(day) { return pad.left + ((day - 1) / 29) * cw; }
-  function toY(val) { return pad.top + ch - (val / yMax) * ch; }
-
-  function buildPath(data) {
-    return data.map((v, i) => `${i === 0 ? 'M' : 'L'} ${toX(i + 1)} ${toY(v)}`).join(' ');
-  }
-
-  const agPath = buildPath(agSlice);
-  const stPath = buildPath(stSlice);
-
-  // Active annotations (up to current day)
+  const yMax = Math.ceil(Math.max(...agenticCurve, ...staticCurve, 1) / 200) * 200;
   const activeAnnotations = (annotations || []).filter(a => a.day <= currentDay);
 
   return (
@@ -544,92 +360,29 @@ function ComparisonChart({ agenticCurve, staticCurve, annotations, currentDay })
             <span className="text-[11px] text-foreground-muted">Vincor Agent</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-4 h-0.5 bg-gray-300 rounded-full" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #D1C8BE, #D1C8BE 3px, transparent 3px, transparent 6px)' }} />
+            <span className="w-4 h-0.5 rounded-full" style={{ backgroundImage: 'repeating-linear-gradient(90deg, var(--color-gray-300), var(--color-gray-300) 3px, transparent 3px, transparent 6px)' }} />
             <span className="text-[11px] text-foreground-muted">Static Rules</span>
           </div>
         </div>
       </div>
 
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full">
-        {/* Grid */}
-        {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => {
-          const y = toY(yMax * frac);
-          return (
-            <g key={i}>
-              <line x1={pad.left} y1={y} x2={width - pad.right} y2={y}
-                className="stroke-border-light" strokeWidth="1" />
-              <text x={pad.left - 8} y={y + 3} textAnchor="end"
-                className="fill-foreground-faint font-sans" fontSize="10">
-                {fmt(Math.round(yMax * frac))}
-              </text>
-            </g>
-          );
-        })}
+      <Chart
+        series={[
+          { data: agSlice, color: 'var(--color-brand)', label: fmt(agSlice[agSlice.length - 1] || 0) },
+          { data: stSlice, color: 'var(--color-gray-300)', dashed: true, width: 1.5, label: fmt(stSlice[stSlice.length - 1] || 0) },
+        ]}
+        maxValue={yMax}
+        padding={{ left: 50, right: 20 }}
+        xLabels={[1, 5, 10, 15, 20, 25, 30].map(d => ({ value: String(d), at: d }))}
+        yLabels={[0, 0.25, 0.5, 0.75, 1].map(f => Math.round(yMax * f))}
+        gridlines="from-labels"
+        fill={{ color: 'var(--color-brand)', opacity: 0.06 }}
+        annotations={activeAnnotations.map(a => ({ at: a.day - 1 }))}
+        marker={{ at: currentDay - 1 }}
+        endpointLabel={(v) => fmt(v)}
+        formatTooltip={(i, v) => fmt(v)}
+      />
 
-        {/* X-axis */}
-        {[1, 5, 10, 15, 20, 25, 30].map(day => (
-          <text key={day} x={toX(day)} y={height - 8} textAnchor="middle"
-            className="fill-foreground-faint font-sans" fontSize="10">
-            {day}
-          </text>
-        ))}
-        <text x={pad.left + cw / 2} y={height} textAnchor="middle"
-          className="fill-foreground-faint font-sans" fontSize="9">
-          Day
-        </text>
-
-        {/* Static line (dashed, gray) */}
-        {stSlice.length > 1 && (
-          <path d={stPath} fill="none" stroke="#D1C8BE" strokeWidth="1.5"
-            strokeDasharray="4,3" strokeLinejoin="round" />
-        )}
-
-        {/* Agentic line (solid, brand) */}
-        {agSlice.length > 1 && (
-          <>
-            {/* Area fill */}
-            <path d={`${agPath} L ${toX(agSlice.length)} ${toY(0)} L ${toX(1)} ${toY(0)} Z`}
-              fill="var(--color-brand)" opacity="0.06" />
-            <path d={agPath} fill="none" className="stroke-brand" strokeWidth="2.5" strokeLinejoin="round" />
-            {/* End dot */}
-            <circle cx={toX(agSlice.length)} cy={toY(agSlice[agSlice.length - 1])}
-              r="4" className="fill-brand" />
-          </>
-        )}
-
-        {/* Current day marker */}
-        <line x1={toX(currentDay)} y1={pad.top} x2={toX(currentDay)} y2={pad.top + ch}
-          stroke="var(--color-foreground-faint)" strokeWidth="1" strokeDasharray="2,3" opacity="0.4" />
-
-        {/* End labels */}
-        {agSlice.length > 0 && (
-          <text x={toX(agSlice.length) + 6} y={toY(agSlice[agSlice.length - 1]) + 4}
-            className="fill-brand font-sans" fontSize="11" fontWeight="600">
-            {fmt(agSlice[agSlice.length - 1])}
-          </text>
-        )}
-        {stSlice.length > 0 && (
-          <text x={toX(stSlice.length) + 6} y={toY(stSlice[stSlice.length - 1]) + 4}
-            className="fill-foreground-faint font-sans" fontSize="11">
-            {fmt(stSlice[stSlice.length - 1])}
-          </text>
-        )}
-
-        {/* Annotation markers */}
-        {activeAnnotations.map((a, i) => {
-          const agVal = agSlice[a.day - 1] || 0;
-          return (
-            <g key={i}>
-              <circle cx={toX(a.day)} cy={toY(agVal)} r="6"
-                fill="var(--color-brand)" opacity="0.15" />
-              <circle cx={toX(a.day)} cy={toY(agVal)} r="2.5"
-                fill="var(--color-brand)" />
-            </g>
-          );
-        })}
-      </svg>
-
-      {/* Annotations list */}
       {activeAnnotations.length > 0 && (
         <div className="mt-4 pt-3 border-t border-border-light space-y-2">
           {activeAnnotations.map((a, i) => (
@@ -790,10 +543,21 @@ export default function DashboardPage({ config, onHome }) {
 
           {/* Funnel — fixed width, matching original */}
           <div className="w-[280px] shrink-0">
-            <VerticalFunnel
-              data={dayData.funnelCumulative}
-              audienceSize={projection.audienceSize}
-            />
+            <div className="bg-surface border border-border rounded-lg p-5">
+              <SectionLabel>Referral Funnel</SectionLabel>
+              <div className="mt-3">
+                <FunnelChart
+                  stages={[
+                    { label: 'Eligible', value: projection.audienceSize },
+                    { label: 'Contacted', value: dayData.funnelCumulative.contacted },
+                    { label: 'Referral Sent', value: dayData.funnelCumulative.referralSent },
+                    { label: 'Signed Up', value: dayData.funnelCumulative.signedUp },
+                    { label: 'Active User', value: dayData.funnelCumulative.activeUser },
+                  ]}
+                  pending={dayData.funnelCumulative.pending}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Hero chart — takes more space */}
