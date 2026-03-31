@@ -172,12 +172,61 @@ All grays are warm. No blue or cool undertones.
 
 ### Chart and data visualization
 
-- **Chart lines**: `var(--color-brand)` — brand carries the data story
-- **Area fills**: `var(--color-brand)` at 7% opacity — subtle brand tint that connects fill to line
-- **Pre-threshold / uncertain data**: Warm taupe `#A89E94` dashed lines
-- **Axis labels**: `var(--text-tertiary)`
-- **Gridlines**: `var(--border-light)`
-- **Tooltips**: `var(--text-primary)` background with white text
+Always use the `<Chart>` component (`src/components/Chart.jsx`). Never hand-code SVG charts. The component enforces all specs below automatically.
+
+**Line:**
+- Color: `var(--color-brand)` — brand carries the data story
+- Thickness: 2px
+- Interpolation: monotone cubic (smooth curves through data points)
+- Caps/joins: round
+
+**Area fills** (opt-in via `fill` prop):
+- `var(--color-brand)` at 7% opacity — subtle brand tint
+- Gradient fades to 0% at 60% height
+
+**Pre-threshold / uncertain data**: Warm taupe `#A89E94` dashed lines (opt-in via `threshold` prop)
+
+**Axes and gridlines:**
+- Axis labels: 11px Inter, `var(--text-tertiary)`, tabular numerals, rendered as HTML (not SVG) for consistent sizing
+- Gridlines: dashed, `var(--border-light)`, 0.45 opacity — barely visible
+- No X-axis baseline — gridlines are sufficient
+- Y-axis values: compact formatting for 1000+ (e.g. "1.4k")
+
+**Endpoint:**
+- Dot: 3.5px radius, `var(--color-brand)`, always visible
+- Label: opt-in via `endpointLabel` prop, 11px semibold brand color
+
+**Tooltip (on hover):**
+- Background: `var(--text-primary)`, white text, 8px border-radius, soft shadow
+- Hover dot: hollow (white fill, brand stroke, 4px radius)
+- Crosshair: dashed vertical line, `var(--color-gray-300)`
+- Flips below the point when near the chart top edge
+- Multi-series: shows all values with colored circles
+
+**Legend** (opt-in via `legend` prop):
+- Position: above chart, right-aligned, normal flow (not absolute)
+- Format: 6px colored circle + 11px muted label, 16px gap between items
+
+**Animation:**
+- Line draws left-to-right (600ms ease-out)
+- Area fills fade in (300ms)
+- Endpoint dot fades in (200ms, 400ms delay)
+- Threshold charts: fade in (500ms)
+
+**Multi-series** (via `series` prop):
+- First series is primary (gets area fill, endpoint dot, animation)
+- Secondary series render as supporting lines
+- Each series: `{ data, color, dashed, dotted, width, opacity, label }`
+- Cohort charts: use warm gray sequential palette (gray-300 → gray-800 → brand)
+
+**Funnel charts:**
+Always use the `<FunnelChart>` component (`src/components/FunnelChart.jsx`).
+- Left-aligned horizontal bars
+- Stage label above each bar (11px, medium weight)
+- Number outside bar, right side (13px, semibold)
+- 4px border-radius, 8px gap between bars
+- Last stage uses `bg-brand` with white text
+- Linear proportion for bar width (not sqrt)
 
 ---
 
@@ -568,3 +617,5 @@ Always pair with `transition-all` or specific properties (`transition-colors`, `
 - Modal component: `src/components/Modal.jsx`
 - Brand mark: `public/vincor svg.svg`
 - Hero visual: `src/components/HeroVisual.jsx`
+- Chart component: `src/components/Chart.jsx`
+- Funnel chart component: `src/components/FunnelChart.jsx`
