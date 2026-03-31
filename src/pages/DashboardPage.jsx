@@ -152,9 +152,9 @@ function VerticalFunnel({ data, audienceSize }) {
 // ACTIVE USERS HERO CHART — reduced ~50%, <=40% screen width
 // ═══════════════════════════════════════════════════════════════════════
 function ActiveUsersChart({ cumulativeCurve, currentDay }) {
-  const width = 320;
-  const height = 150;
-  const pad = { top: 16, right: 44, bottom: 24, left: 40 };
+  const width = 480;
+  const height = 220;
+  const pad = { top: 24, right: 50, bottom: 32, left: 44 };
   const cw = width - pad.left - pad.right;
   const ch = height - pad.top - pad.bottom;
 
@@ -247,9 +247,9 @@ function KPICard({ label, value, detail, highlight }) {
 // ZONE A: COHORT CHART (Funnel Performance)
 // ═══════════════════════════════════════════════════════════════════════
 function CohortChart({ cohorts, currentDay }) {
-  const width = 340;
-  const height = 155;
-  const pad = { top: 18, right: 16, bottom: 24, left: 36 };
+  const width = 480;
+  const height = 170;
+  const pad = { top: 20, right: 16, bottom: 28, left: 40 };
   const cw = width - pad.left - pad.right;
   const ch = height - pad.top - pad.bottom;
 
@@ -788,8 +788,8 @@ export default function DashboardPage({ config, onHome }) {
             />
           </div>
 
-          {/* Funnel — fills remaining space */}
-          <div className="flex-1 min-w-0">
+          {/* Funnel — fixed width, matching original */}
+          <div className="w-[280px] shrink-0">
             <VerticalFunnel
               data={dayData.funnelCumulative}
               audienceSize={projection.audienceSize}
