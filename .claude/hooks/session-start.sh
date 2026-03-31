@@ -209,7 +209,8 @@ fi
 if [ "$COMMAND" = "goto" ]; then
   URL="$1"
   [ -n "$URL" ] || { echo "Usage: browse goto <url>" >&2; exit 1; }
-  send_cmd "js" "[\"window.location.href=$(python3 -c "import json; print(json.dumps('$URL'))")\"]" > /dev/null 2>&1
+  JS_ARGS=$(python3 -c "import json,sys; print(json.dumps(['window.location.href='+json.dumps(sys.argv[1])]))" "$URL")
+  send_cmd "js" "$JS_ARGS" > /dev/null 2>&1
   for i in $(seq 1 24); do
     sleep 0.5
     CUR=$(curl -sf "http://127.0.0.1:$PORT/health" -H "Authorization: Bearer $TOKEN" 2>/dev/null \
