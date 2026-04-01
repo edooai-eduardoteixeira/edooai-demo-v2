@@ -528,11 +528,18 @@ function runSimulation({ budget, params, staticMode = false }) {
     cumSignedUp += Math.round(signedUp);
     cumActiveUser += Math.max(0, Math.round(resolvedToday));
 
-    // Count pending offers
+    // Count pending offers + pipeline forecast
     let pending = 0;
+    let pipeline7Day = 0;
     for (const entry of pendingConversions) {
-      if (entry.resolveDay > day) pending += entry.count;
+      if (entry.resolveDay > day) {
+        pending += entry.count;
+        if (entry.resolveDay <= day + 7) pipeline7Day += entry.count;
+      }
     }
+
+    // Sustainability: simple placeholder (remainingPool / audienceSize)
+    const sustainabilityPct = audienceSize > 0 ? remainingPool / audienceSize : 1;
 
     // Tier distribution for this day
     const tierDist = getTierDistribution(tierReach, tierDistCheap, tierDistExpensive, eff, effTierDiscount);
@@ -553,6 +560,12 @@ function runSimulation({ budget, params, staticMode = false }) {
       rewardCostPerConversion: Math.round(dailyRewardCost),
       effectiveRevenuePerUser: Math.round(effectiveRevenuePerUser),
       tierDistribution: tierDist.map(v => Math.round(v * 100) / 100),
+      // Campaign health fields
+      maxCapacity: Math.round(maxCapacity),
+      dailyJourneyTarget: Math.round(dailyJourneyTarget),
+      pipeline7Day: Math.round(pipeline7Day),
+      sustainabilityPct: Math.round(sustainabilityPct * 100) / 100,
+      sustainabilityStatus: sustainabilityPct > 0.7 ? 'sustainable' : sustainabilityPct > 0.4 ? 'tightening' : 'at_risk',
       funnelCumulative: {
         contacted: cumContacted,
         referralSent: cumReferralSent,

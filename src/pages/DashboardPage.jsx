@@ -87,6 +87,136 @@ const COHORT_COLORS = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════════
+// CAMPAIGN HEALTH ROW — compact status strip at top of Block 1
+// ═══════════════════════════════════════════════════════════════════════
+
+const STATUS_BADGES = {
+  on_track: { label: 'On Track', className: 'bg-[#d1fae5] text-[#065f46]' },
+  ahead: { label: 'Ahead', className: 'bg-[#d1fae5] text-[#065f46]' },
+  learning: { label: 'Learning', className: 'bg-border-light text-foreground-muted' },
+  behind: { label: 'Behind', className: 'bg-[#fef3c7] text-[#92400e]' },
+  sustainable: { label: 'Sustainable', className: 'bg-[#d1fae5] text-[#065f46]' },
+  growing: { label: 'Growing', className: 'bg-[#d1fae5] text-[#065f46]' },
+  tightening: { label: 'Tightening', className: 'bg-[#fef3c7] text-[#92400e]' },
+  at_risk: { label: 'At Risk', className: 'bg-[#fee2e2] text-[#991b1b]' },
+};
+
+function StatusBadge({ status }) {
+  const badge = STATUS_BADGES[status] || STATUS_BADGES.learning;
+  return (
+    <span className={cn('text-xs font-semibold px-2 py-0.5 rounded-full', badge.className)}>
+      {badge.label}
+    </span>
+  );
+}
+
+function getCampaignStatus(dayData, selectedDay, targetActiveUsers, thresholdDay) {
+  if (selectedDay <= thresholdDay) return 'learning';
+  const progress = dayData.cumulativeN / targetActiveUsers;
+  const expectedProgress = selectedDay / 30;
+  if (progress >= expectedProgress * 0.9) return 'on_track';
+  return 'behind';
+}
+
+function CampaignHealthRow({ dayData, selectedDay, projection }) {
+  const [expanded, setExpanded] = useState(false);
+  const targetActiveUsers = projection.activeUsers;
+  const budget = projection.budget;
+
+  // Campaign Status
+  const campaignStatus = getCampaignStatus(dayData, selectedDay, targetActiveUsers, projection.thresholdDay);
+
+  // Budget pacing: (cumulative spend %) / (day elapsed %)
+  const elapsedPct = selectedDay / 30;
+  const spentPct = budget > 0 ? dayData.cumulativeSpend / budget : 0;
+  const pacingIndex = elapsedPct > 0 ? Math.round((spentPct / elapsedPct) * 10) / 10 : 0;
+  const spent = dayData.cumulativeSpend;
+  const remaining = budget - spent;
+
+  // Audience health
+  const capacityUsed = dayData.maxCapacity > 0
+    ? Math.round((dayData.dailyJourneyTarget / dayData.maxCapacity) * 100)
+    : 0;
+
+  // Pipeline
+  const pipeline7Day = dayData.pipeline7Day || 0;
+
+  // Active indicator: amber before threshold, green after
+  const isCalibrating = selectedDay <= projection.thresholdDay;
+
+  // Expand narrative
+  const phase = selectedDay <= 7 ? 'Learning' : selectedDay <= 20 ? 'Scaling' : 'Optimized';
+  const pending = dayData.funnelCumulative?.pending || 0;
+  const narrativeText = selectedDay >= 30
+    ? 'Campaign complete. All 30-day results are final.'
+    : `Agent in ${phase} phase (Day ${selectedDay}). ${fmt(pending)} offers currently in flight. Based on cohort conversion rates, expect ~${fmt(pipeline7Day)} more activations in the next 7 days.`;
+
+  return (
+    <div>
+      <div className="flex items-center gap-3 bg-accent-subtle px-5 py-2 rounded-t-lg border-b border-border-light">
+        {/* Active indicator */}
+        <span className="flex items-center gap-1.5 shrink-0">
+          <span className={cn('w-2 h-2 rounded-full', isCalibrating ? 'bg-warn' : 'bg-success')} />
+          <span className={cn(
+            'text-[11px] font-semibold tracking-[0.05em] uppercase',
+            isCalibrating ? 'text-warn' : 'text-success'
+          )}>
+            {isCalibrating ? 'Calibrating' : 'Active'}
+          </span>
+        </span>
+
+        {/* Divider */}
+        <div className="w-px h-4 bg-border-light shrink-0" />
+
+        {/* Campaign Status */}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center gap-2 hover:bg-accent-light rounded-sm px-1.5 py-0.5 -mx-1.5 transition-colors duration-150"
+        >
+          <StatusBadge status={campaignStatus} />
+          <span className="text-[13px] text-foreground-muted">
+            {fmt(dayData.cumulativeN)} users · +{fmt(pipeline7Day)} this week · target ~{fmtK(targetActiveUsers)}
+          </span>
+          <svg className={cn(
+            'w-3 h-3 text-foreground-faint transition-transform duration-200 shrink-0',
+            expanded && 'rotate-180'
+          )} fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+          </svg>
+        </button>
+
+        {/* Divider */}
+        <div className="w-px h-4 bg-border-light shrink-0" />
+
+        {/* Budget */}
+        <span className="flex items-center gap-1.5">
+          <span className="text-[13px] font-semibold text-foreground">{pacingIndex}x</span>
+          <span className="text-[13px] text-foreground-muted">
+            · {fmtDollar(spent)} spent · {fmtDollar(remaining)} left · Day {selectedDay}/30
+          </span>
+        </span>
+
+        {/* Divider */}
+        <div className="w-px h-4 bg-border-light shrink-0" />
+
+        {/* Audience Health */}
+        <span className="flex items-center gap-2">
+          <StatusBadge status={dayData.sustainabilityStatus} />
+          <span className="text-[13px] text-foreground-muted">{capacityUsed}% capacity used</span>
+        </span>
+      </div>
+
+      {/* Expandable narrative */}
+      {expanded && (
+        <div className="bg-accent-subtle px-5 py-2.5 border-b border-border-light text-[13px] text-foreground-muted leading-relaxed">
+          {narrativeText}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // KPI SELECTOR — tabs that control the hero chart
 // ═══════════════════════════════════════════════════════════════════════
 const KPI_DEFS = [
@@ -513,17 +643,25 @@ export default function DashboardPage({ config, onHome }) {
       </header>
 
       <main className="flex-1 pb-8">
-        {/* ── POSITION 1: RESULTS — one unified area ── */}
-        <div className="bg-surface border border-border rounded-lg p-5 mb-5 h-[380px]">
-          <div className="flex gap-5 h-full">
-            {/* LEFT COLUMN (60%): KPI selector + hero chart */}
+        {/* ── POSITION 1: RESULTS — command center ── */}
+        <div className="bg-surface border border-border rounded-lg mb-5 h-[420px] flex flex-col">
+          {/* Campaign Health Row — compact status strip */}
+          <CampaignHealthRow
+            dayData={dayData}
+            selectedDay={selectedDay}
+            projection={projection}
+          />
+
+          {/* Main content area */}
+          <div className="flex gap-5 flex-1 min-h-0 p-5 pt-3">
+            {/* LEFT COLUMN (75%): KPI selector + hero chart */}
             <div className="flex-[3] min-w-0 flex flex-col">
               <KPISelector
                 selected={selectedKPI}
                 onSelect={setSelectedKPI}
                 dayData={dayData}
               />
-              {/* Hero chart fills remaining height — cssHeight="100%" needs parent with explicit height */}
+              {/* Hero chart fills remaining height */}
               <div className="mt-4 flex-1 min-h-0">
                 <HeroChart
                   selectedKPI={selectedKPI}
@@ -537,7 +675,7 @@ export default function DashboardPage({ config, onHome }) {
             {/* DIVIDER */}
             <div className="w-px bg-border-light shrink-0" />
 
-            {/* MIDDLE COLUMN (20%): Referral Funnel */}
+            {/* RIGHT COLUMN (25%): Referral Funnel */}
             <div className="flex-1 min-w-0 flex flex-col">
               <SectionLabel>Referral Funnel</SectionLabel>
               <div className="mt-1 flex-1 min-h-0 overflow-hidden">
@@ -552,23 +690,12 @@ export default function DashboardPage({ config, onHome }) {
                 />
               </div>
             </div>
-
-            {/* DIVIDER */}
-            <div className="w-px bg-border-light shrink-0" />
-
-            {/* RIGHT COLUMN (20%): Funnel Performance (cohort chart) */}
-            <div className="flex-1 min-w-0 flex flex-col">
-              <CohortChart
-                cohorts={projection.cohorts}
-                currentDay={selectedDay}
-              />
-            </div>
           </div>
         </div>
 
-        {/* ── POSITION 2 + 3: LEARNINGS | DECISIONS ── */}
-        <div className="grid grid-cols-[1.3fr_1fr] gap-6">
-          {/* Position 2: Learnings */}
+        {/* ── POSITION 2 + 3: PROOF ENGINE | DECISIONS ── */}
+        <div className="grid grid-cols-[1.5fr_1fr] gap-6">
+          {/* Position 2: Proof — why agentic beats static */}
           <div className="space-y-6">
             <ComparisonChart
               agenticCurve={projection.cumulativeCurve}
@@ -576,6 +703,14 @@ export default function DashboardPage({ config, onHome }) {
               annotations={projection.learningAnnotations}
               currentDay={selectedDay}
             />
+
+            {/* Cohort chart — moved from Block 1 to serve as evidence */}
+            <div className="bg-surface border border-border rounded-lg p-4">
+              <CohortChart
+                cohorts={projection.cohorts}
+                currentDay={selectedDay}
+              />
+            </div>
           </div>
 
           {/* Position 3: Decisions + Recommendation below */}
