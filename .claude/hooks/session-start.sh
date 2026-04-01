@@ -50,6 +50,28 @@ GSTACK_DIR="$HOME/.claude/skills/gstack"
 BROWSE_DIST="$GSTACK_DIR/browse/dist"
 
 if [ -d "$GSTACK_DIR" ]; then
+  # 0. Pin Playwright to version matching pre-cached chromium browsers.
+  #    The container ships chromium v1194 but gstack may install a newer
+  #    playwright that expects a different revision. Pinning avoids downloads.
+  #    Target: playwright@1.56.1 ships chromium revision 1194.
+  GSTACK_PKG="$GSTACK_DIR/package.json"
+  if [ -f "$GSTACK_PKG" ]; then
+    CURRENT_PW=$(python3 -c "import json; print(json.load(open('$GSTACK_PKG'))['dependencies'].get('playwright',''))" 2>/dev/null || echo "")
+    if [ "$CURRENT_PW" != "1.56.1" ]; then
+      echo "[session-start] Pinning playwright to 1.56.1 (matches cached chromium v1194)..."
+      python3 -c "
+import json, sys
+with open('$GSTACK_PKG', 'r') as f:
+    pkg = json.load(f)
+pkg['dependencies']['playwright'] = '1.56.1'
+with open('$GSTACK_PKG', 'w') as f:
+    json.dump(pkg, f, indent=2)
+    f.write('\n')
+" 2>/dev/null
+      cd "$GSTACK_DIR" && npm install --prefer-offline 2>/dev/null || npm install 2>/dev/null || true
+    fi
+  fi
+
   # 1. Ensure Playwright Chromium is installed
   CHROMIUM_OK=0
   cd "$GSTACK_DIR"
@@ -60,7 +82,15 @@ if [ -d "$GSTACK_DIR" ]; then
   if [ "$CHROMIUM_OK" -eq 0 ]; then
     echo "[session-start] Installing Playwright Chromium..."
     cd "$GSTACK_DIR"
-    bunx playwright install chromium 2>/dev/null || npx playwright install chromium 2>/dev/null || true
+    # Strip *.googleapis.com from NO_PROXY for the install subprocess only.
+    # cdn.playwright.dev redirects to storage.googleapis.com, which matches
+    # *.googleapis.com in NO_PROXY, causing the proxy to be bypassed and DNS
+    # resolution to fail in containers without direct internet access.
+    INSTALL_NO_PROXY=$(echo "$NO_PROXY" | sed 's/,\*\.googleapis\.com//g; s/\*\.googleapis\.com,//g; s/\*\.googleapis\.com//g')
+    NO_PROXY="$INSTALL_NO_PROXY" no_proxy="$INSTALL_NO_PROXY" \
+      bunx playwright install chromium 2>/dev/null || \
+    NO_PROXY="$INSTALL_NO_PROXY" no_proxy="$INSTALL_NO_PROXY" \
+      npx playwright install chromium 2>/dev/null || true
   fi
 
   # 2. Patch browser-manager.ts for proxy + sandbox support
@@ -69,7 +99,7 @@ if [ -d "$GSTACK_DIR" ]; then
     echo "[session-start] Patching browser-manager for proxy support..."
     # Add proxy detection after the CONTAINER/CI sandbox block
     sed -i '/if (process\.env\.CI || process\.env\.CONTAINER) {/{
-      N; s/}$/}\
+      N;N; s/}$/}\
 \
     \/\/ Proxy support: parse HTTP(S)_PROXY env vars for environments behind\
     \/\/ an egress proxy (e.g. containerized CI with JWT-authenticated proxies).\
@@ -96,6 +126,13 @@ if [ -d "$GSTACK_DIR" ]; then
 
     # Add ignoreHTTPSErrors to context
     sed -i 's/viewport: { width: 1280, height: 720 },$/viewport: { width: 1280, height: 720 },\n      ...(proxyConfig ? { ignoreHTTPSErrors: true } : {}),/' "$BROWSER_MGR"
+
+    # Verify patches applied
+    if grep -q "proxyConfig" "$BROWSER_MGR"; then
+      echo "[session-start] Proxy patches verified."
+    else
+      echo "[session-start] WARNING: Proxy patch failed — browse will not work through proxy." >&2
+    fi
   fi
 
   # 3. Also auto-detect root user and add --no-sandbox without CONTAINER env
@@ -159,6 +196,9 @@ start_server() {
     sleep 0.5
   done
   echo "[browse] Server failed to start within 15s" >&2
+  echo "[browse] This container may kill background processes." >&2
+  echo "[browse] Start manually: CONTAINER=1 node $SERVER_SCRIPT" >&2
+  echo "[browse] (use Bash tool with run_in_background: true)" >&2
   return 1
 }
 
@@ -209,18 +249,28 @@ fi
 if [ "$COMMAND" = "goto" ]; then
   URL="$1"
   [ -n "$URL" ] || { echo "Usage: browse goto <url>" >&2; exit 1; }
+  # Record current URL so we detect when navigation actually completes
+  OLD_URL=$(curl -sf "http://127.0.0.1:$PORT/health" -H "Authorization: Bearer $TOKEN" 2>/dev/null \
+    | python3 -c "import json,sys; print(json.load(sys.stdin).get('currentUrl',''))" 2>/dev/null || echo "")
   JS_ARGS=$(python3 -c "import json,sys; print(json.dumps(['window.location.href='+json.dumps(sys.argv[1])]))" "$URL")
   send_cmd "js" "$JS_ARGS" > /dev/null 2>&1
   for i in $(seq 1 24); do
     sleep 0.5
     CUR=$(curl -sf "http://127.0.0.1:$PORT/health" -H "Authorization: Bearer $TOKEN" 2>/dev/null \
-      | python3 -c "import json,sys; print(json.load(sys.stdin).get('currentUrl',''))" 2>/dev/null)
-    if [ -n "$CUR" ] && [ "$CUR" != "about:blank" ]; then
+      | python3 -c "import json,sys; print(json.load(sys.stdin).get('currentUrl',''))" 2>/dev/null || echo "")
+    if [ -n "$CUR" ] && [ "$CUR" != "about:blank" ] && [ "$CUR" != "$OLD_URL" ]; then
       sleep 1  # let content render
       echo "Navigated to $URL ($CUR)"
       exit 0
     fi
   done
+  # Fallback: if URL didn't change, check if we're already on the target
+  CUR=$(curl -sf "http://127.0.0.1:$PORT/health" -H "Authorization: Bearer $TOKEN" 2>/dev/null \
+    | python3 -c "import json,sys; print(json.load(sys.stdin).get('currentUrl',''))" 2>/dev/null || echo "")
+  if [ -n "$CUR" ] && [ "$CUR" != "about:blank" ]; then
+    echo "Navigated to $URL ($CUR)"
+    exit 0
+  fi
   echo "Navigated to $URL (timeout)" >&2; exit 1
 fi
 
