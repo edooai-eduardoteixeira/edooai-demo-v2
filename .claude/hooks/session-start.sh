@@ -60,7 +60,15 @@ if [ -d "$GSTACK_DIR" ]; then
   if [ "$CHROMIUM_OK" -eq 0 ]; then
     echo "[session-start] Installing Playwright Chromium..."
     cd "$GSTACK_DIR"
-    bunx playwright install chromium 2>/dev/null || npx playwright install chromium 2>/dev/null || true
+    # Strip *.googleapis.com from NO_PROXY for the install subprocess only.
+    # cdn.playwright.dev redirects to storage.googleapis.com, which matches
+    # *.googleapis.com in NO_PROXY, causing the proxy to be bypassed and DNS
+    # resolution to fail in containers without direct internet access.
+    INSTALL_NO_PROXY=$(echo "$NO_PROXY" | sed 's/,\*\.googleapis\.com//g; s/\*\.googleapis\.com,//g; s/\*\.googleapis\.com//g')
+    NO_PROXY="$INSTALL_NO_PROXY" no_proxy="$INSTALL_NO_PROXY" \
+      bunx playwright install chromium 2>/dev/null || \
+    NO_PROXY="$INSTALL_NO_PROXY" no_proxy="$INSTALL_NO_PROXY" \
+      npx playwright install chromium 2>/dev/null || true
   fi
 
   # 2. Patch browser-manager.ts for proxy + sandbox support
