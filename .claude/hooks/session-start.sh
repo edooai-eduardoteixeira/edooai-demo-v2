@@ -50,6 +50,28 @@ GSTACK_DIR="$HOME/.claude/skills/gstack"
 BROWSE_DIST="$GSTACK_DIR/browse/dist"
 
 if [ -d "$GSTACK_DIR" ]; then
+  # 0. Pin Playwright to version matching pre-cached chromium browsers.
+  #    The container ships chromium v1194 but gstack may install a newer
+  #    playwright that expects a different revision. Pinning avoids downloads.
+  #    Target: playwright@1.56.1 ships chromium revision 1194.
+  GSTACK_PKG="$GSTACK_DIR/package.json"
+  if [ -f "$GSTACK_PKG" ]; then
+    CURRENT_PW=$(python3 -c "import json; print(json.load(open('$GSTACK_PKG'))['dependencies'].get('playwright',''))" 2>/dev/null || echo "")
+    if [ "$CURRENT_PW" != "1.56.1" ]; then
+      echo "[session-start] Pinning playwright to 1.56.1 (matches cached chromium v1194)..."
+      python3 -c "
+import json, sys
+with open('$GSTACK_PKG', 'r') as f:
+    pkg = json.load(f)
+pkg['dependencies']['playwright'] = '1.56.1'
+with open('$GSTACK_PKG', 'w') as f:
+    json.dump(pkg, f, indent=2)
+    f.write('\n')
+" 2>/dev/null
+      cd "$GSTACK_DIR" && npm install --prefer-offline 2>/dev/null || npm install 2>/dev/null || true
+    fi
+  fi
+
   # 1. Ensure Playwright Chromium is installed
   CHROMIUM_OK=0
   cd "$GSTACK_DIR"
