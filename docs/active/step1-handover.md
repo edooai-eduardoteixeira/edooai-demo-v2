@@ -62,7 +62,7 @@ built a working wireframe with real engine data. Key decisions made:
 ### Step 2: Update Guardrails Config — NOT DONE
 
 We added a few config params to `neobank.js` (baseShareRate, signupRate,
-industryCACBenchmark) but did NOT do the full guardrails update from the spec:
+industryCACBenchmark) but did NOT do the full guardrails update from the spec, **nor did we fully evaluate the if the existing guardarails are the must-have ones**:
 - Filter percentages per audience protection rule
 - Segment distribution (10/20/70 → 20/40/40)
 - Base conversion rates per segment (High 4%, Medium 2%, Low 0.5%)
@@ -71,7 +71,7 @@ industryCACBenchmark) but did NOT do the full guardrails update from the spec:
 
 **This is the next major step.** The current engine uses v3 parameters with v4
 extensions bolted on. The spec's Section 2-3 guardrail definitions need to be
-implemented properly.
+implemented properly, but **before implementation the logic needs to be stress-tested, as we did not fully evaluate the if the existing guardarails are the must-have ones.**
 
 ### Step 3: Build the Engine — PARTIALLY DONE (simplified)
 
@@ -106,7 +106,7 @@ implemented properly.
   current learning is a simple efficiency curve
 
 **This is the biggest remaining work.** Steps 3a-3d from the spec need to be built
-as described: pool/capacity, offer lifecycle, learning layer, daily decision log.
+as described: pool/capacity, offer lifecycle, learning layer, daily decision log. **Before building, the logic needs to be stress-tested to ensure it's accuracy before implementation.**
 
 ### Step 4: Build the Dashboard — PARTIALLY DONE (wireframe level)
 
@@ -131,6 +131,7 @@ as described: pool/capacity, offer lifecycle, learning layer, daily decision log
 - Responsive behavior (currently optimized for ~1440px viewport)
 - The cohort chart + funnel share a narrow 40% column and may need height adjustment
 - Design system compliance check against DESIGN.md
+- Final design polish in general — the current wireframe is good enough to build the evolve the plan, but it's not the final, polished version. 
 
 ---
 
@@ -183,10 +184,11 @@ Its home depends on where the campaign-level summary lands.
 
 ## What to Do Next
 
-1. **Solve the campaign-level summary + cohort reconciliation + pipeline indicator**
+1. **Replan**: understand what was the original goal and plan; compare with what is already done; and replan. The original plan didn't intend to be a static, gigantic plan. It was a first guideline. 
+2. **Solve the campaign-level summary + cohort reconciliation + pipeline indicator**
    (one connected problem, prompts already written)
-2. **Update guardrails config** (Step 2 of the plan — filter percentages, segment
+3. **Update guardrails config** (Step 2 of the plan — filter percentages, segment
    distribution, per-segment conversion rates and channel effectiveness)
-3. **Rebuild the engine** (Step 3 of the plan — the real agent simulation with
+4. **Rebuild the engine** (Step 3 of the plan — the real agent simulation with
    segments, daily loop, offer lifecycle, proper learning model)
-4. **Final design polish** on the dashboard after engine produces real data
+5. **Final design polish** on the dashboard after engine produces real data
