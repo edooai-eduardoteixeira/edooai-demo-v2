@@ -173,20 +173,33 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget })
 // KPI SELECTOR — tabs that control the hero chart
 // ═══════════════════════════════════════════════════════════════════════
 const KPI_DEFS = [
-  { key: 'activeUsers', label: 'Active Users', format: (v) => fmt(v) },
-  { key: 'cac', label: 'CAC', format: (v) => v > 0 ? fmtDollar(v) : '—' },
-  { key: 'roi', label: 'ROI', format: (v) => v > 0 ? `${v}x` : '—' },
-  { key: 'fraudSaved', label: 'Fraud Saved', format: (v) => fmtDollar(v) },
+  { key: 'activeUsers', label: 'Active Users', format: (v) => fmt(v), betterWhen: 'up' },
+  { key: 'cac', label: 'CAC', format: (v) => v > 0 ? fmtDollar(v) : '—', betterWhen: 'down' },
+  { key: 'roi', label: 'ROI', format: (v) => v > 0 ? `${v}x` : '—', betterWhen: 'up' },
+  { key: 'fraudSaved', label: 'Fraud Saved', format: (v) => fmtDollar(v), betterWhen: 'up' },
 ];
 
-function KPISelector({ selected, onSelect, dayData }) {
+function getKPIValue(dayData, key) {
+  if (key === 'activeUsers') return dayData.funnelCumulative.activeUser;
+  return dayData.kpiCumulative[key];
+}
+
+function KPISelector({ selected, onSelect, dayData, days, selectedDay }) {
   return (
     <div className="flex gap-2">
       {KPI_DEFS.map((kpi) => {
         const active = selected === kpi.key;
-        const value = kpi.key === 'activeUsers'
-          ? dayData.funnelCumulative.activeUser
-          : dayData.kpiCumulative[kpi.key];
+        const value = getKPIValue(dayData, kpi.key);
+
+        // Delta: compare current vs comparison day (half-window back, min Day 1)
+        const compDay = Math.max(0, selectedDay - 1 - 15);
+        const compValue = getKPIValue(days[compDay], kpi.key);
+        const hasDelta = selectedDay > 1 && compValue > 0 && value > 0;
+        const deltaPct = hasDelta ? Math.round(((value - compValue) / compValue) * 100) : 0;
+        // Is this delta "good"? Depends on the metric
+        const isPositive = deltaPct > 0;
+        const isGood = kpi.betterWhen === 'up' ? isPositive : !isPositive;
+
         return (
           <button
             key={kpi.key}
@@ -207,6 +220,14 @@ function KPISelector({ selected, onSelect, dayData }) {
             )}>
               {kpi.format(value)}
             </span>
+            {hasDelta && deltaPct !== 0 && (
+              <span className={cn(
+                'text-[11px] font-semibold mt-0.5',
+                isGood ? 'text-success' : 'text-warn'
+              )}>
+                {isPositive ? '↑' : '↓'}{Math.abs(deltaPct)}%
+              </span>
+            )}
           </button>
         );
       })}
@@ -632,6 +653,8 @@ export default function DashboardPage({ config, onHome }) {
                 selected={selectedKPI}
                 onSelect={setSelectedKPI}
                 dayData={dayData}
+                days={projection.days}
+                selectedDay={selectedDay}
               />
               {/* Hero chart fills remaining height */}
               <div className="mt-4 flex-1 min-h-0">
