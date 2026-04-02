@@ -164,28 +164,23 @@ function CampaignHealthRow({ dayData, selectedDay, projection }) {
     ? 'Campaign complete. All 30-day results are final.'
     : `Agent in ${phase} phase (Day ${selectedDay}). ${fmt(pending)} offers currently in flight. Based on cohort conversion rates, expect ~${fmt(pipeline7Day)} more activations in the next 7 days.`;
 
-  // Goal status label
+  // Goal status label — no number in the badge
   const goalLabel = goal.status === 'learning'
     ? 'Calibrating'
-    : goal.status === 'on_track' ? 'On Track' : `Running ${100 - goal.pctOfExpected}% Behind`;
+    : goal.status === 'on_track' ? 'On Track' : 'Running Behind';
   const goalVariant = goal.status === 'learning'
     ? 'neutral'
     : goal.status === 'on_track' ? 'success' : 'warning';
 
-  // Budget label
-  const budgetLabel = budgetStatus.label;
-  const budgetVariant = budgetStatus.variant;
-
-  // User base label
-  const userBaseLabel = dayData.sustainabilityStatus === 'sustainable' ? 'On Pace'
-    : dayData.sustainabilityStatus === 'tightening' ? 'Tightening' : 'At Risk';
-  const userBaseVariant = dayData.sustainabilityStatus === 'sustainable' ? 'success'
-    : dayData.sustainabilityStatus === 'tightening' ? 'warning' : 'error';
+  // Budget label — "On Track" or "Underspending" or "Overspending"
+  const budgetLabel = budgetStatus.pctOfExpected >= 90 && budgetStatus.pctOfExpected <= 110
+    ? 'On Track' : budgetStatus.pctOfExpected < 90 ? 'Underspending' : 'Overspending';
+  const budgetVariant = budgetLabel === 'On Track' ? 'success' : 'warning';
 
   return (
     <div>
-      {/* Agent status + health sections — single compact row */}
-      <div className="flex items-center bg-accent-subtle px-5 py-2.5 rounded-t-lg border-b border-border-light gap-5">
+      {/* Agent status + health — single compact line */}
+      <div className="flex items-center bg-accent-subtle px-5 py-2 rounded-t-lg border-b border-border-light gap-4">
         {/* Agent status indicator */}
         <span className="flex items-center gap-1.5 shrink-0">
           <span className={cn('w-2 h-2 rounded-full', isCalibrating ? 'bg-warn' : 'bg-success')} />
@@ -198,61 +193,40 @@ function CampaignHealthRow({ dayData, selectedDay, projection }) {
         </span>
 
         {/* Divider */}
-        <div className="w-px h-8 bg-border-light shrink-0" />
+        <div className="w-px h-5 bg-border-light shrink-0" />
 
-        {/* GOAL PROGRESS */}
+        {/* GOAL PROGRESS — inline */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex flex-col hover:bg-accent-light rounded-sm px-2 py-1 -mx-2 transition-colors duration-150 min-w-0"
+          className="flex items-center gap-2 hover:bg-accent-light rounded-sm px-1.5 py-0.5 -mx-1.5 transition-colors duration-150"
         >
-          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Goal Progress</span>
-          <span className="flex items-center gap-2">
-            <StatusLabel variant={goalVariant}>{goalLabel}</StatusLabel>
-            <span className="text-[13px] text-foreground-muted">
-              Forecast: ~{fmtK(targetActiveUsers)} customers
-            </span>
-            <svg className={cn(
-              'w-3 h-3 text-foreground-faint transition-transform duration-200 shrink-0',
-              expanded && 'rotate-180'
-            )} fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-            </svg>
+          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Goal</span>
+          <StatusLabel variant={goalVariant}>{goalLabel}</StatusLabel>
+          <span className="text-[13px] text-foreground-muted whitespace-nowrap">
+            Forecast: ~{fmtK(targetActiveUsers)} customers
           </span>
+          <svg className={cn(
+            'w-3 h-3 text-foreground-faint transition-transform duration-200 shrink-0',
+            expanded && 'rotate-180'
+          )} fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+          </svg>
         </button>
 
         {/* Divider */}
-        <div className="w-px h-8 bg-border-light shrink-0" />
+        <div className="w-px h-5 bg-border-light shrink-0" />
 
-        {/* BUDGET */}
-        <div className="flex flex-col min-w-0">
-          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Budget</span>
-          <span className="flex items-center gap-2">
-            <StatusLabel variant={budgetVariant}>{budgetLabel}</StatusLabel>
-            <span className="text-[13px] text-foreground-muted">
-              {fmtDollar(dayData.cumulativeSpend)} of {fmtDollar(budget)}
-            </span>
-            <span className="text-[13px] text-foreground-faint">
-              Forecast: ~{fmtDollar(projectedSpend)}
-            </span>
+        {/* BUDGET — inline */}
+        <span className="flex items-center gap-2">
+          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Budget</span>
+          <StatusLabel variant={budgetVariant}>{budgetLabel}</StatusLabel>
+          <span className="text-[13px] text-foreground-muted whitespace-nowrap">
+            {fmtDollar(dayData.cumulativeSpend)} of {fmtDollar(budget)}
           </span>
-        </div>
-
-        {/* Divider */}
-        <div className="w-px h-8 bg-border-light shrink-0" />
-
-        {/* USER BASE USAGE */}
-        <div className="flex flex-col min-w-0">
-          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">User Base Usage</span>
-          <span className="flex items-center gap-2">
-            <StatusLabel variant={userBaseVariant}>{userBaseLabel}</StatusLabel>
-            <span className="text-[13px] text-foreground-muted">
-              {addressableReachPct}% of eligible customers
-            </span>
-            <span className="text-[13px] text-foreground-faint">
-              Forecast: ~{sustainableInfo.ceiling}%
-            </span>
+          <span className="text-[13px] text-foreground-faint whitespace-nowrap">
+            Forecast: ~{fmtDollar(projectedSpend)}
           </span>
-        </div>
+        </span>
       </div>
 
       {/* Expandable narrative */}
