@@ -107,7 +107,7 @@ function fmtRate(n) {
 }
 
 // TEMP: Toggle between Option A (chevron) and Option B (button) — remove after picking
-const BUDGET_VARIANT = 'A'; // 'A' = chevron, 'B' = small button
+const BUDGET_VARIANT = 'B'; // 'A' = chevron, 'B' = small button
 
 function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, dateRange, days }) {
   const budget = projection.budget;
