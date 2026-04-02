@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import Logo from '../components/Logo.jsx';
 import Chart from '../components/Chart.jsx';
 import FunnelChart from '../components/FunnelChart.jsx';
+import StrategyCards from '../components/StrategyCards.jsx';
 import { cn } from '../lib/utils.js';
 import { computeDashboardProjection } from '../engine/projectionEngine.js';
 
@@ -644,12 +645,13 @@ export default function DashboardPage({ config, onHome }) {
   const [selectedDay, setSelectedDay] = useState(1);
   const [selectedKPI, setSelectedKPI] = useState('activeUsers');
   const [dateRange, setDateRange] = useState(30);
+  const [activeDrawer, setActiveDrawer] = useState(null);
+  const [budget, setBudget] = useState(config.recommendedBudget?.amount || 150000);
 
-  // Run v4 engine once with recommended budget
+  // Run v4 engine with current budget
   const projection = useMemo(() => {
-    const budget = config.recommendedBudget?.amount || 150000;
     return computeDashboardProjection({ budget, params: config.engineParams });
-  }, [config]);
+  }, [config, budget]);
 
   // Current day data
   const dayData = projection.days[selectedDay - 1];
@@ -679,7 +681,7 @@ export default function DashboardPage({ config, onHome }) {
             dayData={dayData}
             selectedDay={selectedDay}
             projection={projection}
-            onAdjustBudget={() => {/* TODO: open budget drawer */}}
+            onAdjustBudget={() => setActiveDrawer('budget')}
           />
 
           {/* Main content area */}
@@ -754,6 +756,15 @@ export default function DashboardPage({ config, onHome }) {
           </div>
         </div>
       </main>
+
+      {/* Budget & Guardrails Drawer */}
+      <StrategyCards
+        activeDrawer={activeDrawer}
+        onClose={() => setActiveDrawer(null)}
+        onNavigate={setActiveDrawer}
+        budget={budget}
+        onBudgetChange={setBudget}
+      />
     </div>
   );
 }

@@ -908,6 +908,8 @@ export default function StrategyBuilderPage({ config, onNext, onHome }) {
           onClose={() => setActiveDrawer(null)}
           onNavigate={setActiveDrawer}
           onRewardsChange={setRewardTiers}
+          budget={budget}
+          onBudgetChange={setBudget}
         />
       </main>
 

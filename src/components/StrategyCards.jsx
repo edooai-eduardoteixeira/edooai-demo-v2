@@ -7,7 +7,7 @@ import { cn } from '../lib/utils';
    ═══════════════════════════════════════════ */
 
 /* ── Ordered drawer keys for navigation ── */
-const DRAWER_ORDER = ['invite', 'rewards', 'redemption', 'fatigue', 'budget', 'fraud'];
+const DRAWER_ORDER = ['budget', 'invite', 'rewards', 'redemption', 'fatigue', 'fraud'];
 
 /* ── Icons ── */
 const ChevronRight = ({ className }) => (
@@ -52,11 +52,11 @@ const PlusSmall = () => (
 
 /* ── Index view data ── */
 const RULES_INDEX = [
+  { key: 'budget', label: 'Budget', subtopics: 'Monthly Rate, Spend Pace, Invite Stop' },
   { key: 'invite', label: 'Invite', subtopics: 'Audience, Triggers, Channels' },
   { key: 'rewards', label: 'Reward', subtopics: 'Payment Method, Reward Tiers' },
   { key: 'redemption', label: 'Redemption', subtopics: 'New User Journey, Reward Trigger' },
   { key: 'fatigue', label: 'Communication Controls', subtopics: 'Reminder Frequency, Rest Period, Expiration Date' },
-  { key: 'budget', label: 'Budget Protection', subtopics: 'Spend Pace, Invite Stop' },
   { key: 'fraud', label: 'Fraud Prevention', subtopics: 'Link Hijacking Limit, Self-Referral, Bot Shield, Payment Hold' },
 ];
 
@@ -334,6 +334,135 @@ const ActivationModes = ({ modes: initialModes }) => {
   );
 };
 
+/* ── Budget Slider (Monthly Rate) ── */
+const BUDGET_CONFIG = {
+  min: 50000, max: 300000, step: 5000,
+  recMin: 100000, recMax: 200000, defaultAmount: 150000,
+};
+
+const BudgetSliderSection = ({ budget, onBudgetChange }) => {
+  const val = budget || BUDGET_CONFIG.defaultAmount;
+  const [editing, setEditing] = useState(false);
+  const [inputVal, setInputVal] = useState('');
+  const inputRef = useRef(null);
+
+  const pct = ((val - BUDGET_CONFIG.min) / (BUDGET_CONFIG.max - BUDGET_CONFIG.min)) * 100;
+  const recLeft = ((BUDGET_CONFIG.recMin - BUDGET_CONFIG.min) / (BUDGET_CONFIG.max - BUDGET_CONFIG.min)) * 100;
+  const recWidth = ((BUDGET_CONFIG.recMax - BUDGET_CONFIG.recMin) / (BUDGET_CONFIG.max - BUDGET_CONFIG.min)) * 100;
+
+  // Guidance
+  const guidance = val < BUDGET_CONFIG.recMin
+    ? 'Lean delivery. System optimizes slower.'
+    : val <= BUDGET_CONFIG.recMax
+    ? 'Strong signal volume. Full optimization expected.'
+    : 'Audience saturates above $200K/mo. Incremental spend raises CPA.';
+
+  const guidanceColor = val < BUDGET_CONFIG.recMin ? 'text-warn'
+    : val <= BUDGET_CONFIG.recMax ? 'text-success'
+    : 'text-warn';
+
+  // Projected users (simplified: linear scaling from engine baseline)
+  const baseUsers = 1300; // at $150K
+  const projectedUsers = Math.round(baseUsers * (val / BUDGET_CONFIG.defaultAmount));
+
+  const startEdit = () => {
+    setInputVal(String(val / 1000));
+    setEditing(true);
+    setTimeout(() => inputRef.current?.select(), 0);
+  };
+
+  const commitEdit = () => {
+    const parsed = Math.round(Number(inputVal) * 1000);
+    if (!isNaN(parsed) && parsed >= BUDGET_CONFIG.min && parsed <= BUDGET_CONFIG.max) {
+      onBudgetChange(Math.round(parsed / BUDGET_CONFIG.step) * BUDGET_CONFIG.step);
+    }
+    setEditing(false);
+  };
+
+  const fmtK = (n) => '$' + Math.round(n / 1000) + 'K';
+
+  return (
+    <div>
+      {/* Budget display + edit */}
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-[13px] font-medium text-foreground">Monthly rate</span>
+        {editing ? (
+          <div className="flex items-center gap-1">
+            <span className="text-[13px] text-foreground-muted">$</span>
+            <input
+              ref={inputRef}
+              value={inputVal}
+              onChange={(e) => setInputVal(e.target.value)}
+              onBlur={commitEdit}
+              onKeyDown={(e) => e.key === 'Enter' && commitEdit()}
+              className="w-16 text-[15px] font-bold text-foreground bg-transparent border-b border-brand outline-none text-right"
+            />
+            <span className="text-[13px] text-foreground-muted">K/mo</span>
+          </div>
+        ) : (
+          <button onClick={startEdit} className="text-[15px] font-bold text-foreground hover:text-brand transition-colors duration-150 cursor-pointer">
+            {fmtK(val)}/mo
+          </button>
+        )}
+      </div>
+
+      {/* Slider */}
+      <div className="relative h-5 mb-3">
+        {/* Track */}
+        <div className="absolute left-0 right-0 top-[7px] h-1.5 bg-border-light rounded-full" />
+
+        {/* Recommended zone */}
+        <div
+          className="absolute top-[7px] h-1.5 rounded-full bg-success/20"
+          style={{ left: `${recLeft}%`, width: `${recWidth}%` }}
+        />
+
+        {/* Fill */}
+        <div
+          className="absolute left-0 top-[7px] h-1.5 rounded-full bg-brand"
+          style={{ width: `${pct}%` }}
+        />
+
+        {/* Thumb */}
+        <div
+          className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 bg-brand border-[3px] border-surface rounded-full shadow-sm"
+          style={{ left: `${pct}%` }}
+        />
+
+        {/* Invisible range input */}
+        <input
+          type="range"
+          min={BUDGET_CONFIG.min}
+          max={BUDGET_CONFIG.max}
+          step={BUDGET_CONFIG.step}
+          value={val}
+          onChange={(e) => onBudgetChange(Number(e.target.value))}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          style={{ zIndex: 4 }}
+        />
+      </div>
+
+      {/* Min / Max labels */}
+      <div className="flex justify-between text-[10px] text-foreground-faint mb-3">
+        <span>{fmtK(BUDGET_CONFIG.min)}</span>
+        <span>{fmtK(BUDGET_CONFIG.max)}</span>
+      </div>
+
+      {/* Guidance + projected impact */}
+      <div className="bg-accent-subtle rounded-lg py-3 px-4 space-y-2">
+        <div className="flex items-start gap-2">
+          <Sparkle />
+          <span className={cn('text-[12px] leading-relaxed', guidanceColor)}>{guidance}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-[12px] text-foreground-faint">Expected new users/mo</span>
+          <span className="text-[13px] font-semibold text-foreground">~{projectedUsers.toLocaleString()}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 /* ── BudgetPacing ── */
 const BudgetPacing = ({ section }) => {
   const [intensity, setIntensity] = useState(section.intensity);
@@ -555,8 +684,12 @@ const drawerContent = {
     ]
   },
   budget: {
-    title: 'Budget Protection',
+    title: 'Budget',
     sections: [
+      {
+        title: 'Monthly Budget',
+        type: 'budget-slider',
+      },
       {
         title: 'Spend Pace',
         type: 'budget-pacing',
@@ -612,7 +745,7 @@ const drawerContent = {
    Drawer Component
    ══════════════════════════════════════ */
 
-const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
+const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange, budget, onBudgetChange }) => {
   const isIndex = blockKey === 'index';
   const data = (!isIndex && blockKey) ? drawerContent[blockKey] : null;
   const isOpen = isIndex || !!data;
@@ -689,6 +822,10 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                         <MultiSelect items={row.items} />
                       </div>
                     ))
+                  )}
+
+                  {section.type === 'budget-slider' && (
+                    <BudgetSliderSection budget={budget} onBudgetChange={onBudgetChange} />
                   )}
 
                   {section.type === 'budget-pacing' && (
@@ -824,7 +961,7 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
 
 export { GearIcon, ChevronRight };
 
-export default function StrategyCards({ activeDrawer, onClose, onNavigate, onRewardsChange }) {
+export default function StrategyCards({ activeDrawer, onClose, onNavigate, onRewardsChange, budget, onBudgetChange }) {
   // Track reward tier values — parse "$75" → 75
   const parseDollar = (v) => Number(String(v).replace(/[^0-9.]/g, '')) || 0;
   const [referrerTiers, setReferrerTiers] = useState([0, 20, 50, 75]);
@@ -855,6 +992,8 @@ export default function StrategyCards({ activeDrawer, onClose, onNavigate, onRew
       onClose={onClose}
       onNavigate={onNavigate}
       handleRewardChange={handleRewardChange}
+      budget={budget}
+      onBudgetChange={onBudgetChange}
     />
   );
 }
