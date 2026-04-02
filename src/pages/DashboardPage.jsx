@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import Logo from '../components/Logo.jsx';
 import Chart from '../components/Chart.jsx';
 import FunnelChart from '../components/FunnelChart.jsx';
-import StrategyCards, { DefaultBudgetSlider, BUDGET_CONFIG } from '../components/StrategyCards.jsx';
+import StrategyCards, { DefaultBudgetSlider, BUDGET_CONFIG, ChevronRight } from '../components/StrategyCards.jsx';
 import { cn } from '../lib/utils.js';
 import { computeDashboardProjection } from '../engine/projectionEngine.js';
 
@@ -106,6 +106,9 @@ function fmtRate(n) {
   return fmtDollar(n) + '/mo';
 }
 
+// TEMP: Toggle between Option A (chevron) and Option B (button) — remove after picking
+const BUDGET_VARIANT = 'A'; // 'A' = chevron, 'B' = small button
+
 function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, dateRange, days }) {
   const budget = projection.budget;
   const delivery = getDeliveryState(dayData, selectedDay, projection);
@@ -121,7 +124,7 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, d
   const periodSpend = Math.round(dayData.cumulativeSpend - startSpend);
 
   return (
-    <div className="flex items-center bg-accent-subtle px-5 py-2.5 rounded-t-lg border-b border-border-light gap-4">
+    <div className="flex items-center bg-accent-subtle px-5 py-2.5 rounded-t-lg border-b border-border-light">
       {/* Delivery State — fixed width to prevent layout shift */}
       <span className="flex items-center gap-2.5 shrink-0 min-w-[170px]">
         <span className="relative flex items-center justify-center">
@@ -136,36 +139,47 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, d
       </span>
 
       {/* Divider */}
-      <div className="w-px h-5 bg-border-light shrink-0" />
+      <div className="w-px h-5 bg-border-light shrink-0 mx-4" />
 
-      {/* Budget — clickable to open budget drawer, hover signals interactivity */}
-      <button
-        onClick={onAdjustBudget}
-        className="flex items-center gap-2 hover:bg-accent-light rounded-sm px-1.5 py-0.5 -mx-1.5 transition-colors duration-150 cursor-pointer"
-      >
-        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Budget</span>
-        <span className="text-[13px] text-foreground-muted whitespace-nowrap">
-          {fmtRate(budget)}
-        </span>
-      </button>
+      {/* Budget — Option A: text action with chevron / Option B: small button */}
+      {BUDGET_VARIANT === 'A' ? (
+        <button
+          onClick={onAdjustBudget}
+          className="flex items-center gap-2 text-[13px] font-medium text-foreground-muted transition-colors duration-150 hover:text-foreground flex-1 min-w-0"
+        >
+          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Budget</span>
+          <span className="whitespace-nowrap">{fmtRate(budget)}</span>
+          <ChevronRight className="shrink-0 text-foreground-faint" />
+        </button>
+      ) : (
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Budget</span>
+          <button
+            onClick={onAdjustBudget}
+            className="inline-flex items-center justify-center py-1 px-2.5 text-[13px] font-semibold rounded-sm bg-surface text-foreground-muted border border-border hover:bg-accent-subtle hover:text-foreground transition-colors duration-200"
+          >
+            {fmtRate(budget)}
+          </button>
+        </div>
+      )}
 
       {/* Divider */}
-      <div className="w-px h-5 bg-border-light shrink-0" />
+      <div className="w-px h-5 bg-border-light shrink-0 mx-4" />
 
       {/* Spent — period total based on date range */}
-      <span className="flex items-center gap-2 shrink-0">
-        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Spent</span>
+      <span className="flex items-center gap-2 flex-1 min-w-0">
+        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Spent</span>
         <span className="text-[13px] text-foreground-muted whitespace-nowrap">
           {fmtDollar(periodSpend)}
         </span>
       </span>
 
       {/* Divider */}
-      <div className="w-px h-5 bg-border-light shrink-0" />
+      <div className="w-px h-5 bg-border-light shrink-0 mx-4" />
 
       {/* Pacing — current spend rate annualized to monthly */}
-      <span className="flex items-center gap-2 shrink-0">
-        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Pacing</span>
+      <span className="flex items-center gap-2 flex-1 min-w-0">
+        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Pacing</span>
         <span className="text-[13px] text-foreground-muted whitespace-nowrap">
           ~{fmtRate(monthlyPace)}
         </span>
