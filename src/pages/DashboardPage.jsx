@@ -138,19 +138,15 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, d
       {/* Divider */}
       <div className="w-px h-5 bg-border-light shrink-0" />
 
-      {/* Budget — rate as clickable to open budget drawer */}
+      {/* Budget — clickable to open budget drawer, hover signals interactivity */}
       <button
         onClick={onAdjustBudget}
-        className="flex items-center gap-2 hover:bg-accent-light rounded-sm px-1.5 py-0.5 -mx-1.5 transition-colors duration-150"
+        className="flex items-center gap-2 hover:bg-accent-light rounded-sm px-1.5 py-0.5 -mx-1.5 transition-colors duration-150 cursor-pointer"
       >
         <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Budget</span>
         <span className="text-[13px] text-foreground-muted whitespace-nowrap">
           {fmtRate(budget)}
         </span>
-        {/* Pencil icon */}
-        <svg className="w-3 h-3 text-foreground-faint shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-        </svg>
       </button>
 
       {/* Divider */}
