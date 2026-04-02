@@ -184,17 +184,18 @@ function getKPIValue(dayData, key) {
   return dayData.kpiCumulative[key];
 }
 
-function KPISelector({ selected, onSelect, dayData, days, selectedDay }) {
+function KPISelector({ selected, onSelect, dayData, days, selectedDay, dateRange }) {
   return (
     <div className="flex gap-2">
       {KPI_DEFS.map((kpi) => {
         const active = selected === kpi.key;
         const value = getKPIValue(dayData, kpi.key);
 
-        // Delta: compare current vs comparison day (half-window back, min Day 1)
-        const compDay = Math.max(0, selectedDay - 1 - 15);
-        const compValue = getKPIValue(days[compDay], kpi.key);
-        const hasDelta = selectedDay > 1 && compValue > 0 && value > 0;
+        // Delta: compare current vs one full date range period back
+        // e.g. dateRange=7 on day 20 → compare day 20 vs day 13
+        const compDayIndex = Math.max(0, selectedDay - 1 - dateRange);
+        const compValue = getKPIValue(days[compDayIndex], kpi.key);
+        const hasDelta = selectedDay > dateRange && compValue > 0 && value > 0;
         const deltaPct = hasDelta ? Math.round(((value - compValue) / compValue) * 100) : 0;
         // Is this delta "good"? Depends on the metric
         const isPositive = deltaPct > 0;
@@ -221,16 +222,11 @@ function KPISelector({ selected, onSelect, dayData, days, selectedDay }) {
               {kpi.format(value)}
             </span>
             {hasDelta && deltaPct !== 0 && (
-              <span className="flex items-center gap-1 mt-0.5">
-                <span className={cn(
-                  'text-[11px] font-semibold',
-                  isGood ? 'text-success' : 'text-warn'
-                )}>
-                  {isPositive ? '↑' : '↓'}{Math.abs(deltaPct)}%
-                </span>
-                <span className="text-[10px] text-foreground-faint">
-                  vs {selectedDay - 1 - compDay}d ago
-                </span>
+              <span className={cn(
+                'text-[11px] font-semibold mt-0.5',
+                isGood ? 'text-success' : 'text-warn'
+              )}>
+                {isPositive ? '↑' : '↓'}{Math.abs(deltaPct)}%
               </span>
             )}
           </button>
@@ -610,11 +606,44 @@ function ComparisonChart({ agenticCurve, staticCurve, annotations, currentDay })
 
 
 // ═══════════════════════════════════════════════════════════════════════
+// DATE RANGE SELECTOR — controls viewing window (7d / 30d)
+// ═══════════════════════════════════════════════════════════════════════
+const DATE_RANGES = [
+  { value: 7, label: '7d' },
+  { value: 30, label: '30d' },
+];
+
+function DateRangeSelector({ selected, onSelect }) {
+  return (
+    <div className="flex items-center gap-1 bg-surface border border-border rounded-md p-0.5">
+      {DATE_RANGES.map((range) => {
+        const active = selected === range.value;
+        return (
+          <button
+            key={range.value}
+            onClick={() => onSelect(range.value)}
+            className={cn(
+              'px-2.5 py-1 rounded text-[12px] font-semibold transition-all duration-150',
+              active
+                ? 'bg-accent-subtle text-foreground'
+                : 'text-foreground-muted hover:text-foreground'
+            )}
+          >
+            {range.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // MAIN DASHBOARD PAGE
 // ═══════════════════════════════════════════════════════════════════════
 export default function DashboardPage({ config, onHome }) {
   const [selectedDay, setSelectedDay] = useState(1);
   const [selectedKPI, setSelectedKPI] = useState('activeUsers');
+  const [dateRange, setDateRange] = useState(30);
 
   // Run v4 engine once with recommended budget
   const projection = useMemo(() => {
@@ -637,6 +666,9 @@ export default function DashboardPage({ config, onHome }) {
           selected={selectedDay}
           onSelect={setSelectedDay}
         />
+        <div className="ml-auto">
+          <DateRangeSelector selected={dateRange} onSelect={setDateRange} />
+        </div>
       </header>
 
       <main className="flex-1 pb-8">
@@ -660,6 +692,7 @@ export default function DashboardPage({ config, onHome }) {
                 dayData={dayData}
                 days={projection.days}
                 selectedDay={selectedDay}
+                dateRange={dateRange}
               />
               {/* Hero chart fills remaining height */}
               <div className="mt-4 flex-1 min-h-0">
