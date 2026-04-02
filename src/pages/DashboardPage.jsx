@@ -102,18 +102,23 @@ function getDeliveryState(dayData, selectedDay, projection) {
   return { label: 'Acquiring Customers', color: 'success' };
 }
 
-function fmtBudgetRate(n) {
-  if (n >= 1000) return '$' + Math.round(n / 1000) + 'K/mo';
-  return '$' + fmt(n) + '/mo';
+function fmtRate(n) {
+  return fmtDollar(n) + '/mo';
 }
 
-function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget }) {
+function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, dateRange, days }) {
   const budget = projection.budget;
   const delivery = getDeliveryState(dayData, selectedDay, projection);
 
   // Pacing: annualize current daily spend rate to monthly
   const dailySpendRate = selectedDay > 0 ? dayData.cumulativeSpend / selectedDay : 0;
   const monthlyPace = Math.round(dailySpendRate * 30);
+
+  // Spent: period total based on date range
+  const endIdx = selectedDay - 1;
+  const startIdx = Math.max(0, endIdx - dateRange + 1);
+  const startSpend = startIdx > 0 ? days[startIdx - 1].cumulativeSpend : 0;
+  const periodSpend = Math.round(dayData.cumulativeSpend - startSpend);
 
   return (
     <div className="flex items-center bg-accent-subtle px-5 py-2 rounded-t-lg border-b border-border-light gap-4">
@@ -138,7 +143,7 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget })
       >
         <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Budget</span>
         <span className="text-[13px] text-foreground-muted whitespace-nowrap">
-          {fmtBudgetRate(budget)}
+          {fmtRate(budget)}
         </span>
         {/* Pencil icon */}
         <svg className="w-3 h-3 text-foreground-faint shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
@@ -149,11 +154,11 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget })
       {/* Divider */}
       <div className="w-px h-5 bg-border-light shrink-0" />
 
-      {/* Spent — cumulative spend within the window */}
+      {/* Spent — period total based on date range */}
       <span className="flex items-center gap-1.5 shrink-0">
         <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Spent</span>
         <span className="text-[13px] text-foreground-muted whitespace-nowrap">
-          {fmtDollar(dayData.cumulativeSpend)}
+          {fmtDollar(periodSpend)}
         </span>
       </span>
 
@@ -164,7 +169,7 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget })
       <span className="flex items-center gap-1.5 shrink-0">
         <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Pacing</span>
         <span className="text-[13px] text-foreground-muted whitespace-nowrap">
-          ~{fmtBudgetRate(monthlyPace)}
+          ~{fmtRate(monthlyPace)}
         </span>
       </span>
     </div>
@@ -728,6 +733,8 @@ export default function DashboardPage({ config, onHome }) {
             selectedDay={effectiveDay}
             projection={projection}
             onAdjustBudget={() => setActiveDrawer('budget')}
+            dateRange={dateRange}
+            days={projection.days}
           />
 
           {/* Main content area */}
