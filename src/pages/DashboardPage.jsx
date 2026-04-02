@@ -90,144 +90,81 @@ const COHORT_COLORS = [
 // CAMPAIGN HEALTH ROW — compact status strip at top of Block 1
 // ═══════════════════════════════════════════════════════════════════════
 
-function StatusLabel({ children, variant = 'neutral' }) {
-  const variants = {
-    success: 'bg-[#d1fae5] text-[#065f46]',
-    warning: 'bg-[#fef3c7] text-[#92400e]',
-    error: 'bg-[#fee2e2] text-[#991b1b]',
-    neutral: 'bg-border-light text-foreground-muted',
-  };
-  return (
-    <span className={cn('text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap', variants[variant])}>
-      {children}
-    </span>
-  );
+function getDeliveryState(dayData, selectedDay, projection) {
+  const isLearning = selectedDay <= projection.thresholdDay;
+  if (isLearning) return { label: 'Learning', color: 'warn' };
+
+  // Limited by Budget: agent could acquire more but daily budget caps contact volume
+  if (dayData.capHit) return { label: 'Limited by Budget', color: 'warn' };
+
+  return { label: 'Acquiring Customers', color: 'success' };
 }
 
-function getGoalStatus(dayData, selectedDay, targetActiveUsers, thresholdDay) {
-  if (selectedDay <= thresholdDay) return { pctOfExpected: 0, status: 'learning' };
-  const expectedAtThisPoint = targetActiveUsers * (selectedDay / 30);
-  const pctOfExpected = expectedAtThisPoint > 0
-    ? Math.round((dayData.cumulativeN / expectedAtThisPoint) * 100)
-    : 0;
-  if (pctOfExpected >= 90) return { pctOfExpected, status: 'on_track' };
-  return { pctOfExpected, status: 'behind' };
+function fmtBudgetRate(n) {
+  if (n >= 1000) return '$' + Math.round(n / 1000) + 'K/mo';
+  return '$' + fmt(n) + '/mo';
 }
 
-function getBudgetStatus(dayData, selectedDay, budget) {
-  const expectedSpend = (budget / 30) * selectedDay;
-  const pctOfExpected = expectedSpend > 0
-    ? Math.round((dayData.cumulativeSpend / expectedSpend) * 100)
-    : 0;
-  if (pctOfExpected >= 90 && pctOfExpected <= 110) return { pctOfExpected, label: 'On Pace', variant: 'success' };
-  if (pctOfExpected < 90) return { pctOfExpected, label: 'Underspending', variant: 'warning' };
-  return { pctOfExpected, label: 'Overspending', variant: 'warning' };
-}
-
-function getSustainableReachCeiling(dayData) {
-  // Simplified: sustainable ceiling is based on how much of the base
-  // can be reached without depleting it. Placeholder for engine build.
-  const currentReachPct = dayData.dailyJourneyTarget > 0 && dayData.maxCapacity > 0
-    ? Math.round((dayData.dailyJourneyTarget / dayData.maxCapacity) * 100)
-    : 0;
-  // Ceiling is roughly 2x current usage in sustainable mode (placeholder)
-  const ceiling = Math.min(currentReachPct * 2, 50);
-  return { currentReachPct, ceiling };
-}
-
-function CampaignHealthRow({ dayData, selectedDay, projection }) {
-  const [expanded, setExpanded] = useState(false);
-  const targetActiveUsers = projection.activeUsers;
+function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget }) {
   const budget = projection.budget;
+  const delivery = getDeliveryState(dayData, selectedDay, projection);
 
-  // Goal progress
-  const goal = getGoalStatus(dayData, selectedDay, targetActiveUsers, projection.thresholdDay);
-
-  // Budget
-  const budgetStatus = getBudgetStatus(dayData, selectedDay, budget);
-  const projectedSpend = Math.round(budget * (budgetStatus.pctOfExpected / 100));
-
-  // User base usage
-  const addressableReachPct = projection.audienceSize > 0
-    ? Math.round((dayData.funnelCumulative.contacted / projection.audienceSize) * 100)
-    : 0;
-  const sustainableInfo = getSustainableReachCeiling(dayData);
-
-  // Agent status
-  const isCalibrating = selectedDay <= projection.thresholdDay;
-
-  // Expand narrative
-  const phase = selectedDay <= 7 ? 'Learning' : selectedDay <= 20 ? 'Scaling' : 'Optimized';
-  const pending = dayData.funnelCumulative?.pending || 0;
-  const pipeline7Day = dayData.pipeline7Day || 0;
-  const narrativeText = selectedDay >= 30
-    ? 'Campaign complete. All 30-day results are final.'
-    : `Agent in ${phase} phase (Day ${selectedDay}). ${fmt(pending)} offers currently in flight. Based on cohort conversion rates, expect ~${fmt(pipeline7Day)} more activations in the next 7 days.`;
-
-  // Goal status text (no badge, just text)
-  const goalText = goal.status === 'learning'
-    ? 'Calibrating'
-    : goal.status === 'on_track' ? 'On Track' : 'Running Behind';
+  // Pacing: annualize current daily spend rate to monthly
+  const dailySpendRate = selectedDay > 0 ? dayData.cumulativeSpend / selectedDay : 0;
+  const monthlyPace = Math.round(dailySpendRate * 30);
 
   return (
-    <div>
-      {/* Agent status + health — single compact line */}
-      <div className="flex items-center bg-accent-subtle px-5 py-2 rounded-t-lg border-b border-border-light gap-4">
-        {/* Agent status indicator */}
-        <span className="flex items-center gap-1.5 shrink-0">
-          <span className={cn('w-2 h-2 rounded-full', isCalibrating ? 'bg-warn' : 'bg-success')} />
-          <span className={cn(
-            'text-[11px] font-semibold tracking-[0.05em]',
-            isCalibrating ? 'text-warn' : 'text-success'
-          )}>
-            {isCalibrating ? 'Agent calibrating' : 'Agent acquiring customers'}
-          </span>
+    <div className="flex items-center bg-accent-subtle px-5 py-2 rounded-t-lg border-b border-border-light gap-4">
+      {/* Delivery State */}
+      <span className="flex items-center gap-1.5 shrink-0">
+        <span className={cn('w-2 h-2 rounded-full', `bg-${delivery.color}`)} />
+        <span className={cn(
+          'text-[11px] font-semibold tracking-[0.05em]',
+          `text-${delivery.color}`
+        )}>
+          {delivery.label}
         </span>
+      </span>
 
-        {/* Divider */}
-        <div className="w-px h-5 bg-border-light shrink-0" />
+      {/* Divider */}
+      <div className="w-px h-5 bg-border-light shrink-0" />
 
-        {/* NEW ACTIVE CUSTOMERS — section label + text status + forecast */}
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-2 hover:bg-accent-light rounded-sm px-1.5 py-0.5 -mx-1.5 transition-colors duration-150"
-        >
-          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">New Active Customers</span>
-          <span className="text-[13px] text-foreground-muted whitespace-nowrap">
-            {goalText}
-          </span>
-          <span className="text-[13px] text-foreground-faint whitespace-nowrap">
-            Forecast: ~{fmtK(targetActiveUsers)} customers
-          </span>
-          <svg className={cn(
-            'w-3 h-3 text-foreground-faint transition-transform duration-200 shrink-0',
-            expanded && 'rotate-180'
-          )} fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-          </svg>
-        </button>
-
-        {/* Divider */}
-        <div className="w-px h-5 bg-border-light shrink-0" />
-
-        {/* BUDGET — no label badge, just section + numbers + forecast */}
-        <span className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Budget</span>
-          <span className="text-[13px] text-foreground-muted whitespace-nowrap">
-            {fmtDollar(dayData.cumulativeSpend)} of {fmtDollar(budget)}
-          </span>
-          <span className="text-[13px] text-foreground-faint whitespace-nowrap">
-            Forecast: ~{fmtDollar(projectedSpend)}
-          </span>
+      {/* Budget — rate as clickable to open budget drawer */}
+      <button
+        onClick={onAdjustBudget}
+        className="flex items-center gap-1.5 hover:bg-accent-light rounded-sm px-1.5 py-0.5 -mx-1.5 transition-colors duration-150"
+      >
+        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Budget</span>
+        <span className="text-[13px] text-foreground-muted whitespace-nowrap">
+          {fmtBudgetRate(budget)}
         </span>
-      </div>
+        {/* Pencil icon */}
+        <svg className="w-3 h-3 text-foreground-faint shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+        </svg>
+      </button>
 
-      {/* Expandable narrative */}
-      {expanded && (
-        <div className="bg-accent-subtle px-5 py-2.5 border-b border-border-light text-[13px] text-foreground-muted leading-relaxed">
-          {narrativeText}
-        </div>
-      )}
+      {/* Divider */}
+      <div className="w-px h-5 bg-border-light shrink-0" />
+
+      {/* Spent — cumulative spend within the window */}
+      <span className="flex items-center gap-1.5 shrink-0">
+        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Spent</span>
+        <span className="text-[13px] text-foreground-muted whitespace-nowrap">
+          {fmtDollar(dayData.cumulativeSpend)}
+        </span>
+      </span>
+
+      {/* Divider */}
+      <div className="w-px h-5 bg-border-light shrink-0" />
+
+      {/* Pacing — current spend rate annualized to monthly */}
+      <span className="flex items-center gap-1.5 shrink-0">
+        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Pacing</span>
+        <span className="text-[13px] text-foreground-muted whitespace-nowrap">
+          ~{fmtBudgetRate(monthlyPace)}
+        </span>
+      </span>
     </div>
   );
 }
@@ -684,6 +621,7 @@ export default function DashboardPage({ config, onHome }) {
             dayData={dayData}
             selectedDay={selectedDay}
             projection={projection}
+            onAdjustBudget={() => {/* TODO: open budget drawer */}}
           />
 
           {/* Main content area */}
