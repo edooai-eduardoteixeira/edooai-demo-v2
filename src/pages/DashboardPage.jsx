@@ -142,14 +142,12 @@ function CampaignHealthRow({ dayData, selectedDay, projection }) {
 
   // Goal progress
   const goal = getGoalStatus(dayData, selectedDay, targetActiveUsers, projection.thresholdDay);
-  const projectedCustomers = Math.round(targetActiveUsers * (goal.pctOfExpected / 100));
-  const projectedPctOfGoal = goal.pctOfExpected;
 
   // Budget
   const budgetStatus = getBudgetStatus(dayData, selectedDay, budget);
   const projectedSpend = Math.round(budget * (budgetStatus.pctOfExpected / 100));
 
-  // User base
+  // User base usage
   const addressableReachPct = projection.audienceSize > 0
     ? Math.round((dayData.funnelCumulative.contacted / projection.audienceSize) * 100)
     : 0;
@@ -166,12 +164,30 @@ function CampaignHealthRow({ dayData, selectedDay, projection }) {
     ? 'Campaign complete. All 30-day results are final.'
     : `Agent in ${phase} phase (Day ${selectedDay}). ${fmt(pending)} offers currently in flight. Based on cohort conversion rates, expect ~${fmt(pipeline7Day)} more activations in the next 7 days.`;
 
+  // Goal status label
+  const goalLabel = goal.status === 'learning'
+    ? 'Calibrating'
+    : goal.status === 'on_track' ? 'On Track' : `Running ${100 - goal.pctOfExpected}% Behind`;
+  const goalVariant = goal.status === 'learning'
+    ? 'neutral'
+    : goal.status === 'on_track' ? 'success' : 'warning';
+
+  // Budget label
+  const budgetLabel = budgetStatus.label;
+  const budgetVariant = budgetStatus.variant;
+
+  // User base label
+  const userBaseLabel = dayData.sustainabilityStatus === 'sustainable' ? 'On Pace'
+    : dayData.sustainabilityStatus === 'tightening' ? 'Tightening' : 'At Risk';
+  const userBaseVariant = dayData.sustainabilityStatus === 'sustainable' ? 'success'
+    : dayData.sustainabilityStatus === 'tightening' ? 'warning' : 'error';
+
   return (
     <div>
-      {/* Agent status + health sections */}
-      <div className="flex items-start gap-5 bg-accent-subtle px-5 py-3 rounded-t-lg border-b border-border-light">
+      {/* Agent status + health sections — single compact row */}
+      <div className="flex items-center bg-accent-subtle px-5 py-2.5 rounded-t-lg border-b border-border-light gap-5">
         {/* Agent status indicator */}
-        <span className="flex items-center gap-1.5 shrink-0 pt-3.5">
+        <span className="flex items-center gap-1.5 shrink-0">
           <span className={cn('w-2 h-2 rounded-full', isCalibrating ? 'bg-warn' : 'bg-success')} />
           <span className={cn(
             'text-[11px] font-semibold tracking-[0.05em]',
@@ -182,24 +198,18 @@ function CampaignHealthRow({ dayData, selectedDay, projection }) {
         </span>
 
         {/* Divider */}
-        <div className="w-px self-stretch bg-border-light shrink-0" />
+        <div className="w-px h-8 bg-border-light shrink-0" />
 
         {/* GOAL PROGRESS */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex flex-col gap-1 hover:bg-accent-light rounded-sm px-2 py-1 -mx-2 -my-1 transition-colors duration-150 min-w-0"
+          className="flex flex-col hover:bg-accent-light rounded-sm px-2 py-1 -mx-2 transition-colors duration-150 min-w-0"
         >
           <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Goal Progress</span>
-          <span className="flex items-center gap-2 flex-wrap">
-            {goal.status === 'learning' ? (
-              <StatusLabel variant="neutral">Calibrating</StatusLabel>
-            ) : goal.status === 'on_track' ? (
-              <StatusLabel variant="success">On Track</StatusLabel>
-            ) : (
-              <StatusLabel variant="warning">Running {100 - goal.pctOfExpected}% Behind</StatusLabel>
-            )}
+          <span className="flex items-center gap-2">
+            <StatusLabel variant={goalVariant}>{goalLabel}</StatusLabel>
             <span className="text-[13px] text-foreground-muted">
-              Projected ~{fmtK(projectedCustomers)} customers ({projectedPctOfGoal}% of goal)
+              Forecast: ~{fmtK(targetActiveUsers)} customers
             </span>
             <svg className={cn(
               'w-3 h-3 text-foreground-faint transition-transform duration-200 shrink-0',
@@ -211,37 +221,35 @@ function CampaignHealthRow({ dayData, selectedDay, projection }) {
         </button>
 
         {/* Divider */}
-        <div className="w-px self-stretch bg-border-light shrink-0" />
+        <div className="w-px h-8 bg-border-light shrink-0" />
 
         {/* BUDGET */}
-        <div className="flex flex-col gap-1 min-w-0">
+        <div className="flex flex-col min-w-0">
           <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Budget</span>
-          <span className="flex items-center gap-2 flex-wrap">
-            <StatusLabel variant={budgetStatus.variant}>{budgetStatus.label}</StatusLabel>
+          <span className="flex items-center gap-2">
+            <StatusLabel variant={budgetVariant}>{budgetLabel}</StatusLabel>
             <span className="text-[13px] text-foreground-muted">
               {fmtDollar(dayData.cumulativeSpend)} of {fmtDollar(budget)}
             </span>
             <span className="text-[13px] text-foreground-faint">
-              Projected ~{fmtDollar(projectedSpend)}
+              Forecast: ~{fmtDollar(projectedSpend)}
             </span>
           </span>
         </div>
 
         {/* Divider */}
-        <div className="w-px self-stretch bg-border-light shrink-0" />
+        <div className="w-px h-8 bg-border-light shrink-0" />
 
-        {/* USER BASE */}
-        <div className="flex flex-col gap-1 min-w-0">
-          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">User Base</span>
-          <span className="flex items-center gap-2 flex-wrap">
-            <StatusLabel variant={dayData.sustainabilityStatus === 'sustainable' ? 'success' : dayData.sustainabilityStatus === 'tightening' ? 'warning' : 'error'}>
-              {dayData.sustainabilityStatus === 'sustainable' ? 'Sustainable' : dayData.sustainabilityStatus === 'tightening' ? 'Tightening' : 'At Risk'}
-            </StatusLabel>
+        {/* USER BASE USAGE */}
+        <div className="flex flex-col min-w-0">
+          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">User Base Usage</span>
+          <span className="flex items-center gap-2">
+            <StatusLabel variant={userBaseVariant}>{userBaseLabel}</StatusLabel>
             <span className="text-[13px] text-foreground-muted">
-              Reaching {addressableReachPct}% of addressable customers
+              {addressableReachPct}% of eligible customers
             </span>
             <span className="text-[13px] text-foreground-faint">
-              Could grow to {sustainableInfo.ceiling}%
+              Forecast: ~{sustainableInfo.ceiling}%
             </span>
           </span>
         </div>
