@@ -52,7 +52,7 @@ const PlusSmall = () => (
 
 /* ── Index view data ── */
 const RULES_INDEX = [
-  { key: 'budget', label: 'Monthly Budget', subtopics: 'Monthly Budget, Spend Pace, Invite Stop' },
+  { key: 'budget', label: 'Budget', subtopics: 'Monthly Budget, Spend Pace, Invite Stop' },
   { key: 'invite', label: 'Invite', subtopics: 'Audience, Triggers, Channels' },
   { key: 'rewards', label: 'Reward', subtopics: 'Payment Method, Reward Tiers' },
   { key: 'redemption', label: 'Redemption', subtopics: 'New User Journey, Reward Trigger' },
@@ -452,13 +452,15 @@ const DefaultBudgetSlider = ({ budget, onBudgetChange }) => {
 
       <div style={{ height: 12 }} />
 
-      {/* Guidance — sparkle icon + standard text, matching strategy page */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-        <svg style={{ flexShrink: 0, marginTop: 1 }} width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="var(--text-tertiary)"/>
-        </svg>
-        <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-          {getDrawerGuidanceMessage(val)}
+      {/* AI insight card — matches design system (bg-accent-subtle card) */}
+      <div className="bg-accent-subtle rounded-lg py-3 px-4">
+        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+          <svg style={{ flexShrink: 0, marginTop: 1 }} width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="var(--text-tertiary)"/>
+          </svg>
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+            {getDrawerGuidanceMessage(val)}
+          </div>
         </div>
       </div>
     </div>
@@ -686,10 +688,10 @@ const drawerContent = {
     ]
   },
   budget: {
-    title: 'Monthly Budget',
+    title: 'Budget',
     sections: [
       {
-        title: null,
+        title: 'Monthly Budget',
         type: 'budget-slider',
       },
       {

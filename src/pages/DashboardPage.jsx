@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import Logo from '../components/Logo.jsx';
 import Chart from '../components/Chart.jsx';
 import FunnelChart from '../components/FunnelChart.jsx';
-import StrategyCards from '../components/StrategyCards.jsx';
+import StrategyCards, { DefaultBudgetSlider, BUDGET_CONFIG } from '../components/StrategyCards.jsx';
 import { cn } from '../lib/utils.js';
 import { computeDashboardProjection } from '../engine/projectionEngine.js';
 
@@ -607,6 +607,12 @@ function ComparisonChart({ agenticCurve, staticCurve, annotations, currentDay })
 
 
 // ═══════════════════════════════════════════════════════════════════════
+// DASHBOARD BUDGET SLIDER — forked from DefaultBudgetSlider for
+// independent iteration. Changes here do NOT affect the strategy page.
+// ═══════════════════════════════════════════════════════════════════════
+const DashboardBudgetSlider = DefaultBudgetSlider;
+
+// ═══════════════════════════════════════════════════════════════════════
 // DATE RANGE SELECTOR — controls viewing window (7d / 30d)
 // ═══════════════════════════════════════════════════════════════════════
 const DATE_RANGES = [
@@ -764,6 +770,7 @@ export default function DashboardPage({ config, onHome }) {
         onNavigate={setActiveDrawer}
         budget={budget}
         onBudgetChange={setBudget}
+        BudgetSliderComponent={DashboardBudgetSlider}
       />
     </div>
   );
