@@ -94,12 +94,12 @@ const COHORT_COLORS = [
 
 function getDeliveryState(dayData, selectedDay, projection) {
   const isLearning = selectedDay <= projection.thresholdDay;
-  if (isLearning) return { label: 'Learning', color: 'warn' };
+  if (isLearning) return { label: 'Learning', active: false };
 
   // Limited by Budget: agent could acquire more but daily budget caps contact volume
-  if (dayData.capHit) return { label: 'Limited by Budget', color: 'warn' };
+  if (dayData.capHit) return { label: 'Limited by Budget', active: false };
 
-  return { label: 'Acquiring Customers', color: 'success' };
+  return { label: 'Acquiring Customers', active: true };
 }
 
 function fmtRate(n) {
@@ -121,14 +121,16 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, d
   const periodSpend = Math.round(dayData.cumulativeSpend - startSpend);
 
   return (
-    <div className="flex items-center bg-accent-subtle px-5 py-2 rounded-t-lg border-b border-border-light gap-4">
-      {/* Delivery State */}
-      <span className="flex items-center gap-1.5 shrink-0">
-        <span className={cn('w-2 h-2 rounded-full', `bg-${delivery.color}`)} />
-        <span className={cn(
-          'text-[11px] font-semibold tracking-[0.05em]',
-          `text-${delivery.color}`
-        )}>
+    <div className="flex items-center bg-accent-subtle px-5 py-2.5 rounded-t-lg border-b border-border-light gap-4">
+      {/* Delivery State — agent status indicator per DESIGN.md */}
+      <span className="flex items-center gap-2.5 shrink-0">
+        <span className="relative flex items-center justify-center">
+          <span className={cn('w-2 h-2 rounded-full', delivery.active ? 'bg-brand' : 'bg-warn')} />
+          {delivery.active && (
+            <span className="absolute w-2 h-2 rounded-full border-[1.5px] border-brand animate-[agent-glow_2s_ease-out_infinite]" />
+          )}
+        </span>
+        <span className="text-[13px] font-semibold text-foreground">
           {delivery.label}
         </span>
       </span>
