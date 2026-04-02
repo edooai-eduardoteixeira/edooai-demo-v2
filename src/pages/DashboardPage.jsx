@@ -164,18 +164,10 @@ function CampaignHealthRow({ dayData, selectedDay, projection }) {
     ? 'Campaign complete. All 30-day results are final.'
     : `Agent in ${phase} phase (Day ${selectedDay}). ${fmt(pending)} offers currently in flight. Based on cohort conversion rates, expect ~${fmt(pipeline7Day)} more activations in the next 7 days.`;
 
-  // Goal status label — no number in the badge
-  const goalLabel = goal.status === 'learning'
+  // Goal status text (no badge, just text)
+  const goalText = goal.status === 'learning'
     ? 'Calibrating'
     : goal.status === 'on_track' ? 'On Track' : 'Running Behind';
-  const goalVariant = goal.status === 'learning'
-    ? 'neutral'
-    : goal.status === 'on_track' ? 'success' : 'warning';
-
-  // Budget label — "On Track" or "Underspending" or "Overspending"
-  const budgetLabel = budgetStatus.pctOfExpected >= 90 && budgetStatus.pctOfExpected <= 110
-    ? 'On Track' : budgetStatus.pctOfExpected < 90 ? 'Underspending' : 'Overspending';
-  const budgetVariant = budgetLabel === 'On Track' ? 'success' : 'warning';
 
   return (
     <div>
@@ -195,14 +187,16 @@ function CampaignHealthRow({ dayData, selectedDay, projection }) {
         {/* Divider */}
         <div className="w-px h-5 bg-border-light shrink-0" />
 
-        {/* GOAL PROGRESS — inline */}
+        {/* NEW ACTIVE CUSTOMERS — section label + text status + forecast */}
         <button
           onClick={() => setExpanded(!expanded)}
           className="flex items-center gap-2 hover:bg-accent-light rounded-sm px-1.5 py-0.5 -mx-1.5 transition-colors duration-150"
         >
-          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Goal</span>
-          <StatusLabel variant={goalVariant}>{goalLabel}</StatusLabel>
+          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">New Active Customers</span>
           <span className="text-[13px] text-foreground-muted whitespace-nowrap">
+            {goalText}
+          </span>
+          <span className="text-[13px] text-foreground-faint whitespace-nowrap">
             Forecast: ~{fmtK(targetActiveUsers)} customers
           </span>
           <svg className={cn(
@@ -216,10 +210,9 @@ function CampaignHealthRow({ dayData, selectedDay, projection }) {
         {/* Divider */}
         <div className="w-px h-5 bg-border-light shrink-0" />
 
-        {/* BUDGET — inline */}
+        {/* BUDGET — no label badge, just section + numbers + forecast */}
         <span className="flex items-center gap-2">
           <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Budget</span>
-          <StatusLabel variant={budgetVariant}>{budgetLabel}</StatusLabel>
           <span className="text-[13px] text-foreground-muted whitespace-nowrap">
             {fmtDollar(dayData.cumulativeSpend)} of {fmtDollar(budget)}
           </span>
@@ -287,23 +280,34 @@ function KPISelector({ selected, onSelect, dayData }) {
 // ═══════════════════════════════════════════════════════════════════════
 // HERO CHART — renders the selected KPI's 30-day trend
 // ═══════════════════════════════════════════════════════════════════════
-function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve, targetActiveUsers }) {
-  // Build the data slice for the selected KPI
-  let slice, yMax, formatLabel;
-  let projectionSlice = null;
+function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve, projection }) {
+  // Build actual data slice and projection line for all KPIs
+  let slice, projectionSlice, yMax, formatLabel;
+
+  // Day 30 target values for projection lines
+  const day30 = days[29];
+  const targets = {
+    activeUsers: projection.activeUsers,
+    cac: day30?.kpiCumulative?.cac || 0,
+    roi: day30?.kpiCumulative?.roi || 0,
+    fraudSaved: day30?.kpiCumulative?.fraudSaved || 0,
+  };
 
   if (selectedKPI === 'activeUsers') {
     slice = cumulativeCurve.slice(0, currentDay);
-    // Build linear projection line from 0 to target over 30 days
     projectionSlice = Array.from({ length: currentDay }, (_, i) =>
-      Math.round(targetActiveUsers * ((i + 1) / 30))
+      Math.round(targets.activeUsers * ((i + 1) / 30))
     );
     const maxVal = Math.max(...slice, ...projectionSlice, 1);
     yMax = Math.ceil(maxVal / 200) * 200 || 200;
     formatLabel = (v) => fmt(v);
   } else {
     slice = days.slice(0, currentDay).map(d => d.kpiCumulative[selectedKPI]);
-    const maxVal = Math.max(...slice, 1);
+    const target = targets[selectedKPI];
+    projectionSlice = Array.from({ length: currentDay }, (_, i) =>
+      Math.round(target * ((i + 1) / 30) * 10) / 10
+    );
+    const maxVal = Math.max(...slice, ...projectionSlice, 1);
     if (selectedKPI === 'cac') {
       yMax = Math.ceil(maxVal / 20) * 20 || 100;
       formatLabel = (v) => fmtDollar(v);
@@ -316,26 +320,15 @@ function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve, targetActiv
     }
   }
 
-  const yLabels = selectedKPI === 'roi'
-    ? [0, yMax * 0.5, yMax]
-    : [0, yMax * 0.5, yMax];
-
-  // Use series for activeUsers (actual + projected), single data for other KPIs
-  const chartProps = projectionSlice ? {
-    series: [
-      { data: slice, color: 'var(--color-brand)', label: 'Actual' },
-      { data: projectionSlice, color: 'var(--color-gray-300)', dashed: true, width: 1.5, label: 'Projected' },
-    ],
-    legend: true,
-    fill: { color: 'var(--color-brand)', opacity: 0.07 },
-  } : {
-    data: slice,
-    fill: { color: 'var(--color-brand)', opacity: 0.07 },
-  };
+  const yLabels = [0, yMax * 0.5, yMax];
 
   return (
     <Chart
-      {...chartProps}
+      series={[
+        { data: slice, color: 'var(--color-brand)', label: 'Actual' },
+        { data: projectionSlice, color: 'var(--color-gray-300)', dashed: true, width: 1.5, label: 'Projected' },
+      ]}
+      legend
       maxValue={yMax}
       cssHeight="100%"
       padding={{ left: 50 }}
@@ -345,6 +338,7 @@ function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve, targetActiv
         return Math.round(v);
       })}
       gridlines="from-labels"
+      fill={{ color: 'var(--color-brand)', opacity: 0.07 }}
       endpointLabel={(v) => formatLabel(v)}
     />
   );
@@ -708,7 +702,7 @@ export default function DashboardPage({ config, onHome }) {
                   days={projection.days}
                   currentDay={selectedDay}
                   cumulativeCurve={projection.cumulativeCurve}
-                  targetActiveUsers={projection.activeUsers}
+                  projection={projection}
                 />
               </div>
             </div>
