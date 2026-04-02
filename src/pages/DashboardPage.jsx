@@ -90,32 +90,49 @@ const COHORT_COLORS = [
 // CAMPAIGN HEALTH ROW — compact status strip at top of Block 1
 // ═══════════════════════════════════════════════════════════════════════
 
-const STATUS_BADGES = {
-  on_track: { label: 'On Track', className: 'bg-[#d1fae5] text-[#065f46]' },
-  ahead: { label: 'Ahead', className: 'bg-[#d1fae5] text-[#065f46]' },
-  learning: { label: 'Learning', className: 'bg-border-light text-foreground-muted' },
-  behind: { label: 'Behind', className: 'bg-[#fef3c7] text-[#92400e]' },
-  sustainable: { label: 'Sustainable', className: 'bg-[#d1fae5] text-[#065f46]' },
-  growing: { label: 'Growing', className: 'bg-[#d1fae5] text-[#065f46]' },
-  tightening: { label: 'Tightening', className: 'bg-[#fef3c7] text-[#92400e]' },
-  at_risk: { label: 'At Risk', className: 'bg-[#fee2e2] text-[#991b1b]' },
-};
-
-function StatusBadge({ status }) {
-  const badge = STATUS_BADGES[status] || STATUS_BADGES.learning;
+function StatusLabel({ children, variant = 'neutral' }) {
+  const variants = {
+    success: 'bg-[#d1fae5] text-[#065f46]',
+    warning: 'bg-[#fef3c7] text-[#92400e]',
+    error: 'bg-[#fee2e2] text-[#991b1b]',
+    neutral: 'bg-border-light text-foreground-muted',
+  };
   return (
-    <span className={cn('text-xs font-semibold px-2 py-0.5 rounded-full', badge.className)}>
-      {badge.label}
+    <span className={cn('text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap', variants[variant])}>
+      {children}
     </span>
   );
 }
 
-function getCampaignStatus(dayData, selectedDay, targetActiveUsers, thresholdDay) {
-  if (selectedDay <= thresholdDay) return 'learning';
-  const progress = dayData.cumulativeN / targetActiveUsers;
-  const expectedProgress = selectedDay / 30;
-  if (progress >= expectedProgress * 0.9) return 'on_track';
-  return 'behind';
+function getGoalStatus(dayData, selectedDay, targetActiveUsers, thresholdDay) {
+  if (selectedDay <= thresholdDay) return { pctOfExpected: 0, status: 'learning' };
+  const expectedAtThisPoint = targetActiveUsers * (selectedDay / 30);
+  const pctOfExpected = expectedAtThisPoint > 0
+    ? Math.round((dayData.cumulativeN / expectedAtThisPoint) * 100)
+    : 0;
+  if (pctOfExpected >= 90) return { pctOfExpected, status: 'on_track' };
+  return { pctOfExpected, status: 'behind' };
+}
+
+function getBudgetStatus(dayData, selectedDay, budget) {
+  const expectedSpend = (budget / 30) * selectedDay;
+  const pctOfExpected = expectedSpend > 0
+    ? Math.round((dayData.cumulativeSpend / expectedSpend) * 100)
+    : 0;
+  if (pctOfExpected >= 90 && pctOfExpected <= 110) return { pctOfExpected, label: 'On Pace', variant: 'success' };
+  if (pctOfExpected < 90) return { pctOfExpected, label: 'Underspending', variant: 'warning' };
+  return { pctOfExpected, label: 'Overspending', variant: 'warning' };
+}
+
+function getSustainableReachCeiling(dayData) {
+  // Simplified: sustainable ceiling is based on how much of the base
+  // can be reached without depleting it. Placeholder for engine build.
+  const currentReachPct = dayData.dailyJourneyTarget > 0 && dayData.maxCapacity > 0
+    ? Math.round((dayData.dailyJourneyTarget / dayData.maxCapacity) * 100)
+    : 0;
+  // Ceiling is roughly 2x current usage in sustainable mode (placeholder)
+  const ceiling = Math.min(currentReachPct * 2, 50);
+  return { currentReachPct, ceiling };
 }
 
 function CampaignHealthRow({ dayData, selectedDay, projection }) {
@@ -123,87 +140,111 @@ function CampaignHealthRow({ dayData, selectedDay, projection }) {
   const targetActiveUsers = projection.activeUsers;
   const budget = projection.budget;
 
-  // Campaign Status
-  const campaignStatus = getCampaignStatus(dayData, selectedDay, targetActiveUsers, projection.thresholdDay);
+  // Goal progress
+  const goal = getGoalStatus(dayData, selectedDay, targetActiveUsers, projection.thresholdDay);
+  const projectedCustomers = Math.round(targetActiveUsers * (goal.pctOfExpected / 100));
+  const projectedPctOfGoal = goal.pctOfExpected;
 
-  // Budget pacing: (cumulative spend %) / (day elapsed %)
-  const elapsedPct = selectedDay / 30;
-  const spentPct = budget > 0 ? dayData.cumulativeSpend / budget : 0;
-  const pacingIndex = elapsedPct > 0 ? Math.round((spentPct / elapsedPct) * 10) / 10 : 0;
-  const spent = dayData.cumulativeSpend;
-  const remaining = budget - spent;
+  // Budget
+  const budgetStatus = getBudgetStatus(dayData, selectedDay, budget);
+  const projectedSpend = Math.round(budget * (budgetStatus.pctOfExpected / 100));
 
-  // Audience health
-  const capacityUsed = dayData.maxCapacity > 0
-    ? Math.round((dayData.dailyJourneyTarget / dayData.maxCapacity) * 100)
+  // User base
+  const addressableReachPct = projection.audienceSize > 0
+    ? Math.round((dayData.funnelCumulative.contacted / projection.audienceSize) * 100)
     : 0;
+  const sustainableInfo = getSustainableReachCeiling(dayData);
 
-  // Pipeline
-  const pipeline7Day = dayData.pipeline7Day || 0;
-
-  // Active indicator: amber before threshold, green after
+  // Agent status
   const isCalibrating = selectedDay <= projection.thresholdDay;
 
   // Expand narrative
   const phase = selectedDay <= 7 ? 'Learning' : selectedDay <= 20 ? 'Scaling' : 'Optimized';
   const pending = dayData.funnelCumulative?.pending || 0;
+  const pipeline7Day = dayData.pipeline7Day || 0;
   const narrativeText = selectedDay >= 30
     ? 'Campaign complete. All 30-day results are final.'
     : `Agent in ${phase} phase (Day ${selectedDay}). ${fmt(pending)} offers currently in flight. Based on cohort conversion rates, expect ~${fmt(pipeline7Day)} more activations in the next 7 days.`;
 
   return (
     <div>
-      <div className="flex items-center gap-3 bg-accent-subtle px-5 py-2 rounded-t-lg border-b border-border-light">
-        {/* Active indicator */}
-        <span className="flex items-center gap-1.5 shrink-0">
+      {/* Agent status + health sections */}
+      <div className="flex items-start gap-5 bg-accent-subtle px-5 py-3 rounded-t-lg border-b border-border-light">
+        {/* Agent status indicator */}
+        <span className="flex items-center gap-1.5 shrink-0 pt-3.5">
           <span className={cn('w-2 h-2 rounded-full', isCalibrating ? 'bg-warn' : 'bg-success')} />
           <span className={cn(
-            'text-[11px] font-semibold tracking-[0.05em] uppercase',
+            'text-[11px] font-semibold tracking-[0.05em]',
             isCalibrating ? 'text-warn' : 'text-success'
           )}>
-            {isCalibrating ? 'Calibrating' : 'Active'}
+            {isCalibrating ? 'Agent calibrating' : 'Agent acquiring customers'}
           </span>
         </span>
 
         {/* Divider */}
-        <div className="w-px h-4 bg-border-light shrink-0" />
+        <div className="w-px self-stretch bg-border-light shrink-0" />
 
-        {/* Campaign Status */}
+        {/* GOAL PROGRESS */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-2 hover:bg-accent-light rounded-sm px-1.5 py-0.5 -mx-1.5 transition-colors duration-150"
+          className="flex flex-col gap-1 hover:bg-accent-light rounded-sm px-2 py-1 -mx-2 -my-1 transition-colors duration-150 min-w-0"
         >
-          <StatusBadge status={campaignStatus} />
-          <span className="text-[13px] text-foreground-muted">
-            {fmt(dayData.cumulativeN)} users · +{fmt(pipeline7Day)} this week · target ~{fmtK(targetActiveUsers)}
+          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Goal Progress</span>
+          <span className="flex items-center gap-2 flex-wrap">
+            {goal.status === 'learning' ? (
+              <StatusLabel variant="neutral">Calibrating</StatusLabel>
+            ) : goal.status === 'on_track' ? (
+              <StatusLabel variant="success">On Track</StatusLabel>
+            ) : (
+              <StatusLabel variant="warning">Running {100 - goal.pctOfExpected}% Behind</StatusLabel>
+            )}
+            <span className="text-[13px] text-foreground-muted">
+              Projected ~{fmtK(projectedCustomers)} customers ({projectedPctOfGoal}% of goal)
+            </span>
+            <svg className={cn(
+              'w-3 h-3 text-foreground-faint transition-transform duration-200 shrink-0',
+              expanded && 'rotate-180'
+            )} fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
           </span>
-          <svg className={cn(
-            'w-3 h-3 text-foreground-faint transition-transform duration-200 shrink-0',
-            expanded && 'rotate-180'
-          )} fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-          </svg>
         </button>
 
         {/* Divider */}
-        <div className="w-px h-4 bg-border-light shrink-0" />
+        <div className="w-px self-stretch bg-border-light shrink-0" />
 
-        {/* Budget */}
-        <span className="flex items-center gap-1.5">
-          <span className="text-[13px] font-semibold text-foreground">{pacingIndex}x</span>
-          <span className="text-[13px] text-foreground-muted">
-            · {fmtDollar(spent)} spent · {fmtDollar(remaining)} left · Day {selectedDay}/30
+        {/* BUDGET */}
+        <div className="flex flex-col gap-1 min-w-0">
+          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Budget</span>
+          <span className="flex items-center gap-2 flex-wrap">
+            <StatusLabel variant={budgetStatus.variant}>{budgetStatus.label}</StatusLabel>
+            <span className="text-[13px] text-foreground-muted">
+              {fmtDollar(dayData.cumulativeSpend)} of {fmtDollar(budget)}
+            </span>
+            <span className="text-[13px] text-foreground-faint">
+              Projected ~{fmtDollar(projectedSpend)}
+            </span>
           </span>
-        </span>
+        </div>
 
         {/* Divider */}
-        <div className="w-px h-4 bg-border-light shrink-0" />
+        <div className="w-px self-stretch bg-border-light shrink-0" />
 
-        {/* Audience Health */}
-        <span className="flex items-center gap-2">
-          <StatusBadge status={dayData.sustainabilityStatus} />
-          <span className="text-[13px] text-foreground-muted">{capacityUsed}% capacity used</span>
-        </span>
+        {/* USER BASE */}
+        <div className="flex flex-col gap-1 min-w-0">
+          <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">User Base</span>
+          <span className="flex items-center gap-2 flex-wrap">
+            <StatusLabel variant={dayData.sustainabilityStatus === 'sustainable' ? 'success' : dayData.sustainabilityStatus === 'tightening' ? 'warning' : 'error'}>
+              {dayData.sustainabilityStatus === 'sustainable' ? 'Sustainable' : dayData.sustainabilityStatus === 'tightening' ? 'Tightening' : 'At Risk'}
+            </StatusLabel>
+            <span className="text-[13px] text-foreground-muted">
+              Reaching {addressableReachPct}% of addressable customers
+            </span>
+            <span className="text-[13px] text-foreground-faint">
+              Could grow to {sustainableInfo.ceiling}%
+            </span>
+          </span>
+        </div>
       </div>
 
       {/* Expandable narrative */}
