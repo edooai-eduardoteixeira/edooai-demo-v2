@@ -287,13 +287,18 @@ function KPISelector({ selected, onSelect, dayData }) {
 // ═══════════════════════════════════════════════════════════════════════
 // HERO CHART — renders the selected KPI's 30-day trend
 // ═══════════════════════════════════════════════════════════════════════
-function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve }) {
+function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve, targetActiveUsers }) {
   // Build the data slice for the selected KPI
   let slice, yMax, formatLabel;
+  let projectionSlice = null;
 
   if (selectedKPI === 'activeUsers') {
     slice = cumulativeCurve.slice(0, currentDay);
-    const maxVal = Math.max(...slice, 1);
+    // Build linear projection line from 0 to target over 30 days
+    projectionSlice = Array.from({ length: currentDay }, (_, i) =>
+      Math.round(targetActiveUsers * ((i + 1) / 30))
+    );
+    const maxVal = Math.max(...slice, ...projectionSlice, 1);
     yMax = Math.ceil(maxVal / 200) * 200 || 200;
     formatLabel = (v) => fmt(v);
   } else {
@@ -315,9 +320,22 @@ function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve }) {
     ? [0, yMax * 0.5, yMax]
     : [0, yMax * 0.5, yMax];
 
+  // Use series for activeUsers (actual + projected), single data for other KPIs
+  const chartProps = projectionSlice ? {
+    series: [
+      { data: slice, color: 'var(--color-brand)', label: 'Actual' },
+      { data: projectionSlice, color: 'var(--color-gray-300)', dashed: true, width: 1.5, label: 'Projected' },
+    ],
+    legend: true,
+    fill: { color: 'var(--color-brand)', opacity: 0.07 },
+  } : {
+    data: slice,
+    fill: { color: 'var(--color-brand)', opacity: 0.07 },
+  };
+
   return (
     <Chart
-      data={slice}
+      {...chartProps}
       maxValue={yMax}
       cssHeight="100%"
       padding={{ left: 50 }}
@@ -327,7 +345,6 @@ function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve }) {
         return Math.round(v);
       })}
       gridlines="from-labels"
-      fill={{ color: 'var(--color-brand)', opacity: 0.07 }}
       endpointLabel={(v) => formatLabel(v)}
     />
   );
@@ -691,6 +708,7 @@ export default function DashboardPage({ config, onHome }) {
                   days={projection.days}
                   currentDay={selectedDay}
                   cumulativeCurve={projection.cumulativeCurve}
+                  targetActiveUsers={projection.activeUsers}
                 />
               </div>
             </div>
