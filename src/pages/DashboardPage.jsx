@@ -110,6 +110,10 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget })
   const budget = projection.budget;
   const delivery = getDeliveryState(dayData, selectedDay, projection);
 
+  // Pacing: annualize current daily spend rate to monthly
+  const dailySpendRate = selectedDay > 0 ? dayData.cumulativeSpend / selectedDay : 0;
+  const monthlyPace = Math.round(dailySpendRate * 30);
+
   return (
     <div className="flex items-center bg-accent-subtle px-5 py-2 rounded-t-lg border-b border-border-light gap-4">
       {/* Delivery State */}
@@ -149,6 +153,17 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget })
         <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Spent</span>
         <span className="text-[13px] text-foreground-muted whitespace-nowrap">
           {fmtDollar(dayData.cumulativeSpend)}
+        </span>
+      </span>
+
+      {/* Divider */}
+      <div className="w-px h-5 bg-border-light shrink-0" />
+
+      {/* Pacing — current spend rate annualized to monthly */}
+      <span className="flex items-center gap-1.5 shrink-0">
+        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Pacing</span>
+        <span className="text-[13px] text-foreground-muted whitespace-nowrap">
+          ~{fmtBudgetRate(monthlyPace)}
         </span>
       </span>
     </div>
