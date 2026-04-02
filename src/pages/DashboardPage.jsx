@@ -221,11 +221,16 @@ function KPISelector({ selected, onSelect, dayData, days, selectedDay }) {
               {kpi.format(value)}
             </span>
             {hasDelta && deltaPct !== 0 && (
-              <span className={cn(
-                'text-[11px] font-semibold mt-0.5',
-                isGood ? 'text-success' : 'text-warn'
-              )}>
-                {isPositive ? '↑' : '↓'}{Math.abs(deltaPct)}%
+              <span className="flex items-center gap-1 mt-0.5">
+                <span className={cn(
+                  'text-[11px] font-semibold',
+                  isGood ? 'text-success' : 'text-warn'
+                )}>
+                  {isPositive ? '↑' : '↓'}{Math.abs(deltaPct)}%
+                </span>
+                <span className="text-[10px] text-foreground-faint">
+                  vs {selectedDay - 1 - compDay}d ago
+                </span>
               </span>
             )}
           </button>
