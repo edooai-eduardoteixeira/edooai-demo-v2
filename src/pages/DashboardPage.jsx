@@ -122,8 +122,8 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, d
 
   return (
     <div className="flex items-center bg-accent-subtle px-5 py-2.5 rounded-t-lg border-b border-border-light gap-4">
-      {/* Delivery State — agent status indicator per DESIGN.md */}
-      <span className="flex items-center gap-2.5 shrink-0">
+      {/* Delivery State — fixed width to prevent layout shift */}
+      <span className="flex items-center gap-2.5 shrink-0 min-w-[170px]">
         <span className="relative flex items-center justify-center">
           <span className={cn('w-2 h-2 rounded-full', delivery.active ? 'bg-brand' : 'bg-warn')} />
           {delivery.active && (
@@ -141,7 +141,7 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, d
       {/* Budget — rate as clickable to open budget drawer */}
       <button
         onClick={onAdjustBudget}
-        className="flex items-center gap-1.5 hover:bg-accent-light rounded-sm px-1.5 py-0.5 -mx-1.5 transition-colors duration-150"
+        className="flex items-center gap-2 hover:bg-accent-light rounded-sm px-1.5 py-0.5 -mx-1.5 transition-colors duration-150"
       >
         <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Budget</span>
         <span className="text-[13px] text-foreground-muted whitespace-nowrap">
@@ -157,7 +157,7 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, d
       <div className="w-px h-5 bg-border-light shrink-0" />
 
       {/* Spent — period total based on date range */}
-      <span className="flex items-center gap-1.5 shrink-0">
+      <span className="flex items-center gap-2 shrink-0">
         <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Spent</span>
         <span className="text-[13px] text-foreground-muted whitespace-nowrap">
           {fmtDollar(periodSpend)}
@@ -168,7 +168,7 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, d
       <div className="w-px h-5 bg-border-light shrink-0" />
 
       {/* Pacing — current spend rate annualized to monthly */}
-      <span className="flex items-center gap-1.5 shrink-0">
+      <span className="flex items-center gap-2 shrink-0">
         <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Pacing</span>
         <span className="text-[13px] text-foreground-muted whitespace-nowrap">
           ~{fmtRate(monthlyPace)}
