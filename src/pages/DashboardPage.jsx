@@ -7,13 +7,14 @@ import { cn } from '../lib/utils.js';
 import { computeDashboardProjection } from '../engine/projectionEngine.js';
 
 // ─── Constants ────────────────────────────────────────────────────────
-const DAY_STOPS = [1, 10, 20, 30];
+const DAY_STOPS = [1, 10, 30, 60];
 const DAY_META = {
   1: { label: 'Day 1', subtitle: 'Cold Start' },
   10: { label: 'Day 10', subtitle: 'First Learnings' },
-  20: { label: 'Day 20', subtitle: 'Hitting Stride' },
-  30: { label: 'Day 30', subtitle: 'Mature Operation' },
+  30: { label: 'Day 30', subtitle: 'Hitting Stride' },
+  60: { label: 'Day 60', subtitle: 'Mature Operation' },
 };
+const ENGINE_MAX_DAYS = 30; // Engine currently generates 30 days; clamp beyond this
 
 // ─── Formatting helpers ──────────────────────────────────────────────
 function fmt(n) { return Math.round(n).toLocaleString('en-US'); }
@@ -180,9 +181,54 @@ const KPI_DEFS = [
   { key: 'fraudSaved', label: 'Fraud Saved', format: (v) => fmtDollar(v), betterWhen: 'up' },
 ];
 
-function getKPIValue(dayData, key) {
-  if (key === 'activeUsers') return dayData.funnelCumulative.activeUser;
-  return dayData.kpiCumulative[key];
+// Compute KPI value for a period (sum daily values within window)
+function getPeriodKPI(days, selectedDay, dateRange, key) {
+  const endIdx = selectedDay - 1; // 0-based
+  const startIdx = Math.max(0, endIdx - dateRange + 1);
+  const periodDays = days.slice(startIdx, endIdx + 1);
+
+  if (key === 'activeUsers') {
+    // Sum daily new active users in the period
+    return periodDays.reduce((sum, d) => sum + (d.dailyFunnel?.activeUser || 0), 0);
+  }
+  if (key === 'cac') {
+    // Period spend / period users
+    const users = periodDays.reduce((sum, d) => sum + (d.dailyFunnel?.activeUser || 0), 0);
+    const spend = periodDays.reduce((sum, d, i) => {
+      const dayIdx = startIdx + i;
+      const prevSpend = dayIdx > 0 ? days[dayIdx - 1].cumulativeSpend : 0;
+      return sum + (d.cumulativeSpend - prevSpend);
+    }, 0);
+    return users > 0 ? Math.round(spend / users) : 0;
+  }
+  if (key === 'roi') {
+    // Period value / period spend
+    const spend = periodDays.reduce((sum, d, i) => {
+      const dayIdx = startIdx + i;
+      const prevSpend = dayIdx > 0 ? days[dayIdx - 1].cumulativeSpend : 0;
+      return sum + (d.cumulativeSpend - prevSpend);
+    }, 0);
+    const value = periodDays.reduce((sum, d, i) => {
+      const dayIdx = startIdx + i;
+      const prevVal = dayIdx > 0 ? days[dayIdx - 1].cumulativeValue : 0;
+      return sum + (d.cumulativeValue - prevVal);
+    }, 0);
+    return spend > 0 ? Math.round((value / spend) * 10) / 10 : 0;
+  }
+  if (key === 'fraudSaved') {
+    // Sum daily fraud savings
+    const spend = periodDays.reduce((sum, d, i) => {
+      const dayIdx = startIdx + i;
+      const prevSpend = dayIdx > 0 ? days[dayIdx - 1].cumulativeSpend : 0;
+      return sum + (d.cumulativeSpend - prevSpend);
+    }, 0);
+    // fraudSaved is spend * fraudRate — use the cumulative ratio
+    const lastDay = periodDays[periodDays.length - 1];
+    const fraudRate = lastDay.cumulativeSpend > 0
+      ? lastDay.kpiCumulative.fraudSaved / lastDay.cumulativeSpend : 0;
+    return Math.round(spend * fraudRate);
+  }
+  return 0;
 }
 
 function KPISelector({ selected, onSelect, dayData, days, selectedDay, dateRange }) {
@@ -190,15 +236,15 @@ function KPISelector({ selected, onSelect, dayData, days, selectedDay, dateRange
     <div className="flex gap-2">
       {KPI_DEFS.map((kpi) => {
         const active = selected === kpi.key;
-        const value = getKPIValue(dayData, kpi.key);
+        const value = getPeriodKPI(days, selectedDay, dateRange, kpi.key);
 
-        // Delta: compare current vs one full date range period back
-        // e.g. dateRange=7 on day 20 → compare day 20 vs day 13
-        const compDayIndex = Math.max(0, selectedDay - 1 - dateRange);
-        const compValue = getKPIValue(days[compDayIndex], kpi.key);
-        const hasDelta = selectedDay > dateRange && compValue > 0 && value > 0;
-        const deltaPct = hasDelta ? Math.round(((value - compValue) / compValue) * 100) : 0;
-        // Is this delta "good"? Depends on the metric
+        // Delta: compare current period vs prior period
+        const hasPriorPeriod = selectedDay > dateRange;
+        const priorValue = hasPriorPeriod
+          ? getPeriodKPI(days, selectedDay - dateRange, dateRange, kpi.key)
+          : 0;
+        const hasDelta = hasPriorPeriod && priorValue > 0 && value > 0;
+        const deltaPct = hasDelta ? Math.round(((value - priorValue) / priorValue) * 100) : 0;
         const isPositive = deltaPct > 0;
         const isGood = kpi.betterWhen === 'up' ? isPositive : !isPositive;
 
@@ -240,34 +286,29 @@ function KPISelector({ selected, onSelect, dayData, days, selectedDay, dateRange
 // ═══════════════════════════════════════════════════════════════════════
 // HERO CHART — renders the selected KPI's 30-day trend
 // ═══════════════════════════════════════════════════════════════════════
-function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve, projection }) {
-  // Build actual data slice and projection line for all KPIs
-  let slice, projectionSlice, yMax, formatLabel;
-
-  // Day 30 target values for projection lines
-  const day30 = days[29];
-  const targets = {
-    activeUsers: projection.activeUsers,
-    cac: day30?.kpiCumulative?.cac || 0,
-    roi: day30?.kpiCumulative?.roi || 0,
-    fraudSaved: day30?.kpiCumulative?.fraudSaved || 0,
-  };
+function HeroChart({ selectedKPI, days, currentDay, projection }) {
+  // Daily values — show rate, not cumulative
+  let slice, yMax, formatLabel;
 
   if (selectedKPI === 'activeUsers') {
-    slice = cumulativeCurve.slice(0, currentDay);
-    projectionSlice = Array.from({ length: currentDay }, (_, i) =>
-      Math.round(targets.activeUsers * ((i + 1) / 30))
-    );
-    const maxVal = Math.max(...slice, ...projectionSlice, 1);
-    yMax = Math.ceil(maxVal / 200) * 200 || 200;
+    // Daily new active users (resolved per day)
+    slice = projection.dailyCurve.slice(0, currentDay);
+    const maxVal = Math.max(...slice, 1);
+    yMax = Math.ceil(maxVal / 20) * 20 || 100;
     formatLabel = (v) => fmt(v);
   } else {
-    slice = days.slice(0, currentDay).map(d => d.kpiCumulative[selectedKPI]);
-    const target = targets[selectedKPI];
-    projectionSlice = Array.from({ length: currentDay }, (_, i) =>
-      Math.round(target * ((i + 1) / 30) * 10) / 10
-    );
-    const maxVal = Math.max(...slice, ...projectionSlice, 1);
+    // Daily KPI values from the engine
+    const dailyKPIs = projection.dailyKPIs;
+    if (dailyKPIs && dailyKPIs[selectedKPI]) {
+      slice = dailyKPIs[selectedKPI].slice(0, currentDay);
+    } else {
+      // Fallback: compute daily delta from cumulative
+      slice = days.slice(0, currentDay).map((d, i) => {
+        if (i === 0) return d.kpiCumulative[selectedKPI];
+        return Math.max(0, d.kpiCumulative[selectedKPI] - days[i - 1].kpiCumulative[selectedKPI]);
+      });
+    }
+    const maxVal = Math.max(...slice, 1);
     if (selectedKPI === 'cac') {
       yMax = Math.ceil(maxVal / 20) * 20 || 100;
       formatLabel = (v) => fmtDollar(v);
@@ -275,7 +316,7 @@ function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve, projection 
       yMax = Math.ceil(maxVal * 2) / 2 || 2;
       formatLabel = (v) => `${v}x`;
     } else {
-      yMax = Math.ceil(maxVal / 1000) * 1000 || 1000;
+      yMax = Math.ceil(maxVal / 500) * 500 || 1000;
       formatLabel = (v) => fmtDollar(v);
     }
   }
@@ -285,10 +326,8 @@ function HeroChart({ selectedKPI, days, currentDay, cumulativeCurve, projection 
   return (
     <Chart
       series={[
-        { data: slice, color: 'var(--color-brand)', label: 'Actual' },
-        { data: projectionSlice, color: 'var(--color-gray-300)', dashed: true, width: 1.5, label: 'Projected' },
+        { data: slice, color: 'var(--color-brand)', label: 'Daily' },
       ]}
-      legend
       maxValue={yMax}
       cssHeight="100%"
       padding={{ left: 50 }}
@@ -659,8 +698,9 @@ export default function DashboardPage({ config, onHome }) {
     return computeDashboardProjection({ budget, params: config.engineParams });
   }, [config, budget]);
 
-  // Current day data
-  const dayData = projection.days[selectedDay - 1];
+  // Current day data — clamp to engine range
+  const effectiveDay = Math.min(selectedDay, ENGINE_MAX_DAYS);
+  const dayData = projection.days[effectiveDay - 1];
 
   // All daily briefings (for scrollable history)
   const briefings = projection.dailyBriefings;
@@ -685,7 +725,7 @@ export default function DashboardPage({ config, onHome }) {
           {/* Campaign Health Row — compact status strip */}
           <CampaignHealthRow
             dayData={dayData}
-            selectedDay={selectedDay}
+            selectedDay={effectiveDay}
             projection={projection}
             onAdjustBudget={() => setActiveDrawer('budget')}
           />
@@ -699,7 +739,7 @@ export default function DashboardPage({ config, onHome }) {
                 onSelect={setSelectedKPI}
                 dayData={dayData}
                 days={projection.days}
-                selectedDay={selectedDay}
+                selectedDay={effectiveDay}
                 dateRange={dateRange}
               />
               {/* Hero chart fills remaining height */}
@@ -707,8 +747,7 @@ export default function DashboardPage({ config, onHome }) {
                 <HeroChart
                   selectedKPI={selectedKPI}
                   days={projection.days}
-                  currentDay={selectedDay}
-                  cumulativeCurve={projection.cumulativeCurve}
+                  currentDay={effectiveDay}
                   projection={projection}
                 />
               </div>
@@ -743,22 +782,22 @@ export default function DashboardPage({ config, onHome }) {
               agenticCurve={projection.cumulativeCurve}
               staticCurve={projection.staticCumulativeCurve}
               annotations={projection.learningAnnotations}
-              currentDay={selectedDay}
+              currentDay={effectiveDay}
             />
 
             {/* Cohort chart — moved from Block 1 to serve as evidence */}
             <div className="bg-surface border border-border rounded-lg p-4">
               <CohortChart
                 cohorts={projection.cohorts}
-                currentDay={selectedDay}
+                currentDay={effectiveDay}
               />
             </div>
           </div>
 
           {/* Position 3: Decisions + Recommendation below */}
           <div>
-            <DecisionFeed briefings={briefings} selectedDay={selectedDay} />
-            <GuardrailRecommendation briefings={briefings} selectedDay={selectedDay} />
+            <DecisionFeed briefings={briefings} selectedDay={effectiveDay} />
+            <GuardrailRecommendation briefings={briefings} selectedDay={effectiveDay} />
           </div>
         </div>
       </main>
