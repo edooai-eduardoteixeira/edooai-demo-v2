@@ -117,7 +117,7 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, d
             <span className="absolute w-2 h-2 rounded-full border-[1.5px] border-brand animate-[agent-glow_2s_ease-out_infinite]" />
           )}
         </span>
-        <span className="text-[13px] font-semibold text-foreground">
+        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground uppercase">
           {delivery.label}
         </span>
       </span>
