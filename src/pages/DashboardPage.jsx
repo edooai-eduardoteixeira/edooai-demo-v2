@@ -50,7 +50,7 @@ function DaySelector({ selected, onSelect }) {
             <button
               onClick={() => onSelect(day)}
               className={cn(
-                'flex flex-col items-center px-5 py-2.5 rounded-md transition-all duration-200 ease-out min-w-[100px]',
+                'flex items-center justify-center px-5 py-2.5 rounded-md transition-all duration-200 ease-out min-w-[100px]',
                 active
                   ? 'bg-surface border border-border shadow-sm'
                   : 'hover:bg-accent-subtle'
@@ -61,12 +61,6 @@ function DaySelector({ selected, onSelect }) {
                 active ? 'text-foreground' : 'text-foreground-muted'
               )}>
                 {meta.label}
-              </span>
-              <span className={cn(
-                'text-[11px] mt-0.5',
-                active ? 'text-foreground-muted' : 'text-foreground-faint'
-              )}>
-                {meta.subtitle}
               </span>
             </button>
           </React.Fragment>
@@ -90,9 +84,9 @@ const COHORT_COLORS = [
 // KPI SELECTOR — tabs that control the hero chart
 // ═══════════════════════════════════════════════════════════════════════
 const KPI_DEFS = [
-  { key: 'activeUsers', label: 'Active Users', format: (v) => fmt(v) },
+  { key: 'activeUsers', label: 'New Active Users', format: (v) => fmt(v) },
   { key: 'cac', label: 'CAC', format: (v) => v > 0 ? fmtDollar(v) : '—' },
-  { key: 'roi', label: 'ROI', format: (v) => v > 0 ? `${v}x` : '—' },
+  { key: 'roi', label: 'ROAS', format: (v) => v > 0 ? `${v}x` : '—' },
   { key: 'fraudSaved', label: 'Fraud Saved', format: (v) => fmtDollar(v) },
 ];
 
@@ -118,12 +112,14 @@ function KPISelector({ selected, onSelect, dayData }) {
             <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
               {kpi.label}
             </span>
-            <span className={cn(
-              'text-[22px] font-bold tracking-tight leading-tight mt-1',
-              active ? 'text-foreground' : 'text-foreground-muted'
-            )}>
-              {kpi.format(value)}
-            </span>
+            <div className="flex items-baseline gap-2 mt-1">
+              <span className={cn(
+                'text-[22px] font-bold tracking-tight leading-tight',
+                active ? 'text-foreground' : 'text-foreground-muted'
+              )}>
+                {kpi.format(value)}
+              </span>
+            </div>
           </button>
         );
       })}
