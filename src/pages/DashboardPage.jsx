@@ -230,7 +230,7 @@ function getPeriodKPI(days, selectedDay, dateRange, key) {
 
 function KPISelector({ selected, onSelect, dayData, days, selectedDay, dateRange }) {
   return (
-    <div className="flex gap-2">
+    <div className="flex">
       {KPI_DEFS.map((kpi) => {
         const active = selected === kpi.key;
         const value = getPeriodKPI(days, selectedDay, dateRange, kpi.key);
@@ -244,13 +244,14 @@ function KPISelector({ selected, onSelect, dayData, days, selectedDay, dateRange
         const deltaPct = hasDelta ? Math.round(((value - priorValue) / priorValue) * 100) : 0;
         const isPositive = deltaPct > 0;
         const isGood = kpi.betterWhen === 'up' ? isPositive : !isPositive;
+        const showDelta = hasDelta && deltaPct !== 0;
 
         return (
           <button
             key={kpi.key}
             onClick={() => onSelect(kpi.key)}
             className={cn(
-              'flex flex-col px-4 py-2.5 rounded-sm transition-all duration-200 min-w-0',
+              'flex-1 flex flex-col items-start px-4 py-2.5 rounded-sm transition-all duration-200',
               active
                 ? 'bg-accent-subtle'
                 : 'hover:bg-accent-subtle/50'
@@ -259,22 +260,21 @@ function KPISelector({ selected, onSelect, dayData, days, selectedDay, dateRange
             <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
               {kpi.label}
             </span>
-            <div className="flex items-baseline gap-2 mt-1">
-              <span className={cn(
-                'text-[22px] font-bold tracking-tight leading-tight',
-                active ? 'text-foreground' : 'text-foreground-muted'
-              )}>
-                {kpi.format(value)}
-              </span>
-              {hasDelta && deltaPct !== 0 && (
-                <span className={cn(
-                  'text-[11px] font-semibold',
-                  isGood ? 'text-success' : 'text-warn'
-                )}>
-                  {isPositive ? '↑' : '↓'}{Math.abs(deltaPct)}%
-                </span>
-              )}
-            </div>
+            <span className={cn(
+              'text-[22px] font-bold tracking-tight leading-tight mt-1',
+              active ? 'text-foreground' : 'text-foreground-muted'
+            )}>
+              {kpi.format(value)}
+            </span>
+            {/* Always reserve delta row height for layout stability */}
+            <span className={cn(
+              'text-[11px] font-semibold mt-0.5',
+              showDelta
+                ? (isGood ? 'text-success' : 'text-warn')
+                : 'invisible'
+            )}>
+              {showDelta ? `${isPositive ? '↑' : '↓'}${Math.abs(deltaPct)}%` : '—'}
+            </span>
           </button>
         );
       })}
