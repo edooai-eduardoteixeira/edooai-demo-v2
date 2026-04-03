@@ -232,6 +232,21 @@ Always use the `<FunnelChart>` component (`src/components/FunnelChart.jsx`).
 - Last stage uses `bg-brand` with white text
 - Square root proportion for bar width (handles extreme value ratios like 600:1)
 
+**Stacked bar charts:**
+Always use the `<StackedBarChart>` component (`src/components/StackedBarChart.jsx`).
+
+- **Bars**: Vertical, stacked segments rendered bottom-up
+- **Bar width**: Flexible to fill available space; gap between bars ≈ 25% of bar width (minimum 2px gap)
+- **Border-radius**: 2px on top-left and top-right of the **topmost visible segment only** — bottom segments have square corners
+- **Stacking order**: Referrer (bottom), referee (top)
+- **Colors**: Both segments are brand-derived (equally important cost components). Bottom segment (referrer) = brand at 30% opacity (`rgba(102, 0, 31, 0.3)`); top segment (referee) = `var(--color-brand)` (#66001F, full brand). Keeps the chart visually connected to the dashboard while making both segments distinguishable
+- **Axes & gridlines**: Identical to line charts — 11px Inter, `var(--text-tertiary)`, tabular numerals, rendered as HTML (not SVG). Dashed gridlines at `var(--border-light)`, 0.45 opacity. Y-axis: compact dollar formatting
+- **Tooltip**: Same spec as line charts — `var(--text-primary)` background, white text, `rounded-md` (8px radius), `shadow-lg`. Shows each segment value with a 6px colored dot, plus a bold total line. Flips when near edges
+- **Legend**: Above chart, right-aligned, normal flow. 6px colored circle + 11px muted label, 16px gap between items (same format as line chart legend)
+- **Animation**: Bars grow upward from baseline — `scaleY(0→1)` with `transform-origin: bottom`, 400ms ease-out, 15ms stagger per bar
+- **Sizing**: Supports `cssHeight` prop (same ResizeObserver pattern as `<Chart>`)
+- **Hover state**: Hovered bar gets full opacity, non-hovered bars fade to 0.4 opacity
+
 ---
 
 ## Spacing

@@ -76,11 +76,12 @@ function computeResolutionWeights(avgResolutionDays, offerExpirationDays) {
 // Efficiency provides a small secondary discount (trained engine saves on tier selection).
 function blendedRewardCost(factor, referrerTiers, refereeTiers, distCheap, distExpensive) {
   const weights = distCheap.map((wCheap, i) => wCheap + (distExpensive[i] - wCheap) * factor);
-  let cost = 0;
+  let referrer = 0, referee = 0;
   for (let i = 0; i < weights.length; i++) {
-    cost += weights[i] * (referrerTiers[i] + refereeTiers[i]);
+    referrer += weights[i] * referrerTiers[i];
+    referee += weights[i] * refereeTiers[i];
   }
-  return cost;
+  return { referrer, referee, total: referrer + referee };
 }
 
 // ─── Guardrail Assertions ────────────────────────────────────────────
@@ -212,8 +213,8 @@ export function computeProjection({ budget, params }) {
     // Reward cost: budget-driven tier distribution with learning discount.
     // tierReach (computed once before loop) determines base tier mix.
     // Efficiency provides a small discount (trained engine saves on tier selection).
-    const baseTierCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
-    const dailyRewardCost = baseTierCost * (1 - eff * effTierDiscount);
+    const tierCosts = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
+    const dailyRewardCost = tierCosts.total * (1 - eff * effTierDiscount);
 
     // Pace journeys: don't exhaust pool before learning
     const journeysToday = Math.min(dailyJourneyTarget, remainingPool * maxDailyReachRate);
@@ -429,6 +430,8 @@ function runSimulation({ budget, params, staticMode = false }) {
   const days = [];
   const dailySpend = budget / 30;
   let cumulativeRewardCost = 0;
+  let cumulativeReferrerCost = 0;
+  let cumulativeRefereeCost = 0;
   let thresholdDay = 30;
   let thresholdFound = false;
 
@@ -446,8 +449,10 @@ function runSimulation({ budget, params, staticMode = false }) {
       ? params.effFloor
       : allocationEfficiency(day, cumulativeN, params);
 
-    const baseTierCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
-    const dailyRewardCost = baseTierCost * (1 - eff * effTierDiscount);
+    const tierCosts = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
+    const dailyReferrerCost = tierCosts.referrer * (1 - eff * effTierDiscount);
+    const dailyRefereeCost = tierCosts.referee * (1 - eff * effTierDiscount);
+    const dailyRewardCost = dailyReferrerCost + dailyRefereeCost;
 
     const maxCapacity = remainingPool * maxDailyReachRate;
     const journeysToday = Math.min(dailyJourneyTarget, maxCapacity);
@@ -507,6 +512,8 @@ function runSimulation({ budget, params, staticMode = false }) {
       }
     }
     cumulativeRewardCost += dailyRewardCost * resolvedToday;
+    cumulativeReferrerCost += dailyReferrerCost * resolvedToday;
+    cumulativeRefereeCost += dailyRefereeCost * resolvedToday;
     cumulativeN += resolvedToday;
     cumulativeValue += resolvedValueToday;
 
@@ -558,6 +565,8 @@ function runSimulation({ budget, params, staticMode = false }) {
       remainingPool: Math.round(remainingPool),
       capHit,
       rewardCostPerConversion: Math.round(dailyRewardCost),
+      dailyReferrerCost: Math.round(dailyReferrerCost),
+      dailyRefereeCost: Math.round(dailyRefereeCost),
       effectiveRevenuePerUser: Math.round(effectiveRevenuePerUser),
       tierDistribution: tierDist.map(v => Math.round(v * 100) / 100),
       // Campaign health fields

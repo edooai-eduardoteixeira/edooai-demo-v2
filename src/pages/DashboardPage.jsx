@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import Logo from '../components/Logo.jsx';
 import Chart from '../components/Chart.jsx';
+import StackedBarChart from '../components/StackedBarChart.jsx';
 import FunnelChart from '../components/FunnelChart.jsx';
 import StrategyCards, { DefaultBudgetSlider, BUDGET_CONFIG } from '../components/StrategyCards.jsx';
 import { cn } from '../lib/utils.js';
@@ -288,7 +289,35 @@ function KPISelector({ selected, onSelect, dayData, days, selectedDay, dateRange
 // HERO CHART — renders the selected KPI's 30-day trend
 // ═══════════════════════════════════════════════════════════════════════
 function HeroChart({ selectedKPI, days, currentDay, projection }) {
-  // Daily values — show rate, not cumulative
+  const xLabels = [1, 10, 20, 30].filter(d => d <= currentDay).map(d => ({ value: String(d), at: d }));
+
+  // CAC: stacked bar chart showing referrer/referee cost breakdown
+  if (selectedKPI === 'cac') {
+    const cacData = days.slice(0, currentDay).map(d => ({
+      values: [d.dailyReferrerCost, d.dailyRefereeCost],
+    }));
+    const maxVal = Math.max(...cacData.map(d => d.values[0] + d.values[1]), 1);
+    const yMax = Math.ceil(maxVal / 20) * 20 || 100;
+
+    return (
+      <StackedBarChart
+        data={cacData}
+        segments={[
+          { color: 'rgba(102, 0, 31, 0.3)', label: 'Referrer' },
+          { color: 'var(--color-brand)', label: 'Referee' },
+        ]}
+        maxValue={yMax}
+        cssHeight="100%"
+        padding={{ left: 50 }}
+        xLabels={xLabels}
+        yLabels={[0, Math.round(yMax * 0.5), Math.round(yMax)]}
+        gridlines="from-labels"
+        legend
+      />
+    );
+  }
+
+  // All other KPIs: daily values line chart
   let slice, yMax, formatLabel;
 
   if (selectedKPI === 'activeUsers') {
@@ -310,10 +339,7 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
       });
     }
     const maxVal = Math.max(...slice, 1);
-    if (selectedKPI === 'cac') {
-      yMax = Math.ceil(maxVal / 20) * 20 || 100;
-      formatLabel = (v) => fmtDollar(v);
-    } else if (selectedKPI === 'roi') {
+    if (selectedKPI === 'roi') {
       yMax = Math.ceil(maxVal * 2) / 2 || 2;
       formatLabel = (v) => `${v}x`;
     } else {
@@ -332,7 +358,7 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
       maxValue={yMax}
       cssHeight="100%"
       padding={{ left: 50 }}
-      xLabels={[1, 10, 20, 30].filter(d => d <= currentDay).map(d => ({ value: String(d), at: d }))}
+      xLabels={xLabels}
       yLabels={yLabels.map(v => {
         if (selectedKPI === 'roi') return Math.round(v * 10) / 10;
         return Math.round(v);
