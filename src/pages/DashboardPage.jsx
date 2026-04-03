@@ -120,7 +120,7 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget })
       <span className="flex items-center gap-1.5 shrink-0">
         <span className={cn('w-2 h-2 rounded-full', `bg-${delivery.color}`)} />
         <span className={cn(
-          'text-[11px] font-semibold tracking-[0.05em]',
+          'text-[11px] font-semibold tracking-[0.05em] uppercase',
           `text-${delivery.color}`
         )}>
           {delivery.label}
