@@ -45,13 +45,13 @@ export default function FunnelChart({ stages, pending }) {
 
           return (
             <div key={stage.label} className="w-full">
-              {/* Stage label + conversion rate above bar */}
-              <div className="flex items-baseline justify-between mb-0.5">
+              {/* Stage label + conversion rate inline */}
+              <div className="flex items-baseline gap-1.5 mb-0.5">
                 <span className="text-[11px] font-medium text-foreground-muted">
                   {stage.label}
                 </span>
                 {convRate && (
-                  <span className="text-[10px] text-foreground-faint">
+                  <span className="text-[11px] text-foreground-faint">
                     {convRate}
                   </span>
                 )}
