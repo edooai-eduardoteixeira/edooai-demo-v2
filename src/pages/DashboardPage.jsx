@@ -260,21 +260,23 @@ function KPISelector({ selected, onSelect, dayData, days, selectedDay, dateRange
             <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
               {kpi.label}
             </span>
-            <span className={cn(
-              'text-[22px] font-bold tracking-tight leading-tight mt-1',
-              active ? 'text-foreground' : 'text-foreground-muted'
-            )}>
-              {kpi.format(value)}
-            </span>
-            {/* Always reserve delta row height for layout stability */}
-            <span className={cn(
-              'text-[11px] font-semibold mt-0.5',
-              showDelta
-                ? (isGood ? 'text-success' : 'text-warn')
-                : 'invisible'
-            )}>
-              {showDelta ? `${isPositive ? '↑' : '↓'}${Math.abs(deltaPct)}%` : '—'}
-            </span>
+            <div className="flex items-baseline gap-2 mt-1">
+              <span className={cn(
+                'text-[22px] font-bold tracking-tight leading-tight',
+                active ? 'text-foreground' : 'text-foreground-muted'
+              )}>
+                {kpi.format(value)}
+              </span>
+              {/* Inline delta — invisible placeholder keeps width stable */}
+              <span className={cn(
+                'text-[11px] font-semibold',
+                showDelta
+                  ? (isGood ? 'text-success' : 'text-warn')
+                  : 'invisible'
+              )}>
+                {showDelta ? `${isPositive ? '↑' : '↓'}${Math.abs(deltaPct)}%` : '—'}
+              </span>
+            </div>
           </button>
         );
       })}
