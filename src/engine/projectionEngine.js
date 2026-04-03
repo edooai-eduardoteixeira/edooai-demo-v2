@@ -166,7 +166,7 @@ export function computeProjection({ budget, params }) {
 
   // Expected reward cost at this budget level (at mid efficiency for budget constraint)
   const effTierDiscount = params.effTierDiscount || 0.10;
-  const midBudgetRewardCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
+  const midBudgetRewardCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive).total;
   const midEffDiscountFactor = 1 - 0.5 * effTierDiscount; // at mid efficiency
   const adjMidEffReward = midBudgetRewardCost * midEffDiscountFactor;
 
@@ -396,7 +396,7 @@ function runSimulation({ budget, params, staticMode = false }) {
   const tierReach = Math.pow(Math.min(1, budget / tierBudgetCeiling), tierBudgetAlpha);
 
   const effTierDiscount = params.effTierDiscount || 0.10;
-  const midBudgetRewardCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
+  const midBudgetRewardCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive).total;
   const midEffDiscountFactor = 1 - 0.5 * effTierDiscount;
   const adjMidEffReward = midBudgetRewardCost * midEffDiscountFactor;
 

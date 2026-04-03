@@ -519,7 +519,7 @@ export default function Chart({
                 stroke={series[0]?.color || TOKENS.line.color}
                 strokeWidth={series[0]?.width || TOKENS.line.width}
                 strokeLinecap="round" strokeLinejoin="round"
-                strokeDasharray={series[0]?.dashed ? '6,4' : (animated ? 'none' : `${pathLen}`)}
+                strokeDasharray={series[0]?.dashed ? '6,4' : `${pathLen}`}
                 strokeDashoffset={animated ? 0 : pathLen}
                 style={{ transition: animated ? 'stroke-dashoffset 600ms ease-out' : 'none' }}
               />
