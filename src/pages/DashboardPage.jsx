@@ -41,32 +41,24 @@ function SectionLabel({ children }) {
 // ═══════════════════════════════════════════════════════════════════════
 function DaySelector({ selected, onSelect }) {
   return (
-    <div className="flex items-center gap-2">
-      {DAY_STOPS.map((day, i) => {
+    <div className="flex items-center gap-0.5 bg-surface border border-border rounded-sm p-0.5">
+      {DAY_STOPS.map((day) => {
         const active = selected === day;
         const meta = DAY_META[day];
         return (
-          <React.Fragment key={day}>
-            {i > 0 && (
-              <div className="flex-1 h-px bg-border-light max-w-12" />
+          <button
+            key={day}
+            onClick={() => onSelect(day)}
+            title={meta.subtitle}
+            className={cn(
+              'px-4 py-2 rounded-sm text-[13px] font-semibold transition-colors duration-200 ease-out',
+              active
+                ? 'bg-accent-subtle text-foreground'
+                : 'text-foreground-muted hover:text-foreground'
             )}
-            <button
-              onClick={() => onSelect(day)}
-              className={cn(
-                'flex items-center justify-center px-5 py-2.5 rounded-md transition-all duration-200 ease-out min-w-[100px]',
-                active
-                  ? 'bg-surface border border-border shadow-sm'
-                  : 'hover:bg-accent-subtle'
-              )}
-            >
-              <span className={cn(
-                'text-sm font-semibold',
-                active ? 'text-foreground' : 'text-foreground-muted'
-              )}>
-                {meta.label}
-              </span>
-            </button>
-          </React.Fragment>
+          >
+            {meta.label}
+          </button>
         );
       })}
     </div>
@@ -700,7 +692,7 @@ const DATE_RANGES = [
 
 function DateRangeSelector({ selected, onSelect }) {
   return (
-    <div className="flex items-center gap-1 bg-surface border border-border rounded-md p-0.5">
+    <div className="flex items-center gap-0.5 bg-surface border border-border rounded-sm p-0.5">
       {DATE_RANGES.map((range) => {
         const active = selected === range.value;
         return (
@@ -708,7 +700,7 @@ function DateRangeSelector({ selected, onSelect }) {
             key={range.value}
             onClick={() => onSelect(range.value)}
             className={cn(
-              'px-2.5 py-1 rounded text-[12px] font-semibold transition-all duration-150',
+              'px-4 py-2 rounded-sm text-[13px] font-semibold transition-colors duration-200 ease-out',
               active
                 ? 'bg-accent-subtle text-foreground'
                 : 'text-foreground-muted hover:text-foreground'
