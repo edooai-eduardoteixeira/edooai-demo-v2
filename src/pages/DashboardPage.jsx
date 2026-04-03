@@ -304,7 +304,7 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
         key={`cac-${currentDay}`}
         data={cacData}
         segments={[
-          { color: 'rgba(102, 0, 31, 0.2)', label: 'Referrer' },
+          { color: 'rgba(102, 0, 31, 0.07)', label: 'Referrer' },
           { color: 'var(--color-brand)', label: 'Referee' },
         ]}
         maxValue={yMax}
