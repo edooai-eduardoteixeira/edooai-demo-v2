@@ -349,14 +349,24 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
     }
   }
 
+  // Static baseline for ROAS — placeholder at 70% of agentic values
+  const isROAS = selectedKPI === 'roi';
+  const staticSlice = isROAS
+    ? slice.map(v => Math.round(v * 0.7 * 10) / 10)
+    : null;
+
   const yLabels = [0, yMax * 0.5, yMax];
 
   return (
     <Chart
       key={`${selectedKPI}-${currentDay}`}
-      series={[
+      series={isROAS ? [
+        { data: slice, color: 'var(--color-brand)', label: 'Vincor Agent' },
+        { data: staticSlice, color: 'var(--color-gray-300)', dashed: true, width: 1.5, label: 'Static Rules' },
+      ] : [
         { data: slice, color: 'var(--color-brand)', label: 'Daily' },
       ]}
+      legend={isROAS}
       maxValue={yMax}
       cssHeight="100%"
       padding={{ left: 50 }}
