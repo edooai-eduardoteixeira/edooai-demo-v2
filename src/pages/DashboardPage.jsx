@@ -760,7 +760,7 @@ export default function DashboardPage({ config, onHome }) {
             <div className="w-px bg-border-light shrink-0" />
 
             {/* RIGHT COLUMN (25%): Referral Funnel */}
-            <div className="flex-1 min-w-0 flex flex-col">
+            <div className="flex-1 min-w-0 flex flex-col pt-2.5">
               <SectionLabel>Referral Funnel</SectionLabel>
               <div className="mt-1 flex-1 min-h-0 overflow-hidden">
                 <FunnelChart
