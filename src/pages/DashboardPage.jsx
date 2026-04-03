@@ -110,7 +110,7 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, d
   return (
     <div className="flex items-center bg-accent-subtle px-5 py-2.5 rounded-t-lg border-b border-border-light">
       {/* Delivery State — fixed width to prevent layout shift */}
-      <span className="flex items-center gap-2.5 shrink-0 min-w-[170px]">
+      <span className="flex items-center gap-2.5 shrink-0 min-w-[190px]">
         <span className="relative flex items-center justify-center">
           <span className={cn('w-2 h-2 rounded-full', delivery.active ? 'bg-brand' : 'bg-warn')} />
           {delivery.active && (
