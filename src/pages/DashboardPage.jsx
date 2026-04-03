@@ -174,7 +174,7 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, d
 const KPI_DEFS = [
   { key: 'activeUsers', label: 'New Active Users', format: (v) => fmt(v), betterWhen: 'up' },
   { key: 'cac', label: 'CAC', format: (v) => v > 0 ? fmtDollar(v) : '—', betterWhen: 'down' },
-  { key: 'roi', label: 'ROAS', format: (v) => v > 0 ? `${v}x` : '—', betterWhen: 'up' },
+  { key: 'roi', label: 'ROAS', format: (v) => v > 0 ? `${v.toFixed(1)}x` : '—', betterWhen: 'up' },
   { key: 'fraudSaved', label: 'Fraud Saved', format: (v) => fmtDollar(v), betterWhen: 'up' },
 ];
 
