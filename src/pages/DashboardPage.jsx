@@ -301,6 +301,7 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
 
     return (
       <StackedBarChart
+        key={`cac-${currentDay}`}
         data={cacData}
         segments={[
           { color: 'rgba(102, 0, 31, 0.3)', label: 'Referrer' },
@@ -352,6 +353,7 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
 
   return (
     <Chart
+      key={`${selectedKPI}-${currentDay}`}
       series={[
         { data: slice, color: 'var(--color-brand)', label: 'Daily' },
       ]}
