@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { cn } from '../lib/utils';
+import { TOKENS, DEFAULT_PADDING, VIEWBOX_WIDTH, DEFAULT_HEIGHT, formatCompact } from './chartUtils.js';
 
 /**
  * Stacked bar chart component following Vincor design system.
@@ -8,36 +9,10 @@ import { cn } from '../lib/utils';
  * SVG handles only bars, gridlines, and hover overlays.
  */
 
-// --- Design tokens (from DESIGN.md) ---
-const TOKENS = {
-  axis: { fontSize: 11, color: 'var(--text-tertiary)' },
-  gridline: { color: 'var(--border-light)', dash: '4,4', opacity: 0.45 },
-  tooltip: {
-    bg: 'var(--text-primary)',
-    text: 'white',
-    fontSize: 11,
-    fontWeight: 600,
-    radius: 8,
-    shadow: { dx: 0, dy: 2, blur: 8, opacity: 0.18 },
-  },
-};
-
-const DEFAULT_PADDING = { top: 10, right: 20, bottom: 40, left: 28 };
-const VIEWBOX_WIDTH = 828;
-const DEFAULT_HEIGHT = 210;
 const BAR_RADIUS = 2;
 const GAP_RATIO = 0.25; // gap = 25% of bar width
 const ANIMATION_DURATION = 400;
 const ANIMATION_STAGGER = 15;
-
-function formatCompact(val) {
-  const rounded = Math.round(val);
-  if (rounded >= 1000) {
-    const k = rounded / 1000;
-    return k % 1 === 0 ? `${k}k` : `${k.toFixed(1)}k`;
-  }
-  return String(rounded);
-}
 
 export default function StackedBarChart({
   data,

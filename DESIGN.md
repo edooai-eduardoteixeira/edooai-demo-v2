@@ -247,6 +247,26 @@ Always use the `<StackedBarChart>` component (`src/components/StackedBarChart.js
 - **Sizing**: Supports `cssHeight` prop (same ResizeObserver pattern as `<Chart>`)
 - **Hover state**: Hovered bar gets full opacity, non-hovered bars fade to 0.4 opacity
 
+**Stacked area charts:**
+Always use the `<StackedAreaChart>` component (`src/components/StackedAreaChart.jsx`).
+
+- **Bands**: Rendered bottom-up, areas between monotone cubic curves (Fritsch-Carlson interpolation from `chartUtils.js`)
+- **Colors**: Each band uses a design-system color with specified opacity
+- **Legend**: Above chart, right-aligned (same format as line chart legend)
+- **Tooltip**: Same spec as line charts — shows all band values at hovered day with colored dots
+- **Animation**: Bands fade in (300ms ease-out, 50ms stagger per band bottom-to-top)
+- **Sizing**: Supports `cssHeight` prop (same ResizeObserver pattern as `<Chart>`)
+
+**Cohort breakdown bar:**
+Always use the `<CohortBar>` component (`src/components/CohortBar.jsx`).
+
+- **Single vertical stacked bar**: Shows cohort composition at a given day
+- **Colors**: COHORT_COLORS warm gray sequential palette (gray-300 → gray-700 → brand)
+- **Reactive**: Updates with `selectedDay` prop — bar composition changes as day selector moves
+- **Sizing**: Full height of container, bar width fills column with padding (~40-60px)
+- **Empty space**: Above bar when engaged count < maxVal (early days show shorter bar)
+- **Tooltip**: On hover shows cohort start day + engaged count
+
 ---
 
 ## Spacing
@@ -637,4 +657,7 @@ Always pair with `transition-all` or specific properties (`transition-colors`, `
 - Brand mark: `public/vincor svg.svg`
 - Hero visual: `src/components/HeroVisual.jsx`
 - Chart component: `src/components/Chart.jsx`
+- Stacked area chart component: `src/components/StackedAreaChart.jsx`
+- Cohort bar component: `src/components/CohortBar.jsx`
+- Shared chart utilities: `src/components/chartUtils.js`
 - Funnel chart component: `src/components/FunnelChart.jsx`
