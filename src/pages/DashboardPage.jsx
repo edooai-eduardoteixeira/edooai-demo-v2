@@ -66,20 +66,25 @@ function DaySelector({ selected, onSelect }) {
   );
 }
 
-// 10 distinct warm tones — alternating lightness + hue shift for adjacency contrast.
-// Cycles for 30 cohorts. Stable: color assigned by absolute wave index, not filtered position.
-const COHORT_COLORS = [
-  '#D4C4B0', // warm beige (lightest)
-  '#B8947A', // tan
-  '#A07060', // terra cotta
-  '#8B6E5A', // brown
-  '#C4A882', // golden sand
-  '#96785E', // cocoa
-  '#7A5C4A', // dark brown
-  '#B0876C', // copper
-  '#66001F', // brand (darkest)
-  '#9E6B54', // sienna
-];
+// HSL interpolation from gray-200 (warm sand) → brand (deep wine)
+// Smoothstep easing for perceptually even transitions
+function generateCohortColors(count) {
+  const h0 = 30,  s0 = 22,  l0 = 86;   // gray-200 (#E4DDD5)
+  const h1 = 342, s1 = 100, l1 = 20;    // brand (#66001F)
+  const colors = [];
+  for (let i = 0; i < count; i++) {
+    const t = count === 1 ? 1 : i / (count - 1);
+    const te = t * t * (3 - 2 * t); // smoothstep
+    // Short arc: 30° → 342° backward through 0°
+    const h = h0 + (h1 - h0 - 360) * te;
+    const hNorm = ((h % 360) + 360) % 360;
+    const s = s0 + (s1 - s0) * te;
+    const l = l0 + (l1 - l0) * te;
+    colors.push(`hsl(${Math.round(hNorm)}, ${Math.round(s)}%, ${Math.round(l)}%)`);
+  }
+  return colors;
+}
+const COHORT_COLORS = generateCohortColors(10);
 
 // ═══════════════════════════════════════════════════════════════════════
 // CAMPAIGN HEALTH ROW — compact status strip at top of Block 1
@@ -307,7 +312,7 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
         ]}
         maxValue={yMax}
         cssHeight="100%"
-        padding={{ left: 50 }}
+
         xLabels={xLabels}
         yLabels={[0, Math.round(yMax * 0.5), Math.round(yMax)]}
         gridlines="from-labels"
@@ -367,7 +372,6 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
       legend={isROAS}
       maxValue={yMax}
       cssHeight="100%"
-      padding={{ left: 50 }}
       xLabels={xLabels}
       yLabels={yLabels.map(v => {
         if (selectedKPI === 'roi') return Math.round(v * 10) / 10;
@@ -793,7 +797,7 @@ export default function DashboardPage({ config, onHome }) {
                   data={lifecycleBarData}
                   segments={lifecycleSegments}
                   cssHeight="100%"
-                  padding={{ left: 50 }}
+          
                   xLabels={[1, 5, 10, 15, 20, 25, 30].filter(d => d <= effectiveDay).map(d => ({ value: String(d), at: d }))}
                   yLabels={lifecycleYTicks}
                   gridlines="from-labels"
@@ -804,7 +808,7 @@ export default function DashboardPage({ config, onHome }) {
             </div>
 
             {/* MIDDLE: Cohort breakdown bar — no left divider, reads as annotation of main chart */}
-            <div className="flex-[1] p-3 flex flex-col min-w-0">
+            <div className="flex-[1] pt-5 px-3 pb-3 flex flex-col min-w-0">
               <SectionLabel>Engaged Cohorts</SectionLabel>
               <CohortBar
                 cohortWaves={projection.cohortWaves}
@@ -812,6 +816,7 @@ export default function DashboardPage({ config, onHome }) {
                 maxVal={maxEngaged}
                 colors={COHORT_COLORS}
                 cssHeight="100%"
+                reserveLegendSpace
               />
             </div>
 
