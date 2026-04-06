@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import Logo from '../components/Logo.jsx';
 import Chart from '../components/Chart.jsx';
 import StackedBarChart from '../components/StackedBarChart.jsx';
-import StackedAreaChart from '../components/StackedAreaChart.jsx';
 import CohortBar from '../components/CohortBar.jsx';
 import FunnelChart from '../components/FunnelChart.jsx';
 import StrategyCards, { DefaultBudgetSlider, BUDGET_CONFIG } from '../components/StrategyCards.jsx';
@@ -670,17 +669,19 @@ export default function DashboardPage({ config, onHome }) {
   // All daily briefings (for scrollable history)
   const briefings = projection.dailyBriefings;
 
-  // Lifecycle bands for stacked area chart (Graph 1)
+  // Lifecycle data for stacked bar chart (Graph 1)
   // Dormant removed — shown as context label instead. Eligible faded as ceiling wash.
-  const lifecycleBands = useMemo(() => {
+  const lifecycleSegments = [
+    { label: 'Cooling Off', color: 'var(--color-gray-400)' },
+    { label: 'Engaged', color: 'var(--color-brand)' },
+    { label: 'Eligible', color: 'rgba(239, 235, 229, 0.35)' },
+  ];
+  const lifecycleBarData = useMemo(() => {
     const ls = projection.lifecycleStates;
     if (!ls) return [];
-    const slice = (arr) => arr.slice(0, effectiveDay);
-    return [
-      { label: 'Cooling Off', data: slice(ls.coolingOff), color: 'var(--color-gray-400)', opacity: 0.5 },
-      { label: 'Engaged', data: slice(ls.engaged), color: 'var(--color-brand)', opacity: 0.6 },
-      { label: 'Eligible', data: slice(ls.eligible), color: 'var(--color-gray-100)', opacity: 0.15 },
-    ];
+    return Array.from({ length: effectiveDay }, (_, i) => ({
+      values: [ls.coolingOff[i] || 0, ls.engaged[i] || 0, ls.eligible[i] || 0],
+    }));
   }, [projection.lifecycleStates, effectiveDay]);
 
   // Max engaged value for CohortBar Y-axis scaling
@@ -771,10 +772,13 @@ export default function DashboardPage({ config, onHome }) {
                 <span className="text-[11px] text-foreground-faint font-normal">{fmtK(projection.lifecycleStates?.total || 0)} total customers</span>
               </div>
               <div className="flex-1 min-h-0">
-                <StackedAreaChart
-                  bands={lifecycleBands}
+                <StackedBarChart
+                  data={lifecycleBarData}
+                  segments={lifecycleSegments}
                   cssHeight="100%"
                   xLabels={[1, 5, 10, 15, 20, 25, 30].filter(d => d <= effectiveDay).map(d => ({ value: String(d), at: d }))}
+                  yLabels={[0]}
+                  gridlines="from-labels"
                   legend
                   formatTooltip={(i, v) => fmt(v)}
                 />

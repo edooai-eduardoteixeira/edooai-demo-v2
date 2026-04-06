@@ -124,8 +124,11 @@ export default function StackedAreaChart({
       }))
     : [];
 
-  // Y labels: off by default (chart is contextual, not precise)
-  const yLabelItems = [];
+  // Y labels: 0 and max
+  const yLabelItems = [
+    { val: 0, y: chartBottom },
+    { val: Math.round(maxVal), y: chartTop },
+  ];
 
   // Gridlines
   const gridlineY = chartTop + chartH * 0.5;
