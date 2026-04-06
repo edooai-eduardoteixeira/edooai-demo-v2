@@ -785,7 +785,7 @@ export default function DashboardPage({ config, onHome }) {
             <div className="w-px bg-border-light" />
 
             {/* MIDDLE: Cohort breakdown bar */}
-            <div className="flex-[1] p-3 flex flex-col items-center min-w-0">
+            <div className="flex-[1] p-3 flex flex-col min-w-0">
               <SectionLabel>Cohorts</SectionLabel>
               <CohortBar
                 cohortWaves={projection.cohortWaves}
