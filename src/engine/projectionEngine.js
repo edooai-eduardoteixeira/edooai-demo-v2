@@ -826,6 +826,10 @@ export function computeDashboardProjection({ budget, params }) {
   const cumulativeCurve = agentic.days.map(d => d.cumulativeN);
   const staticCumulativeCurve = static_.days.map(d => d.cumulativeN);
 
+  // Compute lifecycle states and cohort waves for Block 2 charts
+  const lifecycleStates = computeLifecycleStates(agentic, params);
+  const cohortWaves = computeCohortWaves(agentic, params);
+
   return {
     // Core metrics
     activeUsers: agentic.activeUsers,
@@ -867,9 +871,139 @@ export function computeDashboardProjection({ budget, params }) {
     // Agent recommendation
     agentRecommendation,
 
+    // Lifecycle states for stacked area chart (Block 2, Graph 1)
+    lifecycleStates,
+
+    // Cohort waves for breakdown bar (Block 2, Graph 2)
+    cohortWaves,
+
     // Config passthrough for display
     referrerTiers: params.referrerTiers,
     refereeTiers: params.refereeTiers,
     industryCACBenchmark: params.industryCACBenchmark || 140,
   };
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// Lifecycle State Computation
+// 4 states that sum to totalCustomers every day:
+//   Dormant + Cooling Off + Engaged + Eligible = totalCustomers
+// ═══════════════════════════════════════════════════════════════════════
+
+const COOLDOWN_DAYS = 5;
+
+function computeLifecycleStates(simResult, params) {
+  const { days, cohorts } = simResult;
+  const { totalCustomers, eligibilityRate, offerExpirationDays } = params;
+  const total = totalCustomers;
+
+  const eligible = [];
+  const engaged = [];
+  const coolingOff = [];
+  const dormant = [];
+
+  for (let d = 1; d <= days.length; d++) {
+    const dayData = days[d - 1];
+
+    // Eligible = remaining pool (customers who haven't been contacted yet)
+    const elig = dayData.remainingPool;
+
+    // Engaged = all contacted users whose offer window is still open
+    let eng = 0;
+    for (const startDayStr of Object.keys(cohorts)) {
+      const s = Number(startDayStr);
+      const cohort = cohorts[s];
+      const daysSinceContact = d - s;
+
+      // Active engagement window: day after contact through offer expiration
+      if (daysSinceContact >= 1 && daysSinceContact <= offerExpirationDays) {
+        // Start with contacted count, subtract resolved conversions up to today
+        let resolved = 0;
+        for (const [resolveDayStr, count] of Object.entries(cohort.resolutionByDay)) {
+          if (Number(resolveDayStr) <= d) {
+            resolved += count;
+          }
+        }
+        eng += cohort.contacted - resolved;
+      }
+    }
+
+    // Cooling off = expired cohorts within cooldown window
+    let cool = 0;
+    for (const startDayStr of Object.keys(cohorts)) {
+      const s = Number(startDayStr);
+      const cohort = cohorts[s];
+      const daysSinceContact = d - s;
+
+      // Cooling off window: after offer expires, for COOLDOWN_DAYS
+      if (daysSinceContact > offerExpirationDays && daysSinceContact <= offerExpirationDays + COOLDOWN_DAYS) {
+        // Unresolved at time of offer expiration
+        let resolvedByExpiration = 0;
+        for (const [resolveDayStr, count] of Object.entries(cohort.resolutionByDay)) {
+          if (Number(resolveDayStr) <= s + offerExpirationDays) {
+            resolvedByExpiration += count;
+          }
+        }
+        cool += cohort.contacted - resolvedByExpiration;
+      }
+    }
+
+    // Dormant = everyone else (absorbs non-eligible)
+    const dorm = total - elig - eng - cool;
+
+    eligible.push(Math.round(elig));
+    engaged.push(Math.max(0, Math.round(eng)));
+    coolingOff.push(Math.max(0, Math.round(cool)));
+    dormant.push(Math.max(0, Math.round(dorm)));
+  }
+
+  // Dev-only invariant check
+  if (process.env.NODE_ENV === 'development') {
+    for (let d = 0; d < days.length; d++) {
+      const sum = eligible[d] + engaged[d] + coolingOff[d] + dormant[d];
+      console.assert(Math.abs(sum - total) < 2, `Lifecycle sum ${sum} != ${total} at day ${d + 1}`);
+    }
+  }
+
+  return { eligible, engaged, coolingOff, dormant, total };
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// Cohort Waves — engaged count per cohort per day
+// Used by CohortBar to show composition of the Engaged band at selectedDay
+// ═══════════════════════════════════════════════════════════════════════
+
+function computeCohortWaves(simResult, params) {
+  const { days, cohorts } = simResult;
+  const { offerExpirationDays } = params;
+  const numDays = days.length;
+
+  const waves = [];
+
+  for (const startDayStr of Object.keys(cohorts)) {
+    const s = Number(startDayStr);
+    const cohort = cohorts[s];
+    const data = new Array(numDays).fill(0);
+
+    for (let d = 1; d <= numDays; d++) {
+      const daysSinceContact = d - s;
+      if (daysSinceContact >= 1 && daysSinceContact <= offerExpirationDays) {
+        let resolved = 0;
+        for (const [resolveDayStr, count] of Object.entries(cohort.resolutionByDay)) {
+          if (Number(resolveDayStr) <= d) {
+            resolved += count;
+          }
+        }
+        data[d - 1] = Math.max(0, cohort.contacted - resolved);
+      }
+    }
+
+    waves.push({ startDay: s, data });
+  }
+
+  // Sort by startDay ascending
+  waves.sort((a, b) => a.startDay - b.startDay);
+  return waves;
 }

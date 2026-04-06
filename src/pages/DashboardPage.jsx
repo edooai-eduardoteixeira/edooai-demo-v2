@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import Logo from '../components/Logo.jsx';
 import Chart from '../components/Chart.jsx';
 import StackedBarChart from '../components/StackedBarChart.jsx';
+import StackedAreaChart from '../components/StackedAreaChart.jsx';
+import CohortBar from '../components/CohortBar.jsx';
 import FunnelChart from '../components/FunnelChart.jsx';
 import StrategyCards, { DefaultBudgetSlider, BUDGET_CONFIG } from '../components/StrategyCards.jsx';
 import { cn } from '../lib/utils.js';
@@ -377,58 +379,6 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
 // ═══════════════════════════════════════════════════════════════════════
 // COHORT CHART — funnel performance over time
 // ═══════════════════════════════════════════════════════════════════════
-function CohortChart({ cohorts, currentDay }) {
-  const repDays = [2, 5, 10, 15, 20, 25].filter(d => d <= currentDay && cohorts[d]);
-  if (repDays.length === 0 && cohorts[1]) repDays.push(1);
-
-  // Convert cumulative resolved to % of contacted for each cohort
-  const cohortSeries = repDays.map((day, idx) => {
-    const contacted = cohorts[day]?.contacted || 1;
-    const resolved = (cohorts[day]?.cumulativeResolved || []).slice(0, 14);
-    const pctData = resolved.map(v => (v / contacted) * 100);
-    const isLatest = idx === repDays.length - 1;
-    return {
-      data: pctData,
-      color: COHORT_COLORS[Math.min(idx, COHORT_COLORS.length - 1)],
-      width: isLatest ? 2 : 1.5,
-      label: `Day ${day} (${(cohorts[day]?.convRate || 0).toFixed(1)}%)`,
-    };
-  });
-
-  // Find max % for Y-axis
-  let maxPct = 1;
-  for (const s of cohortSeries) {
-    for (const v of s.data) {
-      if (v > maxPct) maxPct = v;
-    }
-  }
-  maxPct = Math.ceil(maxPct);
-
-  return (
-    <div className="flex-1 min-h-0 flex flex-col">
-      <SectionLabel>Funnel Performance</SectionLabel>
-      <div className="flex-1 min-h-0">
-      <Chart
-        series={cohortSeries}
-        maxValue={maxPct}
-        cssHeight="100%"
-        padding={{ left: 40 }}
-        xLabels={[
-          { value: '+0d', at: 1 },
-          { value: '+3d', at: 4 },
-          { value: '+7d', at: 8 },
-          { value: '+10d', at: 11 },
-          { value: '+14d', at: 14 },
-        ]}
-        yLabels={[0, 0.25, 0.5, 0.75, 1].map(f => `${(maxPct * f).toFixed(1)}%`)}
-        gridlines="from-labels"
-        legend
-        formatTooltip={(i, v) => `${v.toFixed(2)}% (${Math.round(v * (cohorts[repDays[0]]?.contacted || 1) / 100)} users)`}
-      />
-      </div>
-    </div>
-  );
-}
 
 // ═══════════════════════════════════════════════════════════════════════
 // POSITION 3: LIVE DECISIONS — Daily briefing with drill-down
@@ -626,44 +576,28 @@ function DecisionFeed({ briefings, selectedDay }) {
 }
 
 
-function ComparisonChart({ agenticCurve, staticCurve, annotations, currentDay }) {
-  const agSlice = agenticCurve.slice(0, currentDay);
-  const stSlice = staticCurve.slice(0, currentDay);
-  const yMax = Math.ceil(Math.max(...agSlice, ...stSlice, 1) / 200) * 200;
-  const activeAnnotations = (annotations || []).filter(a => a.day <= currentDay);
+function KeyLearnings({ annotations, selectedDay }) {
+  const visible = (annotations || []).filter(a => a.day <= selectedDay);
 
   return (
-    <div className="bg-surface border border-border rounded-lg p-6 mb-6">
-      <SectionLabel>Agentic vs Static Execution</SectionLabel>
-
-      <Chart
-        series={[
-          { data: agSlice, color: 'var(--color-brand)', label: 'Vincor Agent' },
-          { data: stSlice, color: 'var(--color-gray-300)', dashed: true, width: 1.5, label: 'Static Rules' },
-        ]}
-        legend
-        maxValue={yMax}
-        padding={{ left: 50, right: 20 }}
-        xLabels={[1, 5, 10, 15, 20, 25, 30].filter(d => d <= currentDay).map(d => ({ value: String(d), at: d }))}
-        yLabels={[0, 0.25, 0.5, 0.75, 1].map(f => Math.round(yMax * f))}
-        gridlines="from-labels"
-        fill={{ color: 'var(--color-brand)', opacity: 0.06 }}
-        annotations={activeAnnotations.map(a => ({ at: a.day - 1 }))}
-        marker={{ at: currentDay - 1 }}
-        endpointLabel={(v) => fmt(v)}
-        formatTooltip={(i, v) => fmt(v)}
-      />
-
-      {activeAnnotations.length > 0 && (
-        <div className="mt-4 pt-3 border-t border-border-light space-y-2">
-          {activeAnnotations.map((a, i) => (
-            <div key={i} className="flex items-start gap-2">
+    <div>
+      <SectionLabel>Key Learnings</SectionLabel>
+      {visible.length === 0 ? (
+        <p className="text-xs text-foreground-faint">Agent is calibrating...</p>
+      ) : (
+        <div className="space-y-3">
+          {visible.map((a, i) => (
+            <div
+              key={i}
+              className="flex items-start gap-2 animate-fade-in"
+              style={{ animationDelay: `${i * 100}ms` }}
+            >
               <span className="w-2 h-2 rounded-full bg-brand mt-1.5 shrink-0" />
               <div>
                 <span className="text-xs font-semibold text-foreground-muted">
                   Day {a.day} — {a.title}
                 </span>
-                <p className="text-xs text-foreground-faint mt-0.5">
+                <p className="text-xs text-foreground-faint mt-0.5 leading-relaxed">
                   {a.description}
                 </p>
               </div>
@@ -736,6 +670,26 @@ export default function DashboardPage({ config, onHome }) {
   // All daily briefings (for scrollable history)
   const briefings = projection.dailyBriefings;
 
+  // Lifecycle bands for stacked area chart (Graph 1)
+  const lifecycleBands = useMemo(() => {
+    const ls = projection.lifecycleStates;
+    if (!ls) return [];
+    const slice = (arr) => arr.slice(0, effectiveDay);
+    return [
+      { label: 'Dormant', data: slice(ls.dormant), color: 'var(--color-gray-200)', opacity: 0.7 },
+      { label: 'Cooling Off', data: slice(ls.coolingOff), color: 'var(--color-gray-400)', opacity: 0.6 },
+      { label: 'Engaged', data: slice(ls.engaged), color: 'var(--color-brand)', opacity: 0.5 },
+      { label: 'Eligible', data: slice(ls.eligible), color: 'var(--color-gray-100)', opacity: 0.8 },
+    ];
+  }, [projection.lifecycleStates, effectiveDay]);
+
+  // Max engaged value for CohortBar Y-axis scaling
+  const maxEngaged = useMemo(() => {
+    const engaged = projection.lifecycleStates?.engaged;
+    if (!engaged) return 1;
+    return Math.max(...engaged, 1);
+  }, [projection.lifecycleStates]);
+
   return (
     <div className="min-h-screen flex flex-col w-full px-6 animate-page-enter">
       {/* Header: Logo + Day Selector — compact, left-aligned together */}
@@ -807,30 +761,49 @@ export default function DashboardPage({ config, onHome }) {
           </div>
         </div>
 
-        {/* ── POSITION 2 + 3: PROOF ENGINE | DECISIONS ── */}
-        <div className="grid grid-cols-[1.5fr_1fr] gap-6">
-          {/* Position 2: Proof — why agentic beats static */}
-          <div className="space-y-6">
-            <ComparisonChart
-              agenticCurve={projection.cumulativeCurve}
-              staticCurve={projection.staticCumulativeCurve}
-              annotations={projection.learningAnnotations}
-              currentDay={effectiveDay}
-            />
+        {/* ── BLOCK 2: LIFECYCLE | COHORT BAR | TEXT ── */}
+        <div className="bg-surface border border-border rounded-lg">
+          <div className="flex h-[500px]">
+            {/* LEFT: Hero timeline — Customer Lifecycle */}
+            <div className="flex-[5] p-5 min-w-0 flex flex-col">
+              <SectionLabel>Customer Lifecycle</SectionLabel>
+              <div className="flex-1 min-h-0">
+                <StackedAreaChart
+                  bands={lifecycleBands}
+                  maxValue={projection.lifecycleStates?.total}
+                  cssHeight="100%"
+                  xLabels={[1, 5, 10, 15, 20, 25, 30].filter(d => d <= effectiveDay).map(d => ({ value: String(d), at: d }))}
+                  legend
+                  formatTooltip={(i, v) => fmt(v)}
+                />
+              </div>
+            </div>
 
-            {/* Cohort chart — moved from Block 1 to serve as evidence */}
-            <div className="bg-surface border border-border rounded-lg p-4">
-              <CohortChart
-                cohorts={projection.cohorts}
-                currentDay={effectiveDay}
+            {/* DIVIDER */}
+            <div className="w-px bg-border-light" />
+
+            {/* MIDDLE: Cohort breakdown bar */}
+            <div className="flex-[1] p-3 flex flex-col items-center min-w-0">
+              <SectionLabel>Cohorts</SectionLabel>
+              <CohortBar
+                cohortWaves={projection.cohortWaves}
+                selectedDay={effectiveDay}
+                maxVal={maxEngaged}
+                colors={COHORT_COLORS}
+                cssHeight="100%"
               />
             </div>
-          </div>
 
-          {/* Position 3: Decisions + Recommendation below */}
-          <div>
-            <DecisionFeed briefings={briefings} selectedDay={effectiveDay} />
-            <GuardrailRecommendation briefings={briefings} selectedDay={effectiveDay} />
+            {/* DIVIDER */}
+            <div className="w-px bg-border-light" />
+
+            {/* RIGHT: Key Learnings + Recommendation + Decisions */}
+            <div className="flex-[4] p-5 overflow-y-auto">
+              <KeyLearnings annotations={projection.learningAnnotations} selectedDay={effectiveDay} />
+              <div className="border-b border-border-light my-4" />
+              <GuardrailRecommendation briefings={briefings} selectedDay={effectiveDay} />
+              <DecisionFeed briefings={briefings} selectedDay={effectiveDay} />
+            </div>
           </div>
         </div>
       </main>
