@@ -146,7 +146,7 @@ export default function StackedBarChart({
       {/* Chart area */}
       <div
         ref={chartAreaRef}
-        className="relative w-full"
+        className="relative w-full overflow-hidden"
         style={cssHeight ? { height: `calc(${cssHeight} - ${legend ? 24 : 0}px)` } : undefined}
       >
         <svg

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { TOKENS, formatCompact } from './chartUtils.js';
 
 /**
@@ -9,6 +9,7 @@ import { TOKENS, formatCompact } from './chartUtils.js';
  */
 
 const BAR_PADDING = 8;
+const LABEL_HEIGHT = 20; // space reserved for X-axis label below bar
 
 export default function CohortBar({ cohortWaves, selectedDay, maxVal, colors, cssHeight }) {
   const [hoveredSegment, setHoveredSegment] = useState(null);
@@ -52,13 +53,17 @@ export default function CohortBar({ cohortWaves, selectedDay, maxVal, colors, cs
       segments.push({
         startDay: wave.startDay,
         value: Math.round(val),
-        color: colors[Math.min(i, colors.length - 1)],
+        // Stable color: use absolute wave index (i), not filtered position
+        color: colors[i % colors.length],
+        waveIndex: i,
       });
     }
   }
 
   const totalEngaged = segments.reduce((sum, s) => sum + s.value, 0);
-  const barH = dims ? dims.height - BAR_PADDING * 2 : 200;
+  const svgW = dims?.width || 80;
+  const svgH = dims ? dims.height - LABEL_HEIGHT : 200;
+  const barH = svgH - BAR_PADDING * 2;
   const barW = dims ? Math.min(dims.width - BAR_PADDING * 2, 60) : 40;
   const barX = dims ? (dims.width - barW) / 2 : BAR_PADDING;
   const barY = BAR_PADDING;
@@ -82,9 +87,6 @@ export default function CohortBar({ cohortWaves, selectedDay, maxVal, colors, cs
     };
   });
 
-  const svgW = dims?.width || 80;
-  const svgH = dims?.height || 200;
-
   return (
     <div
       ref={containerRef}
@@ -94,6 +96,21 @@ export default function CohortBar({ cohortWaves, selectedDay, maxVal, colors, cs
         minHeight: 0,
       }}
     >
+      {/* Y-axis label: total engaged above the bar */}
+      {dims && totalEngaged > 0 && (
+        <span
+          className="absolute text-[10px] text-foreground-faint tabular-nums leading-none pointer-events-none"
+          style={{
+            left: '50%',
+            top: Math.max(0, barY + emptyHeight - 14),
+            transform: 'translateX(-50%)',
+            fontFamily: 'var(--font-family)',
+          }}
+        >
+          {formatCompact(totalEngaged)}
+        </span>
+      )}
+
       {dims && (
         <svg
           width={svgW}
@@ -120,10 +137,10 @@ export default function CohortBar({ cohortWaves, selectedDay, maxVal, colors, cs
               width={r.width}
               height={Math.max(0, r.height)}
               fill={r.color}
-              opacity={animated ? 0.7 : 0}
+              opacity={animated ? (hoveredSegment ? (hoveredSegment.startDay === r.startDay ? 0.9 : 0.4) : 0.7) : 0}
               rx={i === rects.length - 1 ? 2 : 0}
               style={{
-                transition: `opacity 300ms ease-out ${i * 30}ms`,
+                transition: `opacity 200ms ease-out`,
                 cursor: 'pointer',
               }}
               onMouseEnter={() => setHoveredSegment(r)}
@@ -133,29 +150,83 @@ export default function CohortBar({ cohortWaves, selectedDay, maxVal, colors, cs
         </svg>
       )}
 
-      {/* Tooltip */}
+      {/* X-axis label: Day N */}
+      {dims && (
+        <span
+          className="absolute text-[11px] text-foreground-faint tabular-nums leading-none pointer-events-none"
+          style={{
+            left: '50%',
+            bottom: 0,
+            transform: 'translateX(-50%)',
+            fontFamily: 'var(--font-family)',
+          }}
+        >
+          Day {selectedDay}
+        </span>
+      )}
+
+      {/* Tooltip — shows ALL segments + total */}
       {hoveredSegment && (
         <div
           style={{
             position: 'absolute',
             left: svgW + 4,
-            top: hoveredSegment.y,
+            top: '50%',
+            transform: 'translateY(-50%)',
             fontSize: TOKENS.tooltip.fontSize,
             fontWeight: TOKENS.tooltip.fontWeight,
             fontFamily: 'var(--font-family)',
             color: TOKENS.tooltip.text,
             background: TOKENS.tooltip.bg,
             borderRadius: TOKENS.tooltip.radius,
-            padding: '4px 8px',
+            padding: '6px 10px',
             whiteSpace: 'nowrap',
             pointerEvents: 'none',
             boxShadow: `${TOKENS.tooltip.shadow.dx}px ${TOKENS.tooltip.shadow.dy}px ${TOKENS.tooltip.shadow.blur}px rgba(0,0,0,${TOKENS.tooltip.shadow.opacity})`,
             zIndex: 10,
-            lineHeight: 1.3,
+            lineHeight: 1.4,
+            minWidth: 130,
           }}
         >
-          <div>Day {hoveredSegment.startDay} cohort</div>
-          <div>{formatCompact(hoveredSegment.value)} engaged</div>
+          <div style={{ color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>Day {selectedDay} Cohorts</div>
+          {[...segments].reverse().map((seg) => (
+            <div
+              key={seg.startDay}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                marginBottom: 2,
+                opacity: hoveredSegment.startDay === seg.startDay ? 1 : 0.6,
+              }}
+            >
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  backgroundColor: seg.color,
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ color: 'rgba(255,255,255,0.8)' }}>Day {seg.startDay}</span>
+              <span style={{ marginLeft: 'auto', fontWeight: 600 }}>{formatCompact(seg.value)}</span>
+            </div>
+          ))}
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              marginTop: 4,
+              paddingTop: 4,
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontWeight: 700,
+            }}
+          >
+            <span>Total</span>
+            <span>{formatCompact(totalEngaged)}</span>
+          </div>
         </div>
       )}
     </div>

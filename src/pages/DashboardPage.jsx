@@ -66,14 +66,19 @@ function DaySelector({ selected, onSelect }) {
   );
 }
 
-// Sequential warm palette — lightest (oldest cohort) to darkest (newest)
+// 10 distinct warm tones — alternating lightness + hue shift for adjacency contrast.
+// Cycles for 30 cohorts. Stable: color assigned by absolute wave index, not filtered position.
 const COHORT_COLORS = [
-  'var(--color-gray-300)',
-  'var(--color-gray-400)',
-  'var(--color-gray-500)',
-  'var(--color-gray-600)',
-  'var(--color-gray-700)',
-  'var(--color-brand)',
+  '#D4C4B0', // warm beige (lightest)
+  '#B8947A', // tan
+  '#A07060', // terra cotta
+  '#8B6E5A', // brown
+  '#C4A882', // golden sand
+  '#96785E', // cocoa
+  '#7A5C4A', // dark brown
+  '#B0876C', // copper
+  '#66001F', // brand (darkest)
+  '#9E6B54', // sienna
 ];
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -691,19 +696,20 @@ export default function DashboardPage({ config, onHome }) {
     return Math.max(...engaged, 1);
   }, [projection.lifecycleStates]);
 
-  // Y-axis ticks for lifecycle chart
+  // Y-axis ticks for lifecycle chart — based on visible stack max (not total)
   const lifecycleYTicks = useMemo(() => {
-    const total = projection.lifecycleStates?.total || 0;
-    if (!total) return [0];
-    // Round up to nearest nice number, divide into ~4 steps
-    const step = total <= 100000 ? 25000
-      : total <= 500000 ? 100000
-      : total <= 1000000 ? 200000
+    if (!lifecycleBarData.length) return [0];
+    const visibleMax = Math.max(...lifecycleBarData.map(d => d.values.reduce((a, b) => a + b, 0)));
+    if (!visibleMax) return [0];
+    const step = visibleMax <= 50000 ? 10000
+      : visibleMax <= 100000 ? 25000
+      : visibleMax <= 500000 ? 100000
+      : visibleMax <= 1000000 ? 200000
       : 500000;
     const ticks = [];
-    for (let v = 0; v <= total; v += step) ticks.push(v);
+    for (let v = 0; v <= visibleMax; v += step) ticks.push(v);
     return ticks;
-  }, [projection.lifecycleStates]);
+  }, [lifecycleBarData]);
 
   return (
     <div className="min-h-screen flex flex-col w-full px-6 animate-page-enter">
@@ -787,6 +793,7 @@ export default function DashboardPage({ config, onHome }) {
                   data={lifecycleBarData}
                   segments={lifecycleSegments}
                   cssHeight="100%"
+                  padding={{ left: 50 }}
                   xLabels={[1, 5, 10, 15, 20, 25, 30].filter(d => d <= effectiveDay).map(d => ({ value: String(d), at: d }))}
                   yLabels={lifecycleYTicks}
                   gridlines="from-labels"
@@ -796,12 +803,9 @@ export default function DashboardPage({ config, onHome }) {
               </div>
             </div>
 
-            {/* DIVIDER */}
-            <div className="w-px bg-border-light" />
-
-            {/* MIDDLE: Cohort breakdown bar */}
+            {/* MIDDLE: Cohort breakdown bar — no left divider, reads as annotation of main chart */}
             <div className="flex-[1] p-3 flex flex-col min-w-0">
-              <SectionLabel>Cohorts</SectionLabel>
+              <SectionLabel>Engaged Cohorts</SectionLabel>
               <CohortBar
                 cohortWaves={projection.cohortWaves}
                 selectedDay={effectiveDay}
