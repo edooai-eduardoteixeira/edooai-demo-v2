@@ -89,7 +89,7 @@ export default function CohortBar({ cohortWaves, selectedDay, maxVal, colors, cs
     <div
       ref={containerRef}
       style={{
-        ...(cssHeight ? { height: cssHeight } : { flex: 1 }),
+        flex: 1,
         position: 'relative',
         minHeight: 0,
       }}

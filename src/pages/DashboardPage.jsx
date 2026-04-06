@@ -671,15 +671,15 @@ export default function DashboardPage({ config, onHome }) {
   const briefings = projection.dailyBriefings;
 
   // Lifecycle bands for stacked area chart (Graph 1)
+  // Dormant removed — shown as context label instead. Eligible faded as ceiling wash.
   const lifecycleBands = useMemo(() => {
     const ls = projection.lifecycleStates;
     if (!ls) return [];
     const slice = (arr) => arr.slice(0, effectiveDay);
     return [
-      { label: 'Dormant', data: slice(ls.dormant), color: 'var(--color-gray-200)', opacity: 0.7 },
-      { label: 'Cooling Off', data: slice(ls.coolingOff), color: 'var(--color-gray-400)', opacity: 0.6 },
-      { label: 'Engaged', data: slice(ls.engaged), color: 'var(--color-brand)', opacity: 0.5 },
-      { label: 'Eligible', data: slice(ls.eligible), color: 'var(--color-gray-100)', opacity: 0.8 },
+      { label: 'Cooling Off', data: slice(ls.coolingOff), color: 'var(--color-gray-400)', opacity: 0.5 },
+      { label: 'Engaged', data: slice(ls.engaged), color: 'var(--color-brand)', opacity: 0.6 },
+      { label: 'Eligible', data: slice(ls.eligible), color: 'var(--color-gray-100)', opacity: 0.15 },
     ];
   }, [projection.lifecycleStates, effectiveDay]);
 
@@ -766,11 +766,13 @@ export default function DashboardPage({ config, onHome }) {
           <div className="flex h-[500px]">
             {/* LEFT: Hero timeline — Customer Lifecycle */}
             <div className="flex-[5] p-5 min-w-0 flex flex-col">
-              <SectionLabel>Customer Lifecycle</SectionLabel>
+              <div className="flex items-baseline gap-2">
+                <h3 className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Customer Lifecycle</h3>
+                <span className="text-[11px] text-foreground-faint font-normal">{fmtK(projection.lifecycleStates?.total || 0)} total customers</span>
+              </div>
               <div className="flex-1 min-h-0">
                 <StackedAreaChart
                   bands={lifecycleBands}
-                  maxValue={projection.lifecycleStates?.total}
                   cssHeight="100%"
                   xLabels={[1, 5, 10, 15, 20, 25, 30].filter(d => d <= effectiveDay).map(d => ({ value: String(d), at: d }))}
                   legend
