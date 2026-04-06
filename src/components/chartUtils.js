@@ -32,7 +32,15 @@ export const TOKENS = {
   marker: { color: 'var(--color-foreground-faint)', width: 1, dash: '2,3', opacity: 0.4 },
 };
 
-export const DEFAULT_PADDING = { top: 10, right: 20, bottom: 40, left: 28 };
+// Two structural roles → two values (axis-label sides vs breathing-room sides)
+export const CHART_PADDING = { axis: 40, edge: 10 };
+export const DEFAULT_PADDING = {
+  top: CHART_PADDING.edge,
+  right: CHART_PADDING.edge,
+  bottom: CHART_PADDING.axis,
+  left: CHART_PADDING.axis,
+};
+export const LEGEND_HEIGHT = 24;
 export const DEFAULT_HEIGHT = 210;
 export const VIEWBOX_WIDTH = 828;
 

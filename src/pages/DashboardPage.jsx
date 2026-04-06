@@ -67,15 +67,25 @@ function DaySelector({ selected, onSelect }) {
   );
 }
 
-// Sequential warm palette — lightest (oldest cohort) to darkest (newest)
-const COHORT_COLORS = [
-  'var(--color-gray-300)',
-  'var(--color-gray-400)',
-  'var(--color-gray-500)',
-  'var(--color-gray-600)',
-  'var(--color-gray-700)',
-  'var(--color-brand)',
-];
+// HSL interpolation from gray-200 (warm sand) → brand (deep wine)
+// Smoothstep easing for perceptually even transitions
+function generateCohortColors(count) {
+  const h0 = 30,  s0 = 22,  l0 = 86;   // gray-200 (#E4DDD5)
+  const h1 = 342, s1 = 100, l1 = 20;    // brand (#66001F)
+  const colors = [];
+  for (let i = 0; i < count; i++) {
+    const t = count === 1 ? 1 : i / (count - 1);
+    const te = t * t * (3 - 2 * t); // smoothstep
+    // Short arc: 30° → 342° backward through 0°
+    const h = h0 + (h1 - h0 - 360) * te;
+    const hNorm = ((h % 360) + 360) % 360;
+    const s = s0 + (s1 - s0) * te;
+    const l = l0 + (l1 - l0) * te;
+    colors.push(`hsl(${Math.round(hNorm)}, ${Math.round(s)}%, ${Math.round(l)}%)`);
+  }
+  return colors;
+}
+const COHORT_COLORS = generateCohortColors(10);
 
 // ═══════════════════════════════════════════════════════════════════════
 // CAMPAIGN HEALTH ROW — compact status strip at top of Block 1
@@ -303,7 +313,6 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
         ]}
         maxValue={yMax}
         cssHeight="100%"
-        padding={{ left: 50 }}
         xLabels={xLabels}
         yLabels={[0, Math.round(yMax * 0.5), Math.round(yMax)]}
         gridlines="from-labels"
@@ -363,7 +372,6 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
       legend={isROAS}
       maxValue={yMax}
       cssHeight="100%"
-      padding={{ left: 50 }}
       xLabels={xLabels}
       yLabels={yLabels.map(v => {
         if (selectedKPI === 'roi') return Math.round(v * 10) / 10;
@@ -783,7 +791,7 @@ export default function DashboardPage({ config, onHome }) {
             <div className="w-px bg-border-light" />
 
             {/* MIDDLE: Cohort breakdown bar */}
-            <div className="flex-[1] p-3 flex flex-col items-center min-w-0">
+            <div className="flex-[1] pt-5 px-3 pb-3 flex flex-col items-center min-w-0">
               <SectionLabel>Cohorts</SectionLabel>
               <CohortBar
                 cohortWaves={projection.cohortWaves}
@@ -791,6 +799,7 @@ export default function DashboardPage({ config, onHome }) {
                 maxVal={maxEngaged}
                 colors={COHORT_COLORS}
                 cssHeight="100%"
+                reserveLegendSpace
               />
             </div>
 

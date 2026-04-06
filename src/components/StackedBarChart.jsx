@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { cn } from '../lib/utils';
-import { TOKENS, DEFAULT_PADDING, VIEWBOX_WIDTH, DEFAULT_HEIGHT, formatCompact } from './chartUtils.js';
+import { TOKENS, DEFAULT_PADDING, VIEWBOX_WIDTH, DEFAULT_HEIGHT, LEGEND_HEIGHT, formatCompact } from './chartUtils.js';
 
 /**
  * Stacked bar chart component following Vincor design system.
@@ -129,7 +129,7 @@ export default function StackedBarChart({
     <div className="relative w-full" style={cssHeight ? { height: cssHeight } : undefined}>
       {/* Legend */}
       {legend && segments && (
-        <div className="flex items-center justify-end gap-4 mb-1">
+        <div className="flex items-center justify-end gap-4 mb-1.5">
           {segments.map((seg, i) => (
             <div key={i} className="flex items-center gap-1.5">
               <span
@@ -146,7 +146,7 @@ export default function StackedBarChart({
       <div
         ref={chartAreaRef}
         className="relative w-full"
-        style={cssHeight ? { height: `calc(${cssHeight} - ${legend ? 24 : 0}px)` } : undefined}
+        style={cssHeight ? { height: `calc(${cssHeight} - ${legend ? LEGEND_HEIGHT : 0}px)` } : undefined}
       >
         <svg
           ref={svgRef}
