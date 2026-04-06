@@ -691,6 +691,20 @@ export default function DashboardPage({ config, onHome }) {
     return Math.max(...engaged, 1);
   }, [projection.lifecycleStates]);
 
+  // Y-axis ticks for lifecycle chart
+  const lifecycleYTicks = useMemo(() => {
+    const total = projection.lifecycleStates?.total || 0;
+    if (!total) return [0];
+    // Round up to nearest nice number, divide into ~4 steps
+    const step = total <= 100000 ? 25000
+      : total <= 500000 ? 100000
+      : total <= 1000000 ? 200000
+      : 500000;
+    const ticks = [];
+    for (let v = 0; v <= total; v += step) ticks.push(v);
+    return ticks;
+  }, [projection.lifecycleStates]);
+
   return (
     <div className="min-h-screen flex flex-col w-full px-6 animate-page-enter">
       {/* Header: Logo + Day Selector — compact, left-aligned together */}
@@ -765,19 +779,16 @@ export default function DashboardPage({ config, onHome }) {
         {/* ── BLOCK 2: LIFECYCLE | COHORT BAR | TEXT ── */}
         <div className="bg-surface border border-border rounded-lg">
           <div className="flex h-[500px]">
-            {/* LEFT: Hero timeline — Customer Lifecycle */}
+            {/* LEFT: Hero timeline — Audience Referral Status */}
             <div className="flex-[5] p-5 min-w-0 flex flex-col">
-              <div className="flex items-baseline gap-2">
-                <h3 className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Customer Lifecycle</h3>
-                <span className="text-[11px] text-foreground-faint font-normal">{fmtK(projection.lifecycleStates?.total || 0)} total customers</span>
-              </div>
+              <SectionLabel>Audience Referral Status</SectionLabel>
               <div className="flex-1 min-h-0">
                 <StackedBarChart
                   data={lifecycleBarData}
                   segments={lifecycleSegments}
                   cssHeight="100%"
                   xLabels={[1, 5, 10, 15, 20, 25, 30].filter(d => d <= effectiveDay).map(d => ({ value: String(d), at: d }))}
-                  yLabels={[0]}
+                  yLabels={lifecycleYTicks}
                   gridlines="from-labels"
                   legend
                   formatTooltip={(i, v) => fmt(v)}

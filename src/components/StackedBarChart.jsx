@@ -25,6 +25,7 @@ export default function StackedBarChart({
   yLabels,
   gridlines = true,
   formatTooltip,
+  formatValue = formatCompact,
   legend,
 }) {
   const [hoveredBar, setHoveredBar] = useState(null);
@@ -130,7 +131,7 @@ export default function StackedBarChart({
       {/* Legend */}
       {legend && segments && (
         <div className="flex items-center justify-end gap-4 mb-1">
-          {segments.map((seg, i) => (
+          {[...segments].reverse().map((seg, i) => (
             <div key={i} className="flex items-center gap-1.5">
               <span
                 className="inline-block w-1.5 h-1.5 rounded-full shrink-0"
@@ -188,22 +189,39 @@ export default function StackedBarChart({
             >
               {bar.rects.map((r, segIdx) => {
                 const isTop = segIdx === segments.length - 1;
+                const showLabel = barIdx === bars.length - 1 && r.height > chartH * 0.10;
                 return (
-                  <rect
-                    key={segIdx}
-                    x={r.x}
-                    y={r.y}
-                    width={r.width}
-                    height={Math.max(r.height, 0)}
-                    fill={segments[segIdx]?.color || 'var(--color-brand)'}
-                    rx={isTop ? BAR_RADIUS : 0}
-                    ry={isTop ? BAR_RADIUS : 0}
-                    style={{
-                      transformOrigin: `${r.x + r.width / 2}px ${chartBottom}px`,
-                      transform: animated ? 'scaleY(1)' : 'scaleY(0)',
-                      transition: `transform ${ANIMATION_DURATION}ms ease-out ${barIdx * ANIMATION_STAGGER}ms`,
-                    }}
-                  />
+                  <g key={segIdx}>
+                    <rect
+                      x={r.x}
+                      y={r.y}
+                      width={r.width}
+                      height={Math.max(r.height, 0)}
+                      fill={segments[segIdx]?.color || 'var(--color-brand)'}
+                      rx={isTop ? BAR_RADIUS : 0}
+                      ry={isTop ? BAR_RADIUS : 0}
+                      style={{
+                        transformOrigin: `${r.x + r.width / 2}px ${chartBottom}px`,
+                        transform: animated ? 'scaleY(1)' : 'scaleY(0)',
+                        transition: `transform ${ANIMATION_DURATION}ms ease-out ${barIdx * ANIMATION_STAGGER}ms`,
+                      }}
+                    />
+                    {showLabel && animated && (
+                      <text
+                        x={r.x + r.width / 2}
+                        y={r.y + r.height / 2}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        fill="var(--text-primary)"
+                        opacity={0.5}
+                        fontSize={10}
+                        fontWeight={600}
+                        style={{ pointerEvents: 'none' }}
+                      >
+                        {formatValue(data[barIdx].values[segIdx])}
+                      </text>
+                    )}
+                  </g>
                 );
               })}
             </g>
@@ -236,7 +254,7 @@ export default function StackedBarChart({
                 fontVariantNumeric: 'tabular-nums',
               }}
             >
-              ${formatCompact(val)}
+              {formatValue(val)}
             </span>
           );
         })}
@@ -269,6 +287,7 @@ export default function StackedBarChart({
             segments={segments}
             index={hoveredBar}
             formatTooltip={formatTooltip}
+            formatValue={formatValue}
             chartTop={chartTop}
             chartBottom={chartBottom}
             chartLeft={chartLeft}
@@ -282,7 +301,7 @@ export default function StackedBarChart({
   );
 }
 
-function Tooltip({ bar, data, segments, index, formatTooltip, chartTop, chartBottom, chartLeft, chartW, viewboxWidth, viewboxHeight }) {
+function Tooltip({ bar, data, segments, index, formatTooltip, formatValue, chartTop, chartBottom, chartLeft, chartW, viewboxWidth, viewboxHeight }) {
   const centerX = bar.rects[0].x + bar.rects[0].width / 2;
   const topY = chartBottom - bar.total;
 
@@ -321,12 +340,12 @@ function Tooltip({ bar, data, segments, index, formatTooltip, chartTop, chartBot
               style={{ backgroundColor: seg.color }}
             />
             <span className="text-white/80">{seg.label}</span>
-            <span className="ml-auto font-semibold">${data.values[si]}</span>
+            <span className="ml-auto font-semibold">{formatValue(data.values[si])}</span>
           </div>
         ))}
         <div className="border-t border-white/20 mt-1.5 pt-1.5 flex justify-between font-bold">
           <span>Total</span>
-          <span>${total}</span>
+          <span>{formatValue(total)}</span>
         </div>
       </div>
     </div>
