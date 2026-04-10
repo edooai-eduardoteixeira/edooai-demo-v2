@@ -43,6 +43,7 @@ export default function Chart({
   tooltip = true,
   formatTooltip,
   endpointLabel,
+  formatYLabel,
   annotations,
   marker,
   legend,
@@ -500,7 +501,7 @@ export default function Chart({
               transform: 'translate(-100%, -50%)',
             }}
           >
-            {formatCompact(item.val)}
+            {formatYLabel ? formatYLabel(item.val) : formatCompact(item.val)}
           </span>
         ))}
 

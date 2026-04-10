@@ -97,6 +97,42 @@ export function formatCompact(val) {
   return String(rounded);
 }
 
+/**
+ * Compute a "nice" Y-axis ceiling for a given max value.
+ * Returns a clean round number ≥ maxVal that produces readable mid-ticks.
+ * Works for any scale: single digits, hundreds, thousands, millions.
+ */
+export function niceYMax(maxVal) {
+  if (maxVal <= 0) return 10;
+  // Find the order of magnitude, then round up to a nice multiple
+  const magnitude = Math.pow(10, Math.floor(Math.log10(maxVal)));
+  const normalized = maxVal / magnitude; // 1.0 – 9.99
+  // Pick the next nice number: 1, 2, 5, 10
+  let nice;
+  if (normalized <= 1) nice = 1;
+  else if (normalized <= 2) nice = 2;
+  else if (normalized <= 5) nice = 5;
+  else nice = 10;
+  return nice * magnitude;
+}
+
+/**
+ * Generate X-axis day ticks appropriate for the data length.
+ * Returns an array of day numbers (1-indexed) with ~3-4 evenly spaced ticks.
+ */
+export function dayXTicks(dataLen) {
+  if (dataLen <= 1) return [1];
+  if (dataLen <= 3) return [1, dataLen];
+  if (dataLen <= 7) return [1, Math.round(dataLen / 2), dataLen];
+  if (dataLen <= 15) return [1, Math.round(dataLen / 2), dataLen];
+  // 16+ days: ticks at 1, then every ~10 days, ending at dataLen
+  const step = dataLen <= 35 ? 10 : 20;
+  const ticks = [1];
+  for (let d = step; d < dataLen; d += step) ticks.push(d);
+  ticks.push(dataLen);
+  return ticks;
+}
+
 export function resolveXLabels(xLabels, dataLen, chartLeft, chartW) {
   if (!xLabels || xLabels.length === 0) return [];
   if (typeof xLabels[0] === 'string') {

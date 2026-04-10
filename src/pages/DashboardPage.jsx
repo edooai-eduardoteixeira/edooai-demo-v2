@@ -6,6 +6,7 @@ import CohortBar from '../components/CohortBar.jsx';
 import FunnelChart from '../components/FunnelChart.jsx';
 import StrategyCards, { DefaultBudgetSlider, BUDGET_CONFIG } from '../components/StrategyCards.jsx';
 import { cn } from '../lib/utils.js';
+import { niceYMax, dayXTicks } from '../components/chartUtils.js';
 import { computeDashboardProjection } from '../engine/projectionEngine.js';
 
 // ─── Constants ────────────────────────────────────────────────────────
@@ -292,7 +293,7 @@ function KPISelector({ selected, onSelect, dayData, days, selectedDay, dateRange
 // HERO CHART — renders the selected KPI's 30-day trend
 // ═══════════════════════════════════════════════════════════════════════
 function HeroChart({ selectedKPI, days, currentDay, projection }) {
-  const xLabels = [1, 10, 20, 30].filter(d => d <= currentDay).map(d => ({ value: String(d), at: d }));
+  const xLabels = dayXTicks(currentDay).map(d => ({ value: String(d), at: d }));
 
   // CAC: stacked bar chart showing referrer/referee cost breakdown
   if (selectedKPI === 'cac') {
@@ -300,7 +301,7 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
       values: [d.dailyReferrerCost, d.dailyRefereeCost],
     }));
     const maxVal = Math.max(...cacData.map(d => d.values[0] + d.values[1]), 1);
-    const yMax = Math.ceil(maxVal / 20) * 20 || 100;
+    const yMax = niceYMax(maxVal);
 
     return (
       <StackedBarChart
@@ -314,7 +315,7 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
         cssHeight="100%"
 
         xLabels={xLabels}
-        yLabels={[0, Math.round(yMax * 0.5), Math.round(yMax)]}
+        yLabels={[0, yMax * 0.5, yMax]}
         gridlines="from-labels"
         legend
       />
@@ -325,18 +326,15 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
   let slice, yMax, formatLabel;
 
   if (selectedKPI === 'activeUsers') {
-    // Daily new active users (resolved per day)
     slice = projection.dailyCurve.slice(0, currentDay);
     const maxVal = Math.max(...slice, 1);
-    yMax = Math.ceil(maxVal / 20) * 20 || 100;
+    yMax = niceYMax(maxVal);
     formatLabel = (v) => fmt(v);
   } else {
-    // Daily KPI values from the engine
     const dailyKPIs = projection.dailyKPIs;
     if (dailyKPIs && dailyKPIs[selectedKPI]) {
       slice = dailyKPIs[selectedKPI].slice(0, currentDay);
     } else {
-      // Fallback: compute daily delta from cumulative
       slice = days.slice(0, currentDay).map((d, i) => {
         if (i === 0) return d.kpiCumulative[selectedKPI];
         return Math.max(0, d.kpiCumulative[selectedKPI] - days[i - 1].kpiCumulative[selectedKPI]);
@@ -344,10 +342,10 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
     }
     const maxVal = Math.max(...slice, 1);
     if (selectedKPI === 'roi') {
-      yMax = Math.ceil(maxVal * 2) / 2 || 2;
+      yMax = niceYMax(maxVal);
       formatLabel = (v) => `${v}x`;
     } else {
-      yMax = Math.ceil(maxVal / 500) * 500 || 1000;
+      yMax = niceYMax(maxVal);
       formatLabel = (v) => fmtDollar(v);
     }
   }
@@ -373,13 +371,11 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
       maxValue={yMax}
       cssHeight="100%"
       xLabels={xLabels}
-      yLabels={yLabels.map(v => {
-        if (selectedKPI === 'roi') return Math.round(v * 10) / 10;
-        return Math.round(v);
-      })}
+      yLabels={yLabels}
       gridlines="from-labels"
       fill={{ color: 'var(--color-brand)', opacity: 0.07 }}
       endpointLabel={(v) => formatLabel(v)}
+      formatYLabel={isROAS ? (v) => `${v}x` : undefined}
     />
   );
 }
@@ -700,19 +696,13 @@ export default function DashboardPage({ config, onHome }) {
     return Math.max(...engaged, 1);
   }, [projection.lifecycleStates]);
 
-  // Y-axis ticks for lifecycle chart — based on visible stack max (not total)
+  // Y-axis ticks for lifecycle chart — 3 ticks (0, mid, max), consistent with hero charts
   const lifecycleYTicks = useMemo(() => {
     if (!lifecycleBarData.length) return [0];
     const visibleMax = Math.max(...lifecycleBarData.map(d => d.values.reduce((a, b) => a + b, 0)));
     if (!visibleMax) return [0];
-    const step = visibleMax <= 50000 ? 10000
-      : visibleMax <= 100000 ? 25000
-      : visibleMax <= 500000 ? 100000
-      : visibleMax <= 1000000 ? 200000
-      : 500000;
-    const ticks = [];
-    for (let v = 0; v <= visibleMax; v += step) ticks.push(v);
-    return ticks;
+    const yMax = niceYMax(visibleMax);
+    return [0, yMax * 0.5, yMax];
   }, [lifecycleBarData]);
 
   return (
@@ -797,8 +787,8 @@ export default function DashboardPage({ config, onHome }) {
                   data={lifecycleBarData}
                   segments={lifecycleSegments}
                   cssHeight="100%"
-          
-                  xLabels={[1, 10, 20, 30].filter(d => d <= effectiveDay).map(d => ({ value: String(d), at: d }))}
+                  maxValue={lifecycleYTicks[lifecycleYTicks.length - 1] || undefined}
+                  xLabels={dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }))}
                   yLabels={lifecycleYTicks}
                   gridlines="from-labels"
                   legend
