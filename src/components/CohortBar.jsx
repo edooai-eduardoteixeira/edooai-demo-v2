@@ -129,17 +129,6 @@ export default function CohortBar({ cohortWaves, selectedDay, maxVal, colors, cs
             height={svgH}
             style={{ display: 'block' }}
           >
-            {/* Empty space background (subtle) */}
-            <rect
-              x={barX}
-              y={barY}
-              width={barW}
-              height={emptyHeight}
-              rx={2}
-              fill="var(--border-light)"
-              opacity={0.3}
-            />
-
             {/* Stacked segments */}
             {rects.map((r, i) => (
               <rect

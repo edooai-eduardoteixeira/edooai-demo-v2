@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
-import { cn } from '../lib/utils';
-import { TOKENS, DEFAULT_PADDING, VIEWBOX_WIDTH, DEFAULT_HEIGHT, LEGEND_HEIGHT, formatCompact } from './chartUtils.js';
+import { TOKENS, DEFAULT_PADDING, VIEWBOX_WIDTH, DEFAULT_HEIGHT, toLeft, toTop, labelBase, formatCompact } from './chartUtils.js';
 
 /**
  * Stacked bar chart component following Vincor design system.
@@ -127,28 +126,49 @@ export default function StackedBarChart({
   const tooltipBar = hoveredBar !== null ? bars[hoveredBar] : null;
 
   return (
-    <div className="relative w-full" style={cssHeight ? { height: cssHeight } : undefined}>
-      {/* Legend */}
+    <div style={cssHeight ? { height: cssHeight, display: 'flex', flexDirection: 'column' } : {}}>
+      {/* Legend (inline styles — matches Chart.jsx / StackedAreaChart.jsx) */}
       {legend && segments && (
-        <div className="flex items-center justify-end gap-4 mb-1.5">
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '8px 16px',
+            marginBottom: 6,
+            justifyContent: 'flex-end',
+          }}
+        >
           {[...segments].reverse().map((seg, i) => (
-            <div key={i} className="flex items-center gap-1.5">
+            <span
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: 11,
+                fontFamily: 'var(--font-family)',
+                color: 'var(--text-tertiary)',
+                lineHeight: 1,
+                whiteSpace: 'nowrap',
+              }}
+            >
               <span
-                className="inline-block w-1.5 h-1.5 rounded-full shrink-0"
-                style={{ backgroundColor: seg.color }}
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  backgroundColor: seg.color,
+                  flexShrink: 0,
+                }}
               />
-              <span className="text-[11px] text-foreground-muted">{seg.label}</span>
-            </div>
+              {seg.label}
+            </span>
           ))}
         </div>
       )}
 
-      {/* Chart area */}
-      <div
-        ref={chartAreaRef}
-        className="relative w-full overflow-hidden"
-        style={cssHeight ? { height: `calc(${cssHeight} - ${legend ? LEGEND_HEIGHT : 0}px)` } : undefined}
-      >
+      {/* Chart area — flex:1 when cssHeight is set so SVG takes remaining space after legend */}
+      <div ref={chartAreaRef} style={cssHeight ? { flex: 1, minHeight: 0, position: 'relative' } : { position: 'relative' }}>
         <svg
           ref={svgRef}
           viewBox={`0 0 ${VIEWBOX_WIDTH} ${height}`}
@@ -189,39 +209,22 @@ export default function StackedBarChart({
             >
               {bar.rects.map((r, segIdx) => {
                 const isTop = segIdx === segments.length - 1;
-                const showLabel = barIdx === bars.length - 1 && r.height > chartH * 0.10;
                 return (
-                  <g key={segIdx}>
-                    <rect
-                      x={r.x}
-                      y={r.y}
-                      width={r.width}
-                      height={Math.max(r.height, 0)}
-                      fill={segments[segIdx]?.color || 'var(--color-brand)'}
-                      rx={isTop ? BAR_RADIUS : 0}
-                      ry={isTop ? BAR_RADIUS : 0}
-                      style={{
-                        transformOrigin: `${r.x + r.width / 2}px ${chartBottom}px`,
-                        transform: animated ? 'scaleY(1)' : 'scaleY(0)',
-                        transition: `transform ${ANIMATION_DURATION}ms ease-out ${barIdx * ANIMATION_STAGGER}ms`,
-                      }}
-                    />
-                    {showLabel && animated && (
-                      <text
-                        x={r.x + r.width / 2}
-                        y={r.y + r.height / 2}
-                        textAnchor="middle"
-                        dominantBaseline="central"
-                        fill="var(--text-primary)"
-                        opacity={0.5}
-                        fontSize={10}
-                        fontWeight={600}
-                        style={{ pointerEvents: 'none' }}
-                      >
-                        {formatValue(data[barIdx].values[segIdx])}
-                      </text>
-                    )}
-                  </g>
+                  <rect
+                    key={segIdx}
+                    x={r.x}
+                    y={r.y}
+                    width={r.width}
+                    height={Math.max(r.height, 0)}
+                    fill={segments[segIdx]?.color || 'var(--color-brand)'}
+                    rx={isTop ? BAR_RADIUS : 0}
+                    ry={isTop ? BAR_RADIUS : 0}
+                    style={{
+                      transformOrigin: `${r.x + r.width / 2}px ${chartBottom}px`,
+                      transform: animated ? 'scaleY(1)' : 'scaleY(0)',
+                      transition: `transform ${ANIMATION_DURATION}ms ease-out ${barIdx * ANIMATION_STAGGER}ms`,
+                    }}
+                  />
                 );
               })}
             </g>
@@ -238,20 +241,17 @@ export default function StackedBarChart({
           />
         </svg>
 
-        {/* Y-axis labels (HTML for consistent 11px sizing) */}
+        {/* Y-axis labels (HTML — same positioning as Chart.jsx) */}
         {resolvedYLabels.map((val, i) => {
           const y = chartBottom - (val / maxVal) * chartH;
-          const pctTop = `${(y / height) * 100}%`;
           return (
             <span
               key={i}
-              className="absolute text-[11px] text-tertiary tabular-nums leading-none pointer-events-none"
               style={{
-                left: 0,
-                top: pctTop,
-                transform: 'translateY(-50%)',
-                fontFamily: 'var(--font-family)',
-                fontVariantNumeric: 'tabular-nums',
+                ...labelBase,
+                left: toLeft(-6, padding.left),
+                top: toTop(y, height),
+                transform: 'translate(-100%, -50%)',
               }}
             >
               {formatValue(val)}
