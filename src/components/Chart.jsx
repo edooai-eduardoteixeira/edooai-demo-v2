@@ -113,6 +113,9 @@ export default function Chart({
     ? maxValue
     : Math.max(...series.flatMap((s) => s.data || []), 0) * 1.08;
 
+  // When all data is zero, render a clean empty chart (no dots, no lines, no tooltips)
+  const hasData = maxVal > 0;
+
   // Compute points and paths for every series
   const allSeriesPoints = series.map((s) =>
     computePoints(s.data || [], chartLeft, chartTop, chartW, chartH, maxVal),
@@ -378,8 +381,8 @@ export default function Chart({
             );
           })}
 
-          {/* Primary series line with draw animation */}
-          {primaryPoints.length >= 2 && (
+          {/* Primary series line with draw animation — hidden when data is all zero */}
+          {hasData && primaryPoints.length >= 2 && (
             hasThreshold ? (
               <g style={{ opacity: animated ? 1 : 0, transition: 'opacity 500ms ease-out' }}>
                 <path
@@ -448,8 +451,8 @@ export default function Chart({
             );
           })}
 
-          {/* Hover overlay */}
-          {tooltip && (
+          {/* Hover overlay — disabled when data is all zero */}
+          {hasData && tooltip && (
             <rect
               x={chartLeft} y={chartTop}
               width={chartW} height={chartH}
@@ -478,8 +481,8 @@ export default function Chart({
             </>
           )}
 
-          {/* Endpoint dot (primary series only) */}
-          {lastPt && (
+          {/* Endpoint dot (primary series only — hidden when data is all zero) */}
+          {hasData && lastPt && (
             <circle
               cx={lastPt.x} cy={lastPt.y}
               r={TOKENS.endpoint.radius} fill={TOKENS.endpoint.color}
@@ -548,8 +551,8 @@ export default function Chart({
           </span>
         )}
 
-        {/* Endpoint label */}
-        {endpointLabel && lastPt && (
+        {/* Endpoint label — hidden when data is all zero */}
+        {hasData && endpointLabel && lastPt && (
           <span
             style={{
               ...labelBase,
