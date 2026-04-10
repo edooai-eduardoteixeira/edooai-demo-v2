@@ -315,7 +315,7 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
         cssHeight="100%"
 
         xLabels={xLabels}
-        yLabels={[0, yMax * 0.5, yMax]}
+        yLabels={[yMax * 0.5, yMax]}
         gridlines="from-labels"
         legend
       />
@@ -356,7 +356,7 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
     ? slice.map(v => Math.round(v * 0.7 * 10) / 10)
     : null;
 
-  const yLabels = [0, yMax * 0.5, yMax];
+  const yLabels = [yMax * 0.5, yMax];
 
   return (
     <Chart
@@ -702,7 +702,7 @@ export default function DashboardPage({ config, onHome }) {
     const visibleMax = Math.max(...lifecycleBarData.map(d => d.values.reduce((a, b) => a + b, 0)));
     if (!visibleMax) return [0];
     const yMax = niceYMax(visibleMax);
-    return [0, yMax * 0.5, yMax];
+    return [yMax * 0.5, yMax];
   }, [lifecycleBarData]);
 
   return (
