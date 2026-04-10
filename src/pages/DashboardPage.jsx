@@ -798,7 +798,7 @@ export default function DashboardPage({ config, onHome }) {
                   segments={lifecycleSegments}
                   cssHeight="100%"
           
-                  xLabels={[1, 5, 10, 15, 20, 25, 30].filter(d => d <= effectiveDay).map(d => ({ value: String(d), at: d }))}
+                  xLabels={[1, 10, 20, 30].filter(d => d <= effectiveDay).map(d => ({ value: String(d), at: d }))}
                   yLabels={lifecycleYTicks}
                   gridlines="from-labels"
                   legend

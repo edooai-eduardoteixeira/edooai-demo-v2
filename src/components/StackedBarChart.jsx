@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
-import { cn } from '../lib/utils';
 import { TOKENS, DEFAULT_PADDING, VIEWBOX_WIDTH, DEFAULT_HEIGHT, toLeft, toTop, labelBase, formatCompact } from './chartUtils.js';
 
 /**
  * Stacked bar chart component following Vincor design system.
  *
- * Text labels rendered as HTML (not SVG) for consistent 11px sizing.
- * SVG handles only bars, gridlines, and hover overlays.
+ * Uses the same viewBox approach as Chart.jsx:
+ * - viewBox starts at -padding.left (negative offset creates left padding)
+ * - chartLeft = 0 (data draws from x=0)
+ * - preserveAspectRatio="xMidYMid meet" (uniform scaling, no distortion)
+ * - HTML labels positioned via toLeft/toTop (same as Chart.jsx)
  */
 
 const BAR_RADIUS = 2;
@@ -64,7 +66,7 @@ export default function StackedBarChart({
   }, []);
 
   const padding = { ...DEFAULT_PADDING, ...paddingProp };
-  const chartLeft = padding.left;
+  const chartLeft = 0;
   const chartTop = padding.top;
   const chartW = VIEWBOX_WIDTH - padding.left - padding.right;
   const chartH = height - padding.top - padding.bottom;
@@ -91,18 +93,19 @@ export default function StackedBarChart({
     return { rects, total: yOffset, index: i };
   });
 
-  // Mouse tracking for tooltip
+  // Mouse tracking — use SVGPoint for accurate mapping with meet aspect ratio
   const handleMouseMove = useCallback((e) => {
     const svg = svgRef.current;
     if (!svg) return;
-    const rect = svg.getBoundingClientRect();
-    const svgX = ((e.clientX - rect.left) / rect.width) * VIEWBOX_WIDTH;
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
 
-    // Find which bar index the mouse is over
     let found = null;
     for (let i = 0; i < bars.length; i++) {
       const bx = chartLeft + i * totalSlotWidth;
-      if (svgX >= bx && svgX < bx + totalSlotWidth) {
+      if (svgP.x >= bx && svgP.x < bx + totalSlotWidth) {
         found = i;
         break;
       }
@@ -112,7 +115,7 @@ export default function StackedBarChart({
 
   const handleMouseLeave = useCallback(() => setHoveredBar(null), []);
 
-  // Resolve x-axis labels
+  // Resolve x-axis labels (x relative to chartLeft = 0, same as Chart.jsx)
   const resolvedXLabels = (xLabels || []).map((item) => ({
     label: String(item.value),
     x: chartLeft + ((item.at - 1) / Math.max(n - 1, 1)) * chartW,
@@ -125,6 +128,8 @@ export default function StackedBarChart({
   // Tooltip data
   const tooltipData = hoveredBar !== null ? data[hoveredBar] : null;
   const tooltipBar = hoveredBar !== null ? bars[hoveredBar] : null;
+
+  const viewBox = `${-padding.left} 0 ${VIEWBOX_WIDTH} ${height}`;
 
   return (
     <div style={cssHeight ? { height: cssHeight, display: 'flex', flexDirection: 'column' } : {}}>
@@ -172,10 +177,9 @@ export default function StackedBarChart({
       <div ref={chartAreaRef} style={cssHeight ? { flex: 1, minHeight: 0, position: 'relative' } : { position: 'relative' }}>
         <svg
           ref={svgRef}
-          viewBox={`0 0 ${VIEWBOX_WIDTH} ${height}`}
-          preserveAspectRatio="none"
-          className={cn('block w-full', cssHeight ? 'h-full' : undefined)}
-          style={!cssHeight ? { height: heightProp } : undefined}
+          viewBox={viewBox}
+          preserveAspectRatio="xMidYMid meet"
+          style={{ width: '100%', height: cssHeight ? '100%' : 'auto', display: 'block' }}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
         >
@@ -266,7 +270,7 @@ export default function StackedBarChart({
             key={i}
             style={{
               ...labelBase,
-              left: toLeft(item.x - padding.left, padding.left),
+              left: toLeft(item.x, padding.left),
               top: toTop(chartBottom + 12, height),
               transform: 'translate(-50%, -50%)',
             }}
@@ -288,7 +292,7 @@ export default function StackedBarChart({
             chartBottom={chartBottom}
             chartLeft={chartLeft}
             chartW={chartW}
-            viewboxWidth={VIEWBOX_WIDTH}
+            paddingLeft={padding.left}
             viewboxHeight={height}
           />
         )}
@@ -297,16 +301,16 @@ export default function StackedBarChart({
   );
 }
 
-function Tooltip({ bar, data, segments, index, formatTooltip, formatValue, chartTop, chartBottom, chartLeft, chartW, viewboxWidth, viewboxHeight }) {
+function Tooltip({ bar, data, segments, index, formatTooltip, formatValue, chartTop, chartBottom, chartLeft, chartW, paddingLeft, viewboxHeight }) {
   const centerX = bar.rects[0].x + bar.rects[0].width / 2;
   const topY = chartBottom - bar.total;
 
-  // Position tooltip above the bar
-  const pctLeft = (centerX / viewboxWidth) * 100;
-  const pctTop = (topY / viewboxHeight) * 100;
+  // Position tooltip using toLeft/toTop (same coordinate system as labels)
+  const pctLeft = toLeft(centerX, paddingLeft);
+  const pctTop = `${(topY / viewboxHeight) * 100}%`;
 
   // Flip tooltip below if too close to top
-  const flipBelow = pctTop < 20;
+  const flipBelow = (topY / viewboxHeight) * 100 < 20;
 
   const total = data.values.reduce((a, b) => a + b, 0);
 
@@ -314,8 +318,8 @@ function Tooltip({ bar, data, segments, index, formatTooltip, formatValue, chart
     <div
       className="absolute pointer-events-none z-10"
       style={{
-        left: `${pctLeft}%`,
-        top: flipBelow ? `${((topY + bar.total * 0.5) / viewboxHeight) * 100}%` : `${pctTop}%`,
+        left: pctLeft,
+        top: flipBelow ? `${((topY + bar.total * 0.5) / viewboxHeight) * 100}%` : pctTop,
         transform: `translate(-50%, ${flipBelow ? '8px' : '-100%'}) translateY(${flipBelow ? '0' : '-8px'})`,
       }}
     >

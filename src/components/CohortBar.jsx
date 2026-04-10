@@ -159,7 +159,7 @@ export default function CohortBar({ cohortWaves, selectedDay, maxVal, colors, cs
               transform: 'translate(-50%, -50%)',
             }}
           >
-            Day {selectedDay}
+            {selectedDay}
           </span>
         )}
 
