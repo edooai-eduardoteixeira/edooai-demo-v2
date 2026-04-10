@@ -743,7 +743,7 @@ export default function DashboardPage({ config, onHome }) {
           />
 
           {/* Main content area */}
-          <div className="flex gap-5 flex-1 min-h-0 p-5 pt-3">
+          <div className="flex gap-5 flex-1 min-h-0 p-5">
             {/* LEFT COLUMN (75%): KPI selector + hero chart */}
             <div className="flex-[3] min-w-0 flex flex-col">
               <KPISelector
@@ -808,7 +808,7 @@ export default function DashboardPage({ config, onHome }) {
             </div>
 
             {/* MIDDLE: Cohort breakdown bar — no left divider, reads as annotation of main chart */}
-            <div className="flex-[1] pt-5 px-3 pb-3 flex flex-col min-w-0">
+            <div className="flex-[1] pt-5 px-3 pb-5 flex flex-col min-w-0">
               <SectionLabel>Engaged Cohorts</SectionLabel>
               <CohortBar
                 cohortWaves={projection.cohortWaves}
