@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
+import { cn } from '../lib/utils';
 import { TOKENS, DEFAULT_PADDING, VIEWBOX_WIDTH, DEFAULT_HEIGHT, toLeft, toTop, labelBase, formatCompact } from './chartUtils.js';
 
 /**
