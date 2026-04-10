@@ -771,7 +771,7 @@ export default function DashboardPage({ config, onHome }) {
             {/* RIGHT COLUMN (25%): Referral Funnel */}
             <div className="flex-1 min-w-0 flex flex-col pt-2.5">
               <SectionLabel>Referral Funnel</SectionLabel>
-              <div className="mt-1 flex-1 min-h-0 overflow-hidden">
+              <div className="mt-1 flex-1 min-h-0">
                 <FunnelChart
                   stages={[
                     { label: 'Eligible', value: projection.audienceSize },
