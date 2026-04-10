@@ -149,14 +149,14 @@ export default function CohortBar({ cohortWaves, selectedDay, maxVal, colors, cs
           </svg>
         )}
 
-        {/* Day label below bar */}
+        {/* Day label below bar — positioned to match X-axis labels in other charts */}
         {dims && (
           <span
             style={{
               ...labelBase,
               left: '50%',
-              bottom: 0,
-              transform: 'translateX(-50%)',
+              top: `${((barY + barH + 12) / dims.height) * 100}%`,
+              transform: 'translate(-50%, -50%)',
             }}
           >
             Day {selectedDay}
