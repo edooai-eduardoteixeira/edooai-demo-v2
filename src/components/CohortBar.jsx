@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { TOKENS, DEFAULT_PADDING, LEGEND_HEIGHT, labelBase, formatCompact } from './chartUtils.js';
+import { TOKENS, CHART_MARGIN, LEGEND_HEIGHT, labelBase, formatCompact } from './chartUtils.js';
 
 /**
  * Single vertical stacked bar showing cohort composition of the Engaged band
  * at a given selectedDay. Each segment = one cohort's engaged count.
  *
- * Uses shared DEFAULT_PADDING for alignment with adjacent charts:
+ * Uses shared CHART_MARGIN for alignment with adjacent charts:
  * - top/bottom padding matches Chart.jsx / StackedBarChart.jsx
  * - reserveLegendSpace adds LEGEND_HEIGHT spacer when sibling has a legend
  *
@@ -67,8 +67,8 @@ export default function CohortBar({ cohortWaves, selectedDay, maxVal, colors, cs
   }
 
   const totalEngaged = segments.reduce((sum, s) => sum + s.value, 0);
-  const padTop = DEFAULT_PADDING.top;
-  const padBottom = DEFAULT_PADDING.bottom;
+  const padTop = CHART_MARGIN.top;
+  const padBottom = CHART_MARGIN.bottom;
   const barH = dims ? dims.height - padTop - padBottom : 200;
   const barW = dims ? Math.min(dims.width - padTop * 2, 60) : 40;
   const barX = dims ? (dims.width - barW) / 2 : padTop;
@@ -149,14 +149,14 @@ export default function CohortBar({ cohortWaves, selectedDay, maxVal, colors, cs
           </svg>
         )}
 
-        {/* Day label below bar — positioned to match X-axis labels in other charts */}
+        {/* Day label below bar — positioned to align with X-axis labels in adjacent charts */}
         {dims && (
           <span
             style={{
               ...labelBase,
               left: '50%',
-              top: `${((barY + barH + 12) / dims.height) * 100}%`,
-              transform: 'translate(-50%, -50%)',
+              bottom: 5,
+              transform: 'translateX(-50%)',
             }}
           >
             {selectedDay}

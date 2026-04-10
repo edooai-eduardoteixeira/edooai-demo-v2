@@ -1,8 +1,8 @@
 import { useState, useCallback, useId, useRef, useEffect, useLayoutEffect } from 'react';
 import {
-  TOKENS, DEFAULT_PADDING, DEFAULT_HEIGHT, VIEWBOX_WIDTH,
+  TOKENS, CHART_MARGIN, DEFAULT_HEIGHT, VIEWBOX_WIDTH,
   buildMonotonePath, computePoints, buildAreaPath, formatCompact,
-  resolveXLabels, toLeft, toTop, labelBase, anchorTransform,
+  resolveXLabels, labelBase, anchorTransform,
 } from './chartUtils.js';
 
 /**
@@ -11,6 +11,12 @@ import {
  * All text labels are rendered as HTML (not SVG text) so font sizes
  * are always in CSS pixels — guaranteed 11px regardless of chart
  * dimensions or container width.
+ *
+ * Label positioning uses fixed CSS pixels (D3 margin convention):
+ * - CHART_MARGIN creates padding zones around the SVG for axis labels
+ * - SVG viewBox starts at 0,0 — data fills the entire SVG element
+ * - Labels are absolutely positioned in the CSS padding zones
+ * - Pixel positions derived from measured SVG width (uniform scaling)
  *
  * Supports multi-series via the `series` prop. The legacy `data` prop
  * is normalized into `series` internally so all rendering shares one
@@ -27,7 +33,6 @@ export default function Chart({
   title,
   height: heightProp = DEFAULT_HEIGHT,
   cssHeight,
-  padding: paddingProp,
   maxValue,
   xLabels,
   yLabels = 'auto',
@@ -44,36 +49,40 @@ export default function Chart({
 }) {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [animated, setAnimated] = useState(false);
-  const [containerDims, setContainerDims] = useState(null);
+  const [svgDims, setSvgDims] = useState(null);
   const containerRef = useRef(null);
   const chartAreaRef = useRef(null);
   const svgRef = useRef(null);
   const uid = useId();
   const safeId = uid.replace(/:/g, '_');
 
-  // Measure the chart area (inner div) when cssHeight is used
+  // Measure the SVG content area (chart area div's content box = SVG pixel size)
   useLayoutEffect(() => {
-    if (!cssHeight) return;
     const el = chartAreaRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      setContainerDims({ width: rect.width, height: rect.height });
+    const w = rect.width - CHART_MARGIN.left - CHART_MARGIN.right;
+    const h = rect.height - CHART_MARGIN.top - CHART_MARGIN.bottom;
+    if (w > 0 && h > 0) {
+      setSvgDims({ width: w, height: h });
     }
     const observer = new ResizeObserver((entries) => {
       const { width, height } = entries[0].contentRect;
       if (width > 0 && height > 0) {
-        setContainerDims({ width, height });
+        setSvgDims({ width, height });
       }
     });
     observer.observe(el);
     return () => observer.disconnect();
-  }, [cssHeight]);
+  }, []);
 
   // Compute viewBox height: match container aspect ratio when cssHeight is set
-  const height = (cssHeight && containerDims)
-    ? containerDims.height / containerDims.width * VIEWBOX_WIDTH
+  const viewBoxH = (cssHeight && svgDims)
+    ? svgDims.height / svgDims.width * VIEWBOX_WIDTH
     : heightProp;
+
+  // Scale factor: SVG px per viewBox unit (uniform scaling with "meet")
+  const pxPerUnit = svgDims ? svgDims.width / VIEWBOX_WIDTH : 0;
 
   // --- Normalize data/series into a single series array ---
   const series = seriesProp
@@ -91,14 +100,12 @@ export default function Chart({
     return () => clearTimeout(timer);
   }, []);
 
-  const padding = { ...DEFAULT_PADDING, ...paddingProp };
-  if (title) padding.top = Math.max(padding.top, 30);
-
+  // Data fills the entire SVG viewBox — padding is CSS-level
   const chartLeft = 0;
-  const chartTop = padding.top;
-  const chartW = VIEWBOX_WIDTH - padding.left - padding.right;
-  const chartH = height - padding.top - padding.bottom;
-  const chartBottom = chartTop + chartH;
+  const chartTop = 0;
+  const chartW = VIEWBOX_WIDTH;
+  const chartH = viewBoxH;
+  const chartBottom = viewBoxH;
 
   // Auto-compute maxValue from ALL series
   const maxVal = maxValue != null
@@ -156,7 +163,7 @@ export default function Chart({
     }
   }
 
-  const viewBox = `${-padding.left} 0 ${VIEWBOX_WIDTH} ${height}`;
+  const viewBox = `0 0 ${VIEWBOX_WIDTH} ${viewBoxH}`;
   const pathLen = chartW * 1.2;
 
   // Marker
@@ -196,6 +203,16 @@ export default function Chart({
   );
 
   const handleMouseLeave = useCallback(() => setHoveredDay(null), []);
+
+  // Chart area style: CSS padding creates label zones around the SVG
+  const chartAreaStyle = {
+    position: 'relative',
+    paddingLeft: CHART_MARGIN.left,
+    paddingRight: CHART_MARGIN.right,
+    paddingTop: title ? Math.max(CHART_MARGIN.top, 30) : CHART_MARGIN.top,
+    paddingBottom: CHART_MARGIN.bottom,
+    ...(cssHeight ? { flex: 1, minHeight: 0 } : {}),
+  };
 
   return (
     <div
@@ -246,8 +263,8 @@ export default function Chart({
         </div>
       )}
 
-      {/* Chart area — flex:1 when cssHeight is set so SVG takes remaining space after legend */}
-      <div ref={chartAreaRef} style={cssHeight ? { flex: 1, minHeight: 0, position: 'relative' } : { position: 'relative' }}>
+      {/* Chart area — CSS padding creates axis label zones, SVG fills content area */}
+      <div ref={chartAreaRef} style={chartAreaStyle}>
         <svg
           ref={svgRef}
           viewBox={viewBox}
@@ -292,10 +309,10 @@ export default function Chart({
                   </linearGradient>
                 )}
                 <clipPath id={`${safeId}-clipPre`}>
-                  <rect x={chartLeft} y="0" width={threshX - chartLeft} height={height} />
+                  <rect x={chartLeft} y="0" width={threshX - chartLeft} height={viewBoxH} />
                 </clipPath>
                 <clipPath id={`${safeId}-clipPost`}>
-                  <rect x={threshX} y="0" width={chartLeft + chartW - threshX} height={height} />
+                  <rect x={threshX} y="0" width={chartLeft + chartW - threshX} height={viewBoxH} />
                 </clipPath>
               </>
             )}
@@ -470,16 +487,16 @@ export default function Chart({
           )}
         </svg>
 
-        {/* ── HTML labels: always 11px CSS pixels ── */}
+        {/* ── HTML labels: fixed pixel positioning (D3 margin convention) ── */}
 
-        {/* Y-axis labels */}
+        {/* Y-axis labels — in the left padding zone */}
         {yLabelItems.map((item, i) => (
           <span
             key={`y-${i}`}
             style={{
               ...labelBase,
-              left: toLeft(-6, padding.left),
-              top: toTop(item.y, height),
+              left: CHART_MARGIN.left - 8,
+              top: CHART_MARGIN.top + item.y * pxPerUnit,
               transform: 'translate(-100%, -50%)',
             }}
           >
@@ -487,15 +504,15 @@ export default function Chart({
           </span>
         ))}
 
-        {/* X-axis labels */}
+        {/* X-axis labels — in the bottom padding zone */}
         {clampedXLabels.map((item, i) => (
           <span
             key={`x-${i}`}
             style={{
               ...labelBase,
-              left: toLeft(item.x, padding.left),
-              top: toTop(chartBottom + 12, height),
-              transform: anchorTransform[item.anchor],
+              left: CHART_MARGIN.left + item.x * pxPerUnit,
+              bottom: 5,
+              transform: item.anchor === 'end' ? 'translateX(-100%)' : item.anchor === 'middle' ? 'translateX(-50%)' : 'none',
             }}
           >
             {item.label}
@@ -507,8 +524,8 @@ export default function Chart({
           <span
             style={{
               ...labelBase,
-              left: toLeft(threshX - 8, padding.left),
-              top: toTop(chartTop + 8, height),
+              left: CHART_MARGIN.left + (threshX - 8) * pxPerUnit,
+              top: CHART_MARGIN.top + (chartTop + 8) * pxPerUnit,
               transform: 'translate(-100%, -50%)',
               fontWeight: 500,
             }}
@@ -520,8 +537,8 @@ export default function Chart({
           <span
             style={{
               ...labelBase,
-              left: toLeft(threshX - 8, padding.left),
-              top: toTop(chartTop + 20, height),
+              left: CHART_MARGIN.left + (threshX - 8) * pxPerUnit,
+              top: CHART_MARGIN.top + (chartTop + 20) * pxPerUnit,
               transform: 'translate(-100%, -50%)',
               opacity: 0.6,
             }}
@@ -535,8 +552,8 @@ export default function Chart({
           <span
             style={{
               ...labelBase,
-              left: toLeft(lastPt.x - 14, padding.left),
-              top: toTop(Math.max(10, lastPt.y - 10), height),
+              left: CHART_MARGIN.left + (lastPt.x - 14) * pxPerUnit,
+              top: CHART_MARGIN.top + Math.max(10, lastPt.y - 10) * pxPerUnit,
               transform: 'translate(-100%, -50%)',
               color: TOKENS.endpoint.color,
               fontWeight: 600,
@@ -565,8 +582,8 @@ export default function Chart({
             <span
               style={{
                 position: 'absolute',
-                left: toLeft(hoveredDay.x, padding.left),
-                top: toTop(tipY, height),
+                left: CHART_MARGIN.left + hoveredDay.x * pxPerUnit,
+                top: CHART_MARGIN.top + tipY * pxPerUnit,
                 transform: 'translate(-50%, -50%)',
                 fontSize: TOKENS.tooltip.fontSize,
                 fontWeight: TOKENS.tooltip.fontWeight,
