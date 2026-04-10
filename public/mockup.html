@@ -2,303 +2,181 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Engaged Cohort Drill-Down — Mockup Comparison</title>
+<title>Cohort Drill-Down — Zoom Callout Mockup</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: Inter, -apple-system, sans-serif;
-    background: #FAF7F2; color: #2C2320;
-    padding: 32px;
-  }
-  h1 { font-size: 17px; font-weight: 600; color: #6B5E54; margin-bottom: 8px; }
-  h2 { font-size: 13px; font-weight: 600; color: #A89E94; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
-  .subtitle { font-size: 13px; color: #A89E94; margin-bottom: 32px; }
-  .card { background: #fff; border: 1px solid #E4DDD5; border-radius: 8px; padding: 20px; margin-bottom: 32px; }
-  .label { font-size: 11px; color: #A89E94; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 8px; }
-  .legend { display: flex; gap: 16px; justify-content: flex-end; margin-bottom: 8px; font-size: 11px; color: #A89E94; }
+  body { font-family: Inter, -apple-system, sans-serif; background: #FAF7F2; color: #2C2320; padding: 32px 48px; }
+  h1 { font-size: 15px; font-weight: 600; color: #6B5E54; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: #A89E94; margin-bottom: 32px; }
+  .card { background: #fff; border: 1px solid #E4DDD5; border-radius: 8px; overflow: hidden; }
+  .section-label { font-size: 11px; font-weight: 600; color: #A89E94; text-transform: uppercase; letter-spacing: 0.05em; }
+  .legend { display: flex; gap: 16px; font-size: 11px; color: #A89E94; }
   .legend-item { display: flex; align-items: center; gap: 6px; }
-  .legend-dot { width: 6px; height: 6px; border-radius: 50%; }
-  .chart-area { position: relative; height: 320px; display: flex; align-items: flex-end; gap: 2px; padding-left: 36px; padding-bottom: 24px; }
-  .y-axis { position: absolute; left: 0; top: 0; bottom: 24px; width: 36px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; padding-right: 8px; font-size: 11px; color: #A89E94; font-variant-numeric: tabular-nums; }
-  .x-axis { position: absolute; bottom: 0; left: 36px; right: 0; display: flex; justify-content: space-between; font-size: 11px; color: #A89E94; }
-  .bar-col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
-
-  /* Cohort color scale: warm tan → deep wine */
-  .cohort-0 { background: hsl(342, 100%, 20%); }
-  .cohort-1 { background: hsl(344, 97%, 22%); }
-  .cohort-2 { background: hsl(348, 90%, 28%); }
-  .cohort-3 { background: hsl(354, 80%, 37%); }
-  .cohort-4 { background: hsl(2, 67%, 48%); }
-  .cohort-5 { background: hsl(8, 55%, 57%); }
-  .cohort-6 { background: hsl(14, 42%, 64%); }
-  .cohort-7 { background: hsl(19, 33%, 72%); }
-  .cohort-8 { background: hsl(24, 27%, 79%); }
-  .cohort-9 { background: hsl(30, 22%, 86%); }
-
-  .divider { border: none; border-top: 1px solid #E4DDD5; margin: 40px 0; }
-  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .legend-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
   .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-bottom: 12px; }
-  .tag-current { background: #fee2e2; color: #991b1b; }
-  .tag-proposed { background: #d1fae5; color: #065f46; }
-  .note { font-size: 13px; color: #6B5E54; line-height: 1.5; margin-top: 12px; }
-  .callout { background: #F5F1EB; border-radius: 6px; padding: 12px 16px; font-size: 13px; color: #4A3F37; line-height: 1.5; margin-top: 16px; }
+  .tag-a { background: #d1fae5; color: #065f46; }
+  .tag-b { background: #dbeafe; color: #1e40af; }
 </style>
 </head>
 <body>
 
-<h1>Engaged Cohort Drill-Down — Design Mockup</h1>
-<p class="subtitle">How to show lifecycle states + cohort breakdown in one connected view</p>
+<h1>Zoom Callout — Engaged Cohort Drill-Down</h1>
+<p class="sub">Connecting lines from the Engaged segment to the cohort breakdown. The relationship is visual, not verbal.</p>
 
-<div class="comparison">
-
-<!-- CURRENT STATE -->
-<div>
-<span class="tag tag-current">Current</span>
-<div class="card">
-  <div style="display: flex; gap: 12px;">
-    <!-- Main chart -->
-    <div style="flex: 5;">
-      <div class="label">Audience Referral Status</div>
-      <div class="legend">
-        <span class="legend-item"><span class="legend-dot" style="background: rgba(239,235,229,0.5)"></span>Eligible</span>
-        <span class="legend-item"><span class="legend-dot" style="background: #66001F"></span>Engaged</span>
-        <span class="legend-item"><span class="legend-dot" style="background: #A89E94"></span>Cooling Off</span>
-      </div>
-      <div style="position: relative; height: 280px; padding-left: 36px; padding-bottom: 24px;">
-        <div class="y-axis" style="bottom: 24px;">
-          <span>500k</span>
-          <span>250k</span>
-        </div>
-        <div style="position: absolute; left: 36px; right: 0; top: 0; bottom: 24px; display: flex; align-items: flex-end; gap: 1px;">
-          <!-- 30 bars, Eligible dominates -->
-          <script>
-            // Generate bars via JS
-          </script>
-        </div>
-        <div class="x-axis"><span>1</span><span>10</span><span>20</span><span>30</span></div>
-        <!-- Static bars using divs -->
-        <div id="current-bars" style="position: absolute; left: 36px; right: 0; top: 0; bottom: 24px; display: flex; align-items: flex-end; gap: 1px;"></div>
-      </div>
-    </div>
-    <!-- Cohort bar (disconnected) -->
-    <div style="flex: 1; display: flex; flex-direction: column;">
-      <div class="label">Engaged Cohorts</div>
-      <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-top: 30px;">
-        <span style="font-size: 11px; color: #A89E94; margin-bottom: 4px;">24.3k</span>
-        <div style="width: 40px; display: flex; flex-direction: column; gap: 0;">
-          <div class="cohort-0" style="height: 18px; border-radius: 2px 2px 0 0;"></div>
-          <div class="cohort-1" style="height: 16px;"></div>
-          <div class="cohort-2" style="height: 14px;"></div>
-          <div class="cohort-3" style="height: 14px;"></div>
-          <div class="cohort-4" style="height: 12px;"></div>
-          <div class="cohort-5" style="height: 12px;"></div>
-          <div class="cohort-6" style="height: 10px;"></div>
-          <div class="cohort-7" style="height: 10px;"></div>
-          <div class="cohort-8" style="height: 8px;"></div>
-          <div class="cohort-9" style="height: 8px;"></div>
-        </div>
-        <span style="font-size: 11px; color: #A89E94; margin-top: 8px;">30</span>
-      </div>
+<!-- SCENARIO A: Current fake data (~5% engaged) -->
+<span class="tag tag-a">Current data (~5% engaged)</span>
+<div class="card" style="padding: 20px; margin-bottom: 40px;">
+  <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px;">
+    <div class="section-label">Audience Referral Status</div>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background: rgba(239,235,229,0.5);"></span>Eligible</span>
+      <span class="legend-item"><span class="legend-dot" style="background: #66001F;"></span>Engaged</span>
+      <span class="legend-item"><span class="legend-dot" style="background: #A89E94;"></span>Cooling Off</span>
     </div>
   </div>
-  <p class="note">Problem: Engaged is 5% of chart height. Cohort bar floats in isolation. No visual connection between the two.</p>
-</div>
-</div>
-
-<!-- PROPOSED -->
-<div>
-<span class="tag tag-proposed">Proposed</span>
-<div class="card">
-  <div class="label">Audience Referral Status</div>
-  <div class="legend">
-    <span class="legend-item"><span class="legend-dot" style="background: rgba(239,235,229,0.5)"></span>Eligible</span>
-    <span class="legend-item" style="position: relative;">
-      <span style="width: 12px; height: 6px; border-radius: 2px; background: linear-gradient(90deg, hsl(30,22%,86%), hsl(342,100%,20%)); display: inline-block;"></span>
-      Engaged (by cohort)
-    </span>
-    <span class="legend-item"><span class="legend-dot" style="background: #A89E94"></span>Cooling Off</span>
-  </div>
-  <div style="position: relative; height: 280px; padding-left: 36px; padding-bottom: 24px;">
-    <div class="y-axis" style="bottom: 24px;">
-      <span>500k</span>
-      <span>250k</span>
-    </div>
-    <div id="proposed-bars" style="position: absolute; left: 36px; right: 0; top: 0; bottom: 24px; display: flex; align-items: flex-end; gap: 1px;"></div>
-    <div class="x-axis"><span>1</span><span>10</span><span>20</span><span>30</span></div>
-  </div>
-  <p class="note">Engaged segment subdivided by cohort (wine gradient). One chart, both stories. Drill-down is built in — no separate visualization needed.</p>
-</div>
+  <svg id="chart5" width="100%" height="380" style="display: block;"></svg>
 </div>
 
-</div>
-
-<hr class="divider">
-
-<!-- ZOOMED: what 20% engagement looks like -->
-<h1>At 20% Engagement (Real Engine Data)</h1>
-<p class="subtitle">With realistic engagement rates, cohort bands become clearly readable</p>
-
-<div class="comparison">
-
-<!-- 20% absolute -->
-<div>
-<span class="tag tag-proposed">Proposed — Absolute</span>
-<div class="card">
-  <div class="label">Audience Referral Status</div>
-  <div class="legend">
-    <span class="legend-item"><span class="legend-dot" style="background: rgba(239,235,229,0.5)"></span>Eligible</span>
-    <span class="legend-item"><span style="width: 12px; height: 6px; border-radius: 2px; background: linear-gradient(90deg, hsl(30,22%,86%), hsl(342,100%,20%)); display: inline-block;"></span>Engaged (by cohort)</span>
-    <span class="legend-item"><span class="legend-dot" style="background: #A89E94"></span>Cooling Off</span>
-  </div>
-  <div style="position: relative; height: 280px; padding-left: 36px; padding-bottom: 24px;">
-    <div class="y-axis" style="bottom: 24px;">
-      <span>500k</span>
-      <span>250k</span>
-    </div>
-    <div id="realistic-bars" style="position: absolute; left: 36px; right: 0; top: 0; bottom: 24px; display: flex; align-items: flex-end; gap: 1px;"></div>
-    <div class="x-axis"><span>1</span><span>10</span><span>20</span><span>30</span></div>
-  </div>
-  <div class="callout">At 20% engagement, each cohort band is ~8-12px tall — clearly visible. Older cohorts (bottom, darker) thin as offers expire. New cohorts (top, lighter) stack on. The gradient tells the story without needing a separate chart.</div>
-</div>
-</div>
-
-<!-- Tooltip mockup -->
-<div>
-<span class="tag tag-proposed">Hover → Tooltip Detail</span>
-<div class="card">
-  <div class="label" style="margin-bottom: 16px;">What the user sees on hover (Day 25)</div>
-
-  <!-- Fake tooltip -->
-  <div style="background: #2C2320; color: white; border-radius: 8px; padding: 10px 14px; font-size: 11px; width: 200px; font-variant-numeric: tabular-nums;">
-    <div style="color: rgba(255,255,255,0.5); margin-bottom: 6px;">Day 25</div>
-    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-      <span style="color: rgba(255,255,255,0.7);">Eligible</span>
-      <span style="font-weight: 600;">339,200</span>
-    </div>
-    <div style="border-top: 1px solid rgba(255,255,255,0.15); padding-top: 4px; margin-top: 2px; margin-bottom: 2px;">
-      <div style="color: rgba(255,255,255,0.5); margin-bottom: 4px;">Engaged — 84,800 total</div>
-      <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
-        <span style="width: 6px; height: 6px; border-radius: 50%; background: hsl(342,100%,20%);"></span>
-        <span style="color: rgba(255,255,255,0.7);">Day 1</span>
-        <span style="margin-left: auto; font-weight: 600;">4,200</span>
-      </div>
-      <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
-        <span style="width: 6px; height: 6px; border-radius: 50%; background: hsl(348,90%,28%);"></span>
-        <span style="color: rgba(255,255,255,0.7);">Day 5</span>
-        <span style="margin-left: auto; font-weight: 600;">8,600</span>
-      </div>
-      <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
-        <span style="width: 6px; height: 6px; border-radius: 50%; background: hsl(354,80%,37%);"></span>
-        <span style="color: rgba(255,255,255,0.7);">Day 10</span>
-        <span style="margin-left: auto; font-weight: 600;">12,400</span>
-      </div>
-      <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
-        <span style="width: 6px; height: 6px; border-radius: 50%; background: hsl(2,67%,48%);"></span>
-        <span style="color: rgba(255,255,255,0.7);">Day 15</span>
-        <span style="margin-left: auto; font-weight: 600;">18,900</span>
-      </div>
-      <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
-        <span style="width: 6px; height: 6px; border-radius: 50%; background: hsl(8,55%,57%);"></span>
-        <span style="color: rgba(255,255,255,0.7);">Day 20</span>
-        <span style="margin-left: auto; font-weight: 600;">22,100</span>
-      </div>
-      <div style="display: flex; align-items: center; gap: 6px;">
-        <span style="width: 6px; height: 6px; border-radius: 50%; background: hsl(14,42%,64%);"></span>
-        <span style="color: rgba(255,255,255,0.7);">Day 25</span>
-        <span style="margin-left: auto; font-weight: 600;">18,600</span>
-      </div>
-    </div>
-    <div style="border-top: 1px solid rgba(255,255,255,0.15); padding-top: 4px; margin-top: 4px; display: flex; justify-content: space-between;">
-      <span style="color: rgba(255,255,255,0.7);">Cooling Off</span>
-      <span style="font-weight: 600;">12,400</span>
+<!-- SCENARIO B: Realistic engine data (~20% engaged) -->
+<span class="tag tag-b">Real engine data (~20% engaged)</span>
+<div class="card" style="padding: 20px;">
+  <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px;">
+    <div class="section-label">Audience Referral Status</div>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background: rgba(239,235,229,0.5);"></span>Eligible</span>
+      <span class="legend-item"><span class="legend-dot" style="background: #66001F;"></span>Engaged</span>
+      <span class="legend-item"><span class="legend-dot" style="background: #A89E94;"></span>Cooling Off</span>
     </div>
   </div>
-
-  <div class="callout" style="margin-top: 16px;">Tooltip groups by lifecycle state. The Engaged section expands to show each cohort with its color dot and value. Full drill-down on hover — no extra UI needed.</div>
-</div>
-</div>
-
+  <svg id="chart20" width="100%" height="380" style="display: block;"></svg>
 </div>
 
 <script>
-// Generate chart bars
-function generateBars(containerId, opts) {
-  const container = document.getElementById(containerId);
-  const { days, totalH, engagedPct, showCohorts, coolingPct } = opts;
+function drawChart(svgId, engagedPct, coolingPct) {
+  const svg = document.getElementById(svgId);
+  const W = svg.getBoundingClientRect().width;
+  const H = 380;
+
+  const marginL = 36;
+  const marginB = 24;
+  const marginT = 4;
+  const days = 30;
+
+  // Main chart area: bars
+  const barAreaW = W * 0.58 - marginL;
+  const barAreaH = H - marginT - marginB;
+  const barSlot = barAreaW / days;
+  const barGap = 2;
+  const barW = barSlot - barGap;
+
+  // Cohort bar zone
+  const cohortX = W * 0.68;
+  const cohortW = 48;
+  const cohortBarTop = marginT + 28;
+  const cohortBarBottom = H - marginB - 8;
+  const cohortBarH = cohortBarBottom - cohortBarTop;
 
   const cohortColors = [
-    'hsl(342, 100%, 20%)', 'hsl(344, 97%, 22%)', 'hsl(348, 90%, 28%)',
-    'hsl(354, 80%, 37%)', 'hsl(2, 67%, 48%)', 'hsl(8, 55%, 57%)',
-    'hsl(14, 42%, 64%)', 'hsl(19, 33%, 72%)', 'hsl(24, 27%, 79%)',
-    'hsl(30, 22%, 86%)',
+    'hsl(342, 100%, 20%)', 'hsl(345, 96%, 24%)', 'hsl(348, 90%, 30%)',
+    'hsl(352, 82%, 36%)', 'hsl(356, 74%, 42%)', 'hsl(1, 66%, 48%)',
+    'hsl(5, 56%, 54%)', 'hsl(10, 46%, 60%)', 'hsl(16, 36%, 67%)',
+    'hsl(22, 28%, 74%)', 'hsl(27, 22%, 80%)', 'hsl(30, 20%, 85%)',
   ];
 
+  let content = '';
+
+  // Y-axis labels
+  content += `<text x="${marginL - 8}" y="${marginT + 8}" text-anchor="end" font-size="11" fill="#A89E94" font-family="Inter,sans-serif" style="font-variant-numeric:tabular-nums">500k</text>`;
+  content += `<text x="${marginL - 8}" y="${marginT + barAreaH/2 + 4}" text-anchor="end" font-size="11" fill="#A89E94" font-family="Inter,sans-serif" style="font-variant-numeric:tabular-nums">250k</text>`;
+
+  // Gridline
+  content += `<line x1="${marginL}" y1="${marginT + barAreaH/2}" x2="${marginL + barAreaW}" y2="${marginT + barAreaH/2}" stroke="#EFEBE5" stroke-width="1" stroke-dasharray="4,4" opacity="0.45"/>`;
+
+  let lastEngTop = 0, lastEngBot = 0, lastBarRight = 0;
+
+  // Draw bars
   for (let d = 0; d < days; d++) {
-    const t = d / (days - 1);
-    const engaged = engagedPct * t; // grows linearly
-    const cooling = coolingPct * t * 0.7;
+    const t = (d + 1) / days;
+    const engaged = engagedPct * t;
+    const cooling = coolingPct * t * 0.6;
     const eligible = 1 - engaged - cooling;
+    const scale = 0.85; // 424k / 500k
 
-    const col = document.createElement('div');
-    col.style.flex = '1';
-    col.style.display = 'flex';
-    col.style.flexDirection = 'column';
-    col.style.justifyContent = 'flex-end';
-    col.style.height = '100%';
+    const x = marginL + d * barSlot;
+    const eligH = eligible * scale * barAreaH;
+    const engH = engaged * scale * barAreaH;
+    const coolH = cooling * scale * barAreaH;
 
-    // Total bar height ~85% of container (audience is ~424k of 500k max)
-    const barH = 85;
+    const coolY = marginT + barAreaH - coolH;
+    const engY = coolY - engH;
+    const eligY = engY - eligH;
 
-    // Eligible
-    const eligDiv = document.createElement('div');
-    eligDiv.style.height = `${eligible * barH}%`;
-    eligDiv.style.background = 'rgba(239, 235, 229, 0.35)';
-    if (d === 0) eligDiv.style.borderRadius = '1px 1px 0 0';
-    col.appendChild(eligDiv);
+    content += `<rect x="${x}" y="${eligY}" width="${barW}" height="${eligH}" fill="rgba(239,235,229,0.35)"/>`;
+    content += `<rect x="${x}" y="${engY}" width="${barW}" height="${engH}" fill="#66001F"/>`;
+    if (coolH > 0.5) content += `<rect x="${x}" y="${coolY}" width="${barW}" height="${coolH}" fill="#A89E94" opacity="0.5"/>`;
 
-    if (showCohorts && engaged > 0.005) {
-      // Engaged — split into cohort sub-segments
-      const numCohorts = Math.min(Math.ceil((d + 1) / 3), 10);
-      const cohortH = (engaged * barH) / numCohorts;
-      for (let c = numCohorts - 1; c >= 0; c--) {
-        const cDiv = document.createElement('div');
-        // Older cohorts at bottom (darker), newer at top (lighter)
-        const colorIdx = Math.min(c, cohortColors.length - 1);
-        cDiv.style.height = `${cohortH}%`;
-        cDiv.style.background = cohortColors[colorIdx];
-        cDiv.style.opacity = '0.85';
-        col.appendChild(cDiv);
-      }
-    } else {
-      // Engaged — single solid block
-      const engDiv = document.createElement('div');
-      engDiv.style.height = `${engaged * barH}%`;
-      engDiv.style.background = '#66001F';
-      col.appendChild(engDiv);
+    if (d === days - 1) {
+      lastEngTop = engY;
+      lastEngBot = engY + engH;
+      lastBarRight = x + barW;
     }
-
-    // Cooling Off
-    if (cooling > 0.003) {
-      const coolDiv = document.createElement('div');
-      coolDiv.style.height = `${cooling * barH}%`;
-      coolDiv.style.background = '#A89E94';
-      coolDiv.style.opacity = '0.6';
-      col.appendChild(coolDiv);
-    }
-
-    container.appendChild(col);
   }
+
+  // X-axis
+  for (const d of [1, 10, 20, 30]) {
+    const x = marginL + (d - 1) * barSlot + barW / 2;
+    content += `<text x="${x}" y="${H - 5}" text-anchor="middle" font-size="11" fill="#A89E94" font-family="Inter,sans-serif">${d}</text>`;
+  }
+
+  // ═══ CONNECTING LINES ═══
+  // Bracket on the engaged segment
+  const bx = lastBarRight + 4;
+  content += `<line x1="${bx}" y1="${lastEngTop}" x2="${bx}" y2="${lastEngBot}" stroke="#C8BFB5" stroke-width="1"/>`;
+  content += `<line x1="${bx}" y1="${lastEngTop}" x2="${bx + 3}" y2="${lastEngTop}" stroke="#C8BFB5" stroke-width="1"/>`;
+  content += `<line x1="${bx}" y1="${lastEngBot}" x2="${bx + 3}" y2="${lastEngBot}" stroke="#C8BFB5" stroke-width="1"/>`;
+
+  // Top line: engaged top → cohort bar top (dashed)
+  content += `<line x1="${bx + 3}" y1="${lastEngTop}" x2="${cohortX}" y2="${cohortBarTop}" stroke="#D8D0C8" stroke-width="1" stroke-dasharray="3,3"/>`;
+  // Bottom line: engaged bottom → cohort bar bottom (dashed)
+  content += `<line x1="${bx + 3}" y1="${lastEngBot}" x2="${cohortX}" y2="${cohortBarBottom}" stroke="#D8D0C8" stroke-width="1" stroke-dasharray="3,3"/>`;
+
+  // Light fill between the connecting lines (the "zoom" region)
+  content += `<path d="M${bx + 3},${lastEngTop} L${cohortX},${cohortBarTop} L${cohortX},${cohortBarBottom} L${bx + 3},${lastEngBot} Z" fill="#F5F1EB" opacity="0.35"/>`;
+
+  // ═══ COHORT BAR ═══
+  // Label above
+  const engagedVal = engagedPct <= 0.06 ? '24.3k' : '84.8k';
+  content += `<text x="${cohortX + cohortW/2}" y="${marginT + 8}" text-anchor="middle" font-size="11" font-weight="600" fill="#A89E94" font-family="Inter,sans-serif" letter-spacing="0.05em">ENGAGED</text>`;
+  content += `<text x="${cohortX + cohortW/2}" y="${marginT + 22}" text-anchor="middle" font-size="11" font-weight="600" fill="#4A3F37" font-family="Inter,sans-serif" style="font-variant-numeric:tabular-nums">${engagedVal}</text>`;
+
+  // Cohort segments (oldest at bottom = darkest, newest at top = lightest)
+  const numCohorts = 10;
+  const weights = [];
+  for (let i = 0; i < numCohorts; i++) weights.push(Math.max(0.4, 1 - i * 0.07));
+  const totalW = weights.reduce((a, b) => a + b, 0);
+
+  let yPos = cohortBarBottom;
+  for (let i = 0; i < numCohorts; i++) {
+    const segH = (weights[i] / totalW) * cohortBarH;
+    yPos -= segH;
+    const isTop = i === numCohorts - 1;
+    content += `<rect x="${cohortX}" y="${yPos}" width="${cohortW}" height="${segH}" fill="${cohortColors[i]}" opacity="0.8" rx="${isTop ? 2 : 0}"/>`;
+
+    // Day labels on right (only if segment tall enough)
+    if (segH > 16) {
+      const dayNum = i === 0 ? 1 : i * 3;
+      content += `<text x="${cohortX + cohortW + 8}" y="${yPos + segH/2 + 4}" font-size="10" fill="#A89E94" font-family="Inter,sans-serif">d${dayNum}</text>`;
+    }
+  }
+
+  // Day label below cohort bar
+  content += `<text x="${cohortX + cohortW/2}" y="${cohortBarBottom + 16}" text-anchor="middle" font-size="11" fill="#A89E94" font-family="Inter,sans-serif">Day 30</text>`;
+
+  svg.innerHTML = content;
 }
 
-// Current: small engaged, no cohort subdivision
-generateBars('current-bars', { days: 30, totalH: 280, engagedPct: 0.05, coolingPct: 0.02, showCohorts: false });
-
-// Proposed: same proportions but with cohort subdivision
-generateBars('proposed-bars', { days: 30, totalH: 280, engagedPct: 0.05, coolingPct: 0.02, showCohorts: true });
-
-// Realistic 20%: cohort bands clearly visible
-generateBars('realistic-bars', { days: 30, totalH: 280, engagedPct: 0.20, coolingPct: 0.05, showCohorts: true });
+drawChart('chart5', 0.05, 0.02);
+drawChart('chart20', 0.20, 0.05);
 </script>
 
 </body>
