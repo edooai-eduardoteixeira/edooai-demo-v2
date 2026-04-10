@@ -1,7 +1,7 @@
 /**
  * Shared chart utilities — constants, monotone interpolation, layout helpers.
  *
- * Consumers: Chart.jsx, StackedBarChart.jsx, StackedAreaChart.jsx
+ * Consumers: Chart.jsx, StackedBarChart.jsx, StackedAreaChart.jsx, CohortBar.jsx
  */
 
 // --- Design tokens (from DESIGN.md) ---
@@ -32,14 +32,10 @@ export const TOKENS = {
   marker: { color: 'var(--color-foreground-faint)', width: 1, dash: '2,3', opacity: 0.4 },
 };
 
-// Two structural roles → two values (axis-label sides vs breathing-room sides)
-export const CHART_PADDING = { axis: 40, edge: 10 };
-export const DEFAULT_PADDING = {
-  top: CHART_PADDING.edge,
-  right: CHART_PADDING.edge,
-  bottom: CHART_PADDING.axis,
-  left: CHART_PADDING.axis,
-};
+// Fixed-pixel margins for axis label zones (on 4px grid, CSS pixels).
+// Applied as CSS padding on the chart wrapper div — NOT as SVG viewBox padding.
+// This is the D3 margin convention: labels live outside the data area.
+export const CHART_MARGIN = { top: 8, right: 8, bottom: 24, left: 36 };
 export const LEGEND_HEIGHT = 24;
 export const DEFAULT_HEIGHT = 210;
 export const VIEWBOX_WIDTH = 828;
@@ -124,14 +120,6 @@ export function resolveXLabels(xLabels, dataLen, chartLeft, chartW) {
     x: chartLeft + ((item.at - 1) / Math.max(dataLen - 1, 1)) * chartW,
     anchor: 'middle',
   }));
-}
-
-export function toLeft(svgX, padLeft) {
-  return `${((svgX + padLeft) / VIEWBOX_WIDTH) * 100}%`;
-}
-
-export function toTop(svgY, h) {
-  return `${(svgY / h) * 100}%`;
 }
 
 export const labelBase = {

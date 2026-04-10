@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
-import { cn } from '../lib/utils';
-import { TOKENS, DEFAULT_PADDING, VIEWBOX_WIDTH, DEFAULT_HEIGHT, LEGEND_HEIGHT, formatCompact } from './chartUtils.js';
+import { TOKENS, CHART_MARGIN, VIEWBOX_WIDTH, DEFAULT_HEIGHT, labelBase, formatCompact } from './chartUtils.js';
 
 /**
  * Stacked bar chart component following Vincor design system.
  *
- * Text labels rendered as HTML (not SVG) for consistent 11px sizing.
- * SVG handles only bars, gridlines, and hover overlays.
+ * Uses the D3 margin convention (same as Chart.jsx):
+ * - CSS padding on the chart area div creates label zones
+ * - SVG viewBox starts at 0,0 — bars fill the entire SVG element
+ * - HTML labels positioned in fixed CSS pixels
  */
 
 const BAR_RADIUS = 2;
@@ -20,7 +21,6 @@ export default function StackedBarChart({
   maxValue,
   cssHeight,
   height: heightProp = DEFAULT_HEIGHT,
-  padding: paddingProp,
   xLabels,
   yLabels,
   gridlines = true,
@@ -29,32 +29,35 @@ export default function StackedBarChart({
 }) {
   const [hoveredBar, setHoveredBar] = useState(null);
   const [animated, setAnimated] = useState(false);
-  const [containerDims, setContainerDims] = useState(null);
+  const [svgDims, setSvgDims] = useState(null);
   const chartAreaRef = useRef(null);
   const svgRef = useRef(null);
 
-  // Measure container for cssHeight mode (same pattern as Chart.jsx)
+  // Measure SVG content area (always — needed for pixel label positioning)
   useLayoutEffect(() => {
-    if (!cssHeight) return;
     const el = chartAreaRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      setContainerDims({ width: rect.width, height: rect.height });
+    const w = rect.width - CHART_MARGIN.left - CHART_MARGIN.right;
+    const h = rect.height - CHART_MARGIN.top - CHART_MARGIN.bottom;
+    if (w > 0 && h > 0) {
+      setSvgDims({ width: w, height: h });
     }
     const observer = new ResizeObserver((entries) => {
       const { width, height } = entries[0].contentRect;
       if (width > 0 && height > 0) {
-        setContainerDims({ width, height });
+        setSvgDims({ width, height });
       }
     });
     observer.observe(el);
     return () => observer.disconnect();
-  }, [cssHeight]);
+  }, []);
 
-  const height = (cssHeight && containerDims)
-    ? containerDims.height / containerDims.width * VIEWBOX_WIDTH
+  const viewBoxH = (cssHeight && svgDims)
+    ? svgDims.height / svgDims.width * VIEWBOX_WIDTH
     : heightProp;
+
+  const pxPerUnit = svgDims ? svgDims.width / VIEWBOX_WIDTH : 0;
 
   // Entrance animation
   useEffect(() => {
@@ -62,12 +65,12 @@ export default function StackedBarChart({
     return () => clearTimeout(timer);
   }, []);
 
-  const padding = { ...DEFAULT_PADDING, ...paddingProp };
-  const chartLeft = padding.left;
-  const chartTop = padding.top;
-  const chartW = VIEWBOX_WIDTH - padding.left - padding.right;
-  const chartH = height - padding.top - padding.bottom;
-  const chartBottom = chartTop + chartH;
+  // Data fills entire SVG — padding is CSS-level
+  const chartLeft = 0;
+  const chartTop = 0;
+  const chartW = VIEWBOX_WIDTH;
+  const chartH = viewBoxH;
+  const chartBottom = viewBoxH;
 
   const n = data.length;
   const maxVal = maxValue || Math.max(...data.map(d => d.values.reduce((a, b) => a + b, 0)), 1);
@@ -97,7 +100,6 @@ export default function StackedBarChart({
     const rect = svg.getBoundingClientRect();
     const svgX = ((e.clientX - rect.left) / rect.width) * VIEWBOX_WIDTH;
 
-    // Find which bar index the mouse is over
     let found = null;
     for (let i = 0; i < bars.length; i++) {
       const bx = chartLeft + i * totalSlotWidth;
@@ -111,7 +113,7 @@ export default function StackedBarChart({
 
   const handleMouseLeave = useCallback(() => setHoveredBar(null), []);
 
-  // Resolve x-axis labels
+  // Resolve x-axis labels (x relative to chartLeft = 0)
   const resolvedXLabels = (xLabels || []).map((item) => ({
     label: String(item.value),
     x: chartLeft + ((item.at - 1) / Math.max(n - 1, 1)) * chartW,
@@ -125,8 +127,20 @@ export default function StackedBarChart({
   const tooltipData = hoveredBar !== null ? data[hoveredBar] : null;
   const tooltipBar = hoveredBar !== null ? bars[hoveredBar] : null;
 
+  const viewBox = `0 0 ${VIEWBOX_WIDTH} ${viewBoxH}`;
+
+  // Chart area style: CSS padding creates label zones
+  const chartAreaStyle = {
+    position: 'relative',
+    paddingLeft: CHART_MARGIN.left,
+    paddingRight: CHART_MARGIN.right,
+    paddingTop: CHART_MARGIN.top,
+    paddingBottom: CHART_MARGIN.bottom,
+    ...(cssHeight ? { flex: 1, minHeight: 0 } : {}),
+  };
+
   return (
-    <div className="relative w-full" style={cssHeight ? { height: cssHeight } : undefined}>
+    <div style={cssHeight ? { height: cssHeight, display: 'flex', flexDirection: 'column' } : {}}>
       {/* Legend */}
       {legend && segments && (
         <div className="flex items-center justify-end gap-4 mb-1.5">
@@ -142,18 +156,13 @@ export default function StackedBarChart({
         </div>
       )}
 
-      {/* Chart area */}
-      <div
-        ref={chartAreaRef}
-        className="relative w-full"
-        style={cssHeight ? { height: `calc(${cssHeight} - ${legend ? LEGEND_HEIGHT : 0}px)` } : undefined}
-      >
+      {/* Chart area — CSS padding creates axis label zones */}
+      <div ref={chartAreaRef} style={chartAreaStyle}>
         <svg
           ref={svgRef}
-          viewBox={`0 0 ${VIEWBOX_WIDTH} ${height}`}
-          preserveAspectRatio="none"
-          className={cn('block w-full', cssHeight ? 'h-full' : undefined)}
-          style={!cssHeight ? { height: heightProp } : undefined}
+          viewBox={viewBox}
+          preserveAspectRatio="xMidYMid meet"
+          style={{ width: '100%', height: cssHeight ? '100%' : 'auto', display: 'block' }}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
         >
@@ -209,7 +218,7 @@ export default function StackedBarChart({
             </g>
           ))}
 
-          {/* Hover hit zone (transparent overlay for stable mouse events) */}
+          {/* Hover hit zone */}
           <rect
             x={chartLeft}
             y={chartTop}
@@ -220,20 +229,17 @@ export default function StackedBarChart({
           />
         </svg>
 
-        {/* Y-axis labels (HTML for consistent 11px sizing) */}
+        {/* Y-axis labels (HTML — fixed pixel positioning) */}
         {resolvedYLabels.map((val, i) => {
           const y = chartBottom - (val / maxVal) * chartH;
-          const pctTop = `${(y / height) * 100}%`;
           return (
             <span
               key={i}
-              className="absolute text-[11px] text-tertiary tabular-nums leading-none pointer-events-none"
               style={{
-                left: 0,
-                top: pctTop,
-                transform: 'translateY(-50%)',
-                fontFamily: 'var(--font-family)',
-                fontVariantNumeric: 'tabular-nums',
+                ...labelBase,
+                left: CHART_MARGIN.left - 8,
+                top: CHART_MARGIN.top + y * pxPerUnit,
+                transform: 'translate(-100%, -50%)',
               }}
             >
               ${formatCompact(val)}
@@ -241,25 +247,20 @@ export default function StackedBarChart({
           );
         })}
 
-        {/* X-axis labels (HTML) */}
-        {resolvedXLabels.map((item, i) => {
-          const pctLeft = `${(item.x / VIEWBOX_WIDTH) * 100}%`;
-          return (
-            <span
-              key={i}
-              className="absolute text-[11px] text-tertiary tabular-nums leading-none pointer-events-none"
-              style={{
-                left: pctLeft,
-                bottom: 0,
-                transform: 'translateX(-50%)',
-                fontFamily: 'var(--font-family)',
-                fontVariantNumeric: 'tabular-nums',
-              }}
-            >
-              {item.label}
-            </span>
-          );
-        })}
+        {/* X-axis labels (HTML — fixed pixel positioning) */}
+        {resolvedXLabels.map((item, i) => (
+          <span
+            key={i}
+            style={{
+              ...labelBase,
+              left: CHART_MARGIN.left + item.x * pxPerUnit,
+              bottom: 5,
+              transform: 'translateX(-50%)',
+            }}
+          >
+            {item.label}
+          </span>
+        ))}
 
         {/* Tooltip */}
         {hoveredBar !== null && tooltipData && tooltipBar && (
@@ -269,12 +270,9 @@ export default function StackedBarChart({
             segments={segments}
             index={hoveredBar}
             formatTooltip={formatTooltip}
-            chartTop={chartTop}
             chartBottom={chartBottom}
-            chartLeft={chartLeft}
-            chartW={chartW}
-            viewboxWidth={VIEWBOX_WIDTH}
-            viewboxHeight={height}
+            pxPerUnit={pxPerUnit}
+            viewBoxH={viewBoxH}
           />
         )}
       </div>
@@ -282,16 +280,16 @@ export default function StackedBarChart({
   );
 }
 
-function Tooltip({ bar, data, segments, index, formatTooltip, chartTop, chartBottom, chartLeft, chartW, viewboxWidth, viewboxHeight }) {
+function Tooltip({ bar, data, segments, index, formatTooltip, chartBottom, pxPerUnit, viewBoxH }) {
   const centerX = bar.rects[0].x + bar.rects[0].width / 2;
   const topY = chartBottom - bar.total;
 
-  // Position tooltip above the bar
-  const pctLeft = (centerX / viewboxWidth) * 100;
-  const pctTop = (topY / viewboxHeight) * 100;
+  const leftPx = CHART_MARGIN.left + centerX * pxPerUnit;
+  const topPx = CHART_MARGIN.top + topY * pxPerUnit;
 
   // Flip tooltip below if too close to top
-  const flipBelow = pctTop < 20;
+  const flipBelow = (topY / viewBoxH) * 100 < 20;
+  const flipTopPx = CHART_MARGIN.top + (topY + bar.total * 0.5) * pxPerUnit;
 
   const total = data.values.reduce((a, b) => a + b, 0);
 
@@ -299,8 +297,8 @@ function Tooltip({ bar, data, segments, index, formatTooltip, chartTop, chartBot
     <div
       className="absolute pointer-events-none z-10"
       style={{
-        left: `${pctLeft}%`,
-        top: flipBelow ? `${((topY + bar.total * 0.5) / viewboxHeight) * 100}%` : `${pctTop}%`,
+        left: leftPx,
+        top: flipBelow ? flipTopPx : topPx,
         transform: `translate(-50%, ${flipBelow ? '8px' : '-100%'}) translateY(${flipBelow ? '0' : '-8px'})`,
       }}
     >

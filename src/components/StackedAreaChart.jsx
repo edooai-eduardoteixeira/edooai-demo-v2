@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, useId } from 'react';
 import {
-  TOKENS, DEFAULT_PADDING, VIEWBOX_WIDTH,
-  buildMonotonePath, formatCompact, toLeft, toTop, labelBase,
+  TOKENS, CHART_MARGIN, VIEWBOX_WIDTH,
+  buildMonotonePath, formatCompact, labelBase,
 } from './chartUtils.js';
 
 /**
  * Stacked area chart — renders bands between monotone cubic curves.
  *
  * Used for Customer Lifecycle (Graph 1, Block 2).
- * All text rendered as HTML for consistent 11px sizing.
+ * All text rendered as HTML with fixed pixel positioning (D3 margin convention).
  */
 
 const BAND_STAGGER_MS = 50;
@@ -18,14 +18,13 @@ export default function StackedAreaChart({
   bands,
   maxValue,
   cssHeight,
-  padding: paddingProp,
   xLabels,
   legend,
   formatTooltip,
 }) {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [animated, setAnimated] = useState(false);
-  const [containerDims, setContainerDims] = useState(null);
+  const [svgDims, setSvgDims] = useState(null);
   const chartAreaRef = useRef(null);
   const uid = useId();
   const safeId = uid.replace(/:/g, '_');
@@ -36,38 +35,41 @@ export default function StackedAreaChart({
     return () => clearTimeout(timer);
   }, []);
 
-  // Measure container for cssHeight mode
+  // Measure SVG content area (always — needed for pixel label positioning)
   useLayoutEffect(() => {
-    if (!cssHeight) return;
     const el = chartAreaRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      setContainerDims({ width: rect.width, height: rect.height });
+    const w = rect.width - CHART_MARGIN.left - CHART_MARGIN.right;
+    const h = rect.height - CHART_MARGIN.top - CHART_MARGIN.bottom;
+    if (w > 0 && h > 0) {
+      setSvgDims({ width: w, height: h });
     }
     const observer = new ResizeObserver((entries) => {
       const { width, height } = entries[0].contentRect;
       if (width > 0 && height > 0) {
-        setContainerDims({ width, height });
+        setSvgDims({ width, height });
       }
     });
     observer.observe(el);
     return () => observer.disconnect();
-  }, [cssHeight]);
+  }, []);
 
-  const padding = { ...DEFAULT_PADDING, ...paddingProp };
   const dataLen = bands[0]?.data?.length || 0;
 
   // Compute viewBox height based on container aspect ratio
-  const height = (cssHeight && containerDims)
-    ? containerDims.height / containerDims.width * VIEWBOX_WIDTH
+  const viewBoxH = (cssHeight && svgDims)
+    ? svgDims.height / svgDims.width * VIEWBOX_WIDTH
     : 210;
 
+  const pxPerUnit = svgDims ? svgDims.width / VIEWBOX_WIDTH : 0;
+
+  // Data fills entire SVG — padding is CSS-level
   const chartLeft = 0;
-  const chartTop = padding.top;
-  const chartW = VIEWBOX_WIDTH - padding.left - padding.right;
-  const chartH = height - padding.top - padding.bottom;
-  const chartBottom = chartTop + chartH;
+  const chartTop = 0;
+  const chartW = VIEWBOX_WIDTH;
+  const chartH = viewBoxH;
+  const chartBottom = viewBoxH;
 
   // Auto-compute max from total stack if not provided
   const maxVal = maxValue != null
@@ -158,7 +160,17 @@ export default function StackedAreaChart({
 
   const handleMouseLeave = useCallback(() => setHoveredDay(null), []);
 
-  const viewBox = `${-padding.left} 0 ${VIEWBOX_WIDTH} ${height}`;
+  const viewBox = `0 0 ${VIEWBOX_WIDTH} ${viewBoxH}`;
+
+  // Chart area style: CSS padding creates label zones
+  const chartAreaStyle = {
+    position: 'relative',
+    paddingLeft: CHART_MARGIN.left,
+    paddingRight: CHART_MARGIN.right,
+    paddingTop: CHART_MARGIN.top,
+    paddingBottom: CHART_MARGIN.bottom,
+    ...(cssHeight ? { flex: 1, minHeight: 0 } : {}),
+  };
 
   return (
     <div style={cssHeight ? { height: cssHeight, display: 'flex', flexDirection: 'column' } : {}}>
@@ -203,8 +215,8 @@ export default function StackedAreaChart({
         </div>
       )}
 
-      {/* Chart area */}
-      <div ref={chartAreaRef} style={cssHeight ? { flex: 1, minHeight: 0, position: 'relative' } : { position: 'relative' }}>
+      {/* Chart area — CSS padding creates axis label zones */}
+      <div ref={chartAreaRef} style={chartAreaStyle}>
         <svg
           viewBox={viewBox}
           preserveAspectRatio="xMidYMid meet"
@@ -252,14 +264,14 @@ export default function StackedAreaChart({
           )}
         </svg>
 
-        {/* Y-axis labels (HTML) */}
+        {/* Y-axis labels (HTML — fixed pixel positioning) */}
         {yLabelItems.map((item, i) => (
           <span
             key={`y-${i}`}
             style={{
               ...labelBase,
-              left: toLeft(-6, padding.left),
-              top: toTop(item.y, height),
+              left: CHART_MARGIN.left - 8,
+              top: CHART_MARGIN.top + item.y * pxPerUnit,
               transform: 'translate(-100%, -50%)',
             }}
           >
@@ -267,15 +279,15 @@ export default function StackedAreaChart({
           </span>
         ))}
 
-        {/* X-axis labels (HTML) */}
+        {/* X-axis labels (HTML — fixed pixel positioning) */}
         {resolvedXLabels.map((item, i) => (
           <span
             key={`x-${i}`}
             style={{
               ...labelBase,
-              left: toLeft(item.x, padding.left),
-              top: toTop(chartBottom + 12, height),
-              transform: 'translate(-50%, -50%)',
+              left: CHART_MARGIN.left + item.x * pxPerUnit,
+              bottom: 5,
+              transform: 'translateX(-50%)',
             }}
           >
             {item.label}
@@ -290,8 +302,8 @@ export default function StackedAreaChart({
             <span
               style={{
                 position: 'absolute',
-                left: toLeft(hoveredDay.x, padding.left),
-                top: toTop(tipY, height),
+                left: CHART_MARGIN.left + hoveredDay.x * pxPerUnit,
+                top: CHART_MARGIN.top + tipY * pxPerUnit,
                 transform: 'translate(-50%, 0)',
                 fontSize: TOKENS.tooltip.fontSize,
                 fontWeight: TOKENS.tooltip.fontWeight,
