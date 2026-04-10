@@ -300,7 +300,7 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
     const cacData = days.slice(0, currentDay).map(d => ({
       values: [d.dailyReferrerCost, d.dailyRefereeCost],
     }));
-    const maxVal = Math.max(...cacData.map(d => d.values[0] + d.values[1]), 1);
+    const maxVal = Math.max(...cacData.map(d => d.values[0] + d.values[1]));
     const yMax = niceYMax(maxVal);
 
     return (
@@ -315,7 +315,7 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
         cssHeight="100%"
 
         xLabels={xLabels}
-        yLabels={[yMax * 0.5, yMax]}
+        yLabels={maxVal > 0 ? [yMax * 0.5, yMax] : []}
         gridlines="from-labels"
         legend
       />
@@ -327,7 +327,7 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
 
   if (selectedKPI === 'activeUsers') {
     slice = projection.dailyCurve.slice(0, currentDay);
-    const maxVal = Math.max(...slice, 1);
+    const maxVal = Math.max(...slice, 0);
     yMax = niceYMax(maxVal);
     formatLabel = (v) => fmt(v);
   } else {
@@ -340,7 +340,7 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
         return Math.max(0, d.kpiCumulative[selectedKPI] - days[i - 1].kpiCumulative[selectedKPI]);
       });
     }
-    const maxVal = Math.max(...slice, 1);
+    const maxVal = Math.max(...slice, 0);
     if (selectedKPI === 'roi') {
       yMax = niceYMax(maxVal);
       formatLabel = (v) => `${v}x`;
@@ -356,7 +356,8 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
     ? slice.map(v => Math.round(v * 0.7 * 10) / 10)
     : null;
 
-  const yLabels = [yMax * 0.5, yMax];
+  const hasData = Math.max(...(slice || []), 0) > 0;
+  const yLabels = hasData ? [yMax * 0.5, yMax] : [];
 
   return (
     <Chart
@@ -698,9 +699,9 @@ export default function DashboardPage({ config, onHome }) {
 
   // Y-axis ticks for lifecycle chart — 3 ticks (0, mid, max), consistent with hero charts
   const lifecycleYTicks = useMemo(() => {
-    if (!lifecycleBarData.length) return [0];
+    if (!lifecycleBarData.length) return [];
     const visibleMax = Math.max(...lifecycleBarData.map(d => d.values.reduce((a, b) => a + b, 0)));
-    if (!visibleMax) return [0];
+    if (!visibleMax) return [];
     const yMax = niceYMax(visibleMax);
     return [yMax * 0.5, yMax];
   }, [lifecycleBarData]);
