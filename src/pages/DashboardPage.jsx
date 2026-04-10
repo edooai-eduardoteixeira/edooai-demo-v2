@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useLayoutEffect } from 'react';
 import Logo from '../components/Logo.jsx';
 import Chart from '../components/Chart.jsx';
 import StackedBarChart from '../components/StackedBarChart.jsx';
@@ -6,7 +6,7 @@ import CohortBar from '../components/CohortBar.jsx';
 import FunnelChart from '../components/FunnelChart.jsx';
 import StrategyCards, { DefaultBudgetSlider, BUDGET_CONFIG } from '../components/StrategyCards.jsx';
 import { cn } from '../lib/utils.js';
-import { niceYMax, dayXTicks } from '../components/chartUtils.js';
+import { niceYMax, dayXTicks, CHART_MARGIN, formatCompact } from '../components/chartUtils.js';
 import { computeDashboardProjection } from '../engine/projectionEngine.js';
 
 // ─── Constants ────────────────────────────────────────────────────────
@@ -654,6 +654,135 @@ function DateRangeSelector({ selected, onSelect }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+// LIFECYCLE + COHORT ZOOM — one visual unit with connecting lines
+// ═══════════════════════════════════════════════════════════════════════
+function LifecycleWithCohortZoom({
+  lifecycleBarData, lifecycleSegments, lifecycleYTicks, effectiveDay,
+  cohortWaves, maxEngaged, cohortColors, fmt,
+}) {
+  const wrapperRef = useRef(null);
+  const chartRef = useRef(null);
+  const [chartDims, setChartDims] = useState(null);
+
+  // Measure the chart container to compute the engaged segment position in pixels
+  useLayoutEffect(() => {
+    const el = chartRef.current;
+    if (!el) return;
+    const measure = () => {
+      const rect = el.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) setChartDims({ width: rect.width, height: rect.height });
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Compute Engaged segment Y position on the last bar (in CSS pixels, relative to chart container)
+  const maxVal = lifecycleYTicks[lifecycleYTicks.length - 1] || 1;
+  const lastDay = lifecycleBarData[lifecycleBarData.length - 1];
+  const coolingOff = lastDay?.values[0] || 0;
+  const engaged = lastDay?.values[1] || 0;
+
+  // The chart area has CSS padding (CHART_MARGIN). SVG content area = container - padding.
+  // With pxPerUnit scaling, compute Y positions.
+  let engTopPx = 0, engBotPx = 0;
+  if (chartDims && maxVal > 0 && engaged > 0) {
+    const svgW = chartDims.width - CHART_MARGIN.left - CHART_MARGIN.right;
+    const svgH = chartDims.height - CHART_MARGIN.top - CHART_MARGIN.bottom;
+    // viewBoxH matches SVG aspect ratio
+    const viewBoxW = 828; // VIEWBOX_WIDTH
+    const viewBoxH = svgH / svgW * viewBoxW;
+    const pxPerUnit = svgW / viewBoxW;
+
+    // In viewBox coords: bottom of chart = viewBoxH, bars stack from bottom
+    const coolH_vb = (coolingOff / maxVal) * viewBoxH;
+    const engH_vb = (engaged / maxVal) * viewBoxH;
+    const engBot_vb = viewBoxH - coolH_vb;
+    const engTop_vb = engBot_vb - engH_vb;
+
+    engBotPx = CHART_MARGIN.top + engBot_vb * pxPerUnit;
+    engTopPx = CHART_MARGIN.top + engTop_vb * pxPerUnit;
+  }
+
+  const showZoom = engaged > 0 && chartDims;
+
+  return (
+    <div ref={wrapperRef} className="flex-[6] flex min-w-0" style={{ position: 'relative' }}>
+      {/* Chart column */}
+      <div className="flex-[5] p-5 min-w-0 flex flex-col">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+          <SectionLabel>Audience Referral Status</SectionLabel>
+          {/* Legend positioned here — before the zoom zone */}
+          <div style={{ display: 'flex', gap: 16, fontSize: 11, fontFamily: 'var(--font-family)', color: 'var(--text-tertiary)' }}>
+            {[...lifecycleSegments].reverse().map((seg) => (
+              <span key={seg.label} style={{ display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: seg.color, flexShrink: 0 }} />
+                {seg.label}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div ref={chartRef} className="flex-1 min-h-0">
+          <StackedBarChart
+            data={lifecycleBarData}
+            segments={lifecycleSegments}
+            cssHeight="100%"
+            maxValue={maxVal}
+            xLabels={dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }))}
+            yLabels={lifecycleYTicks}
+            gridlines="from-labels"
+            formatTooltip={(i, v) => fmt(v)}
+          />
+        </div>
+      </div>
+
+      {/* Connecting lines + Cohort bar column */}
+      <div className="flex-[1.2] pt-5 pr-4 pb-5 flex flex-col min-w-0" style={{ position: 'relative' }}>
+        {/* SVG overlay for connecting lines — positioned absolutely from the wrapper */}
+        {showZoom && (
+          <svg
+            style={{
+              position: 'absolute',
+              left: -24,
+              top: 0,
+              width: 28,
+              height: chartDims.height + 40,
+              pointerEvents: 'none',
+              overflow: 'visible',
+            }}
+          >
+            {/* Bracket on the engaged segment */}
+            <line x1="4" y1={engTopPx + 20} x2="4" y2={engBotPx + 20} stroke="#C8BFB5" strokeWidth="1" />
+            <line x1="4" y1={engTopPx + 20} x2="7" y2={engTopPx + 20} stroke="#C8BFB5" strokeWidth="1" />
+            <line x1="4" y1={engBotPx + 20} x2="7" y2={engBotPx + 20} stroke="#C8BFB5" strokeWidth="1" />
+
+            {/* Fan lines to cohort bar zone */}
+            <line x1="7" y1={engTopPx + 20} x2="26" y2={48} stroke="#D8D0C8" strokeWidth="1" strokeDasharray="3,3" />
+            <line x1="7" y1={engBotPx + 20} x2="26" y2={chartDims.height - 4} stroke="#D8D0C8" strokeWidth="1" strokeDasharray="3,3" />
+
+            {/* Subtle filled zoom region */}
+            <path
+              d={`M7,${engTopPx + 20} L26,48 L26,${chartDims.height - 4} L7,${engBotPx + 20} Z`}
+              fill="#F5F1EB"
+              opacity="0.3"
+            />
+          </svg>
+        )}
+
+        <CohortBar
+          cohortWaves={cohortWaves}
+          selectedDay={effectiveDay}
+          maxVal={maxEngaged}
+          colors={cohortColors}
+          cssHeight="100%"
+        />
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // MAIN DASHBOARD PAGE
 // ═══════════════════════════════════════════════════════════════════════
 export default function DashboardPage({ config, onHome }) {
@@ -777,42 +906,23 @@ export default function DashboardPage({ config, onHome }) {
           </div>
         </div>
 
-        {/* ── BLOCK 2: LIFECYCLE | COHORT BAR | TEXT ── */}
+        {/* ── BLOCK 2: LIFECYCLE + COHORT ZOOM | TEXT ── */}
         <div className="bg-surface border border-border rounded-lg">
           <div className="flex h-[500px]">
-            {/* LEFT: Hero timeline — Audience Referral Status */}
-            <div className="flex-[5] p-5 min-w-0 flex flex-col">
-              <SectionLabel>Audience Referral Status</SectionLabel>
-              <div className="flex-1 min-h-0">
-                <StackedBarChart
-                  data={lifecycleBarData}
-                  segments={lifecycleSegments}
-                  cssHeight="100%"
-                  maxValue={lifecycleYTicks[lifecycleYTicks.length - 1] || undefined}
-                  xLabels={dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }))}
-                  yLabels={lifecycleYTicks}
-                  gridlines="from-labels"
-                  legend
-                  formatTooltip={(i, v) => fmt(v)}
-                />
-              </div>
-            </div>
-
-            {/* MIDDLE: Cohort breakdown bar — no left divider, reads as annotation of main chart */}
-            <div className="flex-[1] pt-5 px-3 pb-5 flex flex-col min-w-0">
-              <SectionLabel>Engaged Cohorts</SectionLabel>
-              <CohortBar
-                cohortWaves={projection.cohortWaves}
-                selectedDay={effectiveDay}
-                maxVal={maxEngaged}
-                colors={COHORT_COLORS}
-                cssHeight="100%"
-                reserveLegendSpace
-              />
-            </div>
+            {/* LEFT: Lifecycle chart + Engaged cohort zoom callout (one visual unit) */}
+            <LifecycleWithCohortZoom
+              lifecycleBarData={lifecycleBarData}
+              lifecycleSegments={lifecycleSegments}
+              lifecycleYTicks={lifecycleYTicks}
+              effectiveDay={effectiveDay}
+              cohortWaves={projection.cohortWaves}
+              maxEngaged={maxEngaged}
+              cohortColors={COHORT_COLORS}
+              fmt={fmt}
+            />
 
             {/* DIVIDER */}
-            <div className="w-px bg-border-light" />
+            <div className="w-px bg-border-light shrink-0" />
 
             {/* RIGHT: Key Learnings + Recommendation + Decisions */}
             <div className="flex-[4] p-5 overflow-y-auto">
