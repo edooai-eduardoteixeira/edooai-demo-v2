@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { TOKENS, DEFAULT_PADDING, LEGEND_HEIGHT, formatCompact } from './chartUtils.js';
+import { TOKENS, DEFAULT_PADDING, LEGEND_HEIGHT, labelBase, formatCompact } from './chartUtils.js';
 
 /**
  * Single vertical stacked bar showing cohort composition of the Engaged band
@@ -110,13 +110,11 @@ export default function CohortBar({ cohortWaves, selectedDay, maxVal, colors, cs
         {/* Total label above bar */}
         {dims && totalEngaged > 0 && (
           <span
-            className="absolute text-[11px] text-tertiary tabular-nums leading-none pointer-events-none"
             style={{
+              ...labelBase,
               left: '50%',
               top: Math.max(0, barY + emptyHeight - 14),
               transform: 'translateX(-50%)',
-              fontFamily: 'var(--font-family)',
-              fontVariantNumeric: 'tabular-nums',
             }}
           >
             {formatCompact(totalEngaged)}
@@ -154,12 +152,11 @@ export default function CohortBar({ cohortWaves, selectedDay, maxVal, colors, cs
         {/* Day label below bar */}
         {dims && (
           <span
-            className="absolute text-[11px] text-tertiary tabular-nums leading-none pointer-events-none"
             style={{
+              ...labelBase,
               left: '50%',
               bottom: 0,
               transform: 'translateX(-50%)',
-              fontFamily: 'var(--font-family)',
             }}
           >
             Day {selectedDay}

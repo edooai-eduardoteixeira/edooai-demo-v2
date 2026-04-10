@@ -260,25 +260,20 @@ export default function StackedBarChart({
           );
         })}
 
-        {/* X-axis labels (HTML) */}
-        {resolvedXLabels.map((item, i) => {
-          const pctLeft = `${(item.x / VIEWBOX_WIDTH) * 100}%`;
-          return (
-            <span
-              key={i}
-              className="absolute text-[11px] text-tertiary tabular-nums leading-none pointer-events-none"
-              style={{
-                left: pctLeft,
-                bottom: 0,
-                transform: 'translateX(-50%)',
-                fontFamily: 'var(--font-family)',
-                fontVariantNumeric: 'tabular-nums',
-              }}
-            >
-              {item.label}
-            </span>
-          );
-        })}
+        {/* X-axis labels (HTML — same positioning as Chart.jsx) */}
+        {resolvedXLabels.map((item, i) => (
+          <span
+            key={i}
+            style={{
+              ...labelBase,
+              left: toLeft(item.x - padding.left, padding.left),
+              top: toTop(chartBottom + 12, height),
+              transform: 'translate(-50%, -50%)',
+            }}
+          >
+            {item.label}
+          </span>
+        ))}
 
         {/* Tooltip */}
         {hoveredBar !== null && tooltipData && tooltipBar && (
