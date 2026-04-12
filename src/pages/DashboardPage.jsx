@@ -666,7 +666,7 @@ function AudienceHealth({ propensityHealth, effectiveDay }) {
   const xLabels = dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }));
 
   return (
-    <div className="flex-[9] p-5 min-w-0 flex flex-col">
+    <div className="flex-[7] p-5 min-w-0 flex flex-col">
       <SectionLabel>Eligible Audience Pool</SectionLabel>
       <div className="flex-1 min-h-0">
         <StackedAreaChart
@@ -906,7 +906,7 @@ export default function DashboardPage({ config, onHome }) {
             <div className="w-px bg-border-light shrink-0" />
 
             {/* RIGHT (~35%): Today's Operations */}
-            <div className="flex-[7] p-5 overflow-y-auto flex flex-col gap-3">
+            <div className="flex-[9] p-5 overflow-y-auto flex flex-col gap-3">
               {/* Heartbeat — summary bar */}
               <div className="bg-accent-subtle rounded-sm px-3 py-2.5">
                 <div className="text-[13px] font-semibold text-foreground">
