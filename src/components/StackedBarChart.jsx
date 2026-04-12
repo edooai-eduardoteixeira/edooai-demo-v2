@@ -28,6 +28,7 @@ export default function StackedBarChart({
   formatValue = formatCompact,
   legend,
   categorical = false, // When true, x-labels center under bars by index (not continuous scale)
+  hoverHighlight = false, // When true, hovered bar lightens (like funnel) instead of dimming others
 }) {
   const [hoveredBar, setHoveredBar] = useState(null);
   const [animated, setAnimated] = useState(false);
@@ -220,11 +221,25 @@ export default function StackedBarChart({
           })}
 
           {/* Bars */}
-          {bars.map((bar, barIdx) => (
+          {bars.map((bar, barIdx) => {
+            const isHovered = hoveredBar === barIdx;
+            const hasSomeHover = hoveredBar !== null;
+            // hoverHighlight mode: hovered bar lightens (like funnel hover:bg-accent-light)
+            // default mode: non-hovered bars dim to 0.4 opacity
+            const groupOpacity = hoverHighlight
+              ? 1
+              : (hasSomeHover && !isHovered ? 0.4 : 1);
+            const barFill = (segIdx) => {
+              const base = segments[segIdx]?.color || 'var(--color-brand)';
+              if (hoverHighlight && isHovered) return 'var(--accent-light)';
+              return base;
+            };
+
+            return (
             <g
               key={barIdx}
               style={{
-                opacity: hoveredBar !== null && hoveredBar !== barIdx ? 0.4 : 1,
+                opacity: groupOpacity,
                 transition: 'opacity 150ms ease',
               }}
             >
@@ -237,18 +252,20 @@ export default function StackedBarChart({
                     y={r.y}
                     width={r.width}
                     height={Math.max(r.height, 0)}
-                    fill={segments[segIdx]?.color || 'var(--color-brand)'}
+                    fill={barFill(segIdx)}
                     rx={isTop ? BAR_RADIUS : 0}
                     ry={isTop ? BAR_RADIUS : 0}
                     style={{
                       transformOrigin: `${r.x + r.width / 2}px ${chartBottom}px`,
                       transform: animated ? 'scaleY(1)' : 'scaleY(0)',
-                      transition: `transform ${ANIMATION_DURATION}ms ease-out ${barIdx * ANIMATION_STAGGER}ms`,
+                      transition: `transform ${ANIMATION_DURATION}ms ease-out ${barIdx * ANIMATION_STAGGER}ms, fill 150ms ease`,
                     }}
                   />
                 );
               })}
             </g>
+            );
+          }
           ))}
 
           {/* Hover hit zone */}
