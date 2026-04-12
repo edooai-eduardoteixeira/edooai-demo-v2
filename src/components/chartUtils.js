@@ -39,6 +39,7 @@ export const CHART_MARGIN = { top: 8, right: 8, bottom: 24, left: 36 };
 export const LEGEND_HEIGHT = 24;
 export const DEFAULT_HEIGHT = 210;
 export const VIEWBOX_WIDTH = 828;
+export const BAR_RADIUS_PX = 6; // rounded-sm (6px) — convert to viewBox units via pxPerUnit
 
 // --- Monotone cubic interpolation (Fritsch-Carlson) ---
 export function buildMonotonePath(points) {

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
-import { TOKENS, CHART_MARGIN, VIEWBOX_WIDTH, DEFAULT_HEIGHT, labelBase, formatCompact } from './chartUtils.js';
+import { TOKENS, CHART_MARGIN, VIEWBOX_WIDTH, DEFAULT_HEIGHT, BAR_RADIUS_PX, labelBase, formatCompact } from './chartUtils.js';
 
 /**
  * Stacked bar chart component following Vincor design system.
@@ -10,7 +10,6 @@ import { TOKENS, CHART_MARGIN, VIEWBOX_WIDTH, DEFAULT_HEIGHT, labelBase, formatC
  * - HTML labels positioned in fixed CSS pixels
  */
 
-const BAR_RADIUS = 6; // matches rounded-sm (DESIGN.md: 6px)
 const GAP_RATIO = 0.25; // gap = 25% of bar width
 const ANIMATION_DURATION = 400;
 const ANIMATION_STAGGER = 15;
@@ -61,6 +60,9 @@ export default function StackedBarChart({
     : heightProp;
 
   const pxPerUnit = svgDims ? svgDims.width / VIEWBOX_WIDTH : 0;
+
+  // Convert CSS pixel radius to viewBox units so it renders at consistent size
+  const barRadius = pxPerUnit > 0 ? BAR_RADIUS_PX / pxPerUnit : BAR_RADIUS_PX;
 
   // Entrance animation
   useEffect(() => {
@@ -253,8 +255,8 @@ export default function StackedBarChart({
                     width={r.width}
                     height={Math.max(r.height, 0)}
                     fill={barFill(segIdx)}
-                    rx={isTop ? BAR_RADIUS : 0}
-                    ry={isTop ? BAR_RADIUS : 0}
+                    rx={isTop ? barRadius : 0}
+                    ry={isTop ? barRadius : 0}
                     style={{
                       transformOrigin: `${r.x + r.width / 2}px ${chartBottom}px`,
                       transform: animated ? 'scaleY(1)' : 'scaleY(0)',
