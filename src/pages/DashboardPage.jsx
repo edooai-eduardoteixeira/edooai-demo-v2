@@ -723,10 +723,10 @@ function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
           maxValue={yMax}
           cssHeight="100%"
           xLabels={xLabels}
-          yLabels={[yMax * 0.5, yMax]}
-          gridlines="from-labels"
           categorical
           hoverHighlight
+          showBarValues
+          formatBarValue={(v) => `${v}%`}
           formatTooltip={(i, v) => `${v}%`}
         />
       </div>

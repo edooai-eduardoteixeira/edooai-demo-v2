@@ -149,9 +149,10 @@ export default function StackedAreaChart({
       }))
     : [];
 
-  // Y labels: 0 and max
+  // Y labels: mid and max (no 0 — matches hero chart pattern)
+  const midVal = Math.round(maxVal * 0.5);
   const yLabelItems = [
-    { val: 0, y: chartBottom },
+    { val: midVal, y: chartTop + chartH * 0.5 },
     { val: Math.round(maxVal), y: chartTop },
   ];
 

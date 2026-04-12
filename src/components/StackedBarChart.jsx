@@ -28,6 +28,8 @@ export default function StackedBarChart({
   legend,
   categorical = false, // When true, x-labels center under bars by index (not continuous scale)
   hoverHighlight = false, // When true, hovered bar lightens (like funnel) instead of dimming others
+  showBarValues = false,  // When true, show value label above each bar (like funnel), suppress Y-axis
+  formatBarValue,         // Format function for bar value labels (default: formatCompact)
 }) {
   const [hoveredBar, setHoveredBar] = useState(null);
   const [animated, setAnimated] = useState(false);
@@ -280,8 +282,8 @@ export default function StackedBarChart({
           />
         </svg>
 
-        {/* Y-axis labels (HTML — fixed pixel positioning) */}
-        {resolvedYLabels.map((val, i) => {
+        {/* Y-axis labels — suppressed when showBarValues is active */}
+        {!showBarValues && resolvedYLabels.map((val, i) => {
           const y = chartBottom - (val / maxVal) * chartH;
           return (
             <span
@@ -294,6 +296,28 @@ export default function StackedBarChart({
               }}
             >
               {formatValue(val)}
+            </span>
+          );
+        })}
+
+        {/* Bar value labels — above each bar, like funnel pattern */}
+        {showBarValues && bars.map((bar, i) => {
+          const total = data[i].values.reduce((a, b) => a + b, 0);
+          const barCenterX = chartLeft + i * totalSlotWidth + totalSlotWidth / 2;
+          const barTopY = chartBottom - bar.total;
+          const formatter = formatBarValue || formatValue;
+          return (
+            <span
+              key={`val-${i}`}
+              style={{
+                ...labelBase,
+                fontWeight: 600,
+                left: CHART_MARGIN.left + barCenterX * pxPerUnit,
+                top: CHART_MARGIN.top + barTopY * pxPerUnit - 16,
+                transform: 'translateX(-50%)',
+              }}
+            >
+              {formatter(total)}
             </span>
           );
         })}
