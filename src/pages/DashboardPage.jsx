@@ -68,13 +68,14 @@ function DaySelector({ selected, onSelect }) {
   );
 }
 
-// Propensity colors — brand-derived at different opacities (warm wine family)
-// Matches Block 1's CAC chart treatment: brand at varying opacity for filled areas
-const PROPENSITY_FILLS = {
-  high: 'rgba(102, 0, 31, 0.55)',   // brand at 55% — deepest
-  medium: 'rgba(102, 0, 31, 0.35)', // brand at 35% — mid
-  low: 'rgba(102, 0, 31, 0.18)',    // brand at 18% — lightest
-  bar: 'rgba(102, 0, 31, 0.45)',    // brand at 45% — matches CAC referrer segment
+// Chart fills — neutral warm tones from DESIGN.md gray scale
+// Brand is for lines (hero data). Fills are context/structure — always neutral.
+// Same logic as the funnel (bg-accent-subtle, no brand).
+const CHART_FILLS = {
+  high: '#A89E94',   // gray-400 (warm taupe)
+  medium: '#D1C8BE', // gray-300 (warm sand)
+  low: '#E4DDD5',    // gray-200 (light sand)
+  bar: '#A89E94',    // gray-400 — same as single-segment fills
 };
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -655,9 +656,9 @@ function AudienceHealth({ propensityHealth, effectiveDay }) {
 
   // Stacked area: eligible pool per cluster over time
   const bands = [
-    { label: 'Advocates', color: PROPENSITY_FILLS.high, data: highEligible.slice(0, dataSlice) },
-    { label: 'Persuadable', color: PROPENSITY_FILLS.medium, data: medEligible.slice(0, dataSlice) },
-    { label: 'Passive', color: PROPENSITY_FILLS.low, data: lowEligible.slice(0, dataSlice) },
+    { label: 'Advocates', color: CHART_FILLS.high, data: highEligible.slice(0, dataSlice) },
+    { label: 'Persuadable', color: CHART_FILLS.medium, data: medEligible.slice(0, dataSlice) },
+    { label: 'Passive', color: CHART_FILLS.low, data: lowEligible.slice(0, dataSlice) },
   ];
 
   const currentPool = (highEligible[dataSlice - 1] || 0) + (medEligible[dataSlice - 1] || 0) + (lowEligible[dataSlice - 1] || 0);
@@ -717,7 +718,7 @@ function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
         <StackedBarChart
           data={barData}
           segments={[
-            { color: PROPENSITY_FILLS.bar },
+            { color: CHART_FILLS.bar },
           ]}
           maxValue={yMax}
           cssHeight="100%"
