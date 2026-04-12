@@ -27,6 +27,7 @@ export default function StackedBarChart({
   formatTooltip,
   formatValue = formatCompact,
   legend,
+  categorical = false, // When true, x-labels center under bars by index (not continuous scale)
 }) {
   const [hoveredBar, setHoveredBar] = useState(null);
   const [animated, setAnimated] = useState(false);
@@ -116,10 +117,14 @@ export default function StackedBarChart({
 
   const handleMouseLeave = useCallback(() => setHoveredBar(null), []);
 
-  // Resolve x-axis labels (x relative to chartLeft = 0)
-  const resolvedXLabels = (xLabels || []).map((item) => ({
+  // Resolve x-axis labels
+  // Categorical: labels center under each bar by index
+  // Time-series: labels positioned on continuous scale via `at`
+  const resolvedXLabels = (xLabels || []).map((item, idx) => ({
     label: String(item.value),
-    x: chartLeft + ((item.at - 1) / Math.max(n - 1, 1)) * chartW,
+    x: categorical
+      ? chartLeft + idx * totalSlotWidth + totalSlotWidth / 2
+      : chartLeft + ((item.at - 1) / Math.max(n - 1, 1)) * chartW,
   }));
 
   // Resolve y-axis gridlines

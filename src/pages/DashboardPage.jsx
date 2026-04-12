@@ -724,6 +724,7 @@ function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
           yLabels={[yMax * 0.5, yMax]}
           gridlines="from-labels"
           legend
+          categorical
           formatTooltip={(i, v) => `${v}%`}
         />
       </div>
