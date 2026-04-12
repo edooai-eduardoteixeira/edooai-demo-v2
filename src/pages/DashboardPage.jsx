@@ -68,14 +68,14 @@ function DaySelector({ selected, onSelect }) {
   );
 }
 
-// Chart fills — neutral warm tones from DESIGN.md gray scale
-// Brand is for lines (hero data). Fills are context/structure — always neutral.
-// Same logic as the funnel (bg-accent-subtle, no brand).
+// Chart fills — rooted in bg-accent-subtle (same as funnel bars)
+// Stacked area: range from gray-300 down to accent-subtle (adjacent bands need differentiation)
+// Single bars: exact same as funnel
 const CHART_FILLS = {
-  high: '#A89E94',   // gray-400 (warm taupe)
-  medium: '#D1C8BE', // gray-300 (warm sand)
-  low: '#E4DDD5',    // gray-200 (light sand)
-  bar: '#A89E94',    // gray-400 — same as single-segment fills
+  high: '#D1C8BE',   // gray-300 — darkest band (bottom)
+  medium: '#E4DDD5', // gray-200 — middle band
+  low: '#F5F1EB',    // accent-subtle — lightest band, matches funnel exactly
+  bar: '#F5F1EB',    // accent-subtle — matches funnel bars exactly
 };
 
 // ═══════════════════════════════════════════════════════════════════════
