@@ -655,9 +655,9 @@ function AudienceHealth({ propensityHealth, effectiveDay }) {
 
   // Stacked area: eligible pool per cluster over time
   const bands = [
-    { label: 'Likely to refer', color: PROPENSITY_FILLS.high, data: highEligible.slice(0, dataSlice) },
-    { label: 'Moderate', color: PROPENSITY_FILLS.medium, data: medEligible.slice(0, dataSlice) },
-    { label: 'Unlikely', color: PROPENSITY_FILLS.low, data: lowEligible.slice(0, dataSlice) },
+    { label: 'Advocates', color: PROPENSITY_FILLS.high, data: highEligible.slice(0, dataSlice) },
+    { label: 'Persuadable', color: PROPENSITY_FILLS.medium, data: medEligible.slice(0, dataSlice) },
+    { label: 'Dormant', color: PROPENSITY_FILLS.low, data: lowEligible.slice(0, dataSlice) },
   ];
 
   const currentPool = (highEligible[dataSlice - 1] || 0) + (medEligible[dataSlice - 1] || 0) + (lowEligible[dataSlice - 1] || 0);
@@ -692,7 +692,7 @@ function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
   if (!hasData) {
     return (
       <div className="flex-[4] p-5 min-w-0 flex flex-col">
-        <SectionLabel>Customer Fatigue</SectionLabel>
+        <SectionLabel>Response by Frequency</SectionLabel>
         <div className="flex-1 flex items-center justify-center">
           <p className="text-xs text-foreground-faint text-center px-4">
             Frequency data available after first campaign cycle
@@ -712,19 +712,18 @@ function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
 
   return (
     <div className="flex-[4] p-5 min-w-0 flex flex-col">
-      <SectionLabel>Customer Fatigue</SectionLabel>
+      <SectionLabel>Response by Frequency</SectionLabel>
       <div className="flex-1 min-h-0">
         <StackedBarChart
           data={barData}
           segments={[
-            { color: PROPENSITY_FILLS.bar, label: '% who respond' },
+            { color: PROPENSITY_FILLS.bar },
           ]}
           maxValue={yMax}
           cssHeight="100%"
           xLabels={xLabels}
           yLabels={[yMax * 0.5, yMax]}
           gridlines="from-labels"
-          legend
           categorical
           formatTooltip={(i, v) => `${v}%`}
         />
