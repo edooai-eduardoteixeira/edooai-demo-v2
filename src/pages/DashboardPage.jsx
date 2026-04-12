@@ -504,20 +504,18 @@ function DayBriefing({ briefing }) {
 }
 
 // Guardrail Recommendation — separate from the feed, underneath it
-function AgentRecommendationStrip({ briefings, selectedDay, onReview }) {
-  // Find the most recent recommendation up to the selected day
+function SuggestedChangeStrip({ briefings, selectedDay, onReview }) {
   for (let d = selectedDay; d >= 1; d--) {
     const rec = briefings?.[d]?.recommendation;
     if (rec) {
       return (
-        <div className="flex items-center gap-3 bg-brand-light/30 border-b border-brand/20 px-5 py-2">
-          <span className="w-2 h-2 rounded-full bg-brand shrink-0" />
-          <span className="text-[13px] text-foreground-muted flex-1">
-            <span className="font-semibold text-foreground">Agent recommendation:</span> {rec.title}
+        <div className="flex items-center gap-3 bg-accent-subtle border-b border-border-light px-5 py-2">
+          <span className="text-[13px] text-foreground-muted">
+            <span className="font-semibold text-foreground">Suggested change:</span> {rec.action}
           </span>
           <button
             onClick={onReview}
-            className="px-3 py-1 text-[11px] font-semibold rounded-sm bg-brand text-white hover:-translate-y-px hover:shadow-md transition-all duration-200 shrink-0"
+            className="px-3 py-1 text-[11px] font-semibold rounded-sm bg-surface text-foreground border border-border hover:bg-accent-light transition-all duration-200 shrink-0"
           >
             Review
           </button>
@@ -827,8 +825,8 @@ export default function DashboardPage({ config, onHome }) {
             days={projection.days}
           />
 
-          {/* Agent recommendation — CTA strip, opens budget drawer */}
-          <AgentRecommendationStrip
+          {/* Suggested change — CTA strip, opens budget drawer */}
+          <SuggestedChangeStrip
             briefings={briefings}
             selectedDay={effectiveDay}
             onReview={() => setActiveDrawer('budget')}
