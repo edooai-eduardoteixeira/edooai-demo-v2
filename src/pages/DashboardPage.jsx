@@ -657,7 +657,7 @@ function AudienceHealth({ propensityHealth, effectiveDay }) {
   const bands = [
     { label: 'Advocates', color: PROPENSITY_FILLS.high, data: highEligible.slice(0, dataSlice) },
     { label: 'Persuadable', color: PROPENSITY_FILLS.medium, data: medEligible.slice(0, dataSlice) },
-    { label: 'Dormant', color: PROPENSITY_FILLS.low, data: lowEligible.slice(0, dataSlice) },
+    { label: 'Passive', color: PROPENSITY_FILLS.low, data: lowEligible.slice(0, dataSlice) },
   ];
 
   const currentPool = (highEligible[dataSlice - 1] || 0) + (medEligible[dataSlice - 1] || 0) + (lowEligible[dataSlice - 1] || 0);
