@@ -713,7 +713,7 @@ function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
 
   return (
     <div className="flex-[4] p-5 min-w-0 flex flex-col">
-      <SectionLabel>Response by Frequency</SectionLabel>
+      <SectionLabel>Conversion vs. Frequency</SectionLabel>
       <div className="flex-1 min-h-0">
         <StackedBarChart
           data={barData}
