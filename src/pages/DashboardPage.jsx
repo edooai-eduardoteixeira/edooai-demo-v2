@@ -75,7 +75,7 @@ const CHART_FILLS = {
   high: '#D1C8BE',   // gray-300 — darkest band (bottom)
   medium: '#E4DDD5', // gray-200 — middle band
   low: '#F5F1EB',    // accent-subtle — lightest band, matches funnel exactly
-  bar: '#E4DDD5',    // gray-200 — visible on white surface, survives 0.4 opacity hover
+  bar: '#F5F1EB',    // accent-subtle — same as funnel bars
 };
 
 // ═══════════════════════════════════════════════════════════════════════
