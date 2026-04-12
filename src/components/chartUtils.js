@@ -92,8 +92,8 @@ export function buildAreaPath(curveD, lastX, firstX, bottom) {
 export function formatCompact(val) {
   const rounded = Math.round(val);
   if (rounded >= 1000) {
-    const k = rounded / 1000;
-    return k % 1 === 0 ? `${k}k` : `${k.toFixed(1)}k`;
+    const k = Math.round(rounded / 1000);
+    return `${k}k`;
   }
   return String(rounded);
 }
