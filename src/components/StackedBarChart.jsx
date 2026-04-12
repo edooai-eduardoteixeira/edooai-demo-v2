@@ -265,8 +265,7 @@ export default function StackedBarChart({
               })}
             </g>
             );
-          }
-          ))}
+          })}
 
           {/* Hover hit zone */}
           <rect
