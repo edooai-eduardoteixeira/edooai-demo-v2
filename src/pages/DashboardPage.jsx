@@ -707,7 +707,7 @@ function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
   }));
   const maxPct = Math.max(...barData.map(d => d.values[0]));
   const yMax = niceYMax(maxPct);
-  const xLabels = frequencyCurve.map((d, i) => ({ value: d.label, at: i }));
+  const xLabels = frequencyCurve.map((d, i) => ({ value: d.label, at: i + 1 }));
 
   return (
     <div className="flex-[4] p-5 min-w-0 flex flex-col">
@@ -723,6 +723,7 @@ function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
           xLabels={xLabels}
           yLabels={[yMax * 0.5, yMax]}
           gridlines="from-labels"
+          legend
           formatTooltip={(i, v) => `${v}%`}
         />
       </div>
