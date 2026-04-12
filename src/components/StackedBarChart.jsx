@@ -10,7 +10,7 @@ import { TOKENS, CHART_MARGIN, VIEWBOX_WIDTH, DEFAULT_HEIGHT, labelBase, formatC
  * - HTML labels positioned in fixed CSS pixels
  */
 
-const BAR_RADIUS = 2;
+const BAR_RADIUS = 4; // matches funnel bar radius (DESIGN.md funnel spec)
 const GAP_RATIO = 0.25; // gap = 25% of bar width
 const ANIMATION_DURATION = 400;
 const ANIMATION_STAGGER = 15;
