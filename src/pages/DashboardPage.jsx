@@ -647,28 +647,30 @@ function DateRangeSelector({ selected, onSelect }) {
 function AudienceHealth({ propensityHealth, effectiveDay }) {
   if (!propensityHealth) return null;
 
-  const { highContacted, medContacted, lowContacted,
-          highTotal, medTotal, lowTotal, totalEligible } = propensityHealth;
+  const { highEligible, medEligible, lowEligible,
+          totalEligible, totalReached } = propensityHealth;
   const dataSlice = effectiveDay;
 
-  // Stacked area bands: contacted customers per cluster over time
+  // Stacked area: eligible pool per cluster over time
+  // Bands shrink as agent contacts people, recover as customers return from cooldown
   const bands = [
-    { label: `Most likely (${formatCompact(highTotal)})`, color: PROPENSITY_LINES.high, data: highContacted.slice(0, dataSlice) },
-    { label: `Moderate (${formatCompact(medTotal)})`, color: PROPENSITY_LINES.medium, data: medContacted.slice(0, dataSlice) },
-    { label: `Less likely (${formatCompact(lowTotal)})`, color: PROPENSITY_LINES.low, data: lowContacted.slice(0, dataSlice) },
+    { label: 'Most likely', color: PROPENSITY_LINES.high, data: highEligible.slice(0, dataSlice) },
+    { label: 'Moderate', color: PROPENSITY_LINES.medium, data: medEligible.slice(0, dataSlice) },
+    { label: 'Less likely', color: PROPENSITY_LINES.low, data: lowEligible.slice(0, dataSlice) },
   ];
 
-  const totalReached = (highContacted[dataSlice - 1] || 0) + (medContacted[dataSlice - 1] || 0) + (lowContacted[dataSlice - 1] || 0);
+  const currentPool = (highEligible[dataSlice - 1] || 0) + (medEligible[dataSlice - 1] || 0) + (lowEligible[dataSlice - 1] || 0);
+  const utilizationPct = totalEligible > 0 ? Math.round((1 - currentPool / totalEligible) * 100) : 0;
   const xLabels = dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }));
 
   return (
     <div className="flex-[9] p-5 min-w-0 flex flex-col">
       <div className="flex items-baseline justify-between mb-3">
         <h3 className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
-          Audience Reach
+          Eligible Pool
         </h3>
         <span className="text-[11px] text-foreground-faint">
-          {formatCompact(totalReached)} of {formatCompact(totalEligible)} reached
+          {formatCompact(currentPool)} eligible · {utilizationPct}% utilized
         </span>
       </div>
       <div className="flex-1 min-h-0">

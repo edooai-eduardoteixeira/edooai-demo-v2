@@ -1025,34 +1025,48 @@ function computePropensityHealth(simResult, params) {
   const { totalCustomers, eligibilityRate } = params;
   const totalEligible = Math.round(totalCustomers * eligibilityRate);
 
-  // Segment sizes
-  const highTotal = Math.round(totalEligible * 0.30);
-  const medTotal = Math.round(totalEligible * 0.45);
-  const lowTotal = totalEligible - highTotal - medTotal;
+  // Starting cluster sizes
+  const highStart = Math.round(totalEligible * 0.30);
+  const medStart = Math.round(totalEligible * 0.45);
+  const lowStart = totalEligible - highStart - medStart;
 
-  // Per-segment contacted counts over time (absolute)
-  // Agent contacts high-propensity first → high fills fastest
-  const highContacted = [];
-  const medContacted = [];
-  const lowContacted = [];
+  // Eligible pool per cluster over time
+  // Pool shrinks as agent contacts people, recovers as customers return from cooldown
+  // Replenishment rate determines sustainability
+  const highEligible = [];
+  const medEligible = [];
+  const lowEligible = [];
 
   for (let d = 0; d < days.length; d++) {
     const dayData = days[d];
     const contacted = dayData.funnelCumulative.contacted;
     const overallDepth = Math.min(1, contacted / totalEligible);
 
-    const hRate = Math.min(1, overallDepth * 2.2);
-    const mRate = Math.min(1, overallDepth * 0.85);
-    const lRate = Math.min(1, Math.max(0, overallDepth * 0.35));
+    // Agent contacts high-propensity first
+    const hUsed = Math.min(1, overallDepth * 2.2);
+    const mUsed = Math.min(1, overallDepth * 0.85);
+    const lUsed = Math.min(1, Math.max(0, overallDepth * 0.35));
 
-    highContacted.push(Math.round(highTotal * hRate));
-    medContacted.push(Math.round(medTotal * mRate));
-    lowContacted.push(Math.round(lowTotal * lRate));
+    // Replenishment: customers return from cooldown after ~7 days
+    // Earlier cohorts start returning, partially refilling the pool
+    const replenishFactor = d > 7 ? Math.min(0.4, (d - 7) * 0.03) : 0;
+
+    // Eligible = starting pool - used + replenished
+    const hElig = Math.round(highStart * (1 - hUsed + hUsed * replenishFactor));
+    const mElig = Math.round(medStart * (1 - mUsed + mUsed * replenishFactor));
+    const lElig = Math.round(lowStart * (1 - lUsed + lUsed * replenishFactor));
+
+    highEligible.push(hElig);
+    medEligible.push(mElig);
+    lowEligible.push(lElig);
   }
 
+  // Current utilization: what fraction of eligible is being actively worked
+  const totalReached = days[days.length - 1]?.funnelCumulative?.contacted || 0;
+
   return {
-    highContacted, medContacted, lowContacted,
-    highTotal, medTotal, lowTotal, totalEligible,
+    highEligible, medEligible, lowEligible,
+    highStart, medStart, lowStart, totalEligible, totalReached,
   };
 }
 
