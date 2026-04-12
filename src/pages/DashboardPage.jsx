@@ -68,11 +68,13 @@ function DaySelector({ selected, onSelect }) {
   );
 }
 
-// Propensity line colors — spread across warm gray scale, equal treatment (no hierarchy)
-const PROPENSITY_LINES = {
-  high: '#4A3F37',   // gray-700 (darkest)
-  medium: '#7D7368', // gray-500 (mid)
-  low: '#A89E94',    // gray-400 (lightest, still visible on white)
+// Propensity colors — brand-derived at different opacities (warm wine family)
+// Matches Block 1's CAC chart treatment: brand at varying opacity for filled areas
+const PROPENSITY_FILLS = {
+  high: 'rgba(102, 0, 31, 0.55)',   // brand at 55% — deepest
+  medium: 'rgba(102, 0, 31, 0.35)', // brand at 35% — mid
+  low: 'rgba(102, 0, 31, 0.18)',    // brand at 18% — lightest
+  bar: 'rgba(102, 0, 31, 0.45)',    // brand at 45% — matches CAC referrer segment
 };
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -652,11 +654,10 @@ function AudienceHealth({ propensityHealth, effectiveDay }) {
   const dataSlice = effectiveDay;
 
   // Stacked area: eligible pool per cluster over time
-  // Bands shrink as agent contacts people, recover as customers return from cooldown
   const bands = [
-    { label: 'Most likely', color: PROPENSITY_LINES.high, data: highEligible.slice(0, dataSlice) },
-    { label: 'Moderate', color: PROPENSITY_LINES.medium, data: medEligible.slice(0, dataSlice) },
-    { label: 'Less likely', color: PROPENSITY_LINES.low, data: lowEligible.slice(0, dataSlice) },
+    { label: 'Likely to refer', color: PROPENSITY_FILLS.high, data: highEligible.slice(0, dataSlice) },
+    { label: 'Moderate', color: PROPENSITY_FILLS.medium, data: medEligible.slice(0, dataSlice) },
+    { label: 'Unlikely', color: PROPENSITY_FILLS.low, data: lowEligible.slice(0, dataSlice) },
   ];
 
   const currentPool = (highEligible[dataSlice - 1] || 0) + (medEligible[dataSlice - 1] || 0) + (lowEligible[dataSlice - 1] || 0);
@@ -665,7 +666,7 @@ function AudienceHealth({ propensityHealth, effectiveDay }) {
 
   return (
     <div className="flex-[9] p-5 min-w-0 flex flex-col">
-      <SectionLabel>Eligible Pool</SectionLabel>
+      <SectionLabel>Audience Health</SectionLabel>
       <div className="flex-1 min-h-0">
         <StackedAreaChart
           bands={bands}
@@ -691,7 +692,7 @@ function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
   if (!hasData) {
     return (
       <div className="flex-[4] p-5 min-w-0 flex flex-col">
-        <SectionLabel>Response by Frequency</SectionLabel>
+        <SectionLabel>Customer Fatigue</SectionLabel>
         <div className="flex-1 flex items-center justify-center">
           <p className="text-xs text-foreground-faint text-center px-4">
             Frequency data available after first campaign cycle
@@ -711,12 +712,12 @@ function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
 
   return (
     <div className="flex-[4] p-5 min-w-0 flex flex-col">
-      <SectionLabel>Response by Frequency</SectionLabel>
+      <SectionLabel>Customer Fatigue</SectionLabel>
       <div className="flex-1 min-h-0">
         <StackedBarChart
           data={barData}
           segments={[
-            { color: PROPENSITY_LINES.medium, label: 'Response rate' },
+            { color: PROPENSITY_FILLS.bar, label: '% who respond' },
           ]}
           maxValue={yMax}
           cssHeight="100%"
