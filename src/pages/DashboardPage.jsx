@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useRef, useLayoutEffect } from 'react';
+import { ArrowRight, RotateCcw, Pause, Lightbulb } from 'lucide-react';
 import Logo from '../components/Logo.jsx';
 import Chart from '../components/Chart.jsx';
 import StackedBarChart from '../components/StackedBarChart.jsx';
-import CohortBar from '../components/CohortBar.jsx';
+import StackedAreaChart from '../components/StackedAreaChart.jsx';
 import FunnelChart from '../components/FunnelChart.jsx';
 import StrategyCards, { DefaultBudgetSlider, BUDGET_CONFIG } from '../components/StrategyCards.jsx';
 import { cn } from '../lib/utils.js';
@@ -67,25 +68,12 @@ function DaySelector({ selected, onSelect }) {
   );
 }
 
-// HSL interpolation from gray-200 (warm sand) → brand (deep wine)
-// Smoothstep easing for perceptually even transitions
-function generateCohortColors(count) {
-  const h0 = 30,  s0 = 22,  l0 = 86;   // gray-200 (#E4DDD5)
-  const h1 = 342, s1 = 100, l1 = 20;    // brand (#66001F)
-  const colors = [];
-  for (let i = 0; i < count; i++) {
-    const t = count === 1 ? 1 : i / (count - 1);
-    const te = t * t * (3 - 2 * t); // smoothstep
-    // Short arc: 30° → 342° backward through 0°
-    const h = h0 + (h1 - h0 - 360) * te;
-    const hNorm = ((h % 360) + 360) % 360;
-    const s = s0 + (s1 - s0) * te;
-    const l = l0 + (l1 - l0) * te;
-    colors.push(`hsl(${Math.round(hNorm)}, ${Math.round(s)}%, ${Math.round(l)}%)`);
-  }
-  return colors;
-}
-const COHORT_COLORS = generateCohortColors(10);
+// Propensity color palette — warm gray scale (computed context recedes per DESIGN.md)
+const PROPENSITY_COLORS = {
+  high: '#6B5E54',   // gray-600 (warm brown)
+  medium: '#A89E94', // gray-400 (warm taupe)
+  low: '#D1C8BE',    // gray-300 (warm sand)
+};
 
 // ═══════════════════════════════════════════════════════════════════════
 // CAMPAIGN HEALTH ROW — compact status strip at top of Block 1
@@ -403,7 +391,7 @@ function BriefingCategory({ label, icon, count, items, renderItem }) {
           expanded && 'bg-accent-subtle'
         )}
       >
-        <span className="text-xs text-foreground-faint shrink-0">{icon}</span>
+        <span className="text-foreground-faint shrink-0">{icon}</span>
         <span className="text-[13px] font-medium text-foreground">
           {count} {label}
         </span>
@@ -443,14 +431,14 @@ function DayBriefing({ briefing }) {
       <div className="space-y-0">
         <BriefingCategory
           label="new contacts"
-          icon="→"
+          icon={<ArrowRight size={12} />}
           count={contacts.length}
           items={contacts}
           renderItem={(c) => (
             <div key={c.id} className="py-1.5 border-b border-border-light last:border-0">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium text-foreground">{c.name}</span>
-                <span className="text-[11px] text-foreground-faint">{c.channel} · {c.tierLabel} · {c.messageApproach}</span>
+                <span className="text-[11px] text-foreground-faint">{c.channel} · {c.offerName || c.tierLabel} · {c.messageApproach}</span>
                 <span className="text-[11px] text-foreground-faint ml-auto">{fmtTime(c.hour, c.minute)}</span>
               </div>
               <p className="text-[11px] text-foreground-faint leading-relaxed mt-0.5">{c.reasoning}</p>
@@ -461,7 +449,7 @@ function DayBriefing({ briefing }) {
         {followUps.length > 0 && (
           <BriefingCategory
             label="follow-ups sent"
-            icon="↻"
+            icon={<RotateCcw size={12} />}
             count={followUps.length}
             items={followUps}
             renderItem={(f) => (
@@ -478,7 +466,7 @@ function DayBriefing({ briefing }) {
 
         <BriefingCategory
           label="customers held back"
-          icon="⏸"
+          icon={<Pause size={12} />}
           count={holdbacks.length}
           items={holdbacks}
           renderItem={(h) => (
@@ -497,7 +485,7 @@ function DayBriefing({ briefing }) {
         {learnings.length > 0 && (
           <BriefingCategory
             label="learnings from yesterday"
-            icon="💡"
+            icon={<Lightbulb size={12} />}
             count={learnings.length}
             items={learnings}
             renderItem={(l) => (
@@ -654,129 +642,137 @@ function DateRangeSelector({ selected, onSelect }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// LIFECYCLE + COHORT ZOOM — one visual unit with connecting lines
+// BLOCK 2 LEFT: AUDIENCE HEALTH — propensity distribution + reach depth
 // ═══════════════════════════════════════════════════════════════════════
-function LifecycleWithCohortZoom({
-  lifecycleBarData, lifecycleSegments, lifecycleYTicks, effectiveDay,
-  cohortWaves, maxEngaged, cohortColors, fmt,
-}) {
-  const wrapperRef = useRef(null);
-  const chartRef = useRef(null);
-  const [chartDims, setChartDims] = useState(null);
+function AudienceHealth({ propensityHealth, effectiveDay }) {
+  if (!propensityHealth) return null;
 
-  // Measure the chart container to compute the engaged segment position in pixels
-  useLayoutEffect(() => {
-    const el = chartRef.current;
-    if (!el) return;
-    const measure = () => {
-      const rect = el.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0) setChartDims({ width: rect.width, height: rect.height });
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  const { high, medium, low, reachDepth, totalEligible } = propensityHealth;
+  const dataSlice = effectiveDay;
 
-  // Compute Engaged segment Y position on the last bar (in CSS pixels, relative to chart container)
-  const maxVal = lifecycleYTicks[lifecycleYTicks.length - 1] || 1;
-  const lastDay = lifecycleBarData[lifecycleBarData.length - 1];
-  const coolingOff = lastDay?.values[0] || 0;
-  const engaged = lastDay?.values[1] || 0;
+  const bands = [
+    { label: 'High', color: PROPENSITY_COLORS.high, data: high.slice(0, dataSlice) },
+    { label: 'Medium', color: PROPENSITY_COLORS.medium, data: medium.slice(0, dataSlice) },
+    { label: 'Low', color: PROPENSITY_COLORS.low, data: low.slice(0, dataSlice) },
+  ];
 
-  // The chart area has CSS padding (CHART_MARGIN). SVG content area = container - padding.
-  // With pxPerUnit scaling, compute Y positions.
-  let engTopPx = 0, engBotPx = 0;
-  if (chartDims && maxVal > 0 && engaged > 0) {
-    const svgW = chartDims.width - CHART_MARGIN.left - CHART_MARGIN.right;
-    const svgH = chartDims.height - CHART_MARGIN.top - CHART_MARGIN.bottom;
-    // viewBoxH matches SVG aspect ratio
-    const viewBoxW = 828; // VIEWBOX_WIDTH
-    const viewBoxH = svgH / svgW * viewBoxW;
-    const pxPerUnit = svgW / viewBoxW;
+  const depthSlice = reachDepth.slice(0, dataSlice);
+  // Scale reach depth to the same value domain as the bands (total eligible)
+  const reachDepthScaled = depthSlice.map(d => d * totalEligible);
 
-    // In viewBox coords: bottom of chart = viewBoxH, bars stack from bottom
-    const coolH_vb = (coolingOff / maxVal) * viewBoxH;
-    const engH_vb = (engaged / maxVal) * viewBoxH;
-    const engBot_vb = viewBoxH - coolH_vb;
-    const engTop_vb = engBot_vb - engH_vb;
-
-    engBotPx = CHART_MARGIN.top + engBot_vb * pxPerUnit;
-    engTopPx = CHART_MARGIN.top + engTop_vb * pxPerUnit;
-  }
-
-  const showZoom = engaged > 0 && chartDims;
+  const xLabels = dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }));
 
   return (
-    <div ref={wrapperRef} className="flex-[6] flex min-w-0" style={{ position: 'relative' }}>
-      {/* Chart column */}
-      <div className="flex-[5] p-5 min-w-0 flex flex-col">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-          <SectionLabel>Audience Referral Status</SectionLabel>
-          {/* Legend positioned here — before the zoom zone */}
-          <div style={{ display: 'flex', gap: 16, fontSize: 11, fontFamily: 'var(--font-family)', color: 'var(--text-tertiary)' }}>
-            {[...lifecycleSegments].reverse().map((seg) => (
-              <span key={seg.label} style={{ display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: seg.color, flexShrink: 0 }} />
-                {seg.label}
-              </span>
-            ))}
-          </div>
+    <div className="flex-[9] p-5 min-w-0 flex flex-col">
+      <SectionLabel>Audience Health</SectionLabel>
+      <div className="flex-1 min-h-0">
+        <StackedAreaChart
+          bands={bands}
+          maxValue={totalEligible}
+          cssHeight="100%"
+          xLabels={xLabels}
+          legend
+          reachDepth={depthSlice}
+          fadedOpacity={0.25}
+          vividOpacity={0.7}
+          formatTooltip={(i, v) => formatCompact(v)}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// BLOCK 2 CENTER: ENGAGEMENT EFFECTIVENESS — combined decay + trend
+// ═══════════════════════════════════════════════════════════════════════
+function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
+  if (!effectivenessData) return null;
+
+  const { touchpointDecay, lifetimeTrend } = effectivenessData;
+  const hasData = effectiveDay >= 5;
+
+  if (!hasData) {
+    return (
+      <div className="flex-[4] p-5 min-w-0 flex flex-col">
+        <SectionLabel>Engagement Effectiveness</SectionLabel>
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-xs text-foreground-faint text-center px-4">
+            Performance data available after first campaign
+          </p>
         </div>
-        <div ref={chartRef} className="flex-1 min-h-0">
-          <StackedBarChart
-            data={lifecycleBarData}
-            segments={lifecycleSegments}
+      </div>
+    );
+  }
+
+  const maxRate = Math.max(...touchpointDecay, ...lifetimeTrend);
+  const yMax = niceYMax(maxRate);
+  const xLabels = touchpointDecay.map((_, i) => ({ value: String(i + 1), at: i }));
+
+  return (
+    <div className="flex-[4] p-5 min-w-0 flex flex-col">
+      <SectionLabel>Engagement Effectiveness</SectionLabel>
+      <div className="flex-1 min-h-0 flex flex-col justify-center">
+        <div className="h-[200px]">
+          <Chart
+            series={[
+              { data: touchpointDecay, color: PROPENSITY_COLORS.high, label: 'Per Campaign', width: 2 },
+              { data: lifetimeTrend, color: PROPENSITY_COLORS.medium, dashed: true, width: 1.5, label: 'Lifetime' },
+            ]}
+            maxValue={yMax}
             cssHeight="100%"
-            maxValue={maxVal}
-            xLabels={dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }))}
-            yLabels={lifecycleYTicks}
+            xLabels={xLabels}
+            yLabels={[yMax * 0.5, yMax]}
             gridlines="from-labels"
-            formatTooltip={(i, v) => fmt(v)}
+            legend
+            formatYLabel={(v) => `${Math.round(v * 100)}%`}
+            endpointLabel={(v) => `${Math.round(v * 100)}%`}
           />
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Connecting lines + Cohort bar column */}
-      <div className="flex-[1.2] pt-5 pr-4 pb-5 flex flex-col min-w-0" style={{ position: 'relative' }}>
-        {/* SVG overlay for connecting lines — positioned absolutely from the wrapper */}
-        {showZoom && (
-          <svg
-            style={{
-              position: 'absolute',
-              left: -24,
-              top: 0,
-              width: 28,
-              height: chartDims.height + 40,
-              pointerEvents: 'none',
-              overflow: 'visible',
-            }}
-          >
-            {/* Bracket on the engaged segment */}
-            <line x1="4" y1={engTopPx + 20} x2="4" y2={engBotPx + 20} stroke="#C8BFB5" strokeWidth="1" />
-            <line x1="4" y1={engTopPx + 20} x2="7" y2={engTopPx + 20} stroke="#C8BFB5" strokeWidth="1" />
-            <line x1="4" y1={engBotPx + 20} x2="7" y2={engBotPx + 20} stroke="#C8BFB5" strokeWidth="1" />
+// ═══════════════════════════════════════════════════════════════════════
+// BLOCK 2 RIGHT: TODAY'S OPERATIONS — summary + narrative + dist + feed
+// ═══════════════════════════════════════════════════════════════════════
+function RewardDistribution({ contacts }) {
+  if (!contacts || contacts.length === 0) return null;
 
-            {/* Fan lines to cohort bar zone */}
-            <line x1="7" y1={engTopPx + 20} x2="26" y2={48} stroke="#D8D0C8" strokeWidth="1" strokeDasharray="3,3" />
-            <line x1="7" y1={engBotPx + 20} x2="26" y2={chartDims.height - 4} stroke="#D8D0C8" strokeWidth="1" strokeDasharray="3,3" />
+  // Compute offer distribution
+  const offerCounts = {};
+  const messageCounts = {};
+  for (const c of contacts) {
+    const offer = c.offerName || c.tierLabel;
+    offerCounts[offer] = (offerCounts[offer] || 0) + 1;
+    messageCounts[c.messageApproach] = (messageCounts[c.messageApproach] || 0) + 1;
+  }
 
-            {/* Subtle filled zoom region */}
-            <path
-              d={`M7,${engTopPx + 20} L26,48 L26,${chartDims.height - 4} L7,${engBotPx + 20} Z`}
-              fill="#F5F1EB"
-              opacity="0.3"
-            />
-          </svg>
-        )}
+  const total = contacts.length;
+  const offerEntries = Object.entries(offerCounts).sort((a, b) => b[1] - a[1]);
+  const messageEntries = Object.entries(messageCounts).sort((a, b) => b[1] - a[1]);
 
-        <CohortBar
-          cohortWaves={cohortWaves}
-          selectedDay={effectiveDay}
-          maxVal={maxEngaged}
-          colors={cohortColors}
-          cssHeight="100%"
-        />
+  return (
+    <div className="bg-accent-subtle rounded-sm px-3 py-2.5 space-y-2">
+      <div>
+        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Reward Mix</span>
+        <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
+          {offerEntries.map(([name, count]) => (
+            <span key={name} className="text-[11px] text-foreground-muted">
+              {name} <span className="font-semibold text-foreground">{Math.round(count / total * 100)}%</span>
+            </span>
+          ))}
+        </div>
+      </div>
+      <div>
+        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Message Mix</span>
+        <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
+          {messageEntries.map(([name, count]) => (
+            <span key={name} className="text-[11px] text-foreground-muted">
+              {name} <span className="font-semibold text-foreground">{Math.round(count / total * 100)}%</span>
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -804,36 +800,8 @@ export default function DashboardPage({ config, onHome }) {
   // All daily briefings (for scrollable history)
   const briefings = projection.dailyBriefings;
 
-  // Lifecycle data for stacked bar chart (Graph 1)
-  // Dormant removed — shown as context label instead. Eligible faded as ceiling wash.
-  const lifecycleSegments = [
-    { label: 'Cooling Off', color: 'var(--color-gray-400)' },
-    { label: 'Engaged', color: 'var(--color-brand)' },
-    { label: 'Eligible', color: 'rgba(239, 235, 229, 0.35)' },
-  ];
-  const lifecycleBarData = useMemo(() => {
-    const ls = projection.lifecycleStates;
-    if (!ls) return [];
-    return Array.from({ length: effectiveDay }, (_, i) => ({
-      values: [ls.coolingOff[i] || 0, ls.engaged[i] || 0, ls.eligible[i] || 0],
-    }));
-  }, [projection.lifecycleStates, effectiveDay]);
-
-  // Max engaged value for CohortBar Y-axis scaling
-  const maxEngaged = useMemo(() => {
-    const engaged = projection.lifecycleStates?.engaged;
-    if (!engaged) return 1;
-    return Math.max(...engaged, 1);
-  }, [projection.lifecycleStates]);
-
-  // Y-axis ticks for lifecycle chart — 3 ticks (0, mid, max), consistent with hero charts
-  const lifecycleYTicks = useMemo(() => {
-    if (!lifecycleBarData.length) return [];
-    const visibleMax = Math.max(...lifecycleBarData.map(d => d.values.reduce((a, b) => a + b, 0)));
-    if (!visibleMax) return [];
-    const yMax = niceYMax(visibleMax);
-    return [yMax * 0.5, yMax];
-  }, [lifecycleBarData]);
+  // Get the current day's contacts for reward/message distribution
+  const currentDayContacts = briefings?.[effectiveDay]?.contacts || [];
 
   return (
     <div className="min-h-screen flex flex-col w-full px-6 animate-page-enter">
@@ -915,29 +883,58 @@ export default function DashboardPage({ config, onHome }) {
           </div>
         </div>
 
-        {/* ── BLOCK 2: LIFECYCLE + COHORT ZOOM | TEXT ── */}
+        {/* ── BLOCK 2: THREE-COLUMN — Health | Effectiveness | Today's Ops ── */}
         <div className="bg-surface border border-border rounded-lg">
           <div className="flex h-[500px]">
-            {/* LEFT: Lifecycle chart + Engaged cohort zoom callout (one visual unit) */}
-            <LifecycleWithCohortZoom
-              lifecycleBarData={lifecycleBarData}
-              lifecycleSegments={lifecycleSegments}
-              lifecycleYTicks={lifecycleYTicks}
+            {/* LEFT (~45%): Audience Health — propensity + reach depth */}
+            <AudienceHealth
+              propensityHealth={projection.propensityHealth}
               effectiveDay={effectiveDay}
-              cohortWaves={projection.cohortWaves}
-              maxEngaged={maxEngaged}
-              cohortColors={COHORT_COLORS}
-              fmt={fmt}
             />
 
             {/* DIVIDER */}
             <div className="w-px bg-border-light shrink-0" />
 
-            {/* RIGHT: Key Learnings + Recommendation + Decisions */}
-            <div className="flex-[4] p-5 overflow-y-auto">
-              <KeyLearnings annotations={projection.learningAnnotations} selectedDay={effectiveDay} />
-              <div className="border-b border-border-light my-4" />
+            {/* CENTER (~20%): Engagement Effectiveness — combined chart */}
+            <EngagementEffectiveness
+              effectivenessData={projection.effectivenessData}
+              effectiveDay={effectiveDay}
+            />
+
+            {/* DIVIDER */}
+            <div className="w-px bg-border-light shrink-0" />
+
+            {/* RIGHT (~35%): Today's Operations */}
+            <div className="flex-[7] p-5 overflow-y-auto flex flex-col gap-3">
+              {/* Heartbeat — summary bar */}
+              <div className="bg-accent-subtle rounded-sm px-3 py-2.5">
+                <div className="text-[13px] font-semibold text-foreground">
+                  {fmt(briefings?.[effectiveDay]?.dailyPlan?.contactCount || 0)} contacts
+                  {' · '}
+                  {briefings?.[effectiveDay]?.holdbacks?.length || 0} held back
+                  {' · '}
+                  {fmtDollar(briefings?.[effectiveDay]?.dailyPlan?.budgetToday || 0)} spent
+                </div>
+              </div>
+
+              {/* Strategy narrative */}
+              <div>
+                <SectionLabel>Strategy</SectionLabel>
+                <p className="text-xs text-foreground-muted leading-relaxed">
+                  {briefings?.[effectiveDay]?.dailyPlan?.strategyShift || 'Agent is calibrating...'}
+                </p>
+              </div>
+
+              {/* Reward & Message Distribution */}
+              <RewardDistribution contacts={currentDayContacts} />
+
+              {/* Agent recommendation */}
               <GuardrailRecommendation briefings={briefings} selectedDay={effectiveDay} />
+
+              {/* Key Learnings */}
+              <KeyLearnings annotations={projection.learningAnnotations} selectedDay={effectiveDay} />
+
+              {/* Decision Feed */}
               <DecisionFeed briefings={briefings} selectedDay={effectiveDay} />
             </div>
           </div>

@@ -21,6 +21,9 @@ export default function StackedAreaChart({
   xLabels,
   legend,
   formatTooltip,
+  reachDepth,        // array of 0-1 fractions (one per data point) — enables vivid/faded overlay
+  fadedOpacity = 0.25,
+  vividOpacity = 0.7,
 }) {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [animated, setAnimated] = useState(false);
@@ -116,6 +119,26 @@ export default function StackedAreaChart({
 
     return areaPath;
   });
+
+  // Reach depth clip path — when reachDepth is provided, the vivid bands are
+  // clipped from the chart bottom up to a curve derived from the reach depth fractions.
+  // reachDepth[i] = fraction (0-1) of total audience reached at data point i.
+  // The clip boundary maps reachDepth to the Y-axis: depth=0 → bottom, depth=1 → top.
+  const hasReachDepth = reachDepth && reachDepth.length === dataLen;
+  let reachClipPath = '';
+  let reachLinePath = '';
+  if (hasReachDepth) {
+    const reachPoints = reachDepth.map((depth, i) => ({
+      x: chartLeft + (i / Math.max(dataLen - 1, 1)) * chartW,
+      y: chartTop + chartH - (depth * maxVal / maxVal) * chartH, // depth fraction → Y
+    }));
+    // The clip region: from chart bottom, up to the reach depth curve, across
+    const curvePath = buildMonotonePath(reachPoints);
+    reachClipPath = `M${chartLeft},${chartBottom} L${chartLeft},${reachPoints[0].y} ` +
+      curvePath.slice(1) + // skip the 'M' from buildMonotonePath
+      ` L${chartLeft + chartW},${chartBottom} Z`;
+    reachLinePath = curvePath;
+  }
 
   // X labels
   const resolvedXLabels = xLabels
@@ -231,18 +254,70 @@ export default function StackedAreaChart({
             opacity={TOKENS.gridline.opacity}
           />
 
-          {/* Stacked area bands */}
-          {bands.map((band, bi) => (
-            <path
-              key={bi}
-              d={bandPaths[bi]}
-              fill={band.color}
-              opacity={animated ? (band.opacity || 0.7) : 0}
-              style={{
-                transition: `opacity ${FADE_DURATION_MS}ms ease-out ${bi * BAND_STAGGER_MS}ms`,
-              }}
-            />
-          ))}
+          {/* Stacked area bands — dual pass when reach depth is active */}
+          {hasReachDepth ? (
+            <>
+              {/* Clip path definition for vivid zone */}
+              <defs>
+                <clipPath id={`reach-clip-${safeId}`}>
+                  <path d={reachClipPath} />
+                </clipPath>
+              </defs>
+
+              {/* Pass 1: faded bands (full chart, low opacity = untapped) */}
+              {bands.map((band, bi) => (
+                <path
+                  key={`faded-${bi}`}
+                  d={bandPaths[bi]}
+                  fill={band.color}
+                  opacity={animated ? fadedOpacity : 0}
+                  style={{
+                    transition: `opacity ${FADE_DURATION_MS}ms ease-out ${bi * BAND_STAGGER_MS}ms`,
+                  }}
+                />
+              ))}
+
+              {/* Pass 2: vivid bands (clipped to reach depth = being worked) */}
+              <g clipPath={`url(#reach-clip-${safeId})`}>
+                {bands.map((band, bi) => (
+                  <path
+                    key={`vivid-${bi}`}
+                    d={bandPaths[bi]}
+                    fill={band.color}
+                    opacity={animated ? vividOpacity : 0}
+                    style={{
+                      transition: `opacity ${FADE_DURATION_MS}ms ease-out ${bi * BAND_STAGGER_MS}ms`,
+                    }}
+                  />
+                ))}
+              </g>
+
+              {/* Reach depth boundary line — thin brand accent */}
+              <path
+                d={reachLinePath}
+                fill="none"
+                stroke="var(--color-brand)"
+                strokeWidth="1.5"
+                opacity={animated ? 0.6 : 0}
+                style={{
+                  transition: `opacity ${FADE_DURATION_MS}ms ease-out ${bands.length * BAND_STAGGER_MS}ms`,
+                }}
+              />
+            </>
+          ) : (
+            /* Standard rendering — no reach depth */
+            bands.map((band, bi) => (
+              <path
+                key={bi}
+                d={bandPaths[bi]}
+                fill={band.color}
+                opacity={animated ? (band.opacity || 0.7) : 0}
+                style={{
+                  transition: `opacity ${FADE_DURATION_MS}ms ease-out ${bi * BAND_STAGGER_MS}ms`,
+                }}
+              />
+            ))
+          )}
 
           {/* Hover overlay */}
           <rect

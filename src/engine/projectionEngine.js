@@ -877,6 +877,12 @@ export function computeDashboardProjection({ budget, params }) {
     // Cohort waves for breakdown bar (Block 2, Graph 2)
     cohortWaves,
 
+    // Propensity health for Block 2 (audience health chart)
+    propensityHealth: computePropensityHealth(agentic, params),
+
+    // Effectiveness data for Block 2 (engagement effectiveness chart)
+    effectivenessData: computeEffectivenessData(agentic, params),
+
     // Config passthrough for display
     referrerTiers: params.referrerTiers,
     refereeTiers: params.refereeTiers,
@@ -1006,4 +1012,81 @@ function computeCohortWaves(simResult, params) {
   // Sort by startDay ascending
   waves.sort((a, b) => a.startDay - b.startDay);
   return waves;
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// Propensity Health — H/M/L distribution + reach depth over time
+// Used by Block 2 Left: Audience Health stacked area chart
+// ═══════════════════════════════════════════════════════════════════════
+
+function computePropensityHealth(simResult, params) {
+  const { days } = simResult;
+  const { totalCustomers, eligibilityRate } = params;
+  const totalEligible = Math.round(totalCustomers * eligibilityRate);
+
+  // Starting propensity distribution of the eligible audience
+  const startHigh = 0.30;
+  const startMedium = 0.45;
+  const startLow = 0.25;
+
+  const high = [];
+  const medium = [];
+  const low = [];
+  const reachDepth = [];
+
+  for (let d = 0; d < days.length; d++) {
+    const dayData = days[d];
+    const contacted = dayData.funnelCumulative.contacted;
+    const depth = Math.min(1, contacted / totalEligible);
+    reachDepth.push(depth);
+
+    // Agent contacts high-propensity first, so the contacted pool skews high.
+    // The TOTAL eligible distribution stays stable (these are scores, not states).
+    // Slight shift as high-propensity pool gets worked: small migration from
+    // high to medium as re-scoring happens (customers who didn't convert get
+    // downgraded slightly).
+    const dayFrac = d / Math.max(1, days.length - 1);
+    const drift = dayFrac * 0.05; // max 5% drift over 30 days
+    const h = Math.round(totalEligible * (startHigh - drift));
+    const m = Math.round(totalEligible * (startMedium + drift * 0.6));
+    const l = totalEligible - h - m; // remainder to avoid rounding errors
+
+    high.push(h);
+    medium.push(m);
+    low.push(l);
+  }
+
+  return { high, medium, low, reachDepth, totalEligible };
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// Effectiveness Data — touchpoint decay + lifetime response trend
+// Used by Block 2 Center: Engagement Effectiveness chart
+// ═══════════════════════════════════════════════════════════════════════
+
+function computeEffectivenessData(simResult, params) {
+  const { days } = simResult;
+  const latestDay = days[days.length - 1];
+  const efficiency = latestDay?.efficiency || 0.5;
+
+  // Within-campaign touchpoint decay — response rate drops with each successive touch
+  // Modulated by agent efficiency (better targeting = slower decay)
+  const baseDecay = [0.12, 0.05, 0.025, 0.015, 0.008];
+  const touchpointDecay = baseDecay.map((rate, i) => {
+    const boost = 1 + efficiency * 0.3; // better targeting slightly boosts all rates
+    return Math.round(rate * boost * 1000) / 1000;
+  });
+
+  // Across-offer lifetime trend — response rate by Nth offer received
+  // Shows whether audience is fatiguing or holding steady
+  const baseTrend = [0.15, 0.12, 0.10, 0.09, 0.085];
+  const lifetimeTrend = baseTrend.map((rate, i) => {
+    // Good personalization keeps rates higher
+    const retention = 1 + efficiency * 0.2;
+    return Math.round(rate * retention * 1000) / 1000;
+  });
+
+  return { touchpointDecay, lifetimeTrend };
 }
