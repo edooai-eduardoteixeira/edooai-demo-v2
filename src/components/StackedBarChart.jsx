@@ -145,9 +145,9 @@ export default function StackedBarChart({
   // Chart area style: CSS padding creates label zones
   const chartAreaStyle = {
     position: 'relative',
-    paddingLeft: CHART_MARGIN.left,
-    paddingRight: CHART_MARGIN.right,
-    paddingTop: CHART_MARGIN.top,
+    paddingLeft: showBarValues ? 0 : CHART_MARGIN.left,
+    paddingRight: showBarValues ? 0 : CHART_MARGIN.right,
+    paddingTop: showBarValues ? 16 : CHART_MARGIN.top,
     paddingBottom: CHART_MARGIN.bottom,
     ...(cssHeight ? { flex: 1, minHeight: 0 } : {}),
   };
