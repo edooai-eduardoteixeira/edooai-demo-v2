@@ -3,7 +3,6 @@ import { ArrowRight, RotateCcw, Pause, Lightbulb } from 'lucide-react';
 import Logo from '../components/Logo.jsx';
 import Chart from '../components/Chart.jsx';
 import StackedBarChart from '../components/StackedBarChart.jsx';
-import StackedAreaChart from '../components/StackedAreaChart.jsx';
 import FunnelChart from '../components/FunnelChart.jsx';
 import StrategyCards, { DefaultBudgetSlider, BUDGET_CONFIG } from '../components/StrategyCards.jsx';
 import { cn } from '../lib/utils.js';
@@ -68,11 +67,11 @@ function DaySelector({ selected, onSelect }) {
   );
 }
 
-// Propensity color palette — warm gray scale (computed context recedes per DESIGN.md)
-const PROPENSITY_COLORS = {
-  high: '#6B5E54',   // gray-600 (warm brown)
-  medium: '#A89E94', // gray-400 (warm taupe)
-  low: '#D1C8BE',    // gray-300 (warm sand)
+// Propensity line colors — spread across warm gray scale, equal treatment (no hierarchy)
+const PROPENSITY_LINES = {
+  high: '#4A3F37',   // gray-700 (darkest)
+  medium: '#7D7368', // gray-500 (mid)
+  low: '#A89E94',    // gray-400 (lightest, still visible on white)
 };
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -647,35 +646,50 @@ function DateRangeSelector({ selected, onSelect }) {
 function AudienceHealth({ propensityHealth, effectiveDay }) {
   if (!propensityHealth) return null;
 
-  const { high, medium, low, reachDepth, totalEligible } = propensityHealth;
+  const { highPenetration, medPenetration, lowPenetration,
+          highTotal, medTotal, lowTotal, totalEligible } = propensityHealth;
   const dataSlice = effectiveDay;
 
-  const bands = [
-    { label: 'High', color: PROPENSITY_COLORS.high, data: high.slice(0, dataSlice) },
-    { label: 'Medium', color: PROPENSITY_COLORS.medium, data: medium.slice(0, dataSlice) },
-    { label: 'Low', color: PROPENSITY_COLORS.low, data: low.slice(0, dataSlice) },
-  ];
+  // Per-segment penetration rate as percentage (0-100)
+  const highData = highPenetration.slice(0, dataSlice).map(r => Math.round(r * 100));
+  const medData = medPenetration.slice(0, dataSlice).map(r => Math.round(r * 100));
+  const lowData = lowPenetration.slice(0, dataSlice).map(r => Math.round(r * 100));
 
-  const depthSlice = reachDepth.slice(0, dataSlice);
-  // Scale reach depth to the same value domain as the bands (total eligible)
-  const reachDepthScaled = depthSlice.map(d => d * totalEligible);
-
+  const maxRate = Math.max(...highData, ...medData, ...lowData, 10);
+  const yMax = niceYMax(maxRate);
   const xLabels = dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }));
+
+  // Current day rates for header
+  const hRate = highData[highData.length - 1] || 0;
+  const mRate = medData[medData.length - 1] || 0;
+  const lRate = lowData[lowData.length - 1] || 0;
+  const totalReached = Math.round(hRate / 100 * highTotal + mRate / 100 * medTotal + lRate / 100 * lowTotal);
 
   return (
     <div className="flex-[9] p-5 min-w-0 flex flex-col">
-      <SectionLabel>Audience Health</SectionLabel>
+      <div className="flex items-baseline justify-between mb-3">
+        <h3 className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
+          Audience Reach
+        </h3>
+        <span className="text-[11px] text-foreground-faint">
+          {formatCompact(totalReached)} of {formatCompact(totalEligible)}
+        </span>
+      </div>
       <div className="flex-1 min-h-0">
-        <StackedAreaChart
-          bands={bands}
-          maxValue={totalEligible}
+        <Chart
+          series={[
+            { data: highData, color: PROPENSITY_LINES.high, label: `Most likely (${formatCompact(highTotal)})`, width: 2 },
+            { data: medData, color: PROPENSITY_LINES.medium, label: `Moderate (${formatCompact(medTotal)})`, width: 2 },
+            { data: lowData, color: PROPENSITY_LINES.low, label: `Less likely (${formatCompact(lowTotal)})`, width: 2 },
+          ]}
+          maxValue={yMax}
           cssHeight="100%"
           xLabels={xLabels}
+          yLabels={[yMax * 0.5, yMax]}
+          gridlines="from-labels"
           legend
-          reachDepth={depthSlice}
-          fadedOpacity={0.25}
-          vividOpacity={0.7}
-          formatTooltip={(i, v) => formatCompact(v)}
+          formatYLabel={(v) => `${Math.round(v)}%`}
+          endpointLabel={(v) => `${Math.round(v)}%`}
         />
       </div>
     </div>
@@ -715,8 +729,8 @@ function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
         <div className="h-[200px]">
           <Chart
             series={[
-              { data: touchpointDecay, color: PROPENSITY_COLORS.high, label: 'Per Campaign', width: 2 },
-              { data: lifetimeTrend, color: PROPENSITY_COLORS.medium, dashed: true, width: 1.5, label: 'Lifetime' },
+              { data: touchpointDecay, color: PROPENSITY_LINES.high, label: 'Per Campaign', width: 2 },
+              { data: lifetimeTrend, color: PROPENSITY_LINES.medium, dashed: true, width: 1.5, label: 'Lifetime' },
             ]}
             maxValue={yMax}
             cssHeight="100%"

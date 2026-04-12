@@ -1025,39 +1025,37 @@ function computePropensityHealth(simResult, params) {
   const { totalCustomers, eligibilityRate } = params;
   const totalEligible = Math.round(totalCustomers * eligibilityRate);
 
-  // Starting propensity distribution of the eligible audience
-  const startHigh = 0.30;
-  const startMedium = 0.45;
-  const startLow = 0.25;
+  // Segment sizes (relatively stable)
+  const highTotal = Math.round(totalEligible * 0.30);
+  const medTotal = Math.round(totalEligible * 0.45);
+  const lowTotal = totalEligible - highTotal - medTotal;
 
-  const high = [];
-  const medium = [];
-  const low = [];
-  const reachDepth = [];
+  // Per-segment penetration rate over time (0-1)
+  // Agent contacts high-propensity first → high rises fastest, low rises slowest
+  const highPenetration = [];
+  const medPenetration = [];
+  const lowPenetration = [];
 
   for (let d = 0; d < days.length; d++) {
     const dayData = days[d];
     const contacted = dayData.funnelCumulative.contacted;
-    const depth = Math.min(1, contacted / totalEligible);
-    reachDepth.push(depth);
+    const overallDepth = Math.min(1, contacted / totalEligible);
 
-    // Agent contacts high-propensity first, so the contacted pool skews high.
-    // The TOTAL eligible distribution stays stable (these are scores, not states).
-    // Slight shift as high-propensity pool gets worked: small migration from
-    // high to medium as re-scoring happens (customers who didn't convert get
-    // downgraded slightly).
-    const dayFrac = d / Math.max(1, days.length - 1);
-    const drift = dayFrac * 0.05; // max 5% drift over 30 days
-    const h = Math.round(totalEligible * (startHigh - drift));
-    const m = Math.round(totalEligible * (startMedium + drift * 0.6));
-    const l = totalEligible - h - m; // remainder to avoid rounding errors
+    // Differential penetration rates: high ~2.2x overall, med ~0.85x, low ~0.35x
+    // With saturation clamping (can't exceed 100%)
+    const hRate = Math.min(1, overallDepth * 2.2);
+    const mRate = Math.min(1, overallDepth * 0.85);
+    const lRate = Math.min(1, Math.max(0, overallDepth * 0.35));
 
-    high.push(h);
-    medium.push(m);
-    low.push(l);
+    highPenetration.push(hRate);
+    medPenetration.push(mRate);
+    lowPenetration.push(lRate);
   }
 
-  return { high, medium, low, reachDepth, totalEligible };
+  return {
+    highPenetration, medPenetration, lowPenetration,
+    highTotal, medTotal, lowTotal, totalEligible,
+  };
 }
 
 
