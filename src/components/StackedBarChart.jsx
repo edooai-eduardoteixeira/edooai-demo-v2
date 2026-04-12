@@ -37,13 +37,21 @@ export default function StackedBarChart({
   const chartAreaRef = useRef(null);
   const svgRef = useRef(null);
 
+  // Actual margins — collapse when showBarValues is active (no Y-axis)
+  const margin = {
+    left: showBarValues ? 0 : CHART_MARGIN.left,
+    right: showBarValues ? 0 : CHART_MARGIN.right,
+    top: showBarValues ? 16 : CHART_MARGIN.top,
+    bottom: CHART_MARGIN.bottom,
+  };
+
   // Measure SVG content area (always — needed for pixel label positioning)
   useLayoutEffect(() => {
     const el = chartAreaRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    const w = rect.width - CHART_MARGIN.left - CHART_MARGIN.right;
-    const h = rect.height - CHART_MARGIN.top - CHART_MARGIN.bottom;
+    const w = rect.width - margin.left - margin.right;
+    const h = rect.height - margin.top - margin.bottom;
     if (w > 0 && h > 0) {
       setSvgDims({ width: w, height: h });
     }
@@ -145,10 +153,10 @@ export default function StackedBarChart({
   // Chart area style: CSS padding creates label zones
   const chartAreaStyle = {
     position: 'relative',
-    paddingLeft: showBarValues ? 0 : CHART_MARGIN.left,
-    paddingRight: showBarValues ? 0 : CHART_MARGIN.right,
-    paddingTop: showBarValues ? 16 : CHART_MARGIN.top,
-    paddingBottom: CHART_MARGIN.bottom,
+    paddingLeft: margin.left,
+    paddingRight: margin.right,
+    paddingTop: margin.top,
+    paddingBottom: margin.bottom,
     ...(cssHeight ? { flex: 1, minHeight: 0 } : {}),
   };
 
@@ -290,8 +298,8 @@ export default function StackedBarChart({
               key={i}
               style={{
                 ...labelBase,
-                left: CHART_MARGIN.left - 8,
-                top: CHART_MARGIN.top + y * pxPerUnit,
+                left: margin.left - 8,
+                top: margin.top + y * pxPerUnit,
                 transform: 'translate(-100%, -50%)',
               }}
             >
@@ -312,8 +320,8 @@ export default function StackedBarChart({
               style={{
                 ...labelBase,
                 fontWeight: 600,
-                left: CHART_MARGIN.left + barCenterX * pxPerUnit,
-                top: CHART_MARGIN.top + barTopY * pxPerUnit - 16,
+                left: margin.left + barCenterX * pxPerUnit,
+                top: margin.top + barTopY * pxPerUnit - 16,
                 transform: 'translateX(-50%)',
               }}
             >
@@ -328,7 +336,7 @@ export default function StackedBarChart({
             key={i}
             style={{
               ...labelBase,
-              left: CHART_MARGIN.left + item.x * pxPerUnit,
+              left: margin.left + item.x * pxPerUnit,
               bottom: 5,
               transform: 'translateX(-50%)',
             }}
@@ -349,6 +357,7 @@ export default function StackedBarChart({
             chartBottom={chartBottom}
             pxPerUnit={pxPerUnit}
             viewBoxH={viewBoxH}
+            margin={margin}
           />
         )}
       </div>
@@ -356,16 +365,16 @@ export default function StackedBarChart({
   );
 }
 
-function Tooltip({ bar, data, segments, index, formatTooltip, formatValue, chartBottom, pxPerUnit, viewBoxH }) {
+function Tooltip({ bar, data, segments, index, formatTooltip, formatValue, chartBottom, pxPerUnit, viewBoxH, margin }) {
   const centerX = bar.rects[0].x + bar.rects[0].width / 2;
   const topY = chartBottom - bar.total;
 
-  const leftPx = CHART_MARGIN.left + centerX * pxPerUnit;
-  const topPx = CHART_MARGIN.top + topY * pxPerUnit;
+  const leftPx = margin.left + centerX * pxPerUnit;
+  const topPx = margin.top + topY * pxPerUnit;
 
   // Flip tooltip below if too close to top
   const flipBelow = (topY / viewBoxH) * 100 < 20;
-  const flipTopPx = CHART_MARGIN.top + (topY + bar.total * 0.5) * pxPerUnit;
+  const flipTopPx = margin.top + (topY + bar.total * 0.5) * pxPerUnit;
 
   const total = data.values.reduce((a, b) => a + b, 0);
 
