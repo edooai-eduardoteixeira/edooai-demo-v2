@@ -1,31 +1,20 @@
 import { cn } from '../lib/utils.js';
+import { formatCompact } from './chartUtils.js';
 
 /**
  * Reusable funnel chart component that enforces the Vincor design system.
  *
- * Renders a vertical funnel with left-aligned horizontal bars, stage labels
- * above each bar, and metrics to the right. Follows analytics-product
- * conventions (Stripe, Amplitude, HubSpot).
+ * Two rows per stage:
+ *   Row 1: stage name + (x days) — text only
+ *   Row 2: bar + count + (%) — count attached to bar's right edge
  *
- * Usage:
- *   <FunnelChart
- *     stages={[
- *       { label: 'Eligible', value: 50000 },
- *       { label: 'Contacted', value: 12000 },
- *       { label: 'Active User', value: 1200 },
- *     ]}
- *     pending={340}
- *   />
+ * Auto-height rows fill the parent container.
+ *
+ * Typography hierarchy (from DESIGN.md):
+ *   Count: text-[13px] font-semibold text-foreground
+ *   Stage name: text-[11px] font-medium text-foreground-muted
+ *   (%) and (x days): text-[11px] text-foreground-faint
  */
-
-function formatNumber(n) {
-  const rounded = Math.round(n);
-  if (rounded >= 1000) {
-    const k = rounded / 1000;
-    return k % 1 === 0 ? `${k}K` : `${k.toFixed(1)}K`;
-  }
-  return rounded.toLocaleString('en-US');
-}
 
 export default function FunnelChart({ stages, pending }) {
   if (!stages || stages.length === 0) return null;
@@ -33,45 +22,49 @@ export default function FunnelChart({ stages, pending }) {
   const maxValue = stages[0].value || 1;
 
   return (
-    <div>
-      <div className="flex flex-col gap-2">
+    <div className="h-full flex flex-col">
+      <div className="flex-1 flex flex-col gap-2">
         {stages.map((stage, i) => {
-          const widthPct = Math.max(15, Math.sqrt(stage.value / maxValue) * 100);
-          const prevValue = i > 0 ? stages[i - 1].value : null;
-          const convRate = prevValue && prevValue > 0
-            ? ((stage.value / prevValue) * 100).toFixed(1) + '%'
+          const fillPct = Math.max(15, Math.sqrt(stage.value / maxValue) * 100);
+          const isFirst = i === 0;
+          const stageEmpty = stage.value === 0;
+
+          const cumPct = isFirst ? null : ((stage.value / maxValue) * 100);
+          const cumPctStr = cumPct !== null
+            ? (cumPct < 1 ? cumPct.toFixed(1) + '%' : Math.round(cumPct) + '%')
             : null;
-          const isLast = i === stages.length - 1;
 
           return (
-            <div key={stage.label} className="w-full">
-              {/* Stage label + conversion rate inline */}
-              <div className="flex items-baseline gap-1.5 mb-0.5">
+            <div key={stage.label} className="flex-1 min-h-0 flex flex-col">
+              {/* Row 1: stage name + (x days) */}
+              <div className="flex items-baseline gap-1 mb-0.5">
                 <span className="text-[11px] font-medium text-foreground-muted">
                   {stage.label}
                 </span>
-                {convRate && (
+                {stage.time && !stageEmpty && !isFirst && (
                   <span className="text-[11px] text-foreground-faint">
-                    {convRate}
+                    ({stage.time})
                   </span>
                 )}
               </div>
 
-              {/* Bar (left-aligned) + number to the right */}
-              <div className="flex items-center gap-2">
+              {/* Row 2: bar + count + (%) */}
+              <div className="flex-1 min-h-0 flex items-center gap-2">
                 <div
-                  className={cn(
-                    'h-8 rounded-[4px] transition-all duration-300',
-                    isLast ? 'bg-brand' : 'bg-accent-subtle'
-                  )}
-                  style={{ width: `${widthPct}%` }}
+                  className="h-full rounded-[4px] bg-gray-200 transition-all duration-300"
+                  style={{ width: `${stageEmpty ? 15 : fillPct}%` }}
                 />
                 <span className={cn(
                   'text-[13px] font-semibold shrink-0 tabular-nums',
-                  isLast ? 'text-brand' : 'text-foreground'
+                  stageEmpty ? 'text-foreground-faint' : 'text-foreground'
                 )}>
-                  {formatNumber(stage.value)}
+                  {stageEmpty ? '—' : formatCompact(stage.value)}
                 </span>
+                {cumPctStr && !stageEmpty && (
+                  <span className="text-[11px] shrink-0 tabular-nums text-foreground-faint">
+                    ({cumPctStr})
+                  </span>
+                )}
               </div>
             </div>
           );
@@ -82,7 +75,7 @@ export default function FunnelChart({ stages, pending }) {
         <div className="mt-3 pt-3 border-t border-border-light flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-warn shrink-0" />
           <span className="text-[13px] text-foreground-muted">
-            <span className="font-semibold">{formatNumber(pending)} offers in flight</span>
+            <span className="font-semibold">{formatCompact(pending)} offers in flight</span>
           </span>
         </div>
       )}

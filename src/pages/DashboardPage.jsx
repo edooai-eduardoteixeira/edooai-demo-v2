@@ -891,15 +891,24 @@ export default function DashboardPage({ config, onHome }) {
             {/* RIGHT COLUMN (25%): Referral Funnel */}
             <div className="flex-1 min-w-0 flex flex-col pt-2.5">
               <SectionLabel>Referral Funnel</SectionLabel>
-              <div className="mt-1 flex-1 min-h-0">
+              <div className="flex-1 min-h-0">
                 <FunnelChart
-                  stages={[
-                    { label: 'Eligible', value: projection.audienceSize },
-                    { label: 'Contacted', value: dayData.funnelCumulative.contacted },
-                    { label: 'Referral Sent', value: dayData.funnelCumulative.referralSent },
-                    { label: 'Signed Up', value: dayData.funnelCumulative.signedUp },
-                    { label: 'Active User', value: dayData.funnelCumulative.activeUser },
-                  ]}
+                  stages={(() => {
+                    const contacted = dayData.funnelCumulative.contacted;
+                    const engaged = Math.round(contacted * 0.77);
+                    const referred = dayData.funnelCumulative.referralSent;
+                    const reached = Math.round(referred * 1.4);
+                    const signedUp = dayData.funnelCumulative.signedUp;
+                    const activeUser = dayData.funnelCumulative.activeUser;
+                    return [
+                      { label: 'Contacted', value: contacted, time: null, group: 'referrer' },
+                      { label: 'Engaged', value: engaged, time: '1 day', group: 'referrer' },
+                      { label: 'Referred', value: referred, time: '3 days', group: 'referrer' },
+                      { label: 'Reached', value: reached, time: '4 days', group: 'referee' },
+                      { label: 'Signed Up', value: signedUp, time: '6 days', group: 'referee' },
+                      { label: 'Active User', value: activeUser, time: '12 days', group: 'referee' },
+                    ];
+                  })()}
                 />
               </div>
             </div>
