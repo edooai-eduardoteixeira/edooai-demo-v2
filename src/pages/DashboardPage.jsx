@@ -504,30 +504,26 @@ function DayBriefing({ briefing }) {
 }
 
 // Guardrail Recommendation — separate from the feed, underneath it
-function GuardrailRecommendation({ briefings, selectedDay }) {
+function AgentRecommendationStrip({ briefings, selectedDay, onReview }) {
   // Find the most recent recommendation up to the selected day
   for (let d = selectedDay; d >= 1; d--) {
     const rec = briefings?.[d]?.recommendation;
     if (rec) {
       return (
-        <div className="border border-brand/20 rounded-lg px-4 py-3 bg-brand-light/30 mb-6">
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="w-2 h-2 rounded-full bg-brand shrink-0" />
-            <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
-              Agent Recommendation · Day {d}
-            </span>
-          </div>
-          <div className="text-sm font-semibold text-foreground mb-1">{rec.title}</div>
-          <p className="text-[13px] text-foreground-muted leading-relaxed">{rec.observation}</p>
-          <p className="text-[13px] text-foreground-muted leading-relaxed mt-1">{rec.action}</p>
-          <div className="flex gap-2 mt-3">
-            <button className="px-3 py-1.5 text-xs font-semibold rounded-sm bg-brand text-white hover:-translate-y-px hover:shadow-md transition-all duration-200">
-              Approve
-            </button>
-            <button className="px-3 py-1.5 text-xs font-semibold rounded-sm bg-surface text-foreground-muted border border-border hover:bg-accent-subtle transition-all duration-200">
-              Dismiss
-            </button>
-          </div>
+        <div className="flex items-center gap-3 bg-brand-light/30 border-b border-brand/20 px-5 py-2">
+          <span className="w-2 h-2 rounded-full bg-brand shrink-0" />
+          <span className="text-[13px] text-foreground-muted flex-1">
+            <span className="font-semibold text-foreground">Agent recommendation:</span> {rec.title}
+          </span>
+          <button
+            onClick={onReview}
+            className="px-3 py-1 text-[11px] font-semibold rounded-sm bg-brand text-white hover:-translate-y-px hover:shadow-md transition-all duration-200 shrink-0"
+          >
+            Review
+          </button>
+          <button className="text-[11px] text-foreground-faint hover:text-foreground transition-colors shrink-0">
+            Dismiss
+          </button>
         </div>
       );
     }
@@ -831,6 +827,13 @@ export default function DashboardPage({ config, onHome }) {
             days={projection.days}
           />
 
+          {/* Agent recommendation — CTA strip, opens budget drawer */}
+          <AgentRecommendationStrip
+            briefings={briefings}
+            selectedDay={effectiveDay}
+            onReview={() => setActiveDrawer('budget')}
+          />
+
           {/* Main content area */}
           <div className="flex gap-5 flex-1 min-h-0 p-5">
             {/* LEFT COLUMN (75%): KPI selector + hero chart */}
@@ -930,7 +933,6 @@ export default function DashboardPage({ config, onHome }) {
               <RewardDistribution contacts={currentDayContacts} />
 
               {/* Agent recommendation */}
-              <GuardrailRecommendation briefings={briefings} selectedDay={effectiveDay} />
 
               {/* Key Learnings */}
               <KeyLearnings annotations={projection.learningAnnotations} selectedDay={effectiveDay} />
