@@ -665,14 +665,7 @@ function AudienceHealth({ propensityHealth, effectiveDay }) {
 
   return (
     <div className="flex-[9] p-5 min-w-0 flex flex-col">
-      <div className="flex items-baseline justify-between mb-3">
-        <h3 className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
-          Eligible Pool
-        </h3>
-        <span className="text-[11px] text-foreground-faint">
-          {formatCompact(currentPool)} eligible · {utilizationPct}% utilized
-        </span>
-      </div>
+      <SectionLabel>Eligible Pool</SectionLabel>
       <div className="flex-1 min-h-0">
         <StackedAreaChart
           bands={bands}
@@ -708,33 +701,30 @@ function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
     );
   }
 
-  // Convert frequency curve to stacked bar data (single segment per bar)
+  // Convert rates to percentage space so Y-axis labels render correctly
   const barData = frequencyCurve.map(({ rate }) => ({
-    values: [rate],
+    values: [Math.round(rate * 100)],
   }));
-  const maxRate = Math.max(...frequencyCurve.map(d => d.rate));
-  const yMax = niceYMax(maxRate);
+  const maxPct = Math.max(...barData.map(d => d.values[0]));
+  const yMax = niceYMax(maxPct);
   const xLabels = frequencyCurve.map((d, i) => ({ value: d.label, at: i }));
 
   return (
     <div className="flex-[4] p-5 min-w-0 flex flex-col">
       <SectionLabel>Response by Frequency</SectionLabel>
-      <div className="flex-1 min-h-0 flex flex-col justify-center">
-        <div className="h-[220px]">
-          <StackedBarChart
-            data={barData}
-            segments={[
-              { color: PROPENSITY_LINES.medium, label: 'Response rate' },
-            ]}
-            maxValue={yMax}
-            cssHeight="100%"
-            xLabels={xLabels}
-            yLabels={[yMax * 0.5, yMax]}
-            gridlines="from-labels"
-            formatTooltip={(i, v) => `${Math.round(v * 100)}%`}
-            formatYLabel={(v) => `${Math.round(v * 100)}%`}
-          />
-        </div>
+      <div className="flex-1 min-h-0">
+        <StackedBarChart
+          data={barData}
+          segments={[
+            { color: PROPENSITY_LINES.medium, label: 'Response rate' },
+          ]}
+          maxValue={yMax}
+          cssHeight="100%"
+          xLabels={xLabels}
+          yLabels={[yMax * 0.5, yMax]}
+          gridlines="from-labels"
+          formatTooltip={(i, v) => `${v}%`}
+        />
       </div>
     </div>
   );
