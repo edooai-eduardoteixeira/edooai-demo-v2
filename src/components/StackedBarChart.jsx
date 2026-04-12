@@ -318,11 +318,15 @@ export default function StackedBarChart({
             <span
               key={`val-${i}`}
               style={{
-                ...labelBase,
+                position: 'absolute',
+                fontSize: 13,
                 fontWeight: 600,
+                fontFamily: 'var(--font-family)',
+                color: 'var(--foreground)',
                 left: margin.left + barCenterX * pxPerUnit,
-                top: margin.top + barTopY * pxPerUnit - 16,
+                top: margin.top + barTopY * pxPerUnit - 18,
                 transform: 'translateX(-50%)',
+                whiteSpace: 'nowrap',
               }}
             >
               {formatter(total)}
