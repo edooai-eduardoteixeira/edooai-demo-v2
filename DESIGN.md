@@ -225,12 +225,16 @@ Always use the `<Chart>` component (`src/components/Chart.jsx`). Never hand-code
 
 **Funnel charts:**
 Always use the `<FunnelChart>` component (`src/components/FunnelChart.jsx`).
-- Left-aligned horizontal bars
-- Stage label above each bar (11px, medium weight)
-- Number outside bar, right side (13px, semibold)
-- 4px border-radius, 8px gap between bars
-- Last stage uses `bg-brand` with white text
+- Left-aligned horizontal bars, `bg-accent-subtle`, hover `bg-accent-light`
+- Stage label inside bar, left (11px, medium weight, `text-foreground-muted`)
+- Count inside bar, far right via `justify-between` (13px, semibold, `text-foreground`)
+- When bar is too narrow for content: label and count flow sequentially with `gap-2`, `overflow-visible`
+- 4px border-radius, 8px gap between bars, auto-height to fill container
+- Cumulative % and time shown on hover via tooltip (`bg-surface`, `border-border`, soft shadow, 200ms fade)
+- All bars same color — no brand accent on terminal stage. Count color marks hierarchy.
 - Square root proportion for bar width (handles extreme value ratios like 600:1)
+- 6 stages: Contacted → Engaged → Referred → Reached → Signed Up → Active User
+- Metrics are cumulative from Contacted (not stage-to-stage)
 
 **Stacked bar charts:**
 Always use the `<StackedBarChart>` component (`src/components/StackedBarChart.jsx`).
