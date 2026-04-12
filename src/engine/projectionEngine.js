@@ -1025,35 +1025,33 @@ function computePropensityHealth(simResult, params) {
   const { totalCustomers, eligibilityRate } = params;
   const totalEligible = Math.round(totalCustomers * eligibilityRate);
 
-  // Segment sizes (relatively stable)
+  // Segment sizes
   const highTotal = Math.round(totalEligible * 0.30);
   const medTotal = Math.round(totalEligible * 0.45);
   const lowTotal = totalEligible - highTotal - medTotal;
 
-  // Per-segment penetration rate over time (0-1)
-  // Agent contacts high-propensity first → high rises fastest, low rises slowest
-  const highPenetration = [];
-  const medPenetration = [];
-  const lowPenetration = [];
+  // Per-segment contacted counts over time (absolute)
+  // Agent contacts high-propensity first → high fills fastest
+  const highContacted = [];
+  const medContacted = [];
+  const lowContacted = [];
 
   for (let d = 0; d < days.length; d++) {
     const dayData = days[d];
     const contacted = dayData.funnelCumulative.contacted;
     const overallDepth = Math.min(1, contacted / totalEligible);
 
-    // Differential penetration rates: high ~2.2x overall, med ~0.85x, low ~0.35x
-    // With saturation clamping (can't exceed 100%)
     const hRate = Math.min(1, overallDepth * 2.2);
     const mRate = Math.min(1, overallDepth * 0.85);
     const lRate = Math.min(1, Math.max(0, overallDepth * 0.35));
 
-    highPenetration.push(hRate);
-    medPenetration.push(mRate);
-    lowPenetration.push(lRate);
+    highContacted.push(Math.round(highTotal * hRate));
+    medContacted.push(Math.round(medTotal * mRate));
+    lowContacted.push(Math.round(lowTotal * lRate));
   }
 
   return {
-    highPenetration, medPenetration, lowPenetration,
+    highContacted, medContacted, lowContacted,
     highTotal, medTotal, lowTotal, totalEligible,
   };
 }
@@ -1069,22 +1067,21 @@ function computeEffectivenessData(simResult, params) {
   const latestDay = days[days.length - 1];
   const efficiency = latestDay?.efficiency || 0.5;
 
-  // Within-campaign touchpoint decay — response rate drops with each successive touch
-  // Modulated by agent efficiency (better targeting = slower decay)
-  const baseDecay = [0.12, 0.05, 0.025, 0.015, 0.008];
-  const touchpointDecay = baseDecay.map((rate, i) => {
-    const boost = 1 + efficiency * 0.3; // better targeting slightly boosts all rates
-    return Math.round(rate * boost * 1000) / 1000;
+  // Frequency curve: response rate by number of program contacts received
+  // Shows how customer responsiveness changes with repeated exposure
+  // Modulated by agent efficiency (better personalization = slower fatigue)
+  const frequencyBuckets = [
+    { label: '1x', baseRate: 0.14 },
+    { label: '2-3x', baseRate: 0.11 },
+    { label: '4-6x', baseRate: 0.08 },
+    { label: '7-10x', baseRate: 0.05 },
+    { label: '11+', baseRate: 0.03 },
+  ];
+
+  const frequencyCurve = frequencyBuckets.map(({ label, baseRate }) => {
+    const boost = 1 + efficiency * 0.25;
+    return { label, rate: Math.round(baseRate * boost * 1000) / 1000 };
   });
 
-  // Across-offer lifetime trend — response rate by Nth offer received
-  // Shows whether audience is fatiguing or holding steady
-  const baseTrend = [0.15, 0.12, 0.10, 0.09, 0.085];
-  const lifetimeTrend = baseTrend.map((rate, i) => {
-    // Good personalization keeps rates higher
-    const retention = 1 + efficiency * 0.2;
-    return Math.round(rate * retention * 1000) / 1000;
-  });
-
-  return { touchpointDecay, lifetimeTrend };
+  return { frequencyCurve };
 }

@@ -3,6 +3,7 @@ import { ArrowRight, RotateCcw, Pause, Lightbulb } from 'lucide-react';
 import Logo from '../components/Logo.jsx';
 import Chart from '../components/Chart.jsx';
 import StackedBarChart from '../components/StackedBarChart.jsx';
+import StackedAreaChart from '../components/StackedAreaChart.jsx';
 import FunnelChart from '../components/FunnelChart.jsx';
 import StrategyCards, { DefaultBudgetSlider, BUDGET_CONFIG } from '../components/StrategyCards.jsx';
 import { cn } from '../lib/utils.js';
@@ -646,24 +647,19 @@ function DateRangeSelector({ selected, onSelect }) {
 function AudienceHealth({ propensityHealth, effectiveDay }) {
   if (!propensityHealth) return null;
 
-  const { highPenetration, medPenetration, lowPenetration,
+  const { highContacted, medContacted, lowContacted,
           highTotal, medTotal, lowTotal, totalEligible } = propensityHealth;
   const dataSlice = effectiveDay;
 
-  // Per-segment penetration rate as percentage (0-100)
-  const highData = highPenetration.slice(0, dataSlice).map(r => Math.round(r * 100));
-  const medData = medPenetration.slice(0, dataSlice).map(r => Math.round(r * 100));
-  const lowData = lowPenetration.slice(0, dataSlice).map(r => Math.round(r * 100));
+  // Stacked area bands: contacted customers per cluster over time
+  const bands = [
+    { label: `Most likely (${formatCompact(highTotal)})`, color: PROPENSITY_LINES.high, data: highContacted.slice(0, dataSlice) },
+    { label: `Moderate (${formatCompact(medTotal)})`, color: PROPENSITY_LINES.medium, data: medContacted.slice(0, dataSlice) },
+    { label: `Less likely (${formatCompact(lowTotal)})`, color: PROPENSITY_LINES.low, data: lowContacted.slice(0, dataSlice) },
+  ];
 
-  const maxRate = Math.max(...highData, ...medData, ...lowData, 10);
-  const yMax = niceYMax(maxRate);
+  const totalReached = (highContacted[dataSlice - 1] || 0) + (medContacted[dataSlice - 1] || 0) + (lowContacted[dataSlice - 1] || 0);
   const xLabels = dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }));
-
-  // Current day rates for header
-  const hRate = highData[highData.length - 1] || 0;
-  const mRate = medData[medData.length - 1] || 0;
-  const lRate = lowData[lowData.length - 1] || 0;
-  const totalReached = Math.round(hRate / 100 * highTotal + mRate / 100 * medTotal + lRate / 100 * lowTotal);
 
   return (
     <div className="flex-[9] p-5 min-w-0 flex flex-col">
@@ -672,24 +668,16 @@ function AudienceHealth({ propensityHealth, effectiveDay }) {
           Audience Reach
         </h3>
         <span className="text-[11px] text-foreground-faint">
-          {formatCompact(totalReached)} of {formatCompact(totalEligible)}
+          {formatCompact(totalReached)} of {formatCompact(totalEligible)} reached
         </span>
       </div>
       <div className="flex-1 min-h-0">
-        <Chart
-          series={[
-            { data: highData, color: PROPENSITY_LINES.high, label: `Most likely (${formatCompact(highTotal)})`, width: 2 },
-            { data: medData, color: PROPENSITY_LINES.medium, label: `Moderate (${formatCompact(medTotal)})`, width: 2 },
-            { data: lowData, color: PROPENSITY_LINES.low, label: `Less likely (${formatCompact(lowTotal)})`, width: 2 },
-          ]}
-          maxValue={yMax}
+        <StackedAreaChart
+          bands={bands}
           cssHeight="100%"
           xLabels={xLabels}
-          yLabels={[yMax * 0.5, yMax]}
-          gridlines="from-labels"
           legend
-          formatYLabel={(v) => `${Math.round(v)}%`}
-          endpointLabel={(v) => `${Math.round(v)}%`}
+          formatTooltip={(i, v) => formatCompact(v)}
         />
       </div>
     </div>
@@ -702,44 +690,47 @@ function AudienceHealth({ propensityHealth, effectiveDay }) {
 function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
   if (!effectivenessData) return null;
 
-  const { touchpointDecay, lifetimeTrend } = effectivenessData;
+  const { frequencyCurve } = effectivenessData;
   const hasData = effectiveDay >= 5;
 
   if (!hasData) {
     return (
       <div className="flex-[4] p-5 min-w-0 flex flex-col">
-        <SectionLabel>Engagement Effectiveness</SectionLabel>
+        <SectionLabel>Response by Frequency</SectionLabel>
         <div className="flex-1 flex items-center justify-center">
           <p className="text-xs text-foreground-faint text-center px-4">
-            Performance data available after first campaign
+            Frequency data available after first campaign cycle
           </p>
         </div>
       </div>
     );
   }
 
-  const maxRate = Math.max(...touchpointDecay, ...lifetimeTrend);
+  // Convert frequency curve to stacked bar data (single segment per bar)
+  const barData = frequencyCurve.map(({ rate }) => ({
+    values: [rate],
+  }));
+  const maxRate = Math.max(...frequencyCurve.map(d => d.rate));
   const yMax = niceYMax(maxRate);
-  const xLabels = touchpointDecay.map((_, i) => ({ value: String(i + 1), at: i }));
+  const xLabels = frequencyCurve.map((d, i) => ({ value: d.label, at: i }));
 
   return (
     <div className="flex-[4] p-5 min-w-0 flex flex-col">
-      <SectionLabel>Engagement Effectiveness</SectionLabel>
+      <SectionLabel>Response by Frequency</SectionLabel>
       <div className="flex-1 min-h-0 flex flex-col justify-center">
-        <div className="h-[200px]">
-          <Chart
-            series={[
-              { data: touchpointDecay, color: PROPENSITY_LINES.high, label: 'Per Campaign', width: 2 },
-              { data: lifetimeTrend, color: PROPENSITY_LINES.medium, dashed: true, width: 1.5, label: 'Lifetime' },
+        <div className="h-[220px]">
+          <StackedBarChart
+            data={barData}
+            segments={[
+              { color: PROPENSITY_LINES.medium, label: 'Response rate' },
             ]}
             maxValue={yMax}
             cssHeight="100%"
             xLabels={xLabels}
             yLabels={[yMax * 0.5, yMax]}
             gridlines="from-labels"
-            legend
+            formatTooltip={(i, v) => `${Math.round(v * 100)}%`}
             formatYLabel={(v) => `${Math.round(v * 100)}%`}
-            endpointLabel={(v) => `${Math.round(v * 100)}%`}
           />
         </div>
       </div>
