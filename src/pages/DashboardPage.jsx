@@ -693,7 +693,7 @@ function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
   if (!hasData) {
     return (
       <div className="flex-[4] p-5 min-w-0 flex flex-col">
-        <SectionLabel>Conversion by Contact Frequency</SectionLabel>
+        <SectionLabel>Conversion vs. Frequency</SectionLabel>
         <div className="flex-1 flex items-center justify-center">
           <p className="text-xs text-foreground-faint text-center px-4">
             Frequency data available after first campaign cycle
