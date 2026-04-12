@@ -4,16 +4,16 @@ import { formatCompact } from './chartUtils.js';
 /**
  * Reusable funnel chart component that enforces the Vincor design system.
  *
- * Two rows per stage:
- *   Row 1: stage name + (x days) — text only
- *   Row 2: bar + count + (%) — count attached to bar's right edge
+ * One row per stage: bar with stage name inside, count attached outside.
+ * Cumulative % and (x days) appear on hover via tooltip.
+ * When bar is narrower than the label text, count follows the label
+ * instead of the bar edge to prevent overlap.
  *
  * Auto-height rows fill the parent container.
  *
  * Typography hierarchy (from DESIGN.md):
  *   Count: text-[13px] font-semibold text-foreground
  *   Stage name: text-[11px] font-medium text-foreground-muted
- *   (%) and (x days): text-[11px] text-foreground-faint
  */
 
 export default function FunnelChart({ stages, pending }) {
@@ -25,7 +25,7 @@ export default function FunnelChart({ stages, pending }) {
     <div className="h-full flex flex-col">
       <div className="flex-1 flex flex-col gap-2">
         {stages.map((stage, i) => {
-          const fillPct = Math.max(15, Math.sqrt(stage.value / maxValue) * 100);
+          const fillPct = Math.max(8, Math.sqrt(stage.value / maxValue) * 100);
           const isFirst = i === 0;
           const stageEmpty = stage.value === 0;
 
@@ -34,36 +34,47 @@ export default function FunnelChart({ stages, pending }) {
             ? (cumPct < 1 ? cumPct.toFixed(1) + '%' : Math.round(cumPct) + '%')
             : null;
 
+          // Tooltip: stage name, count, %, time
+          const tooltipParts = [stage.label];
+          if (!stageEmpty) tooltipParts.push(formatCompact(stage.value));
+          if (cumPctStr) tooltipParts.push(cumPctStr);
+          if (stage.time && !isFirst) tooltipParts.push(stage.time);
+
+          // Bar too narrow for label — count follows label instead of bar edge
+          const narrow = fillPct < 30;
+
           return (
-            <div key={stage.label} className="flex-1 min-h-0 flex flex-col">
-              {/* Row 1: stage name + (x days) */}
-              <div className="flex items-baseline gap-1 mb-0.5">
-                <span className="text-[11px] font-medium text-foreground-muted">
+            <div
+              key={stage.label}
+              className="flex-1 min-h-0 flex items-center gap-2"
+            >
+              {/* Bar: label left, count at far end, tooltip on hover */}
+              <div
+                className={cn(
+                  'group relative h-full rounded-[4px] flex items-center px-3 transition-all duration-300 cursor-default',
+                  narrow ? 'overflow-visible gap-2' : 'justify-between',
+                  stageEmpty ? 'bg-border-light' : 'bg-accent-subtle hover:bg-accent-light'
+                )}
+                style={{ width: `${stageEmpty ? 8 : fillPct}%` }}
+              >
+                <span className="text-[11px] font-medium whitespace-nowrap text-foreground-muted">
                   {stage.label}
                 </span>
-                {stage.time && !stageEmpty && !isFirst && (
-                  <span className="text-[11px] text-foreground-faint">
-                    ({stage.time})
-                  </span>
-                )}
-              </div>
 
-              {/* Row 2: bar + count + (%) */}
-              <div className="flex-1 min-h-0 flex items-center gap-2">
-                <div
-                  className="h-full rounded-[4px] bg-gray-200 transition-all duration-300"
-                  style={{ width: `${stageEmpty ? 15 : fillPct}%` }}
-                />
                 <span className={cn(
                   'text-[13px] font-semibold shrink-0 tabular-nums',
                   stageEmpty ? 'text-foreground-faint' : 'text-foreground'
                 )}>
                   {stageEmpty ? '—' : formatCompact(stage.value)}
                 </span>
-                {cumPctStr && !stageEmpty && (
-                  <span className="text-[11px] shrink-0 tabular-nums text-foreground-faint">
-                    ({cumPctStr})
-                  </span>
+
+                {/* Tooltip on hover */}
+                {!isFirst && !stageEmpty && (
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                    <div className="bg-surface border border-border text-[11px] font-semibold text-foreground-muted px-2 py-1 rounded-lg whitespace-nowrap" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                      {cumPctStr}{stage.time ? ` · ${stage.time}` : ''}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
