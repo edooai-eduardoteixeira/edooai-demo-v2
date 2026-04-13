@@ -780,7 +780,7 @@ export default function DashboardPage({ config, onHome }) {
 
       <main className="flex-1 pb-8">
         {/* ── POSITION 1: RESULTS — command center ── */}
-        <div className="bg-surface border border-border rounded-lg mb-5 h-[420px] flex flex-col">
+        <div className="bg-surface border border-border rounded-lg mb-5 min-h-[420px] flex flex-col">
           {/* Suggested change — top of card, first thing HoG sees */}
           <SuggestedChangeStrip
             briefings={briefings}
