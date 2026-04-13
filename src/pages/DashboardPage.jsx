@@ -514,7 +514,7 @@ function DecisionFeed({ briefings, selectedDay }) {
 
   return (
     <div>
-      <div className="max-h-[400px] overflow-y-auto space-y-4">
+      <div className="space-y-4">
         {days.map((briefing) => (
           <div key={briefing.day}>
             {/* Date header */}
