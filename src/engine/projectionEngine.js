@@ -1077,17 +1077,21 @@ function computePropensityHealth(simResult, params) {
 // ═══════════════════════════════════════════════════════════════════════
 
 function computeEffectivenessData(simResult, params) {
-  const { days } = simResult;
+  const { cohorts } = simResult;
 
-  // Daily conversion rate: active users / contacts per day (%)
-  // This is the leading indicator — shows whether the pipeline is
-  // improving or declining, before cumulative funnel numbers reflect it.
-  const dailyConversionRate = days.map((d) => {
-    const contacts = d.dailyFunnel?.contacted || 0;
-    const converted = d.dailyFunnel?.activeUser || 0;
-    if (contacts === 0) return 0;
-    return Math.round((converted / contacts) * 1000) / 10; // percentage with 1 decimal
-  });
+  // Cohorted conversion rate: for each cohort (people contacted on day X),
+  // what % eventually converted? Uses the engine's per-cohort resolution data.
+  // This is the proper leading indicator — tracks the same group from
+  // contact to conversion, not mixing cohorts.
+  const dailyConversionRate = [];
+  for (let d = 1; d <= 30; d++) {
+    const cohort = cohorts[d];
+    if (cohort && cohort.contacted > 0) {
+      dailyConversionRate.push(Math.round(cohort.convRate * 10) / 10);
+    } else {
+      dailyConversionRate.push(0);
+    }
+  }
 
   return { dailyConversionRate };
 }
