@@ -503,8 +503,10 @@ function DayBriefing({ briefing }) {
   );
 }
 
-// Guardrail Recommendation — separate from the feed, underneath it
 function SuggestedChangeStrip({ briefings, selectedDay, onReview }) {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
+
   for (let d = selectedDay; d >= 1; d--) {
     const rec = briefings?.[d]?.recommendation;
     if (rec) {
@@ -519,7 +521,10 @@ function SuggestedChangeStrip({ briefings, selectedDay, onReview }) {
           >
             Review
           </button>
-          <button className="text-[11px] text-foreground-faint hover:text-foreground transition-colors shrink-0">
+          <button
+            onClick={() => setDismissed(true)}
+            className="text-[11px] text-foreground-faint hover:text-foreground transition-colors shrink-0"
+          >
             Dismiss
           </button>
         </div>

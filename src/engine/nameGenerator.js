@@ -315,12 +315,10 @@ export function generateDayBriefing({ day, dayData, prevDayData, seed = 42, tier
   // Proper logic engine will drive this with real constraint analysis.
   let recommendation = null;
   if (day === 30 && dayData) {
-    const tier0Pct = dayData.tierDistribution[0] || 0;
-    const organicCount = Math.round(dayData.funnelCumulative.activeUser * tier0Pct);
     recommendation = {
-      title: 'Organic referrer segment identified',
-      observation: `${Math.round(tier0Pct * 100)}% of conversions come from Tier 1 (no incentive). ${organicCount} customers converted organically. These customers don't need a reward to refer.`,
-      action: `Redirecting Tier 1 reward savings toward additional Tier 3-4 contacts could add ~${Math.round(organicCount * 0.3)} more contacts/day at no incremental cost.`,
+      title: '$20 credit outperforms $50 credit',
+      observation: '$20 credit converts 3.2x better than $50 credit across all segments.',
+      action: 'Reduce max reward from $50 to $20 — same conversion rate, saves $12,000/mo.',
     };
   }
 
