@@ -513,15 +513,7 @@ function DecisionFeed({ briefings, selectedDay }) {
   }
 
   return (
-    <div className="bg-surface border border-border rounded-lg p-4 mb-6">
-      <div className="flex items-center justify-between mb-3">
-        <SectionLabel>Live Decisions</SectionLabel>
-        <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-brand" />
-          <span className="text-[11px] text-foreground-faint">{days.length} days</span>
-        </span>
-      </div>
-
+    <div>
       <div className="max-h-[400px] overflow-y-auto space-y-4">
         {days.map((briefing) => (
           <div key={briefing.day}>
@@ -881,18 +873,16 @@ export default function DashboardPage({ config, onHome }) {
 
             {/* RIGHT (~35%): Today's Operations */}
             <div className="flex-[9] p-5 overflow-y-auto flex flex-col gap-3">
-              {/* Strategy — the primary narrative, absorbs key learnings */}
+              {/* Live Decisions — strategy context + distribution + feed as one unit */}
               <div>
-                <SectionLabel>Strategy</SectionLabel>
-                <p className="text-[13px] text-foreground-muted leading-relaxed">
+                <SectionLabel>Live Decisions</SectionLabel>
+                <p className="text-[13px] text-foreground-muted leading-relaxed mb-3">
                   {briefings?.[effectiveDay]?.dailyPlan?.strategyShift || 'Agent is calibrating...'}
                 </p>
               </div>
 
-              {/* Reward & Message Distribution */}
               <RewardDistribution contacts={currentDayContacts} />
 
-              {/* Decision Feed */}
               <DecisionFeed briefings={briefings} selectedDay={effectiveDay} />
             </div>
           </div>
