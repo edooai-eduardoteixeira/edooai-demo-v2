@@ -316,9 +316,9 @@ export function generateDayBriefing({ day, dayData, prevDayData, seed = 42, tier
   let recommendation = null;
   if (day === 30 && dayData) {
     recommendation = {
-      title: '$20 credit outperforms $50 credit',
-      observation: '$20 credit converts 3.2x better than $50 credit across all segments.',
-      action: 'Reduce max reward from $50 to $20 — same conversion rate, saves $12,000/mo.',
+      title: '$50 credit outperforms $75 credit',
+      observation: '$50 credit converts 3.2x better than $75 credit across all segments.',
+      action: 'Reduce max reward from $75 to $50 — same conversion rate, saves $12,000/mo.',
     };
   }
 
