@@ -875,7 +875,7 @@ export default function DashboardPage({ config, onHome }) {
             <div className="flex-[9] p-5 overflow-y-auto flex flex-col gap-3">
               {/* Live Decisions — strategy context + distribution + feed as one unit */}
               <div>
-                <SectionLabel>Live Decisions</SectionLabel>
+                <SectionLabel>Agent Activity</SectionLabel>
                 <p className="text-[13px] text-foreground-muted leading-relaxed mb-3">
                   {briefings?.[effectiveDay]?.dailyPlan?.strategyShift || 'Agent is calibrating...'}
                 </p>
