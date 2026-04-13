@@ -607,11 +607,10 @@ function DateRangeSelector({ selected, onSelect }) {
 // ═══════════════════════════════════════════════════════════════════════
 // BLOCK 2 LEFT: AUDIENCE HEALTH — propensity distribution + reach depth
 // ═══════════════════════════════════════════════════════════════════════
-function AudienceHealth({ propensityHealth, effectiveDay }) {
+function AudienceHealth({ propensityHealth, effectivenessData, effectiveDay }) {
   if (!propensityHealth) return null;
 
-  const { highEligible, medEligible, lowEligible,
-          totalEligible, totalReached } = propensityHealth;
+  const { highEligible, medEligible, lowEligible, totalEligible } = propensityHealth;
   const dataSlice = effectiveDay;
 
   // Stacked area: eligible pool per cluster over time
@@ -621,13 +620,14 @@ function AudienceHealth({ propensityHealth, effectiveDay }) {
     { label: 'Passive', color: CHART_FILLS.low, data: lowEligible.slice(0, dataSlice) },
   ];
 
-  const currentPool = (highEligible[dataSlice - 1] || 0) + (medEligible[dataSlice - 1] || 0) + (lowEligible[dataSlice - 1] || 0);
-  const utilizationPct = totalEligible > 0 ? Math.round((1 - currentPool / totalEligible) * 100) : 0;
+  // Overlay: daily conversion rate on right Y-axis
+  const convRate = effectivenessData?.dailyConversionRate?.slice(0, dataSlice) || [];
+
   const xLabels = dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }));
 
   return (
-    <div className="flex-[7] p-5 min-w-0 flex flex-col">
-      <SectionLabel>Eligible Audience Pool</SectionLabel>
+    <div className="flex-1 p-5 min-w-0 flex flex-col">
+      <SectionLabel>Audience Health</SectionLabel>
       <div className="flex-1 min-h-0">
         <StackedAreaChart
           bands={bands}
@@ -635,6 +635,12 @@ function AudienceHealth({ propensityHealth, effectiveDay }) {
           xLabels={xLabels}
           legend
           formatTooltip={(i, v) => formatCompact(v)}
+          overlayLine={{
+            data: convRate,
+            color: 'var(--color-brand)',
+            label: 'Conversion rate',
+            formatLabel: (v) => `${Math.round(v)}%`,
+          }}
         />
       </div>
     </div>
@@ -834,17 +840,9 @@ export default function DashboardPage({ config, onHome }) {
         {/* ── BLOCK 2: THREE-COLUMN — Health | Effectiveness | Today's Ops ── */}
         <div className="bg-surface border border-border rounded-lg">
           <div className="flex h-[500px]">
-            {/* LEFT (~45%): Audience Health — propensity + reach depth */}
+            {/* LEFT: Audience Health — pool + conversion rate (dual axis) */}
             <AudienceHealth
               propensityHealth={projection.propensityHealth}
-              effectiveDay={effectiveDay}
-            />
-
-            {/* DIVIDER */}
-            <div className="w-px bg-border-light shrink-0" />
-
-            {/* CENTER (~20%): Engagement Effectiveness — combined chart */}
-            <EngagementEffectiveness
               effectivenessData={projection.effectivenessData}
               effectiveDay={effectiveDay}
             />

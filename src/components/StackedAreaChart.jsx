@@ -21,9 +21,7 @@ export default function StackedAreaChart({
   xLabels,
   legend,
   formatTooltip,
-  reachDepth,        // array of 0-1 fractions (one per data point) — enables vivid/faded overlay
-  fadedOpacity = 0.25,
-  vividOpacity = 0.7,
+  overlayLine,       // { data: [], color: '', label: '', maxValue: number } — dual Y-axis line
 }) {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [animated, setAnimated] = useState(false);
@@ -120,24 +118,16 @@ export default function StackedAreaChart({
     return areaPath;
   });
 
-  // Reach depth clip path — when reachDepth is provided, the vivid bands are
-  // clipped from the chart bottom up to a curve derived from the reach depth fractions.
-  // reachDepth[i] = fraction (0-1) of total audience reached at data point i.
-  // The clip boundary maps reachDepth to the Y-axis: depth=0 → bottom, depth=1 → top.
-  const hasReachDepth = reachDepth && reachDepth.length === dataLen;
-  let reachClipPath = '';
-  let reachLinePath = '';
-  if (hasReachDepth) {
-    const reachPoints = reachDepth.map((depth, i) => ({
+  // Overlay line — separate Y-axis scale (dual-axis chart)
+  const hasOverlay = overlayLine && overlayLine.data && overlayLine.data.length === dataLen;
+  const overlayMax = overlayLine?.maxValue || (hasOverlay ? Math.max(...overlayLine.data, 1) * 1.1 : 1);
+  let overlayPath = '';
+  if (hasOverlay) {
+    const pts = overlayLine.data.map((v, i) => ({
       x: chartLeft + (i / Math.max(dataLen - 1, 1)) * chartW,
-      y: chartTop + chartH - (depth * maxVal / maxVal) * chartH, // depth fraction → Y
+      y: chartTop + chartH - (v / overlayMax) * chartH,
     }));
-    // The clip region: from chart bottom, up to the reach depth curve, across
-    const curvePath = buildMonotonePath(reachPoints);
-    reachClipPath = `M${chartLeft},${chartBottom} L${chartLeft},${reachPoints[0].y} ` +
-      curvePath.slice(1) + // skip the 'M' from buildMonotonePath
-      ` L${chartLeft + chartW},${chartBottom} Z`;
-    reachLinePath = curvePath;
+    overlayPath = buildMonotonePath(pts);
   }
 
   // X labels
@@ -236,6 +226,30 @@ export default function StackedAreaChart({
               {b.label}
             </span>
           ))}
+          {hasOverlay && overlayLine.label && (
+            <span
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: 11,
+                fontFamily: 'var(--font-family)',
+                color: 'var(--text-tertiary)',
+                lineHeight: 1,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span
+                style={{
+                  width: 10,
+                  height: 0,
+                  borderTop: `2px solid ${overlayLine.color || 'var(--color-brand)'}`,
+                  flexShrink: 0,
+                }}
+              />
+              {overlayLine.label}
+            </span>
+          )}
         </div>
       )}
 
@@ -255,69 +269,31 @@ export default function StackedAreaChart({
             opacity={TOKENS.gridline.opacity}
           />
 
-          {/* Stacked area bands — dual pass when reach depth is active */}
-          {hasReachDepth ? (
-            <>
-              {/* Clip path definition for vivid zone */}
-              <defs>
-                <clipPath id={`reach-clip-${safeId}`}>
-                  <path d={reachClipPath} />
-                </clipPath>
-              </defs>
+          {/* Stacked area bands */}
+          {bands.map((band, bi) => (
+            <path
+              key={bi}
+              d={bandPaths[bi]}
+              fill={band.color}
+              opacity={animated ? (band.opacity || 0.7) : 0}
+              style={{
+                transition: `opacity ${FADE_DURATION_MS}ms ease-out ${bi * BAND_STAGGER_MS}ms`,
+              }}
+            />
+          ))}
 
-              {/* Pass 1: faded bands (full chart, low opacity = untapped) */}
-              {bands.map((band, bi) => (
-                <path
-                  key={`faded-${bi}`}
-                  d={bandPaths[bi]}
-                  fill={band.color}
-                  opacity={animated ? fadedOpacity : 0}
-                  style={{
-                    transition: `opacity ${FADE_DURATION_MS}ms ease-out ${bi * BAND_STAGGER_MS}ms`,
-                  }}
-                />
-              ))}
-
-              {/* Pass 2: vivid bands (clipped to reach depth = being worked) */}
-              <g clipPath={`url(#reach-clip-${safeId})`}>
-                {bands.map((band, bi) => (
-                  <path
-                    key={`vivid-${bi}`}
-                    d={bandPaths[bi]}
-                    fill={band.color}
-                    opacity={animated ? vividOpacity : 0}
-                    style={{
-                      transition: `opacity ${FADE_DURATION_MS}ms ease-out ${bi * BAND_STAGGER_MS}ms`,
-                    }}
-                  />
-                ))}
-              </g>
-
-              {/* Reach depth boundary line — thin brand accent */}
-              <path
-                d={reachLinePath}
-                fill="none"
-                stroke="var(--color-brand)"
-                strokeWidth="1.5"
-                opacity={animated ? 0.6 : 0}
-                style={{
-                  transition: `opacity ${FADE_DURATION_MS}ms ease-out ${bands.length * BAND_STAGGER_MS}ms`,
-                }}
-              />
-            </>
-          ) : (
-            /* Standard rendering — no reach depth */
-            bands.map((band, bi) => (
-              <path
-                key={bi}
-                d={bandPaths[bi]}
-                fill={band.color}
-                opacity={animated ? (band.opacity || 0.7) : 0}
-                style={{
-                  transition: `opacity ${FADE_DURATION_MS}ms ease-out ${bi * BAND_STAGGER_MS}ms`,
-                }}
-              />
-            ))
+          {/* Overlay line — dual Y-axis (right side) */}
+          {hasOverlay && (
+            <path
+              d={overlayPath}
+              fill="none"
+              stroke={overlayLine.color || 'var(--color-brand)'}
+              strokeWidth="2"
+              opacity={animated ? 1 : 0}
+              style={{
+                transition: `opacity ${FADE_DURATION_MS}ms ease-out ${bands.length * BAND_STAGGER_MS}ms`,
+              }}
+            />
           )}
 
           {/* Hover overlay */}
@@ -369,6 +345,29 @@ export default function StackedAreaChart({
             {item.label}
           </span>
         ))}
+
+        {/* Right Y-axis labels for overlay line (dual axis) */}
+        {hasOverlay && (() => {
+          const midVal = Math.round(overlayMax * 0.5);
+          const items = [
+            { val: midVal, y: chartTop + chartH * 0.5 },
+            { val: Math.round(overlayMax), y: chartTop },
+          ];
+          const fmt = overlayLine.formatLabel || ((v) => `${v}%`);
+          return items.map((item, i) => (
+            <span
+              key={`yr-${i}`}
+              style={{
+                ...labelBase,
+                right: CHART_MARGIN.right - 8,
+                top: CHART_MARGIN.top + item.y * pxPerUnit,
+                transform: 'translate(100%, -50%)',
+              }}
+            >
+              {fmt(item.val)}
+            </span>
+          ));
+        })()}
 
         {/* Tooltip (HTML) */}
         {hoveredDay && (() => {
