@@ -509,7 +509,7 @@ function SuggestedChangeStrip({ briefings, selectedDay, onReview }) {
     const rec = briefings?.[d]?.recommendation;
     if (rec) {
       return (
-        <div className="flex items-center gap-3 bg-surface border-l-[3px] border-l-brand border-b border-border-light px-5 py-2.5">
+        <div className="flex items-center gap-3 bg-surface border-l-[3px] border-l-brand border-b border-border-light px-5 py-2.5 rounded-t-lg">
           <span className="text-[13px] text-foreground-muted">
             <span className="font-semibold text-brand">Suggested change:</span> {rec.action}
           </span>
@@ -815,6 +815,12 @@ export default function DashboardPage({ config, onHome }) {
       <main className="flex-1 pb-8">
         {/* ── POSITION 1: RESULTS — command center ── */}
         <div className="bg-surface border border-border rounded-lg mb-5 h-[420px] flex flex-col">
+          {/* Suggested change — top of card, first thing HoG sees */}
+          <SuggestedChangeStrip
+            briefings={briefings}
+            selectedDay={effectiveDay}
+            onReview={() => setActiveDrawer('budget')}
+          />
           {/* Campaign Health Row — compact status strip */}
           <CampaignHealthRow
             dayData={dayData}
@@ -823,13 +829,6 @@ export default function DashboardPage({ config, onHome }) {
             onAdjustBudget={() => setActiveDrawer('budget')}
             dateRange={dateRange}
             days={projection.days}
-          />
-
-          {/* Suggested change — CTA strip, opens budget drawer */}
-          <SuggestedChangeStrip
-            briefings={briefings}
-            selectedDay={effectiveDay}
-            onReview={() => setActiveDrawer('budget')}
           />
 
           {/* Main content area */}
