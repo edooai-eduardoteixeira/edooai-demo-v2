@@ -509,17 +509,17 @@ function SuggestedChangeStrip({ briefings, selectedDay, onReview }) {
     const rec = briefings?.[d]?.recommendation;
     if (rec) {
       return (
-        <div className="flex items-center gap-3 bg-[#fef3c7] border-b border-[#f59e0b]/20 px-5 py-2.5">
-          <span className="text-[13px] text-[#92400e]">
-            <span className="font-semibold">Suggested change:</span> {rec.action}
+        <div className="flex items-center gap-3 bg-surface border-l-[3px] border-l-brand border-b border-border-light px-5 py-2.5">
+          <span className="text-[13px] text-foreground-muted">
+            <span className="font-semibold text-brand">Suggested change:</span> {rec.action}
           </span>
           <button
             onClick={onReview}
-            className="px-3 py-1.5 text-[11px] font-semibold rounded-sm bg-surface text-[#92400e] border border-[#f59e0b]/30 hover:bg-[#fef3c7] transition-all duration-200 shrink-0"
+            className="px-3 py-1.5 text-[11px] font-semibold rounded-sm bg-surface text-brand border border-brand/30 hover:bg-brand-light transition-all duration-200 shrink-0"
           >
             Review
           </button>
-          <button className="text-[11px] text-[#92400e]/60 hover:text-[#92400e] transition-colors shrink-0">
+          <button className="text-[11px] text-foreground-faint hover:text-foreground transition-colors shrink-0">
             Dismiss
           </button>
         </div>
