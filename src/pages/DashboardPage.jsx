@@ -627,7 +627,7 @@ function AudienceHealth({ propensityHealth, effectivenessData, effectiveDay }) {
 
   return (
     <div className="flex-[5] p-5 min-w-0 flex flex-col">
-      <SectionLabel>Audience Health</SectionLabel>
+      <SectionLabel>Audience Overview</SectionLabel>
       <div className="flex-1 min-h-0">
         <StackedAreaChart
           bands={bands}
