@@ -467,37 +467,6 @@ function DayBriefing({ briefing }) {
           />
         )}
 
-        <BriefingCategory
-          label="customers held back"
-          icon={<Pause size={12} />}
-          count={holdbacks.length}
-          items={holdbacks}
-          renderItem={(h) => (
-            <div key={h.id} className="py-1.5 border-b border-border-light last:border-0">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-foreground">{h.name}</span>
-                <span className="text-[11px] text-foreground-faint">{h.reason}</span>
-              </div>
-              <p className="text-[11px] text-foreground-faint leading-relaxed mt-0.5">{h.reasoning}</p>
-              <span className="text-[10px] text-foreground-faint">Re-enters: {h.reenter}</span>
-            </div>
-          )}
-        />
-
-        {/* Yesterday's learnings — what user actions told the agent */}
-        {learnings.length > 0 && (
-          <BriefingCategory
-            label="learnings from yesterday"
-            icon={<Lightbulb size={12} />}
-            count={learnings.length}
-            items={learnings}
-            renderItem={(l) => (
-              <div key={l.id} className="py-1.5 border-b border-border-light last:border-0">
-                <p className="text-[11px] text-foreground-muted leading-relaxed">{l.summary}</p>
-              </div>
-            )}
-          />
-        )}
       </div>
     </div>
   );
@@ -912,32 +881,16 @@ export default function DashboardPage({ config, onHome }) {
 
             {/* RIGHT (~35%): Today's Operations */}
             <div className="flex-[9] p-5 overflow-y-auto flex flex-col gap-3">
-              {/* Heartbeat — summary bar */}
-              <div className="bg-accent-subtle rounded-sm px-3 py-2.5">
-                <div className="text-[13px] font-semibold text-foreground">
-                  {fmt(briefings?.[effectiveDay]?.dailyPlan?.contactCount || 0)} contacts
-                  {' · '}
-                  {briefings?.[effectiveDay]?.holdbacks?.length || 0} held back
-                  {' · '}
-                  {fmtDollar(briefings?.[effectiveDay]?.dailyPlan?.budgetToday || 0)} spent
-                </div>
-              </div>
-
-              {/* Strategy narrative */}
+              {/* Strategy — the primary narrative, absorbs key learnings */}
               <div>
                 <SectionLabel>Strategy</SectionLabel>
-                <p className="text-xs text-foreground-muted leading-relaxed">
+                <p className="text-[13px] text-foreground-muted leading-relaxed">
                   {briefings?.[effectiveDay]?.dailyPlan?.strategyShift || 'Agent is calibrating...'}
                 </p>
               </div>
 
               {/* Reward & Message Distribution */}
               <RewardDistribution contacts={currentDayContacts} />
-
-              {/* Agent recommendation */}
-
-              {/* Key Learnings */}
-              <KeyLearnings annotations={projection.learningAnnotations} selectedDay={effectiveDay} />
 
               {/* Decision Feed */}
               <DecisionFeed briefings={briefings} selectedDay={effectiveDay} />
