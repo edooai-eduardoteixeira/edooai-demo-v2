@@ -647,47 +647,28 @@ function AudienceHealth({ propensityHealth, effectiveDay }) {
 function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
   if (!effectivenessData) return null;
 
-  const { frequencyCurve } = effectivenessData;
-  const hasData = effectiveDay >= 5;
-
-  if (!hasData) {
-    return (
-      <div className="flex-[4] p-5 min-w-0 flex flex-col">
-        <SectionLabel>Conversion vs. Frequency</SectionLabel>
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-xs text-foreground-faint text-center px-4">
-            Frequency data available after first campaign cycle
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Convert rates to percentage space so Y-axis labels render correctly
-  const barData = frequencyCurve.map(({ rate }) => ({
-    values: [Math.round(rate * 100)],
-  }));
-  const maxPct = Math.max(...barData.map(d => d.values[0]));
-  const yMax = niceYMax(maxPct);
-  const xLabels = frequencyCurve.map((d, i) => ({ value: d.label, at: i + 1 }));
+  const { dailyConversionRate } = effectivenessData;
+  const dataSlice = dailyConversionRate.slice(0, effectiveDay);
+  const maxRate = Math.max(...dataSlice, 1);
+  const yMax = niceYMax(maxRate);
+  const xLabels = dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }));
 
   return (
     <div className="flex-[4] p-5 min-w-0 flex flex-col">
-      <SectionLabel>Conversion vs. Frequency</SectionLabel>
+      <SectionLabel>Conversion Rate</SectionLabel>
       <div className="flex-1 min-h-0">
-        <StackedBarChart
-          data={barData}
-          segments={[
-            { color: CHART_FILLS.bar },
+        <Chart
+          series={[
+            { data: dataSlice, color: 'var(--color-brand)', label: 'Daily conversion %' },
           ]}
           maxValue={yMax}
           cssHeight="100%"
           xLabels={xLabels}
-          categorical
-          hoverHighlight
-          showBarValues
-          formatBarValue={(v) => `${v}%`}
-          formatTooltip={(i, v) => `${v}%`}
+          yLabels={[yMax * 0.5, yMax]}
+          gridlines="from-labels"
+          fill={{ color: 'var(--color-brand)', opacity: 0.07 }}
+          endpointLabel={(v) => `${v}%`}
+          formatYLabel={(v) => `${Math.round(v)}%`}
         />
       </div>
     </div>

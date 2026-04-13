@@ -1078,24 +1078,16 @@ function computePropensityHealth(simResult, params) {
 
 function computeEffectivenessData(simResult, params) {
   const { days } = simResult;
-  const latestDay = days[days.length - 1];
-  const efficiency = latestDay?.efficiency || 0.5;
 
-  // Frequency curve: response rate by number of program contacts received
-  // Shows how customer responsiveness changes with repeated exposure
-  // Modulated by agent efficiency (better personalization = slower fatigue)
-  const frequencyBuckets = [
-    { label: '1x', baseRate: 0.14 },
-    { label: '2-3x', baseRate: 0.11 },
-    { label: '4-6x', baseRate: 0.08 },
-    { label: '7-10x', baseRate: 0.05 },
-    { label: '11+', baseRate: 0.03 },
-  ];
-
-  const frequencyCurve = frequencyBuckets.map(({ label, baseRate }) => {
-    const boost = 1 + efficiency * 0.25;
-    return { label, rate: Math.round(baseRate * boost * 1000) / 1000 };
+  // Daily conversion rate: active users / contacts per day (%)
+  // This is the leading indicator — shows whether the pipeline is
+  // improving or declining, before cumulative funnel numbers reflect it.
+  const dailyConversionRate = days.map((d) => {
+    const contacts = d.dailyFunnel?.contacted || 0;
+    const converted = d.dailyFunnel?.activeUser || 0;
+    if (contacts === 0) return 0;
+    return Math.round((converted / contacts) * 1000) / 10; // percentage with 1 decimal
   });
 
-  return { frequencyCurve };
+  return { dailyConversionRate };
 }
