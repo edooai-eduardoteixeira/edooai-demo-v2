@@ -682,46 +682,56 @@ function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// BLOCK 2 RIGHT: TODAY'S OPERATIONS — summary + narrative + dist + feed
+// OPERATIONS CHART — stacked area: new contacts + follow-ups over time
 // ═══════════════════════════════════════════════════════════════════════
-function RewardDistribution({ contacts }) {
-  if (!contacts || contacts.length === 0) return null;
 
-  // Compute offer distribution
-  const offerCounts = {};
-  const messageCounts = {};
-  for (const c of contacts) {
-    const offer = c.offerName || c.tierLabel;
-    offerCounts[offer] = (offerCounts[offer] || 0) + 1;
-    messageCounts[c.messageApproach] = (messageCounts[c.messageApproach] || 0) + 1;
-  }
+// ═══════════════════════════════════════════════════════════════════════
+// CAMPAIGN CARDS — horizontal, structured
+// ═══════════════════════════════════════════════════════════════════════
+function CampaignCards({ campaigns }) {
+  const [expandedId, setExpandedId] = useState(null);
 
-  const total = contacts.length;
-  const offerEntries = Object.entries(offerCounts).sort((a, b) => b[1] - a[1]);
-  const messageEntries = Object.entries(messageCounts).sort((a, b) => b[1] - a[1]);
+  if (!campaigns || campaigns.length === 0) return null;
 
   return (
-    <div className="bg-accent-subtle rounded-sm px-3 py-2.5 space-y-2">
-      <div>
-        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Reward Mix</span>
-        <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
-          {offerEntries.map(([name, count]) => (
-            <span key={name} className="text-[11px] text-foreground-muted">
-              {name} <span className="font-semibold text-foreground">{Math.round(count / total * 100)}%</span>
-            </span>
-          ))}
-        </div>
+    <div className="relative">
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {campaigns.map((c) => {
+          const expanded = expandedId === c.id;
+          return (
+            <button
+              key={c.id}
+              onClick={() => setExpandedId(expanded ? null : c.id)}
+              aria-expanded={expanded}
+              className={cn(
+                'bg-accent-subtle rounded-sm px-3 py-3 text-left shrink-0 transition-all duration-200 ease-out',
+                expanded ? 'min-w-[220px]' : 'min-w-[140px]',
+              )}
+            >
+              <div className="text-[11px] font-semibold text-foreground leading-tight">{c.title}</div>
+              <div className="text-[22px] font-bold text-foreground tracking-tight mt-1">{fmt(c.contactCount)}</div>
+              <div className="text-[11px] text-foreground-faint -mt-0.5">contacts</div>
+              <div className="text-[11px] text-foreground-faint mt-2">{c.channel} · {c.reward}</div>
+              <div className="text-[11px] text-foreground-faint">{c.daysRunning}d running</div>
+              {expanded && (
+                <div className="mt-2.5 pt-2.5 border-t border-border-light space-y-2">
+                  <div>
+                    <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Trigger</span>
+                    <p className="text-[11px] text-foreground-muted leading-relaxed mt-0.5">{c.context}</p>
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Message</span>
+                    <p className="text-[11px] text-foreground-muted leading-relaxed mt-0.5">"{c.message}"</p>
+                  </div>
+                </div>
+              )}
+            </button>
+          );
+        })}
       </div>
-      <div>
-        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Message Mix</span>
-        <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
-          {messageEntries.map(([name, count]) => (
-            <span key={name} className="text-[11px] text-foreground-muted">
-              {name} <span className="font-semibold text-foreground">{Math.round(count / total * 100)}%</span>
-            </span>
-          ))}
-        </div>
-      </div>
+      {campaigns.length > 3 && (
+        <div className="absolute right-0 top-0 bottom-1 w-8 bg-gradient-to-l from-surface to-transparent pointer-events-none" />
+      )}
     </div>
   );
 }
@@ -747,9 +757,6 @@ export default function DashboardPage({ config, onHome }) {
 
   // All daily briefings (for scrollable history)
   const briefings = projection.dailyBriefings;
-
-  // Get the current day's contacts for reward/message distribution
-  const currentDayContacts = briefings?.[effectiveDay]?.contacts || [];
 
   return (
     <div className="min-h-screen flex flex-col w-full px-6 animate-page-enter">
@@ -850,19 +857,56 @@ export default function DashboardPage({ config, onHome }) {
             {/* DIVIDER */}
             <div className="w-px bg-border-light shrink-0" />
 
-            {/* RIGHT (~35%): Today's Operations */}
-            <div className="flex-[5] p-5 overflow-y-auto flex flex-col gap-3">
-              {/* Live Decisions — strategy context + distribution + feed as one unit */}
+            {/* RIGHT (~50%): campaigns + daily outreach chart */}
+            <div className="flex-[5] p-5 flex flex-col gap-4">
+              {/* The playbook */}
               <div>
-                <SectionLabel>Agent Activity</SectionLabel>
-                <p className="text-[13px] text-foreground-muted leading-relaxed mb-3">
-                  {briefings?.[effectiveDay]?.dailyPlan?.strategyShift || 'Agent is calibrating...'}
-                </p>
+                <SectionLabel>Active Campaigns</SectionLabel>
+                <CampaignCards campaigns={briefings?.[effectiveDay]?.dailyPlan?.campaigns || []} />
               </div>
 
-              <RewardDistribution contacts={currentDayContacts} />
-
-              <DecisionFeed briefings={briefings} selectedDay={effectiveDay} />
+              {/* The execution over time */}
+              <div className="flex-1 min-h-0 flex flex-col">
+                <SectionLabel>Daily Outreach</SectionLabel>
+                {(() => {
+                  const opsSlice = projection.operationsData.slice(0, effectiveDay);
+                  // Build per-campaign data over time
+                  const campaignData = opsSlice.map(d => {
+                    const dayCampaigns = briefings?.[d.day]?.dailyPlan?.campaigns || [];
+                    return dayCampaigns.map(c => c.contactCount);
+                  });
+                  // Pad to max campaign count (campaigns appear over time)
+                  const maxCampaigns = Math.max(...campaignData.map(d => d.length), 1);
+                  const paddedData = campaignData.map(d => {
+                    const padded = [...d];
+                    while (padded.length < maxCampaigns) padded.push(0);
+                    return padded;
+                  });
+                  // Get campaign names from the latest day (has all campaigns)
+                  const latestCampaigns = briefings?.[effectiveDay]?.dailyPlan?.campaigns || [];
+                  const CAMPAIGN_COLORS = ['#8B4513', '#A0522D', '#B8860B', '#D1C8BE', '#E4DDD5'];
+                  // Y-axis: mid + max labels (matching other charts)
+                  const maxTotal = Math.max(...paddedData.map(v => v.reduce((a, b) => a + b, 0)), 1);
+                  const yMax = niceYMax(maxTotal);
+                  return (
+                    <StackedBarChart
+                      data={paddedData.map((values, i) => ({
+                        values,
+                      }))}
+                      segments={latestCampaigns.map((c, i) => ({
+                        label: c.title,
+                        color: CAMPAIGN_COLORS[i] || '#D1C8BE',
+                      }))}
+                      maxValue={yMax}
+                      xLabels={dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }))}
+                      yLabels={[yMax * 0.5, yMax]}
+                      gridlines="from-labels"
+                      cssHeight="100%"
+                      legend
+                    />
+                  );
+                })()}
+              </div>
             </div>
           </div>
         </div>

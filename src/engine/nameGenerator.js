@@ -30,6 +30,78 @@ const MESSAGE_APPROACHES = [
 
 const OFFER_NAMES = ['No reward', '$10 credit', '$20 credit', '$50 credit'];
 
+// ─── Neobank campaign definitions ───────────────────────────────────
+const NEOBANK_CAMPAIGNS = [
+  {
+    id: 'p2p-nonuser', type: 'specific', title: 'P2P to non-user',
+    context: 'Customer sent money to someone without the app — they hit the friction of slow bank transfers.',
+    channel: 'push', reward: '$15 both-get', message: 'They\'d get it instantly with the app',
+    startsDay: 1,
+  },
+  {
+    id: 'first-deposit', type: 'specific', title: 'First direct deposit',
+    context: 'Customer just made this their primary bank — peak commitment moment.',
+    channel: 'email', reward: '$10 credit', message: 'Your friends save on fees too',
+    startsDay: 10,
+  },
+  {
+    id: 'cashback-milestone', type: 'specific', title: 'Cashback milestone',
+    context: 'Customer just saved real money through cashback — the benefit is fresh and tangible.',
+    channel: 'push', reward: '$5 bonus cashback', message: 'Give your friends the same deal',
+    startsDay: 30,
+  },
+  {
+    id: 'highly-rated', type: 'transactional', title: 'Highly rated',
+    context: 'Customer just expressed satisfaction — high NPS or great support experience.',
+    channel: 'email', reward: '$10 credit', message: 'Know someone who\'d love this?',
+    startsDay: 1,
+  },
+  {
+    id: 'seasonal-promo', type: 'promo', title: 'Seasonal promo',
+    context: 'Always-on referral offer — not triggered by a specific moment.',
+    channel: 'in-app', reward: '$10 both-get', message: 'Refer a friend, you both get $10',
+    startsDay: 1,
+  },
+];
+
+function buildCampaigns(rng, { day, dayData }) {
+  const contactCount = dayData?.journeysToday || 1788;
+  const active = NEOBANK_CAMPAIGNS.filter(c => day >= c.startsDay);
+  const weights = active.map(c => {
+    const maturity = Math.min(1, (day - c.startsDay) / 20);
+    if (c.type === 'specific') return 1.5 + maturity * 2.5;
+    if (c.type === 'transactional') return 1 + maturity * 0.5;
+    return 0.8 - maturity * 0.3;
+  });
+  const totalWeight = weights.reduce((a, b) => a + b, 0);
+  return active.map((c, i) => ({
+    id: c.id, type: c.type, title: c.title, context: c.context,
+    channel: c.channel, reward: c.reward, message: c.message,
+    contactCount: Math.round(contactCount * (weights[i] / totalWeight)),
+    daysRunning: day - c.startsDay + 1,
+  }));
+}
+
+const NEOBANK_MOMENTS = {
+  'P2P to non-user': ['sent $30 to a friend via bank transfer', 'split dinner bill with non-user friend', 'paid rent to landlord without the app'],
+  'First direct deposit': ['first paycheck just deposited', 'switched direct deposit from old bank'],
+  'Cashback milestone': ['earned $45 cashback this month', 'hit $100 total cashback savings'],
+  'Highly rated': ['gave NPS 9 after fraud resolution', 'rated support 5 stars'],
+  'Seasonal promo': ['browsing referral page in-app', 'saw referral banner on home screen'],
+};
+
+function pickSampleDecisions(rng, campaigns) {
+  const samples = [];
+  for (const c of campaigns) {
+    const moments = NEOBANK_MOMENTS[c.title] || ['active customer'];
+    const count = c.type === 'specific' ? 2 : 1;
+    for (let i = 0; i < count && samples.length < 5; i++) {
+      samples.push({ name: pickName(rng), productMoment: moments[Math.floor(rng() * moments.length)], campaignTitle: c.title, reward: c.reward, channel: c.channel });
+    }
+  }
+  return samples.slice(0, 5);
+}
+
 // Simple seeded PRNG (mulberry32)
 function mulberry32(seed) {
   return function () {
@@ -195,12 +267,18 @@ export function generateDayBriefing({ day, dayData, prevDayData, seed = 42, tier
     : 5000;
   const efficiency = dayData?.efficiency || 0.3;
 
+  // Active campaigns
+  const campaigns = buildCampaigns(rng, { day, dayData });
+  const sampleDecisions = pickSampleDecisions(rng, campaigns);
+
   // Daily plan
   const dailyPlan = {
     contactCount,
     eligibleCount,
     budgetToday,
     strategyShift: buildStrategyShift(rng, { day, efficiency, annotation }),
+    campaigns,
+    sampleDecisions,
   };
 
   // Sample contacts (~12)

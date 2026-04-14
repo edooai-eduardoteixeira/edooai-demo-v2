@@ -883,6 +883,16 @@ export function computeDashboardProjection({ budget, params }) {
     // Effectiveness data for Block 2 (engagement effectiveness chart)
     effectivenessData: computeEffectivenessData(agentic, params),
 
+    // Operations data for Block 2 Right (stacked area: new contacts + follow-ups)
+    operationsData: agentic.days.map((d, i) => {
+      const total = Math.round(d.journeysToday);
+      // Follow-ups grow as a proportion over time (0% day 1, ~30% by day 30)
+      const followUpRate = Math.min(0.35, (i / 30) * 0.35);
+      const followUps = Math.round(total * followUpRate);
+      const newContacts = total - followUps;
+      return { day: i + 1, newContacts, followUps, total };
+    }),
+
     // Config passthrough for display
     referrerTiers: params.referrerTiers,
     refereeTiers: params.refereeTiers,

@@ -257,6 +257,7 @@ export default function StackedBarChart({
             >
               {bar.rects.map((r, segIdx) => {
                 const isTop = segIdx === segments.length - 1;
+                const clampedRadius = isTop ? Math.min(barRadius, r.height / 2) : 0;
                 return (
                   <rect
                     key={segIdx}
@@ -265,8 +266,8 @@ export default function StackedBarChart({
                     width={r.width}
                     height={Math.max(r.height, 0)}
                     fill={barFill(segIdx)}
-                    rx={isTop ? barRadius : 0}
-                    ry={isTop ? barRadius : 0}
+                    rx={clampedRadius}
+                    ry={clampedRadius}
                     style={{
                       transformOrigin: `${r.x + r.width / 2}px ${chartBottom}px`,
                       transform: animated ? 'scaleY(1)' : 'scaleY(0)',
