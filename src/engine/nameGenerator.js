@@ -33,33 +33,43 @@ const OFFER_NAMES = ['No reward', '$10 credit', '$20 credit', '$50 credit'];
 // ─── Neobank campaign definitions ───────────────────────────────────
 const NEOBANK_CAMPAIGNS = [
   {
-    id: 'p2p-nonuser', type: 'specific', title: 'P2P to non-user',
-    context: 'Customer sent money to someone without the app — they hit the friction of slow bank transfers.',
-    channel: 'push', reward: '$15 both-get', message: 'They\'d get it instantly with the app',
+    id: 'p2p-nonuser', type: 'specific',
+    title: 'Sent money to non-user',
+    whyRefer: 'Their friend would get the money instantly with the app. Referral solves the friction they just hit.',
+    example: 'Push: "Sarah would get this instantly with the app. Invite her — you both get $15."',
+    channel: 'push', reward: '$15 both-get',
     startsDay: 1,
   },
   {
-    id: 'first-deposit', type: 'specific', title: 'First direct deposit',
-    context: 'Customer just made this their primary bank — peak commitment moment.',
-    channel: 'email', reward: '$10 credit', message: 'Your friends save on fees too',
+    id: 'first-deposit', type: 'specific',
+    title: 'First paycheck deposited',
+    whyRefer: 'They just committed to fee-free banking. Their friends are still paying fees they no longer pay.',
+    example: 'Email: "You\'re saving on fees now. Your friends could too — share and you both get $10."',
+    channel: 'email', reward: '$10 credit',
     startsDay: 10,
   },
   {
-    id: 'cashback-milestone', type: 'specific', title: 'Cashback milestone',
-    context: 'Customer just saved real money through cashback — the benefit is fresh and tangible.',
-    channel: 'push', reward: '$5 bonus cashback', message: 'Give your friends the same deal',
+    id: 'cashback-milestone', type: 'specific',
+    title: 'Saved on cashback this month',
+    whyRefer: 'The savings are fresh and tangible. Friends would get the same cashback from day one.',
+    example: 'Push: "You saved $47 this month. Give your friends the same deal — plus $5 bonus for you."',
+    channel: 'push', reward: '$5 bonus cashback',
     startsDay: 30,
   },
   {
-    id: 'highly-rated', type: 'transactional', title: 'Highly rated',
-    context: 'Customer just expressed satisfaction — high NPS or great support experience.',
-    channel: 'email', reward: '$10 credit', message: 'Know someone who\'d love this?',
+    id: 'highly-rated', type: 'transactional',
+    title: 'Rated support highly',
+    whyRefer: 'Satisfaction is fresh. The moment right after a great experience is when people recommend naturally.',
+    example: 'Email: "Glad we could help! Know someone who\'d love banking this way? You both get $10."',
+    channel: 'email', reward: '$10 credit',
     startsDay: 1,
   },
   {
-    id: 'seasonal-promo', type: 'promo', title: 'Seasonal promo',
-    context: 'Always-on referral offer — not triggered by a specific moment.',
-    channel: 'in-app', reward: '$10 both-get', message: 'Refer a friend, you both get $10',
+    id: 'seasonal-promo', type: 'promo',
+    title: 'Always-on referral offer',
+    whyRefer: 'Catches customers who refer on their own timeline, not ours. Broadens reach beyond triggered moments.',
+    example: 'In-app: "Refer a friend, you both get $10. Share your link anytime."',
+    channel: 'in-app', reward: '$10 both-get',
     startsDay: 1,
   },
 ];
@@ -75,10 +85,10 @@ function buildCampaigns(rng, { day, dayData }) {
   });
   const totalWeight = weights.reduce((a, b) => a + b, 0);
   return active.map((c, i) => ({
-    id: c.id, type: c.type, title: c.title, context: c.context,
-    channel: c.channel, reward: c.reward, message: c.message,
+    id: c.id, type: c.type, title: c.title,
+    whyRefer: c.whyRefer, example: c.example,
+    channel: c.channel, reward: c.reward,
     contactCount: Math.round(contactCount * (weights[i] / totalWeight)),
-    daysRunning: day - c.startsDay + 1,
   }));
 }
 

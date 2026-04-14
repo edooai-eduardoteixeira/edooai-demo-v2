@@ -688,49 +688,43 @@ function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
 // ═══════════════════════════════════════════════════════════════════════
 // CAMPAIGN CARDS — horizontal, structured
 // ═══════════════════════════════════════════════════════════════════════
-function CampaignCards({ campaigns }) {
-  const [expandedId, setExpandedId] = useState(null);
+function CampaignList({ campaigns }) {
+  const [selectedId, setSelectedId] = useState(campaigns?.[0]?.id || null);
 
   if (!campaigns || campaigns.length === 0) return null;
 
+  const selected = campaigns.find(c => c.id === selectedId);
+
   return (
-    <div className="relative">
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {campaigns.map((c) => {
-          const expanded = expandedId === c.id;
-          return (
-            <button
-              key={c.id}
-              onClick={() => setExpandedId(expanded ? null : c.id)}
-              aria-expanded={expanded}
-              className={cn(
-                'bg-accent-subtle rounded-sm px-3 py-3 text-left shrink-0 transition-all duration-200 ease-out',
-                expanded ? 'min-w-[220px]' : 'min-w-[140px]',
-              )}
-            >
-              <div className="text-[11px] font-semibold text-foreground leading-tight">{c.title}</div>
-              <div className="text-[22px] font-bold text-foreground tracking-tight mt-1">{fmt(c.contactCount)}</div>
-              <div className="text-[11px] text-foreground-faint -mt-0.5">contacts</div>
-              <div className="text-[11px] text-foreground-faint mt-2">{c.channel} · {c.reward}</div>
-              <div className="text-[11px] text-foreground-faint">{c.daysRunning}d running</div>
-              {expanded && (
-                <div className="mt-2.5 pt-2.5 border-t border-border-light space-y-2">
-                  <div>
-                    <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Trigger</span>
-                    <p className="text-[11px] text-foreground-muted leading-relaxed mt-0.5">{c.context}</p>
-                  </div>
-                  <div>
-                    <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">Message</span>
-                    <p className="text-[11px] text-foreground-muted leading-relaxed mt-0.5">"{c.message}"</p>
-                  </div>
-                </div>
-              )}
-            </button>
-          );
-        })}
+    <div className="flex gap-3">
+      {/* Left: campaign list */}
+      <div className="w-[40%] shrink-0">
+        {campaigns.map((c) => (
+          <button
+            key={c.id}
+            onClick={() => setSelectedId(c.id)}
+            className={cn(
+              'w-full rounded-sm px-2 py-1 text-left transition-colors duration-150',
+              selectedId === c.id
+                ? 'bg-accent-subtle'
+                : 'hover:bg-accent-subtle/50',
+            )}
+          >
+            <div className="flex items-baseline justify-between gap-1">
+              <span className="text-[11px] font-semibold text-foreground leading-tight truncate">{c.title}</span>
+              <span className="text-[11px] text-foreground-faint tabular-nums shrink-0">{fmt(c.contactCount)}</span>
+            </div>
+          </button>
+        ))}
       </div>
-      {campaigns.length > 3 && (
-        <div className="absolute right-0 top-0 bottom-1 w-8 bg-gradient-to-l from-surface to-transparent pointer-events-none" />
+
+      {/* Right: selected campaign detail */}
+      {selected && (
+        <div className="flex-1 min-w-0 py-1">
+          <div className="text-[13px] font-semibold text-foreground">{selected.title}</div>
+          <p className="text-[11px] text-foreground-muted leading-relaxed mt-1.5">{selected.whyRefer}</p>
+          <p className="text-[11px] text-foreground-faint leading-relaxed mt-1.5 italic">{selected.example}</p>
+        </div>
       )}
     </div>
   );
@@ -759,7 +753,7 @@ export default function DashboardPage({ config, onHome }) {
   const briefings = projection.dailyBriefings;
 
   return (
-    <div className="min-h-screen flex flex-col w-full px-6 animate-page-enter">
+    <div className="h-screen flex flex-col w-full px-6 animate-page-enter overflow-hidden">
       {/* Header: Logo + Day Selector — compact, left-aligned together */}
       <header className="flex items-center gap-8 py-2 mb-2">
         <Logo variant="mark" onClick={onHome} />
@@ -772,9 +766,9 @@ export default function DashboardPage({ config, onHome }) {
         </div>
       </header>
 
-      <main className="flex-1 pb-8">
+      <main className="flex-1 flex flex-col gap-3 pb-4 min-h-0">
         {/* ── POSITION 1: RESULTS — command center ── */}
-        <div className="bg-surface border border-border rounded-lg mb-5 min-h-[420px] flex flex-col">
+        <div className="bg-surface border border-border rounded-lg flex-1 min-h-0 flex flex-col">
           {/* Suggested change — top of card, first thing HoG sees */}
           <SuggestedChangeStrip
             briefings={briefings}
@@ -844,9 +838,9 @@ export default function DashboardPage({ config, onHome }) {
           </div>
         </div>
 
-        {/* ── BLOCK 2: THREE-COLUMN — Health | Effectiveness | Today's Ops ── */}
-        <div className="bg-surface border border-border rounded-lg">
-          <div className="flex h-[500px]">
+        {/* ── BLOCK 2: Health + Operations ── */}
+        <div className="bg-surface border border-border rounded-lg flex-1 min-h-0">
+          <div className="flex h-full">
             {/* LEFT: Audience Health — pool + conversion rate (dual axis) */}
             <AudienceHealth
               propensityHealth={projection.propensityHealth}
@@ -862,10 +856,10 @@ export default function DashboardPage({ config, onHome }) {
               {/* The playbook */}
               <div>
                 <SectionLabel>Active Campaigns</SectionLabel>
-                <CampaignCards campaigns={briefings?.[effectiveDay]?.dailyPlan?.campaigns || []} />
+                <CampaignList campaigns={briefings?.[effectiveDay]?.dailyPlan?.campaigns || []} />
               </div>
 
-              {/* The execution over time */}
+              {/* The execution over time — same structure as left side */}
               <div className="flex-1 min-h-0 flex flex-col">
                 <SectionLabel>Daily Outreach</SectionLabel>
                 {(() => {
