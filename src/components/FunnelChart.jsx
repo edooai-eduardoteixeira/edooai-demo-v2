@@ -53,7 +53,7 @@ export default function FunnelChart({ stages, pending }) {
                 className={cn(
                   'group relative h-full rounded-[4px] flex items-center px-3 transition-all duration-300 cursor-default',
                   narrow ? 'overflow-visible gap-2' : 'justify-between',
-                  stageEmpty ? 'bg-border-light' : 'bg-accent-subtle hover:bg-accent-light'
+                  stageEmpty ? 'bg-border-light' : 'bg-data-1 hover:bg-data-2'
                 )}
                 style={{ width: `${stageEmpty ? 8 : fillPct}%` }}
               >

@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useRef, useLayoutEffect } from 'react';
-import { ArrowRight, RotateCcw, Pause, Lightbulb } from 'lucide-react';
 import Logo from '../components/Logo.jsx';
 import Chart from '../components/Chart.jsx';
 import StackedBarChart from '../components/StackedBarChart.jsx';
@@ -22,13 +21,7 @@ const ENGINE_MAX_DAYS = 30; // Engine currently generates 30 days; clamp beyond 
 
 // ─── Formatting helpers ──────────────────────────────────────────────
 function fmt(n) { return Math.round(n).toLocaleString('en-US'); }
-function fmtK(n) { return n >= 1000 ? `${Math.round(n / 1000)}K` : fmt(n); }
 function fmtDollar(n) { return '$' + fmt(n); }
-function fmtTime(h, m) {
-  const period = h >= 12 ? 'pm' : 'am';
-  const hour = h > 12 ? h - 12 : h === 0 ? 12 : h;
-  return `${hour}:${String(m).padStart(2, '0')}${period}`;
-}
 
 // ─── Section Label ───────────────────────────────────────────────────
 function SectionLabel({ children }) {
@@ -72,10 +65,10 @@ function DaySelector({ selected, onSelect }) {
 // Stacked area: range from gray-300 down to accent-subtle (adjacent bands need differentiation)
 // Single bars: exact same as funnel
 const CHART_FILLS = {
-  high: '#D1C8BE',   // gray-300 — darkest band (bottom)
-  medium: '#E4DDD5', // gray-200 — middle band
-  low: '#F5F1EB',    // accent-subtle — lightest band, matches funnel exactly
-  bar: 'var(--accent-subtle)',  // CSS variable — same rendering path as funnel
+  high: 'var(--color-data-3)',   // step 3 — Advocates (highest propensity)
+  medium: 'var(--color-data-2)', // step 2 — Persuadable
+  low: 'var(--color-data-1)',    // step 1 — Passive (lowest propensity)
+  bar: 'var(--accent-subtle)',   // CSS variable — funnel bars (unchanged)
 };
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -120,7 +113,10 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, d
             <span className="absolute w-2 h-2 rounded-full border-[1.5px] border-brand animate-[agent-glow_2s_ease-out_infinite]" />
           )}
         </span>
-        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground uppercase">
+        <span className={cn(
+          'text-[13px] font-semibold tracking-[0.05em] uppercase',
+          delivery.active ? 'text-brand' : 'text-foreground'
+        )}>
           {delivery.label}
         </span>
       </span>
@@ -128,7 +124,7 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, d
       {/* Divider */}
       <div className="w-px h-5 bg-border-light shrink-0 mx-4" />
 
-      {/* Budget — small button per DESIGN.md: user controls pop (bg-surface, border) */}
+      {/* Budget */}
       <div className="flex items-center gap-2 shrink-0 min-w-[200px]">
         <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Budget</span>
         <button
@@ -142,7 +138,7 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, d
       {/* Divider */}
       <div className="w-px h-5 bg-border-light shrink-0 mx-4" />
 
-      {/* Spent — period total, no /mo so narrower slot */}
+      {/* Spent */}
       <span className="flex items-center gap-2 shrink-0 min-w-[155px]">
         <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Spent</span>
         <span className="text-[13px] text-foreground-muted whitespace-nowrap">
@@ -153,7 +149,7 @@ function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, d
       {/* Divider */}
       <div className="w-px h-5 bg-border-light shrink-0 mx-4" />
 
-      {/* Pacing — spend rate annualized to monthly */}
+      {/* Pacing */}
       <span className="flex items-center gap-2 shrink-0 min-w-[195px]">
         <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Pacing</span>
         <span className="text-[13px] text-foreground-muted whitespace-nowrap">
@@ -299,8 +295,8 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
         key={`cac-${currentDay}`}
         data={cacData}
         segments={[
-          { color: 'rgba(102, 0, 31, 0.45)', label: 'Referrer' },
-          { color: 'var(--color-brand)', label: 'Referee' },
+          { color: 'var(--color-data-1)', label: 'Referrer' },
+          { color: 'var(--color-data-2)', label: 'Referee' },
         ]}
         maxValue={yMax}
         cssHeight="100%"
@@ -372,106 +368,6 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// COHORT CHART — funnel performance over time
-// ═══════════════════════════════════════════════════════════════════════
-
-// ═══════════════════════════════════════════════════════════════════════
-// POSITION 3: LIVE DECISIONS — Daily briefing with drill-down
-// ═══════════════════════════════════════════════════════════════════════
-
-function BriefingCategory({ label, icon, count, items, renderItem }) {
-  const [expanded, setExpanded] = useState(false);
-  if (count === 0) return null;
-
-  return (
-    <div>
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className={cn(
-          'w-full flex items-center gap-2 py-2 px-2 rounded-sm text-left transition-colors duration-150',
-          'hover:bg-accent-subtle',
-          expanded && 'bg-accent-subtle'
-        )}
-      >
-        <span className="text-foreground-faint shrink-0">{icon}</span>
-        <span className="text-[13px] font-medium text-foreground">
-          {count} {label}
-        </span>
-        <svg className={cn(
-          'w-3.5 h-3.5 text-foreground-faint ml-auto transition-transform duration-200 shrink-0',
-          expanded && 'rotate-180'
-        )} fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-        </svg>
-      </button>
-
-      {expanded && (
-        <div className="pl-4 pr-2 pb-2 ml-2 border-l-2 border-border-light max-h-[180px] overflow-y-auto">
-          {items.map(renderItem)}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function DayBriefing({ briefing }) {
-  const { dailyPlan, contacts, followUps, holdbacks, learnings, recommendation } = briefing;
-
-  return (
-    <div>
-      {/* Daily Plan headline */}
-      <div className="bg-accent-subtle rounded-sm px-3 py-2.5 mb-2">
-        <div className="text-[13px] font-semibold text-foreground">
-          {fmt(dailyPlan.contactCount)} contacts · {fmtK(dailyPlan.eligibleCount)} eligible · {fmtDollar(dailyPlan.budgetToday)}
-        </div>
-        <p className="text-xs text-foreground-muted mt-1 leading-relaxed">
-          {dailyPlan.strategyShift}
-        </p>
-      </div>
-
-      {/* Collapsible categories */}
-      <div className="space-y-0">
-        <BriefingCategory
-          label="new contacts"
-          icon={<ArrowRight size={12} />}
-          count={contacts.length}
-          items={contacts}
-          renderItem={(c) => (
-            <div key={c.id} className="py-1.5 border-b border-border-light last:border-0">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-foreground">{c.name}</span>
-                <span className="text-[11px] text-foreground-faint">{c.channel} · {c.offerName || c.tierLabel} · {c.messageApproach}</span>
-                <span className="text-[11px] text-foreground-faint ml-auto">{fmtTime(c.hour, c.minute)}</span>
-              </div>
-              <p className="text-[11px] text-foreground-faint leading-relaxed mt-0.5">{c.reasoning}</p>
-            </div>
-          )}
-        />
-
-        {followUps.length > 0 && (
-          <BriefingCategory
-            label="follow-ups sent"
-            icon={<RotateCcw size={12} />}
-            count={followUps.length}
-            items={followUps}
-            renderItem={(f) => (
-              <div key={f.id} className="py-1.5 border-b border-border-light last:border-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-foreground">{f.name}</span>
-                  <span className="text-[11px] text-foreground-faint">{f.funnelStageLabel}</span>
-                </div>
-                <p className="text-[11px] text-foreground-faint leading-relaxed mt-0.5">{f.reasoning}</p>
-              </div>
-            )}
-          />
-        )}
-
-      </div>
-    </div>
-  );
-}
-
 function SuggestedChangeStrip({ briefings, selectedDay, onReview }) {
   const [dismissed, setDismissed] = useState(false);
   if (dismissed) return null;
@@ -480,21 +376,21 @@ function SuggestedChangeStrip({ briefings, selectedDay, onReview }) {
     const rec = briefings?.[d]?.recommendation;
     if (rec) {
       return (
-        <div className="flex items-center gap-3 bg-surface border-l-[3px] border-l-brand border-b border-border-light px-5 py-2.5 rounded-t-lg">
+        <div className="flex items-center border-l-[3px] border-l-brand border-b border-border-light px-5 py-2.5">
           <span className="text-[13px] text-foreground-muted">
             <span className="font-semibold text-brand">Suggested change:</span> {rec.action}
           </span>
           <button
             onClick={onReview}
-            className="px-3 py-1.5 text-[11px] font-semibold rounded-sm bg-surface text-brand border border-brand/30 hover:bg-brand-light transition-all duration-200 shrink-0"
+            className="py-1 px-2.5 text-[13px] font-semibold rounded-sm bg-surface text-brand border border-brand/30 hover:bg-brand-light transition-all duration-200 shrink-0 ml-3"
           >
             Review
           </button>
           <button
             onClick={() => setDismissed(true)}
-            className="text-[11px] text-foreground-faint hover:text-foreground transition-colors shrink-0"
+            className="w-6 h-6 flex items-center justify-center rounded-sm text-foreground-faint hover:text-foreground hover:bg-accent-subtle transition-colors duration-200 shrink-0 ml-auto"
           >
-            Dismiss
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </div>
       );
@@ -502,69 +398,6 @@ function SuggestedChangeStrip({ briefings, selectedDay, onReview }) {
   }
   return null;
 }
-
-function DecisionFeed({ briefings, selectedDay }) {
-  if (!briefings) return null;
-
-  // Show all days up to selectedDay, most recent first
-  const days = [];
-  for (let d = selectedDay; d >= 1; d--) {
-    if (briefings[d]) days.push(briefings[d]);
-  }
-
-  return (
-    <div>
-      <div className="space-y-4">
-        {days.map((briefing) => (
-          <div key={briefing.day}>
-            {/* Date header */}
-            <div className="flex items-center gap-2 mb-2">
-              <div className="h-px flex-1 bg-border-light" />
-              <span className="text-[11px] font-semibold text-foreground-faint shrink-0">Day {briefing.day}</span>
-              <div className="h-px flex-1 bg-border-light" />
-            </div>
-            <DayBriefing briefing={briefing} />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-
-function KeyLearnings({ annotations, selectedDay }) {
-  const visible = (annotations || []).filter(a => a.day <= selectedDay);
-
-  return (
-    <div>
-      <SectionLabel>Key Learnings</SectionLabel>
-      {visible.length === 0 ? (
-        <p className="text-xs text-foreground-faint">Agent is calibrating...</p>
-      ) : (
-        <div className="space-y-3">
-          {visible.map((a, i) => (
-            <div
-              key={i}
-              className="flex items-start gap-2 animate-fade-in"
-              style={{ animationDelay: `${i * 100}ms` }}
-            >
-              <span className="w-2 h-2 rounded-full bg-brand mt-1.5 shrink-0" />
-              <div>
-                <span className="text-xs font-semibold text-foreground-muted">
-                  Day {a.day} — {a.title}
-                </span>
-                <p className="text-xs text-foreground-faint mt-0.5 leading-relaxed">
-                  {a.description}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 
 // ═══════════════════════════════════════════════════════════════════════
 // DASHBOARD BUDGET SLIDER — forked from DefaultBudgetSlider for
@@ -648,44 +481,6 @@ function AudienceHealth({ propensityHealth, effectivenessData, effectiveDay }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// BLOCK 2 CENTER: ENGAGEMENT EFFECTIVENESS — combined decay + trend
-// ═══════════════════════════════════════════════════════════════════════
-function EngagementEffectiveness({ effectivenessData, effectiveDay }) {
-  if (!effectivenessData) return null;
-
-  const { dailyConversionRate } = effectivenessData;
-  const dataSlice = dailyConversionRate.slice(0, effectiveDay);
-  const maxRate = Math.max(...dataSlice, 1);
-  const yMax = niceYMax(maxRate);
-  const xLabels = dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }));
-
-  return (
-    <div className="flex-[4] p-5 min-w-0 flex flex-col">
-      <SectionLabel>Conversion Rate</SectionLabel>
-      <div className="flex-1 min-h-0">
-        <Chart
-          series={[
-            { data: dataSlice, color: 'var(--color-brand)', label: 'Daily conversion %' },
-          ]}
-          maxValue={yMax}
-          cssHeight="100%"
-          xLabels={xLabels}
-          yLabels={[yMax * 0.5, yMax]}
-          gridlines="from-labels"
-          fill={{ color: 'var(--color-brand)', opacity: 0.07 }}
-          endpointLabel={(v) => `${v}%`}
-          formatYLabel={(v) => `${Math.round(v)}%`}
-        />
-      </div>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// OPERATIONS CHART — stacked area: new contacts + follow-ups over time
-// ═══════════════════════════════════════════════════════════════════════
-
-// ═══════════════════════════════════════════════════════════════════════
 // CAMPAIGN CARDS — horizontal, structured
 // ═══════════════════════════════════════════════════════════════════════
 function CampaignList({ campaigns }) {
@@ -696,15 +491,17 @@ function CampaignList({ campaigns }) {
   const selected = campaigns.find(c => c.id === selectedId);
 
   return (
-    <div className="flex gap-3">
-      {/* Left: campaign list */}
-      <div className="w-[40%] shrink-0">
+    <div className="flex gap-3 h-full">
+      {/* Left: label + campaign list — scrolls independently */}
+      <div className="w-[40%] shrink-0 flex flex-col">
+        <SectionLabel>Active Campaigns</SectionLabel>
+        <div className="flex-1 min-h-0 overflow-y-auto">
         {campaigns.map((c) => (
           <button
             key={c.id}
             onClick={() => setSelectedId(c.id)}
             className={cn(
-              'w-full rounded-sm px-2 py-1 text-left transition-colors duration-150',
+              'w-full rounded-sm px-2 py-1.5 text-left transition-colors duration-150',
               selectedId === c.id
                 ? 'bg-accent-subtle'
                 : 'hover:bg-accent-subtle/50',
@@ -716,14 +513,18 @@ function CampaignList({ campaigns }) {
             </div>
           </button>
         ))}
+        </div>
       </div>
 
       {/* Right: selected campaign detail */}
       {selected && (
-        <div className="flex-1 min-w-0 py-1">
-          <div className="text-[13px] font-semibold text-foreground">{selected.title}</div>
-          <p className="text-[11px] text-foreground-muted leading-relaxed mt-1.5">{selected.whyRefer}</p>
-          <p className="text-[11px] text-foreground-faint leading-relaxed mt-1.5 italic">{selected.example}</p>
+        <div className="flex-1 min-w-0 pl-8 pr-6 self-start">
+          <p className="text-[13px] font-medium text-foreground-muted leading-relaxed">{selected.whyRefer}</p>
+          <div className="flex items-center gap-2 mt-3">
+            <span className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-border-light text-foreground-muted">{selected.channel}</span>
+            <span className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-border-light text-foreground-muted">{selected.reward}</span>
+          </div>
+          <p className="text-[13px] text-foreground-faint leading-relaxed mt-3 border-l-2 border-border-light pl-3">{selected.example.replace(/^(Push|Email|In-app|SMS):\s*/i, '')}</p>
         </div>
       )}
     </div>
@@ -766,16 +567,10 @@ export default function DashboardPage({ config, onHome }) {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col gap-3 pb-4 min-h-0">
-        {/* ── POSITION 1: RESULTS — command center ── */}
-        <div className="bg-surface border border-border rounded-lg flex-1 min-h-0 flex flex-col">
-          {/* Suggested change — top of card, first thing HoG sees */}
-          <SuggestedChangeStrip
-            briefings={briefings}
-            selectedDay={effectiveDay}
-            onReview={() => setActiveDrawer('budget')}
-          />
-          {/* Campaign Health Row — compact status strip */}
+      <main className="flex-1 pb-4 min-h-0">
+        {/* ── ONE CARD: One agent, one program, one surface ── */}
+        <div className="bg-surface border border-border rounded-lg shadow-sm h-full flex flex-col">
+          {/* Campaign Health Row — permanent agent status, top of card */}
           <CampaignHealthRow
             dayData={dayData}
             selectedDay={effectiveDay}
@@ -784,11 +579,17 @@ export default function DashboardPage({ config, onHome }) {
             dateRange={dateRange}
             days={projection.days}
           />
+          {/* Suggested change — below health row, adds height when visible */}
+          <SuggestedChangeStrip
+            briefings={briefings}
+            selectedDay={effectiveDay}
+            onReview={() => setActiveDrawer('budget')}
+          />
 
-          {/* Main content area */}
-          <div className="flex gap-5 flex-1 min-h-0 p-5">
+          {/* ── Block 1: Outcomes ── */}
+          <div className="flex gap-5 flex-1 min-h-0 px-5 pt-5 pb-3">
             {/* LEFT COLUMN (75%): KPI selector + hero chart */}
-            <div className="flex-[3] min-w-0 flex flex-col">
+            <div className="flex-[3] min-w-0 flex flex-col border-r border-border-light">
               <KPISelector
                 selected={selectedKPI}
                 onSelect={setSelectedKPI}
@@ -808,13 +609,10 @@ export default function DashboardPage({ config, onHome }) {
               </div>
             </div>
 
-            {/* DIVIDER */}
-            <div className="w-px bg-border-light shrink-0" />
-
             {/* RIGHT COLUMN (25%): Referral Funnel */}
-            <div className="flex-1 min-w-0 flex flex-col pt-2.5">
+            <div className="flex-1 min-w-0 flex flex-col pt-2.5 pl-4">
               <SectionLabel>Referral Funnel</SectionLabel>
-              <div className="flex-1 min-h-0">
+              <div className="flex-1 min-h-0 pb-6">
                 <FunnelChart
                   stages={(() => {
                     const contacted = dayData.funnelCumulative.contacted;
@@ -836,11 +634,12 @@ export default function DashboardPage({ config, onHome }) {
               </div>
             </div>
           </div>
-        </div>
 
-        {/* ── BLOCK 2: Health + Operations ── */}
-        <div className="bg-surface border border-border rounded-lg flex-1 min-h-0">
-          <div className="flex h-full">
+          {/* HORIZONTAL DIVIDER between blocks */}
+          <div className="h-px bg-border-light mx-5 shrink-0" />
+
+          {/* ── Block 2: Health + Operations ── */}
+          <div className="flex flex-1 min-h-0">
             {/* LEFT: Audience Health — pool + conversion rate (dual axis) */}
             <AudienceHealth
               propensityHealth={projection.propensityHealth}
@@ -852,16 +651,16 @@ export default function DashboardPage({ config, onHome }) {
             <div className="w-px bg-border-light shrink-0" />
 
             {/* RIGHT (~50%): campaigns + daily outreach chart */}
-            <div className="flex-[5] p-5 flex flex-col gap-4">
-              {/* The playbook */}
-              <div>
-                <SectionLabel>Active Campaigns</SectionLabel>
+            <div className="flex-[5] px-5 flex flex-col">
+              {/* The playbook — fixed 50%, scrolls if needed */}
+              <div className="flex-[2] min-h-0 overflow-hidden pt-5 pb-3">
                 <CampaignList campaigns={briefings?.[effectiveDay]?.dailyPlan?.campaigns || []} />
               </div>
 
-              {/* The execution over time — same structure as left side */}
-              <div className="flex-1 min-h-0 flex flex-col">
+              {/* The execution over time — fixed 50%, py only (column handles px) */}
+              <div className="flex-[3] min-h-0 flex flex-col py-5">
                 <SectionLabel>Daily Outreach</SectionLabel>
+                <div className="flex-1 min-h-0">
                 {(() => {
                   const opsSlice = projection.operationsData.slice(0, effectiveDay);
                   // Build per-campaign data over time
@@ -878,7 +677,13 @@ export default function DashboardPage({ config, onHome }) {
                   });
                   // Get campaign names from the latest day (has all campaigns)
                   const latestCampaigns = briefings?.[effectiveDay]?.dailyPlan?.campaigns || [];
-                  const CAMPAIGN_COLORS = ['#8B4513', '#A0522D', '#B8860B', '#D1C8BE', '#E4DDD5'];
+                  const CAMPAIGN_COLORS = [
+                    'var(--color-data-5)',  // step 5 — product-specific (highest volume)
+                    'var(--color-data-4)',  // step 4
+                    'var(--color-data-3)',  // step 3
+                    'var(--color-data-2)',  // step 2 — transactional
+                    'var(--color-data-1)',  // step 1 — generic promo (lowest volume)
+                  ];
                   // Y-axis: mid + max labels (matching other charts)
                   const maxTotal = Math.max(...paddedData.map(v => v.reduce((a, b) => a + b, 0)), 1);
                   const yMax = niceYMax(maxTotal);
@@ -889,7 +694,7 @@ export default function DashboardPage({ config, onHome }) {
                       }))}
                       segments={latestCampaigns.map((c, i) => ({
                         label: c.title,
-                        color: CAMPAIGN_COLORS[i] || '#D1C8BE',
+                        color: CAMPAIGN_COLORS[i] || 'var(--color-data-3)',  // terracotta fallback
                       }))}
                       maxValue={yMax}
                       xLabels={dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }))}
@@ -900,6 +705,7 @@ export default function DashboardPage({ config, onHome }) {
                     />
                   );
                 })()}
+                </div>
               </div>
             </div>
           </div>

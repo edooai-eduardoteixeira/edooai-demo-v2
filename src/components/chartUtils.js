@@ -6,7 +6,7 @@
 
 // --- Design tokens (from DESIGN.md) ---
 export const TOKENS = {
-  line: { color: 'var(--color-brand)', width: 2 },
+  line: { color: 'var(--color-brand)', width: 3 },
   axis: { fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font-family)' },
   gridline: { color: 'var(--border-light)', dash: '4,4', opacity: 0.45 },
   endpoint: { radius: 3.5, color: 'var(--color-brand)' },
@@ -35,7 +35,7 @@ export const TOKENS = {
 // Fixed-pixel margins for axis label zones (on 4px grid, CSS pixels).
 // Applied as CSS padding on the chart wrapper div — NOT as SVG viewBox padding.
 // This is the D3 margin convention: labels live outside the data area.
-export const CHART_MARGIN = { top: 8, right: 8, bottom: 24, left: 36 };
+export const CHART_MARGIN = { top: 8, right: 36, bottom: 24, left: 36 };
 export const LEGEND_HEIGHT = 24;
 export const DEFAULT_HEIGHT = 210;
 export const VIEWBOX_WIDTH = 828;

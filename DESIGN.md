@@ -86,10 +86,12 @@ All colors live in a **warm family**. No cool grays, no blue-tinted neutrals. Th
 2. **Chart lines and data visualization** — the product's intelligence, visualized
 3. **Active/selected states** — toggles on, active nav items, focus indicators
 
-**Landing page exception:** The hero headline uses `text-brand` in Playfair Display (`font-display text-[56px]`). The landing IS the brand moment — the headline speaks in the brand voice. This is the only place brand color appears as text.
+**Landing page exception:** The hero headline uses `text-brand` in Playfair Display (`font-display text-[56px]`). The landing IS the brand moment — the headline speaks in the brand voice.
+
+**Agent voice exception:** The agent's direct statements use `text-brand` — status text ("Acquiring Customers" when active) and recommendations ("Suggested change:"). This is the agent speaking, not a label or heading. Brand text = the agent's voice.
 
 **Brand color never does (in the product UI):**
-- Text for numbers, headings, labels, or body copy
+- Text for numbers, headings, labels, or body copy (agent voice is the exception)
 - Multiple buttons on the same screen
 - Borders, decorative backgrounds, or large filled areas
 - Compete with semantic colors (success, danger, warning)
@@ -271,6 +273,24 @@ Always use the `<CohortBar>` component (`src/components/CohortBar.jsx`).
 - **Empty space**: Above bar when engaged count < maxVal (early days show shorter bar)
 - **Tooltip**: On hover shows cohort start day + engaged count
 
+**Categorical palette — warm sand ramp (receding fills):**
+Chart fills that recede into the surface. The hero brand line is the only strong color — supporting fills are infrastructure, not a focal point. Five steps from accent-subtle to light sand.
+
+| Token | CSS Variable | Hex | Use |
+|---|---|---|---|
+| `data-1` | `var(--color-data-1)` | #F5F1EB | Lightest — nearly invisible (= accent-subtle) |
+| `data-2` | `var(--color-data-2)` | #EFEBE5 | |
+| `data-3` | `var(--color-data-3)` | #E4DDD5 | |
+| `data-4` | `var(--color-data-4)` | #DDD6CD | |
+| `data-5` | `var(--color-data-5)` | #D5CCC2 | Darkest — warm sand, still receding |
+
+**Usage rules:**
+- Chart fills only — never for text, borders, or backgrounds
+- **Always use consecutive steps.** No jumping. 5 segments = 1, 2, 3, 4, 5. 3 segments = 1, 2, 3. 2 segments = 1, 2.
+- Darkest step = highest volume or most important category
+- These fills recede; the brand line is the only strong color on the page
+- Defined in `src/styles/global.css` @theme block
+
 ---
 
 ## Spacing
@@ -428,6 +448,12 @@ Collapse at 768px: `flex flex-col`
 flex flex-wrap gap-5
 ```
 
+### Dashboard layout (data-dense, full-width)
+```
+h-screen flex flex-col w-full px-6 overflow-hidden
+```
+Exception for data-dense pages (e.g., dashboard) where the standard `max-w-[1100px] mx-auto px-12` container would over-constrain horizontal space. Used when the page has side-by-side blocks that each need multi-column internal layouts. No page scroll — content fills viewport height. Header margin `mb-2` (not `mb-6`) — tighter chrome maximizes chart space.
+
 ---
 
 ## Component Recipes
@@ -496,27 +522,27 @@ bg-surface border border-border rounded-lg shadow-sm overflow-hidden
 ```
 
 ### Agent status indicator
-Used to show an autonomous agent is actively operating. Brand color only on the dot (active state). Everything else neutral.
-
-**Dot** (8px, solid brand):
-```
-w-2 h-2 rounded-full bg-brand
-```
-
-**Pulse ring** (8px, border-only, scales outward and fades):
-```
-w-2 h-2 rounded-full border-[1.5px] border-brand animate-[agent-glow_2s_ease-out_infinite]
-```
-
-**Status text**:
-```
-text-[13px] font-semibold text-foreground
-```
+Used to show an autonomous agent is actively operating. Three states, each with its own dot color and behavior.
 
 **Container** (wraps dot + text):
 ```
 flex items-center gap-2.5
 ```
+
+**Status text** (all states):
+```
+text-[13px] font-semibold tracking-[0.05em] text-foreground uppercase
+```
+
+**States:**
+
+| State | Dot | Pulse ring | Label |
+|---|---|---|---|
+| **Active** (acquiring customers) | `w-2 h-2 rounded-full bg-brand` | `w-2 h-2 rounded-full border-[1.5px] border-brand animate-[agent-glow_2s_ease-out_infinite]` | "Acquiring Customers" |
+| **Learning** (pre-threshold) | `w-2 h-2 rounded-full bg-warn` | none | "Learning" |
+| **Limited** (budget-capped) | `w-2 h-2 rounded-full bg-warn` | none | "Limited by Budget" |
+
+Active state: brand dot + sonar pulse ring. Learning/Limited: warn dot, no pulse — signals the agent is constrained but operational.
 
 See `agent-glow` keyframe in `src/styles/global.css`.
 

@@ -180,7 +180,7 @@ export default function StackedAreaChart({
   const chartAreaStyle = {
     position: 'relative',
     paddingLeft: CHART_MARGIN.left,
-    paddingRight: CHART_MARGIN.right,
+    paddingRight: hasOverlay ? CHART_MARGIN.left : CHART_MARGIN.right,
     paddingTop: CHART_MARGIN.top,
     paddingBottom: CHART_MARGIN.bottom,
     ...(cssHeight ? { flex: 1, minHeight: 0 } : {}),
@@ -359,9 +359,9 @@ export default function StackedAreaChart({
               key={`yr-${i}`}
               style={{
                 ...labelBase,
-                right: CHART_MARGIN.right - 8,
+                right: 0,
                 top: CHART_MARGIN.top + item.y * pxPerUnit,
-                transform: 'translate(100%, -50%)',
+                transform: 'translateY(-50%)',
               }}
             >
               {fmt(item.val)}
