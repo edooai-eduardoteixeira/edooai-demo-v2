@@ -7,7 +7,7 @@ import { cn } from '../lib/utils';
    ═══════════════════════════════════════════ */
 
 /* ── Ordered drawer keys for navigation ── */
-const DRAWER_ORDER = ['invite', 'rewards', 'redemption', 'fatigue', 'budget', 'fraud'];
+const DRAWER_ORDER = ['budget', 'invite', 'rewards', 'redemption', 'fatigue', 'fraud'];
 
 /* ── Icons ── */
 const ChevronRight = ({ className }) => (
@@ -52,11 +52,11 @@ const PlusSmall = () => (
 
 /* ── Index view data ── */
 const RULES_INDEX = [
+  { key: 'budget', label: 'Budget', subtopics: 'Monthly Budget, Spend Pace, Invite Stop' },
   { key: 'invite', label: 'Invite', subtopics: 'Audience, Triggers, Channels' },
   { key: 'rewards', label: 'Reward', subtopics: 'Payment Method, Reward Tiers' },
   { key: 'redemption', label: 'Redemption', subtopics: 'New User Journey, Reward Trigger' },
   { key: 'fatigue', label: 'Communication Controls', subtopics: 'Reminder Frequency, Rest Period, Expiration Date' },
-  { key: 'budget', label: 'Budget Protection', subtopics: 'Spend Pace, Invite Stop' },
   { key: 'fraud', label: 'Fraud Prevention', subtopics: 'Link Hijacking Limit, Self-Referral, Bot Shield, Payment Hold' },
 ];
 
@@ -334,6 +334,139 @@ const ActivationModes = ({ modes: initialModes }) => {
   );
 };
 
+/* ── Budget Slider — default (used by dashboard, can diverge from strategy page) ── */
+const BUDGET_CONFIG = {
+  min: 50000, max: 300000, step: 5000,
+  recMin: 100000, recMax: 200000, defaultAmount: 150000,
+};
+
+function getDrawerGuidanceMessage(val) {
+  // Placeholder reachPct — in production this comes from the engine
+  const reachPct = val < BUDGET_CONFIG.recMin ? 6
+    : val <= BUDGET_CONFIG.recMax ? 15 : 16;
+  if (val < BUDGET_CONFIG.recMin) return `Best CAC, leaving volume on the table. Only top referrers — ${reachPct}% of eligible customers.`;
+  if (val <= BUDGET_CONFIG.recMax) return `Full customer potential, optimized CAC. Expanding past top referrers — ${reachPct}% of eligible customers.`;
+  return `Maximum total return, higher CAC. Full referral engine activated — ${reachPct}% of eligible customers.`;
+}
+
+const DefaultBudgetSlider = ({ budget, onBudgetChange }) => {
+  const val = budget || BUDGET_CONFIG.defaultAmount;
+  const [editing, setEditing] = useState(false);
+  const [inputVal, setInputVal] = useState('');
+  const inputRef = useRef(null);
+
+  const pct = ((val - BUDGET_CONFIG.min) / (BUDGET_CONFIG.max - BUDGET_CONFIG.min)) * 100;
+  const recLeft = ((BUDGET_CONFIG.recMin - BUDGET_CONFIG.min) / (BUDGET_CONFIG.max - BUDGET_CONFIG.min)) * 100;
+  const recWidth = ((BUDGET_CONFIG.recMax - BUDGET_CONFIG.recMin) / (BUDGET_CONFIG.max - BUDGET_CONFIG.min)) * 100;
+
+  const startEdit = () => {
+    setInputVal(String(val / 1000));
+    setEditing(true);
+    setTimeout(() => inputRef.current?.select(), 0);
+  };
+
+  const commitEdit = () => {
+    const parsed = Math.round(Number(inputVal) * 1000);
+    if (!isNaN(parsed) && parsed >= BUDGET_CONFIG.min && parsed <= BUDGET_CONFIG.max) {
+      onBudgetChange(Math.round(parsed / BUDGET_CONFIG.step) * BUDGET_CONFIG.step);
+    }
+    setEditing(false);
+  };
+
+  const fmtK = (n) => '$' + Math.round(n / 1000) + 'K';
+
+  return (
+    <div>
+      {/* Budget display + edit */}
+      <div className="flex items-center justify-between mb-3">
+        {editing ? (
+          <div className="flex items-center gap-1">
+            <span className="text-[13px] text-foreground-muted">$</span>
+            <input
+              ref={inputRef}
+              value={inputVal}
+              onChange={(e) => setInputVal(e.target.value)}
+              onBlur={commitEdit}
+              onKeyDown={(e) => e.key === 'Enter' && commitEdit()}
+              className="w-16 text-[15px] font-bold text-foreground bg-transparent border-b border-brand outline-none text-right"
+            />
+            <span className="text-[13px] text-foreground-muted">K/mo</span>
+          </div>
+        ) : (
+          <button onClick={startEdit} className="text-[15px] font-bold text-foreground hover:text-brand transition-colors duration-150 cursor-pointer">
+            {fmtK(val)}/mo
+          </button>
+        )}
+      </div>
+
+      {/* Slider — matches strategy page layout */}
+      <div style={{ position: 'relative', height: 20 }}>
+        {/* Track background */}
+        <div style={{
+          position: 'absolute', top: 7, left: 0, right: 0, height: 6,
+          background: 'var(--color-gray-200)', borderRadius: 3,
+        }} />
+
+        {/* Zone boundary tick marks */}
+        <div style={{
+          position: 'absolute', left: `${recLeft}%`, top: 2,
+          width: 1.5, height: 16, background: 'var(--color-gray-400)',
+          borderRadius: 1, zIndex: 2,
+        }} />
+        <div style={{
+          position: 'absolute', left: `${recLeft + recWidth}%`, top: 2,
+          width: 1.5, height: 16, background: 'var(--color-gray-400)',
+          borderRadius: 1, zIndex: 2,
+        }} />
+
+        {/* Fill */}
+        <div style={{
+          position: 'absolute', left: 0, top: 7,
+          width: `${pct}%`, height: 6,
+          background: 'var(--color-brand)', borderRadius: 3, zIndex: 1,
+        }} />
+
+        {/* Thumb */}
+        <div style={{
+          position: 'absolute', left: `${pct}%`, top: '50%',
+          transform: 'translate(-50%, -50%)', width: 20, height: 20,
+          background: 'var(--color-brand)', border: '3px solid var(--surface)',
+          borderRadius: '50%', cursor: 'grab', zIndex: 3,
+          boxShadow: 'var(--shadow-sm)',
+        }} />
+
+        {/* Invisible range input */}
+        <input
+          type="range"
+          min={BUDGET_CONFIG.min}
+          max={BUDGET_CONFIG.max}
+          step={BUDGET_CONFIG.step}
+          value={val}
+          onChange={(e) => onBudgetChange(Number(e.target.value))}
+          style={{
+            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+            opacity: 0, cursor: 'pointer', zIndex: 4,
+          }}
+        />
+      </div>
+
+      <div style={{ height: 12 }} />
+
+      {/* AI insight card — matches design system (bg-accent-subtle card) */}
+      <div className="bg-accent-subtle rounded-lg py-3 px-4">
+        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+          <svg style={{ flexShrink: 0, marginTop: 1 }} width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M8 0L9.8 6.2L16 8L9.8 9.8L8 16L6.2 9.8L0 8L6.2 6.2L8 0Z" fill="var(--text-tertiary)"/>
+          </svg>
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+            {getDrawerGuidanceMessage(val)}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 /* ── BudgetPacing ── */
 const BudgetPacing = ({ section }) => {
   const [intensity, setIntensity] = useState(section.intensity);
@@ -555,8 +688,12 @@ const drawerContent = {
     ]
   },
   budget: {
-    title: 'Budget Protection',
+    title: 'Budget',
     sections: [
+      {
+        title: 'Monthly Budget',
+        type: 'budget-slider',
+      },
       {
         title: 'Spend Pace',
         type: 'budget-pacing',
@@ -612,7 +749,7 @@ const drawerContent = {
    Drawer Component
    ══════════════════════════════════════ */
 
-const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
+const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange, budget, onBudgetChange, BudgetSliderComponent }) => {
   const isIndex = blockKey === 'index';
   const data = (!isIndex && blockKey) ? drawerContent[blockKey] : null;
   const isOpen = isIndex || !!data;
@@ -690,6 +827,11 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
                       </div>
                     ))
                   )}
+
+                  {section.type === 'budget-slider' && (() => {
+                    const Comp = BudgetSliderComponent || DefaultBudgetSlider;
+                    return <Comp budget={budget} onBudgetChange={onBudgetChange} />;
+                  })()}
 
                   {section.type === 'budget-pacing' && (
                     <BudgetPacing section={section} />
@@ -822,9 +964,9 @@ const Drawer = ({ blockKey, onClose, onNavigate, handleRewardChange }) => {
    StrategyCards (exported) — Drawer only
    ══════════════════════════════════════ */
 
-export { GearIcon, ChevronRight };
+export { GearIcon, ChevronRight, DefaultBudgetSlider, BUDGET_CONFIG };
 
-export default function StrategyCards({ activeDrawer, onClose, onNavigate, onRewardsChange }) {
+export default function StrategyCards({ activeDrawer, onClose, onNavigate, onRewardsChange, budget, onBudgetChange, BudgetSliderComponent }) {
   // Track reward tier values — parse "$75" → 75
   const parseDollar = (v) => Number(String(v).replace(/[^0-9.]/g, '')) || 0;
   const [referrerTiers, setReferrerTiers] = useState([0, 20, 50, 75]);
@@ -855,6 +997,9 @@ export default function StrategyCards({ activeDrawer, onClose, onNavigate, onRew
       onClose={onClose}
       onNavigate={onNavigate}
       handleRewardChange={handleRewardChange}
+      budget={budget}
+      onBudgetChange={onBudgetChange}
+      BudgetSliderComponent={BudgetSliderComponent}
     />
   );
 }

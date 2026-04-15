@@ -28,6 +28,90 @@ const MESSAGE_APPROACHES = [
   'social proof', 'reward-led', 'urgency', 'personal milestone', 'community',
 ];
 
+const OFFER_NAMES = ['No reward', '$10 credit', '$20 credit', '$50 credit'];
+
+// ─── Neobank campaign definitions ───────────────────────────────────
+const NEOBANK_CAMPAIGNS = [
+  {
+    id: 'p2p-nonuser', type: 'specific',
+    title: 'Sent money to non-user',
+    whyRefer: 'Their friend would get the money instantly with the app. Referral solves the friction they just hit.',
+    example: 'Push: "Sarah would get this instantly with the app. Invite her — you both get $15."',
+    channel: 'push', reward: '$15 both-get',
+    startsDay: 1,
+  },
+  {
+    id: 'first-deposit', type: 'specific',
+    title: 'First paycheck deposited',
+    whyRefer: 'They just committed to fee-free banking. Their friends are still paying fees they no longer pay.',
+    example: 'Email: "You\'re saving on fees now. Your friends could too — share and you both get $10."',
+    channel: 'email', reward: '$10 credit',
+    startsDay: 10,
+  },
+  {
+    id: 'cashback-milestone', type: 'specific',
+    title: 'Saved on cashback this month',
+    whyRefer: 'The savings are fresh and tangible. Friends would get the same cashback from day one.',
+    example: 'Push: "You saved $47 this month. Give your friends the same deal — plus $5 bonus for you."',
+    channel: 'push', reward: '$5 bonus cashback',
+    startsDay: 30,
+  },
+  {
+    id: 'highly-rated', type: 'transactional',
+    title: 'Rated support highly',
+    whyRefer: 'Satisfaction is fresh. The moment right after a great experience is when people recommend naturally.',
+    example: 'Email: "Glad we could help! Know someone who\'d love banking this way? You both get $10."',
+    channel: 'email', reward: '$10 credit',
+    startsDay: 1,
+  },
+  {
+    id: 'seasonal-promo', type: 'promo',
+    title: 'Always-on referral offer',
+    whyRefer: 'Catches customers who refer on their own timeline, not ours. Broadens reach beyond triggered moments.',
+    example: 'In-app: "Refer a friend, you both get $10. Share your link anytime."',
+    channel: 'in-app', reward: '$10 both-get',
+    startsDay: 1,
+  },
+];
+
+function buildCampaigns(rng, { day, dayData }) {
+  const contactCount = dayData?.journeysToday || 1788;
+  const active = NEOBANK_CAMPAIGNS.filter(c => day >= c.startsDay);
+  const weights = active.map(c => {
+    const maturity = Math.min(1, (day - c.startsDay) / 20);
+    if (c.type === 'specific') return 1.5 + maturity * 2.5;
+    if (c.type === 'transactional') return 1 + maturity * 0.5;
+    return 0.8 - maturity * 0.3;
+  });
+  const totalWeight = weights.reduce((a, b) => a + b, 0);
+  return active.map((c, i) => ({
+    id: c.id, type: c.type, title: c.title,
+    whyRefer: c.whyRefer, example: c.example,
+    channel: c.channel, reward: c.reward,
+    contactCount: Math.round(contactCount * (weights[i] / totalWeight)),
+  }));
+}
+
+const NEOBANK_MOMENTS = {
+  'P2P to non-user': ['sent $30 to a friend via bank transfer', 'split dinner bill with non-user friend', 'paid rent to landlord without the app'],
+  'First direct deposit': ['first paycheck just deposited', 'switched direct deposit from old bank'],
+  'Cashback milestone': ['earned $45 cashback this month', 'hit $100 total cashback savings'],
+  'Highly rated': ['gave NPS 9 after fraud resolution', 'rated support 5 stars'],
+  'Seasonal promo': ['browsing referral page in-app', 'saw referral banner on home screen'],
+};
+
+function pickSampleDecisions(rng, campaigns) {
+  const samples = [];
+  for (const c of campaigns) {
+    const moments = NEOBANK_MOMENTS[c.title] || ['active customer'];
+    const count = c.type === 'specific' ? 2 : 1;
+    for (let i = 0; i < count && samples.length < 5; i++) {
+      samples.push({ name: pickName(rng), productMoment: moments[Math.floor(rng() * moments.length)], campaignTitle: c.title, reward: c.reward, channel: c.channel });
+    }
+  }
+  return samples.slice(0, 5);
+}
+
 // Simple seeded PRNG (mulberry32)
 function mulberry32(seed) {
   return function () {
@@ -141,29 +225,30 @@ function buildHoldback(rng, { day }) {
 // On annotation days, the shift matches the annotation's insight.
 // On other days, it's a plausible daily adjustment.
 function buildStrategyShift(rng, { day, efficiency, annotation }) {
-  if (day <= 1) return 'Initial targeting: broad exploration across all eligible segments.';
-  if (day <= 5) return 'Early data collection. Broad targeting with slight bias toward high-NPS customers.';
+  if (day <= 1) return 'Initial outreach to highest-propensity segment. Testing $20 credit vs $10 credit vs $50 credit. Three message variants (social proof, reward-led, personal milestone) in equal rotation.';
+  if (day <= 3) return 'Early exploration. All three offers in rotation across high-propensity customers. Social proof messaging slightly ahead on engagement.';
+  if (day <= 5) return 'First signals emerging. $20 credit showing higher share rates than $10 credit. Expanding push notification volume for high-transaction customers.';
 
   // If this day has a learning annotation, the strategy shift IS that learning
   if (annotation) {
     switch (annotation.type) {
       case 'signal':
-        return `Signal threshold crossed — ${Math.round(efficiency * 100)}% targeting accuracy achieved. Shifting from exploration to exploitation: concentrating on segments with highest observed conversion.`;
+        return `Signal threshold crossed — ${Math.round(efficiency * 100)}% targeting accuracy. Converging on $20 credit for high-propensity (${(2.5 + rng() * 1).toFixed(1)}x ROI vs $50 credit). Social proof messaging winning at ${Math.floor(55 + rng() * 15)}% of volume.`;
       case 'tier':
-        return `Tier optimization activated — identified customers who convert without incentive. Increasing Tier 1 (organic) allocation and redirecting savings to expand daily contact volume.`;
+        return `Organic segment identified — ${Math.floor(800 + rng() * 1200)} customers convert without any reward. Redirecting $10 credit budget to expand daily contact volume for medium-propensity segment.`;
       case 'value':
-        return `High-value segment discovery — referrer segments bringing ${(1.5 + rng() * 0.5).toFixed(1)}x higher-LTV customers identified. Shifting targeting to prioritize quality over volume.`;
+        return `High-value referrer discovery — social proof messaging with $20 credit bringing ${(1.5 + rng() * 0.5).toFixed(1)}x higher-LTV referees. Shifting medium-propensity outreach to this combination.`;
       case 'divergence':
-        return `Learning advantage now measurable — agentic targeting outperforming static rules by ${Math.floor(15 + rng() * 15)}%. Doubling down on data-driven segment allocation.`;
+        return `Learning advantage visible — $20 credit + social proof outperforming static $50 credit by ${Math.floor(15 + rng() * 15)}%. Expanding to medium-propensity segments with same approach.`;
     }
   }
 
   const shifts = [
-    `High-tenure segment (+${Math.floor(rng() * 15 + 5)}% allocation) after Day ${day - 1} showed ${(1.5 + rng()).toFixed(1)}x conversion rate for 6+ month customers.`,
-    `Shifted channel mix: push notifications up ${Math.floor(rng() * 10 + 8)}% — outperforming email ${(1.8 + rng() * 0.5).toFixed(1)}x for customers with 5+ monthly transactions.`,
-    `Tier 1 (organic) allocation increased to ${Math.floor(15 + rng() * 10)}% — identified ${Math.floor(500 + rng() * 2000)} customers who convert without incentive.`,
-    `Targeting accuracy at ${Math.round(efficiency * 100)}% (up from 30% baseline). Concentrating outreach on segments with highest observed conversion rates.`,
-    `Morning send window (9-11am) showing ${Math.floor(rng() * 20 + 15)}% higher open rates. Reallocating ${Math.floor(rng() * 30 + 20)}% of daily contacts to this window.`,
+    `Concentrating on $20 credit for high-propensity (${(2.8 + rng() * 0.8).toFixed(1)}x ROI). Social proof messaging at ${Math.floor(55 + rng() * 15)}% of volume. Shifting to medium-propensity segment with reward-led approach.`,
+    `$20 credit dominant (${Math.floor(50 + rng() * 15)}% of contacts). Push notifications up ${Math.floor(rng() * 10 + 8)}% — outperforming email ${(1.8 + rng() * 0.5).toFixed(1)}x for high-transaction customers.`,
+    `No-reward segment growing — ${Math.floor(500 + rng() * 2000)} customers converting organically. Redirecting savings to expand $20 credit offers for medium-propensity.`,
+    `Social proof at ${Math.floor(55 + rng() * 15)}% of messaging, reward-led at ${Math.floor(20 + rng() * 10)}%. Targeting accuracy ${Math.round(efficiency * 100)}%. Resting ${Math.floor(800 + rng() * 400)} customers from prior campaigns.`,
+    `Morning send window (9-11am) showing ${Math.floor(rng() * 20 + 15)}% higher open rates for $20 credit offers. Reallocating ${Math.floor(rng() * 30 + 20)}% of daily contacts to this window.`,
   ];
   return shifts[Math.floor(rng() * shifts.length)];
 }
@@ -192,12 +277,18 @@ export function generateDayBriefing({ day, dayData, prevDayData, seed = 42, tier
     : 5000;
   const efficiency = dayData?.efficiency || 0.3;
 
+  // Active campaigns
+  const campaigns = buildCampaigns(rng, { day, dayData });
+  const sampleDecisions = pickSampleDecisions(rng, campaigns);
+
   // Daily plan
   const dailyPlan = {
     contactCount,
     eligibleCount,
     budgetToday,
     strategyShift: buildStrategyShift(rng, { day, efficiency, annotation }),
+    campaigns,
+    sampleDecisions,
   };
 
   // Sample contacts (~12)
@@ -214,6 +305,7 @@ export function generateDayBriefing({ day, dayData, prevDayData, seed = 42, tier
       channel,
       tierIndex,
       tierLabel: `Tier ${tierIndex + 1}`,
+      offerName: OFFER_NAMES[tierIndex] || OFFER_NAMES[0],
       messageApproach,
       ...time,
       reasoning: buildContactReasoning(rng, { channel, tierIndex, ...time }),
@@ -311,12 +403,10 @@ export function generateDayBriefing({ day, dayData, prevDayData, seed = 42, tier
   // Proper logic engine will drive this with real constraint analysis.
   let recommendation = null;
   if (day === 30 && dayData) {
-    const tier0Pct = dayData.tierDistribution[0] || 0;
-    const organicCount = Math.round(dayData.funnelCumulative.activeUser * tier0Pct);
     recommendation = {
-      title: 'Organic referrer segment identified',
-      observation: `${Math.round(tier0Pct * 100)}% of conversions come from Tier 1 (no incentive). ${organicCount} customers converted organically. These customers don't need a reward to refer.`,
-      action: `Redirecting Tier 1 reward savings toward additional Tier 3-4 contacts could add ~${Math.round(organicCount * 0.3)} more contacts/day at no incremental cost.`,
+      title: '$50 credit outperforms $75 credit',
+      observation: '$50 credit converts 3.2x better than $75 credit across all segments.',
+      action: 'Reduce max reward from $75 to $50 — same conversion rate, saves $12,000/mo.',
     };
   }
 

@@ -1,4 +1,9 @@
 import { useState, useCallback, useId, useRef, useEffect, useLayoutEffect } from 'react';
+import {
+  TOKENS, CHART_MARGIN, DEFAULT_HEIGHT, VIEWBOX_WIDTH,
+  buildMonotonePath, computePoints, buildAreaPath, formatCompact,
+  resolveXLabels, labelBase, anchorTransform,
+} from './chartUtils.js';
 
 /**
  * Reusable chart component that enforces the Vincor design system.
@@ -7,6 +12,12 @@ import { useState, useCallback, useId, useRef, useEffect, useLayoutEffect } from
  * are always in CSS pixels — guaranteed 11px regardless of chart
  * dimensions or container width.
  *
+ * Label positioning uses fixed CSS pixels (D3 margin convention):
+ * - CHART_MARGIN creates padding zones around the SVG for axis labels
+ * - SVG viewBox starts at 0,0 — data fills the entire SVG element
+ * - Labels are absolutely positioned in the CSS padding zones
+ * - Pixel positions derived from measured SVG width (uniform scaling)
+ *
  * Supports multi-series via the `series` prop. The legacy `data` prop
  * is normalized into `series` internally so all rendering shares one
  * code path.
@@ -14,144 +25,7 @@ import { useState, useCallback, useId, useRef, useEffect, useLayoutEffect } from
  * The SVG handles only visual elements: lines, areas, gradients, dots.
  */
 
-// --- Design tokens (from DESIGN.md) ---
-const TOKENS = {
-  line: { color: 'var(--color-brand)', width: 2 },
-  axis: { fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font-family)' },
-  gridline: { color: 'var(--border-light)', dash: '4,4', opacity: 0.45 },
-  endpoint: { radius: 3.5, color: 'var(--color-brand)' },
-  tooltip: {
-    bg: 'var(--text-primary)',
-    text: 'white',
-    fontSize: 11,
-    fontWeight: 600,
-    radius: 8,
-    dotRadius: 4,
-    dotFill: 'white',
-    dotStroke: 'var(--color-brand)',
-    dotStrokeWidth: 2,
-    crosshairColor: 'var(--color-gray-300)',
-    crosshairDash: '3,3',
-    shadow: { dx: 0, dy: 2, blur: 8, opacity: 0.18 },
-  },
-  title: { fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'var(--font-family)' },
-  preLine: { color: '#A89E94', dash: '6,4', opacity: 0.6, width: 2 },
-  thresholdLine: { color: '#A89E94', dash: '4,4', opacity: 0.6 },
-  thresholdLabel: { fontSize: 11, fontFamily: 'var(--font-family)' },
-  annotation: { color: 'var(--color-brand)', radius: 2.5, outerRadius: 6, outerOpacity: 0.15 },
-  marker: { color: 'var(--color-foreground-faint)', width: 1, dash: '2,3', opacity: 0.4 },
-};
-
-const DEFAULT_PADDING = { top: 10, right: 20, bottom: 40, left: 28 };
-const DEFAULT_HEIGHT = 210;
-const VIEWBOX_WIDTH = 828;
 const DEFAULT_GRIDLINE_COUNT = 2;
-
-// --- Monotone cubic interpolation (Fritsch-Carlson) ---
-function buildMonotonePath(points) {
-  if (points.length < 2) return points.length === 1 ? `M${points[0].x},${points[0].y}` : '';
-  if (points.length === 2) return `M${points[0].x},${points[0].y}L${points[1].x},${points[1].y}`;
-
-  const n = points.length;
-  const dx = [];
-  const dy = [];
-  const m = [];
-
-  for (let i = 0; i < n - 1; i++) {
-    dx.push(points[i + 1].x - points[i].x);
-    dy.push(points[i + 1].y - points[i].y);
-    m.push(dy[i] / dx[i]);
-  }
-
-  const tangents = [m[0]];
-  for (let i = 1; i < n - 1; i++) {
-    if (m[i - 1] * m[i] <= 0) {
-      tangents.push(0);
-    } else {
-      tangents.push(3 * (dx[i - 1] + dx[i]) / ((2 * dx[i] + dx[i - 1]) / m[i - 1] + (dx[i] + 2 * dx[i - 1]) / m[i]));
-    }
-  }
-  tangents.push(m[n - 2]);
-
-  let d = `M${points[0].x},${points[0].y}`;
-  for (let i = 0; i < n - 1; i++) {
-    const cp1x = points[i].x + dx[i] / 3;
-    const cp1y = points[i].y + tangents[i] * dx[i] / 3;
-    const cp2x = points[i + 1].x - dx[i] / 3;
-    const cp2y = points[i + 1].y - tangents[i + 1] * dx[i] / 3;
-    d += `C${cp1x},${cp1y},${cp2x},${cp2y},${points[i + 1].x},${points[i + 1].y}`;
-  }
-  return d;
-}
-
-function computePoints(data, chartLeft, chartTop, chartW, chartH, maxVal) {
-  return data.map((v, i) => ({
-    x: chartLeft + (i / Math.max(data.length - 1, 1)) * chartW,
-    y: chartTop + chartH - (v / maxVal) * chartH,
-  }));
-}
-
-function buildAreaPath(curveD, lastX, firstX, bottom) {
-  return `${curveD}L${lastX},${bottom}L${firstX},${bottom}Z`;
-}
-
-function formatCompact(val) {
-  const rounded = Math.round(val);
-  if (rounded >= 1000) {
-    const k = rounded / 1000;
-    return k % 1 === 0 ? `${k}k` : `${k.toFixed(1)}k`;
-  }
-  return String(rounded);
-}
-
-function resolveXLabels(xLabels, dataLen, chartLeft, chartW) {
-  if (!xLabels || xLabels.length === 0) return [];
-  if (typeof xLabels[0] === 'string') {
-    if (xLabels.length === 1) {
-      return [{ label: xLabels[0], x: chartLeft, anchor: 'start' }];
-    }
-    if (xLabels.length === 2) {
-      return [
-        { label: xLabels[0], x: chartLeft, anchor: 'start' },
-        { label: xLabels[1], x: chartLeft + chartW, anchor: 'end' },
-      ];
-    }
-    return xLabels.map((label, i) => ({
-      label,
-      x: chartLeft + (i / (xLabels.length - 1)) * chartW,
-      anchor: i === 0 ? 'start' : i === xLabels.length - 1 ? 'end' : 'middle',
-    }));
-  }
-  return xLabels.map((item) => ({
-    label: String(item.value),
-    x: chartLeft + ((item.at - 1) / Math.max(dataLen - 1, 1)) * chartW,
-    anchor: 'middle',
-  }));
-}
-
-function toLeft(svgX, padLeft) {
-  return `${((svgX + padLeft) / VIEWBOX_WIDTH) * 100}%`;
-}
-function toTop(svgY, h) {
-  return `${(svgY / h) * 100}%`;
-}
-
-const labelBase = {
-  position: 'absolute',
-  fontSize: TOKENS.axis.fontSize,
-  fontFamily: 'var(--font-family)',
-  color: TOKENS.axis.color,
-  lineHeight: 1,
-  whiteSpace: 'nowrap',
-  pointerEvents: 'none',
-  fontVariantNumeric: 'tabular-nums',
-};
-
-const anchorTransform = {
-  start: 'translateY(-50%)',
-  end: 'translate(-100%, -50%)',
-  middle: 'translate(-50%, -50%)',
-};
 
 export default function Chart({
   data,
@@ -159,7 +33,6 @@ export default function Chart({
   title,
   height: heightProp = DEFAULT_HEIGHT,
   cssHeight,
-  padding: paddingProp,
   maxValue,
   xLabels,
   yLabels = 'auto',
@@ -170,42 +43,47 @@ export default function Chart({
   tooltip = true,
   formatTooltip,
   endpointLabel,
+  formatYLabel,
   annotations,
   marker,
   legend,
 }) {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [animated, setAnimated] = useState(false);
-  const [containerDims, setContainerDims] = useState(null);
+  const [svgDims, setSvgDims] = useState(null);
   const containerRef = useRef(null);
   const chartAreaRef = useRef(null);
   const svgRef = useRef(null);
   const uid = useId();
   const safeId = uid.replace(/:/g, '_');
 
-  // Measure the chart area (inner div) when cssHeight is used
+  // Measure the SVG content area (chart area div's content box = SVG pixel size)
   useLayoutEffect(() => {
-    if (!cssHeight) return;
     const el = chartAreaRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      setContainerDims({ width: rect.width, height: rect.height });
+    const w = rect.width - CHART_MARGIN.left - CHART_MARGIN.right;
+    const h = rect.height - CHART_MARGIN.top - CHART_MARGIN.bottom;
+    if (w > 0 && h > 0) {
+      setSvgDims({ width: w, height: h });
     }
     const observer = new ResizeObserver((entries) => {
       const { width, height } = entries[0].contentRect;
       if (width > 0 && height > 0) {
-        setContainerDims({ width, height });
+        setSvgDims({ width, height });
       }
     });
     observer.observe(el);
     return () => observer.disconnect();
-  }, [cssHeight]);
+  }, []);
 
   // Compute viewBox height: match container aspect ratio when cssHeight is set
-  const height = (cssHeight && containerDims)
-    ? containerDims.height / containerDims.width * VIEWBOX_WIDTH
+  const viewBoxH = (cssHeight && svgDims)
+    ? svgDims.height / svgDims.width * VIEWBOX_WIDTH
     : heightProp;
+
+  // Scale factor: SVG px per viewBox unit (uniform scaling with "meet")
+  const pxPerUnit = svgDims ? svgDims.width / VIEWBOX_WIDTH : 0;
 
   // --- Normalize data/series into a single series array ---
   const series = seriesProp
@@ -223,19 +101,20 @@ export default function Chart({
     return () => clearTimeout(timer);
   }, []);
 
-  const padding = { ...DEFAULT_PADDING, ...paddingProp };
-  if (title) padding.top = Math.max(padding.top, 30);
-
+  // Data fills the entire SVG viewBox — padding is CSS-level
   const chartLeft = 0;
-  const chartTop = padding.top;
-  const chartW = VIEWBOX_WIDTH - padding.left - padding.right;
-  const chartH = height - padding.top - padding.bottom;
-  const chartBottom = chartTop + chartH;
+  const chartTop = 0;
+  const chartW = VIEWBOX_WIDTH;
+  const chartH = viewBoxH;
+  const chartBottom = viewBoxH;
 
   // Auto-compute maxValue from ALL series
   const maxVal = maxValue != null
     ? maxValue
     : Math.max(...series.flatMap((s) => s.data || []), 0) * 1.08;
+
+  // When all data is zero, render a clean empty chart (no dots, no lines, no tooltips)
+  const hasData = maxVal > 0;
 
   // Compute points and paths for every series
   const allSeriesPoints = series.map((s) =>
@@ -288,7 +167,7 @@ export default function Chart({
     }
   }
 
-  const viewBox = `${-padding.left} 0 ${VIEWBOX_WIDTH} ${height}`;
+  const viewBox = `0 0 ${VIEWBOX_WIDTH} ${viewBoxH}`;
   const pathLen = chartW * 1.2;
 
   // Marker
@@ -328,6 +207,16 @@ export default function Chart({
   );
 
   const handleMouseLeave = useCallback(() => setHoveredDay(null), []);
+
+  // Chart area style: CSS padding creates label zones around the SVG
+  const chartAreaStyle = {
+    position: 'relative',
+    paddingLeft: CHART_MARGIN.left,
+    paddingRight: CHART_MARGIN.right,
+    paddingTop: title ? Math.max(CHART_MARGIN.top, 30) : CHART_MARGIN.top,
+    paddingBottom: CHART_MARGIN.bottom,
+    ...(cssHeight ? { flex: 1, minHeight: 0 } : {}),
+  };
 
   return (
     <div
@@ -378,8 +267,8 @@ export default function Chart({
         </div>
       )}
 
-      {/* Chart area — flex:1 when cssHeight is set so SVG takes remaining space after legend */}
-      <div ref={chartAreaRef} style={cssHeight ? { flex: 1, minHeight: 0, position: 'relative' } : { position: 'relative' }}>
+      {/* Chart area — CSS padding creates axis label zones, SVG fills content area */}
+      <div ref={chartAreaRef} style={chartAreaStyle}>
         <svg
           ref={svgRef}
           viewBox={viewBox}
@@ -424,10 +313,10 @@ export default function Chart({
                   </linearGradient>
                 )}
                 <clipPath id={`${safeId}-clipPre`}>
-                  <rect x={chartLeft} y="0" width={threshX - chartLeft} height={height} />
+                  <rect x={chartLeft} y="0" width={threshX - chartLeft} height={viewBoxH} />
                 </clipPath>
                 <clipPath id={`${safeId}-clipPost`}>
-                  <rect x={threshX} y="0" width={chartLeft + chartW - threshX} height={height} />
+                  <rect x={threshX} y="0" width={chartLeft + chartW - threshX} height={viewBoxH} />
                 </clipPath>
               </>
             )}
@@ -492,8 +381,8 @@ export default function Chart({
             );
           })}
 
-          {/* Primary series line with draw animation */}
-          {primaryPoints.length >= 2 && (
+          {/* Primary series line with draw animation — hidden when data is all zero */}
+          {hasData && primaryPoints.length >= 2 && (
             hasThreshold ? (
               <g style={{ opacity: animated ? 1 : 0, transition: 'opacity 500ms ease-out' }}>
                 <path
@@ -519,7 +408,7 @@ export default function Chart({
                 stroke={series[0]?.color || TOKENS.line.color}
                 strokeWidth={series[0]?.width || TOKENS.line.width}
                 strokeLinecap="round" strokeLinejoin="round"
-                strokeDasharray={series[0]?.dashed ? '6,4' : (animated ? 'none' : `${pathLen}`)}
+                strokeDasharray={series[0]?.dashed ? '6,4' : `${pathLen}`}
                 strokeDashoffset={animated ? 0 : pathLen}
                 style={{ transition: animated ? 'stroke-dashoffset 600ms ease-out' : 'none' }}
               />
@@ -562,8 +451,8 @@ export default function Chart({
             );
           })}
 
-          {/* Hover overlay */}
-          {tooltip && (
+          {/* Hover overlay — disabled when data is all zero */}
+          {hasData && tooltip && (
             <rect
               x={chartLeft} y={chartTop}
               width={chartW} height={chartH}
@@ -592,8 +481,8 @@ export default function Chart({
             </>
           )}
 
-          {/* Endpoint dot (primary series only) */}
-          {lastPt && (
+          {/* Endpoint dot (primary series only — hidden when data is all zero) */}
+          {hasData && lastPt && (
             <circle
               cx={lastPt.x} cy={lastPt.y}
               r={TOKENS.endpoint.radius} fill={TOKENS.endpoint.color}
@@ -602,32 +491,32 @@ export default function Chart({
           )}
         </svg>
 
-        {/* ── HTML labels: always 11px CSS pixels ── */}
+        {/* ── HTML labels: fixed pixel positioning (D3 margin convention) ── */}
 
-        {/* Y-axis labels */}
+        {/* Y-axis labels — in the left padding zone */}
         {yLabelItems.map((item, i) => (
           <span
             key={`y-${i}`}
             style={{
               ...labelBase,
-              left: toLeft(-6, padding.left),
-              top: toTop(item.y, height),
+              left: CHART_MARGIN.left - 8,
+              top: CHART_MARGIN.top + item.y * pxPerUnit,
               transform: 'translate(-100%, -50%)',
             }}
           >
-            {formatCompact(item.val)}
+            {formatYLabel ? formatYLabel(item.val) : formatCompact(item.val)}
           </span>
         ))}
 
-        {/* X-axis labels */}
+        {/* X-axis labels — in the bottom padding zone */}
         {clampedXLabels.map((item, i) => (
           <span
             key={`x-${i}`}
             style={{
               ...labelBase,
-              left: toLeft(item.x, padding.left),
-              top: toTop(chartBottom + 12, height),
-              transform: anchorTransform[item.anchor],
+              left: CHART_MARGIN.left + item.x * pxPerUnit,
+              bottom: 5,
+              transform: item.anchor === 'end' ? 'translateX(-100%)' : item.anchor === 'middle' ? 'translateX(-50%)' : 'none',
             }}
           >
             {item.label}
@@ -639,8 +528,8 @@ export default function Chart({
           <span
             style={{
               ...labelBase,
-              left: toLeft(threshX - 8, padding.left),
-              top: toTop(chartTop + 8, height),
+              left: CHART_MARGIN.left + (threshX - 8) * pxPerUnit,
+              top: CHART_MARGIN.top + (chartTop + 8) * pxPerUnit,
               transform: 'translate(-100%, -50%)',
               fontWeight: 500,
             }}
@@ -652,8 +541,8 @@ export default function Chart({
           <span
             style={{
               ...labelBase,
-              left: toLeft(threshX - 8, padding.left),
-              top: toTop(chartTop + 20, height),
+              left: CHART_MARGIN.left + (threshX - 8) * pxPerUnit,
+              top: CHART_MARGIN.top + (chartTop + 20) * pxPerUnit,
               transform: 'translate(-100%, -50%)',
               opacity: 0.6,
             }}
@@ -662,13 +551,13 @@ export default function Chart({
           </span>
         )}
 
-        {/* Endpoint label */}
-        {endpointLabel && lastPt && (
+        {/* Endpoint label — hidden when data is all zero */}
+        {hasData && endpointLabel && lastPt && (
           <span
             style={{
               ...labelBase,
-              left: toLeft(lastPt.x - 14, padding.left),
-              top: toTop(Math.max(10, lastPt.y - 10), height),
+              left: CHART_MARGIN.left + (lastPt.x - 14) * pxPerUnit,
+              top: CHART_MARGIN.top + Math.max(10, lastPt.y - 10) * pxPerUnit,
               transform: 'translate(-100%, -50%)',
               color: TOKENS.endpoint.color,
               fontWeight: 600,
@@ -697,8 +586,8 @@ export default function Chart({
             <span
               style={{
                 position: 'absolute',
-                left: toLeft(hoveredDay.x, padding.left),
-                top: toTop(tipY, height),
+                left: CHART_MARGIN.left + hoveredDay.x * pxPerUnit,
+                top: CHART_MARGIN.top + tipY * pxPerUnit,
                 transform: 'translate(-50%, -50%)',
                 fontSize: TOKENS.tooltip.fontSize,
                 fontWeight: TOKENS.tooltip.fontWeight,

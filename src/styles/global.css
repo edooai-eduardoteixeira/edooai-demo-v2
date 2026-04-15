@@ -14,6 +14,13 @@
   --color-gray-800: #2C2320;
   --color-gray-900: #1A1512;
 
+  /* Colors — Data (warm sand ramp for categorical chart fills — receding) */
+  --color-data-1: #F5F1EB;
+  --color-data-2: #EFEBE5;
+  --color-data-3: #E4DDD5;
+  --color-data-4: #DDD6CD;
+  --color-data-5: #D5CCC2;
+
   /* Colors — Green */
   --color-green-50: #f0fdf4;
   --color-green-100: #dcfce7;

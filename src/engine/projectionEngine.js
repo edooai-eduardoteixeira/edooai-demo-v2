@@ -76,11 +76,12 @@ function computeResolutionWeights(avgResolutionDays, offerExpirationDays) {
 // Efficiency provides a small secondary discount (trained engine saves on tier selection).
 function blendedRewardCost(factor, referrerTiers, refereeTiers, distCheap, distExpensive) {
   const weights = distCheap.map((wCheap, i) => wCheap + (distExpensive[i] - wCheap) * factor);
-  let cost = 0;
+  let referrer = 0, referee = 0;
   for (let i = 0; i < weights.length; i++) {
-    cost += weights[i] * (referrerTiers[i] + refereeTiers[i]);
+    referrer += weights[i] * referrerTiers[i];
+    referee += weights[i] * refereeTiers[i];
   }
-  return cost;
+  return { referrer, referee, total: referrer + referee };
 }
 
 // ─── Guardrail Assertions ────────────────────────────────────────────
@@ -165,7 +166,7 @@ export function computeProjection({ budget, params }) {
 
   // Expected reward cost at this budget level (at mid efficiency for budget constraint)
   const effTierDiscount = params.effTierDiscount || 0.10;
-  const midBudgetRewardCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
+  const midBudgetRewardCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive).total;
   const midEffDiscountFactor = 1 - 0.5 * effTierDiscount; // at mid efficiency
   const adjMidEffReward = midBudgetRewardCost * midEffDiscountFactor;
 
@@ -212,8 +213,8 @@ export function computeProjection({ budget, params }) {
     // Reward cost: budget-driven tier distribution with learning discount.
     // tierReach (computed once before loop) determines base tier mix.
     // Efficiency provides a small discount (trained engine saves on tier selection).
-    const baseTierCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
-    const dailyRewardCost = baseTierCost * (1 - eff * effTierDiscount);
+    const tierCosts = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
+    const dailyRewardCost = tierCosts.total * (1 - eff * effTierDiscount);
 
     // Pace journeys: don't exhaust pool before learning
     const journeysToday = Math.min(dailyJourneyTarget, remainingPool * maxDailyReachRate);
@@ -395,7 +396,7 @@ function runSimulation({ budget, params, staticMode = false }) {
   const tierReach = Math.pow(Math.min(1, budget / tierBudgetCeiling), tierBudgetAlpha);
 
   const effTierDiscount = params.effTierDiscount || 0.10;
-  const midBudgetRewardCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
+  const midBudgetRewardCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive).total;
   const midEffDiscountFactor = 1 - 0.5 * effTierDiscount;
   const adjMidEffReward = midBudgetRewardCost * midEffDiscountFactor;
 
@@ -429,6 +430,8 @@ function runSimulation({ budget, params, staticMode = false }) {
   const days = [];
   const dailySpend = budget / 30;
   let cumulativeRewardCost = 0;
+  let cumulativeReferrerCost = 0;
+  let cumulativeRefereeCost = 0;
   let thresholdDay = 30;
   let thresholdFound = false;
 
@@ -446,8 +449,10 @@ function runSimulation({ budget, params, staticMode = false }) {
       ? params.effFloor
       : allocationEfficiency(day, cumulativeN, params);
 
-    const baseTierCost = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
-    const dailyRewardCost = baseTierCost * (1 - eff * effTierDiscount);
+    const tierCosts = blendedRewardCost(tierReach, referrerTiers, refereeTiers, tierDistCheap, tierDistExpensive);
+    const dailyReferrerCost = tierCosts.referrer * (1 - eff * effTierDiscount);
+    const dailyRefereeCost = tierCosts.referee * (1 - eff * effTierDiscount);
+    const dailyRewardCost = dailyReferrerCost + dailyRefereeCost;
 
     const maxCapacity = remainingPool * maxDailyReachRate;
     const journeysToday = Math.min(dailyJourneyTarget, maxCapacity);
@@ -507,6 +512,8 @@ function runSimulation({ budget, params, staticMode = false }) {
       }
     }
     cumulativeRewardCost += dailyRewardCost * resolvedToday;
+    cumulativeReferrerCost += dailyReferrerCost * resolvedToday;
+    cumulativeRefereeCost += dailyRefereeCost * resolvedToday;
     cumulativeN += resolvedToday;
     cumulativeValue += resolvedValueToday;
 
@@ -528,11 +535,18 @@ function runSimulation({ budget, params, staticMode = false }) {
     cumSignedUp += Math.round(signedUp);
     cumActiveUser += Math.max(0, Math.round(resolvedToday));
 
-    // Count pending offers
+    // Count pending offers + pipeline forecast
     let pending = 0;
+    let pipeline7Day = 0;
     for (const entry of pendingConversions) {
-      if (entry.resolveDay > day) pending += entry.count;
+      if (entry.resolveDay > day) {
+        pending += entry.count;
+        if (entry.resolveDay <= day + 7) pipeline7Day += entry.count;
+      }
     }
+
+    // Sustainability: simple placeholder (remainingPool / audienceSize)
+    const sustainabilityPct = audienceSize > 0 ? remainingPool / audienceSize : 1;
 
     // Tier distribution for this day
     const tierDist = getTierDistribution(tierReach, tierDistCheap, tierDistExpensive, eff, effTierDiscount);
@@ -551,8 +565,16 @@ function runSimulation({ budget, params, staticMode = false }) {
       remainingPool: Math.round(remainingPool),
       capHit,
       rewardCostPerConversion: Math.round(dailyRewardCost),
+      dailyReferrerCost: Math.round(dailyReferrerCost),
+      dailyRefereeCost: Math.round(dailyRefereeCost),
       effectiveRevenuePerUser: Math.round(effectiveRevenuePerUser),
       tierDistribution: tierDist.map(v => Math.round(v * 100) / 100),
+      // Campaign health fields
+      maxCapacity: Math.round(maxCapacity),
+      dailyJourneyTarget: Math.round(dailyJourneyTarget),
+      pipeline7Day: Math.round(pipeline7Day),
+      sustainabilityPct: Math.round(sustainabilityPct * 100) / 100,
+      sustainabilityStatus: sustainabilityPct > 0.7 ? 'sustainable' : sustainabilityPct > 0.4 ? 'tightening' : 'at_risk',
       funnelCumulative: {
         contacted: cumContacted,
         referralSent: cumReferralSent,
@@ -804,6 +826,10 @@ export function computeDashboardProjection({ budget, params }) {
   const cumulativeCurve = agentic.days.map(d => d.cumulativeN);
   const staticCumulativeCurve = static_.days.map(d => d.cumulativeN);
 
+  // Compute lifecycle states and cohort waves for Block 2 charts
+  const lifecycleStates = computeLifecycleStates(agentic, params);
+  const cohortWaves = computeCohortWaves(agentic, params);
+
   return {
     // Core metrics
     activeUsers: agentic.activeUsers,
@@ -845,9 +871,237 @@ export function computeDashboardProjection({ budget, params }) {
     // Agent recommendation
     agentRecommendation,
 
+    // Lifecycle states for stacked area chart (Block 2, Graph 1)
+    lifecycleStates,
+
+    // Cohort waves for breakdown bar (Block 2, Graph 2)
+    cohortWaves,
+
+    // Propensity health for Block 2 (audience health chart)
+    propensityHealth: computePropensityHealth(agentic, params),
+
+    // Effectiveness data for Block 2 (engagement effectiveness chart)
+    effectivenessData: computeEffectivenessData(agentic, params),
+
+    // Operations data for Block 2 Right (stacked area: new contacts + follow-ups)
+    operationsData: agentic.days.map((d, i) => {
+      const total = Math.round(d.journeysToday);
+      // Follow-ups grow as a proportion over time (0% day 1, ~30% by day 30)
+      const followUpRate = Math.min(0.35, (i / 30) * 0.35);
+      const followUps = Math.round(total * followUpRate);
+      const newContacts = total - followUps;
+      return { day: i + 1, newContacts, followUps, total };
+    }),
+
     // Config passthrough for display
     referrerTiers: params.referrerTiers,
     refereeTiers: params.refereeTiers,
     industryCACBenchmark: params.industryCACBenchmark || 140,
   };
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// Lifecycle State Computation
+// 4 states that sum to totalCustomers every day:
+//   Dormant + Cooling Off + Engaged + Eligible = totalCustomers
+// ═══════════════════════════════════════════════════════════════════════
+
+const COOLDOWN_DAYS = 5;
+
+function computeLifecycleStates(simResult, params) {
+  const { days, cohorts } = simResult;
+  const { totalCustomers, eligibilityRate, offerExpirationDays } = params;
+  const total = totalCustomers;
+
+  const eligible = [];
+  const engaged = [];
+  const coolingOff = [];
+  const dormant = [];
+
+  for (let d = 1; d <= days.length; d++) {
+    const dayData = days[d - 1];
+
+    // Eligible = remaining pool (customers who haven't been contacted yet)
+    const elig = dayData.remainingPool;
+
+    // Engaged = all contacted users whose offer window is still open
+    let eng = 0;
+    for (const startDayStr of Object.keys(cohorts)) {
+      const s = Number(startDayStr);
+      const cohort = cohorts[s];
+      const daysSinceContact = d - s;
+
+      // Active engagement window: day after contact through offer expiration
+      if (daysSinceContact >= 1 && daysSinceContact <= offerExpirationDays) {
+        // Start with contacted count, subtract resolved conversions up to today
+        let resolved = 0;
+        for (const [resolveDayStr, count] of Object.entries(cohort.resolutionByDay)) {
+          if (Number(resolveDayStr) <= d) {
+            resolved += count;
+          }
+        }
+        eng += cohort.contacted - resolved;
+      }
+    }
+
+    // Cooling off = expired cohorts within cooldown window
+    let cool = 0;
+    for (const startDayStr of Object.keys(cohorts)) {
+      const s = Number(startDayStr);
+      const cohort = cohorts[s];
+      const daysSinceContact = d - s;
+
+      // Cooling off window: after offer expires, for COOLDOWN_DAYS
+      if (daysSinceContact > offerExpirationDays && daysSinceContact <= offerExpirationDays + COOLDOWN_DAYS) {
+        // Unresolved at time of offer expiration
+        let resolvedByExpiration = 0;
+        for (const [resolveDayStr, count] of Object.entries(cohort.resolutionByDay)) {
+          if (Number(resolveDayStr) <= s + offerExpirationDays) {
+            resolvedByExpiration += count;
+          }
+        }
+        cool += cohort.contacted - resolvedByExpiration;
+      }
+    }
+
+    // Dormant = everyone else (absorbs non-eligible)
+    const dorm = total - elig - eng - cool;
+
+    eligible.push(Math.round(elig));
+    engaged.push(Math.max(0, Math.round(eng)));
+    coolingOff.push(Math.max(0, Math.round(cool)));
+    dormant.push(Math.max(0, Math.round(dorm)));
+  }
+
+  // Dev-only invariant check
+  if (process.env.NODE_ENV === 'development') {
+    for (let d = 0; d < days.length; d++) {
+      const sum = eligible[d] + engaged[d] + coolingOff[d] + dormant[d];
+      console.assert(Math.abs(sum - total) < 2, `Lifecycle sum ${sum} != ${total} at day ${d + 1}`);
+    }
+  }
+
+  return { eligible, engaged, coolingOff, dormant, total };
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// Cohort Waves — engaged count per cohort per day
+// Used by CohortBar to show composition of the Engaged band at selectedDay
+// ═══════════════════════════════════════════════════════════════════════
+
+function computeCohortWaves(simResult, params) {
+  const { days, cohorts } = simResult;
+  const { offerExpirationDays } = params;
+  const numDays = days.length;
+
+  const waves = [];
+
+  for (const startDayStr of Object.keys(cohorts)) {
+    const s = Number(startDayStr);
+    const cohort = cohorts[s];
+    const data = new Array(numDays).fill(0);
+
+    for (let d = 1; d <= numDays; d++) {
+      const daysSinceContact = d - s;
+      if (daysSinceContact >= 1 && daysSinceContact <= offerExpirationDays) {
+        let resolved = 0;
+        for (const [resolveDayStr, count] of Object.entries(cohort.resolutionByDay)) {
+          if (Number(resolveDayStr) <= d) {
+            resolved += count;
+          }
+        }
+        data[d - 1] = Math.max(0, cohort.contacted - resolved);
+      }
+    }
+
+    waves.push({ startDay: s, data });
+  }
+
+  // Sort by startDay ascending
+  waves.sort((a, b) => a.startDay - b.startDay);
+  return waves;
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// Propensity Health — H/M/L distribution + reach depth over time
+// Used by Block 2 Left: Audience Health stacked area chart
+// ═══════════════════════════════════════════════════════════════════════
+
+function computePropensityHealth(simResult, params) {
+  const { days } = simResult;
+  const { totalCustomers, eligibilityRate } = params;
+  const totalEligible = Math.round(totalCustomers * eligibilityRate);
+
+  // Starting cluster sizes
+  const highStart = Math.round(totalEligible * 0.30);
+  const medStart = Math.round(totalEligible * 0.45);
+  const lowStart = totalEligible - highStart - medStart;
+
+  // Eligible pool per cluster over time
+  // Pool shrinks as agent contacts people, recovers as customers return from cooldown
+  // Replenishment rate determines sustainability
+  const highEligible = [];
+  const medEligible = [];
+  const lowEligible = [];
+
+  for (let d = 0; d < days.length; d++) {
+    const dayData = days[d];
+    const contacted = dayData.funnelCumulative.contacted;
+    const overallDepth = Math.min(1, contacted / totalEligible);
+
+    // Agent contacts high-propensity first
+    const hUsed = Math.min(1, overallDepth * 2.2);
+    const mUsed = Math.min(1, overallDepth * 0.85);
+    const lUsed = Math.min(1, Math.max(0, overallDepth * 0.35));
+
+    // Replenishment: customers return from cooldown after ~7 days
+    // Earlier cohorts start returning, partially refilling the pool
+    const replenishFactor = d > 7 ? Math.min(0.4, (d - 7) * 0.03) : 0;
+
+    // Eligible = starting pool - used + replenished
+    const hElig = Math.round(highStart * (1 - hUsed + hUsed * replenishFactor));
+    const mElig = Math.round(medStart * (1 - mUsed + mUsed * replenishFactor));
+    const lElig = Math.round(lowStart * (1 - lUsed + lUsed * replenishFactor));
+
+    highEligible.push(hElig);
+    medEligible.push(mElig);
+    lowEligible.push(lElig);
+  }
+
+  // Current utilization: what fraction of eligible is being actively worked
+  const totalReached = days[days.length - 1]?.funnelCumulative?.contacted || 0;
+
+  return {
+    highEligible, medEligible, lowEligible,
+    highStart, medStart, lowStart, totalEligible, totalReached,
+  };
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// Effectiveness Data — touchpoint decay + lifetime response trend
+// Used by Block 2 Center: Engagement Effectiveness chart
+// ═══════════════════════════════════════════════════════════════════════
+
+function computeEffectivenessData(simResult, params) {
+  const { cohorts } = simResult;
+
+  // Cohorted conversion rate: for each cohort (people contacted on day X),
+  // what % eventually converted? Uses the engine's per-cohort resolution data.
+  // This is the proper leading indicator — tracks the same group from
+  // contact to conversion, not mixing cohorts.
+  const dailyConversionRate = [];
+  for (let d = 1; d <= 30; d++) {
+    const cohort = cohorts[d];
+    if (cohort && cohort.contacted > 0) {
+      dailyConversionRate.push(Math.round(cohort.convRate * 10) / 10);
+    } else {
+      dailyConversionRate.push(0);
+    }
+  }
+
+  return { dailyConversionRate };
 }

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cohort Drill-Down — Zoom Callout Mockup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Inter, -apple-system, sans-serif; background: #FAF7F2; color: #2C2320; padding: 32px 48px; }
+  h1 { font-size: 15px; font-weight: 600; color: #6B5E54; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: #A89E94; margin-bottom: 32px; }
+  .card { background: #fff; border: 1px solid #E4DDD5; border-radius: 8px; overflow: hidden; }
+  .section-label { font-size: 11px; font-weight: 600; color: #A89E94; text-transform: uppercase; letter-spacing: 0.05em; }
+  .legend { display: flex; gap: 16px; font-size: 11px; color: #A89E94; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-bottom: 12px; }
+  .tag-a { background: #d1fae5; color: #065f46; }
+  .tag-b { background: #dbeafe; color: #1e40af; }
+</style>
+</head>
+<body>
+
+<h1>Zoom Callout — Engaged Cohort Drill-Down</h1>
+<p class="sub">Connecting lines from the Engaged segment to the cohort breakdown. The relationship is visual, not verbal.</p>
+
+<!-- SCENARIO A: Current fake data (~5% engaged) -->
+<span class="tag tag-a">Current data (~5% engaged)</span>
+<div class="card" style="padding: 20px; margin-bottom: 40px;">
+  <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px;">
+    <div class="section-label">Audience Referral Status</div>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background: rgba(239,235,229,0.5);"></span>Eligible</span>
+      <span class="legend-item"><span class="legend-dot" style="background: #66001F;"></span>Engaged</span>
+      <span class="legend-item"><span class="legend-dot" style="background: #A89E94;"></span>Cooling Off</span>
+    </div>
+  </div>
+  <svg id="chart5" width="100%" height="380" style="display: block;"></svg>
+</div>
+
+<!-- SCENARIO B: Realistic engine data (~20% engaged) -->
+<span class="tag tag-b">Real engine data (~20% engaged)</span>
+<div class="card" style="padding: 20px;">
+  <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px;">
+    <div class="section-label">Audience Referral Status</div>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background: rgba(239,235,229,0.5);"></span>Eligible</span>
+      <span class="legend-item"><span class="legend-dot" style="background: #66001F;"></span>Engaged</span>
+      <span class="legend-item"><span class="legend-dot" style="background: #A89E94;"></span>Cooling Off</span>
+    </div>
+  </div>
+  <svg id="chart20" width="100%" height="380" style="display: block;"></svg>
+</div>
+
+<script>
+function drawChart(svgId, engagedPct, coolingPct) {
+  const svg = document.getElementById(svgId);
+  const W = svg.getBoundingClientRect().width;
+  const H = 380;
+
+  const marginL = 36;
+  const marginB = 24;
+  const marginT = 4;
+  const days = 30;
+
+  // Main chart area: bars
+  const barAreaW = W * 0.58 - marginL;
+  const barAreaH = H - marginT - marginB;
+  const barSlot = barAreaW / days;
+  const barGap = 2;
+  const barW = barSlot - barGap;
+
+  // Cohort bar zone
+  const cohortX = W * 0.68;
+  const cohortW = 48;
+  const cohortBarTop = marginT + 28;
+  const cohortBarBottom = H - marginB - 8;
+  const cohortBarH = cohortBarBottom - cohortBarTop;
+
+  const cohortColors = [
+    'hsl(342, 100%, 20%)', 'hsl(345, 96%, 24%)', 'hsl(348, 90%, 30%)',
+    'hsl(352, 82%, 36%)', 'hsl(356, 74%, 42%)', 'hsl(1, 66%, 48%)',
+    'hsl(5, 56%, 54%)', 'hsl(10, 46%, 60%)', 'hsl(16, 36%, 67%)',
+    'hsl(22, 28%, 74%)', 'hsl(27, 22%, 80%)', 'hsl(30, 20%, 85%)',
+  ];
+
+  let content = '';
+
+  // Y-axis labels
+  content += `<text x="${marginL - 8}" y="${marginT + 8}" text-anchor="end" font-size="11" fill="#A89E94" font-family="Inter,sans-serif" style="font-variant-numeric:tabular-nums">500k</text>`;
+  content += `<text x="${marginL - 8}" y="${marginT + barAreaH/2 + 4}" text-anchor="end" font-size="11" fill="#A89E94" font-family="Inter,sans-serif" style="font-variant-numeric:tabular-nums">250k</text>`;
+
+  // Gridline
+  content += `<line x1="${marginL}" y1="${marginT + barAreaH/2}" x2="${marginL + barAreaW}" y2="${marginT + barAreaH/2}" stroke="#EFEBE5" stroke-width="1" stroke-dasharray="4,4" opacity="0.45"/>`;
+
+  let lastEngTop = 0, lastEngBot = 0, lastBarRight = 0;
+
+  // Draw bars
+  for (let d = 0; d < days; d++) {
+    const t = (d + 1) / days;
+    const engaged = engagedPct * t;
+    const cooling = coolingPct * t * 0.6;
+    const eligible = 1 - engaged - cooling;
+    const scale = 0.85; // 424k / 500k
+
+    const x = marginL + d * barSlot;
+    const eligH = eligible * scale * barAreaH;
+    const engH = engaged * scale * barAreaH;
+    const coolH = cooling * scale * barAreaH;
+
+    const coolY = marginT + barAreaH - coolH;
+    const engY = coolY - engH;
+    const eligY = engY - eligH;
+
+    content += `<rect x="${x}" y="${eligY}" width="${barW}" height="${eligH}" fill="rgba(239,235,229,0.35)"/>`;
+    content += `<rect x="${x}" y="${engY}" width="${barW}" height="${engH}" fill="#66001F"/>`;
+    if (coolH > 0.5) content += `<rect x="${x}" y="${coolY}" width="${barW}" height="${coolH}" fill="#A89E94" opacity="0.5"/>`;
+
+    if (d === days - 1) {
+      lastEngTop = engY;
+      lastEngBot = engY + engH;
+      lastBarRight = x + barW;
+    }
+  }
+
+  // X-axis
+  for (const d of [1, 10, 20, 30]) {
+    const x = marginL + (d - 1) * barSlot + barW / 2;
+    content += `<text x="${x}" y="${H - 5}" text-anchor="middle" font-size="11" fill="#A89E94" font-family="Inter,sans-serif">${d}</text>`;
+  }
+
+  // ═══ CONNECTING LINES ═══
+  // Bracket on the engaged segment
+  const bx = lastBarRight + 4;
+  content += `<line x1="${bx}" y1="${lastEngTop}" x2="${bx}" y2="${lastEngBot}" stroke="#C8BFB5" stroke-width="1"/>`;
+  content += `<line x1="${bx}" y1="${lastEngTop}" x2="${bx + 3}" y2="${lastEngTop}" stroke="#C8BFB5" stroke-width="1"/>`;
+  content += `<line x1="${bx}" y1="${lastEngBot}" x2="${bx + 3}" y2="${lastEngBot}" stroke="#C8BFB5" stroke-width="1"/>`;
+
+  // Top line: engaged top → cohort bar top (dashed)
+  content += `<line x1="${bx + 3}" y1="${lastEngTop}" x2="${cohortX}" y2="${cohortBarTop}" stroke="#D8D0C8" stroke-width="1" stroke-dasharray="3,3"/>`;
+  // Bottom line: engaged bottom → cohort bar bottom (dashed)
+  content += `<line x1="${bx + 3}" y1="${lastEngBot}" x2="${cohortX}" y2="${cohortBarBottom}" stroke="#D8D0C8" stroke-width="1" stroke-dasharray="3,3"/>`;
+
+  // Light fill between the connecting lines (the "zoom" region)
+  content += `<path d="M${bx + 3},${lastEngTop} L${cohortX},${cohortBarTop} L${cohortX},${cohortBarBottom} L${bx + 3},${lastEngBot} Z" fill="#F5F1EB" opacity="0.35"/>`;
+
+  // ═══ COHORT BAR ═══
+  // Label above
+  const engagedVal = engagedPct <= 0.06 ? '24.3k' : '84.8k';
+  content += `<text x="${cohortX + cohortW/2}" y="${marginT + 8}" text-anchor="middle" font-size="11" font-weight="600" fill="#A89E94" font-family="Inter,sans-serif" letter-spacing="0.05em">ENGAGED</text>`;
+  content += `<text x="${cohortX + cohortW/2}" y="${marginT + 22}" text-anchor="middle" font-size="11" font-weight="600" fill="#4A3F37" font-family="Inter,sans-serif" style="font-variant-numeric:tabular-nums">${engagedVal}</text>`;
+
+  // Cohort segments (oldest at bottom = darkest, newest at top = lightest)
+  const numCohorts = 10;
+  const weights = [];
+  for (let i = 0; i < numCohorts; i++) weights.push(Math.max(0.4, 1 - i * 0.07));
+  const totalW = weights.reduce((a, b) => a + b, 0);
+
+  let yPos = cohortBarBottom;
+  for (let i = 0; i < numCohorts; i++) {
+    const segH = (weights[i] / totalW) * cohortBarH;
+    yPos -= segH;
+    const isTop = i === numCohorts - 1;
+    content += `<rect x="${cohortX}" y="${yPos}" width="${cohortW}" height="${segH}" fill="${cohortColors[i]}" opacity="0.8" rx="${isTop ? 2 : 0}"/>`;
+
+    // Day labels on right (only if segment tall enough)
+    if (segH > 16) {
+      const dayNum = i === 0 ? 1 : i * 3;
+      content += `<text x="${cohortX + cohortW + 8}" y="${yPos + segH/2 + 4}" font-size="10" fill="#A89E94" font-family="Inter,sans-serif">d${dayNum}</text>`;
+    }
+  }
+
+  // Day label below cohort bar
+  content += `<text x="${cohortX + cohortW/2}" y="${cohortBarBottom + 16}" text-anchor="middle" font-size="11" fill="#A89E94" font-family="Inter,sans-serif">Day 30</text>`;
+
+  svg.innerHTML = content;
+}
+
+drawChart('chart5', 0.05, 0.02);
+drawChart('chart20', 0.20, 0.05);
+</script>
+
+</body>
+</html>

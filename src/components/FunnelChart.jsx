@@ -1,31 +1,20 @@
 import { cn } from '../lib/utils.js';
+import { formatCompact } from './chartUtils.js';
 
 /**
  * Reusable funnel chart component that enforces the Vincor design system.
  *
- * Renders a vertical funnel with left-aligned horizontal bars, stage labels
- * above each bar, and metrics to the right. Follows analytics-product
- * conventions (Stripe, Amplitude, HubSpot).
+ * One row per stage: bar with stage name inside, count attached outside.
+ * Cumulative % and (x days) appear on hover via tooltip.
+ * When bar is narrower than the label text, count follows the label
+ * instead of the bar edge to prevent overlap.
  *
- * Usage:
- *   <FunnelChart
- *     stages={[
- *       { label: 'Eligible', value: 50000 },
- *       { label: 'Contacted', value: 12000 },
- *       { label: 'Active User', value: 1200 },
- *     ]}
- *     pending={340}
- *   />
+ * Auto-height rows fill the parent container.
+ *
+ * Typography hierarchy (from DESIGN.md):
+ *   Count: text-[13px] font-semibold text-foreground
+ *   Stage name: text-[11px] font-medium text-foreground-muted
  */
-
-function formatNumber(n) {
-  const rounded = Math.round(n);
-  if (rounded >= 1000) {
-    const k = rounded / 1000;
-    return k % 1 === 0 ? `${k}K` : `${k.toFixed(1)}K`;
-  }
-  return rounded.toLocaleString('en-US');
-}
 
 export default function FunnelChart({ stages, pending }) {
   if (!stages || stages.length === 0) return null;
@@ -33,45 +22,60 @@ export default function FunnelChart({ stages, pending }) {
   const maxValue = stages[0].value || 1;
 
   return (
-    <div>
-      <div className="flex flex-col gap-2">
+    <div className="h-full flex flex-col">
+      <div className="flex-1 flex flex-col gap-2">
         {stages.map((stage, i) => {
-          const widthPct = Math.max(15, Math.sqrt(stage.value / maxValue) * 100);
-          const prevValue = i > 0 ? stages[i - 1].value : null;
-          const convRate = prevValue && prevValue > 0
-            ? ((stage.value / prevValue) * 100).toFixed(1) + '%'
+          const fillPct = Math.max(8, Math.sqrt(stage.value / maxValue) * 100);
+          const isFirst = i === 0;
+          const stageEmpty = stage.value === 0;
+
+          const cumPct = isFirst ? null : ((stage.value / maxValue) * 100);
+          const cumPctStr = cumPct !== null
+            ? (cumPct < 1 ? cumPct.toFixed(1) + '%' : Math.round(cumPct) + '%')
             : null;
-          const isLast = i === stages.length - 1;
+
+          // Tooltip: stage name, count, %, time
+          const tooltipParts = [stage.label];
+          if (!stageEmpty) tooltipParts.push(formatCompact(stage.value));
+          if (cumPctStr) tooltipParts.push(cumPctStr);
+          if (stage.time && !isFirst) tooltipParts.push(stage.time);
+
+          // Bar too narrow for label — count follows label instead of bar edge
+          const narrow = fillPct < 30;
 
           return (
-            <div key={stage.label} className="w-full">
-              {/* Stage label + conversion rate above bar */}
-              <div className="flex items-baseline justify-between mb-0.5">
-                <span className="text-[11px] font-medium text-foreground-muted">
+            <div
+              key={stage.label}
+              className="flex-1 min-h-0 flex items-center gap-2"
+            >
+              {/* Bar: label left, count at far end, tooltip on hover */}
+              <div
+                className={cn(
+                  'group relative h-full rounded-[4px] flex items-center px-3 transition-all duration-300 cursor-default',
+                  narrow ? 'overflow-visible gap-2' : 'justify-between',
+                  stageEmpty ? 'bg-border-light' : 'bg-data-1 hover:bg-data-2'
+                )}
+                style={{ width: `${stageEmpty ? 8 : fillPct}%` }}
+              >
+                <span className="text-[11px] font-medium whitespace-nowrap text-foreground-muted">
                   {stage.label}
                 </span>
-                {convRate && (
-                  <span className="text-[10px] text-foreground-faint">
-                    {convRate}
-                  </span>
-                )}
-              </div>
 
-              {/* Bar (left-aligned) + number to the right */}
-              <div className="flex items-center gap-2">
-                <div
-                  className={cn(
-                    'h-8 rounded-[4px] transition-all duration-300',
-                    isLast ? 'bg-brand' : 'bg-accent-subtle'
-                  )}
-                  style={{ width: `${widthPct}%` }}
-                />
                 <span className={cn(
                   'text-[13px] font-semibold shrink-0 tabular-nums',
-                  isLast ? 'text-brand' : 'text-foreground'
+                  stageEmpty ? 'text-foreground-faint' : 'text-foreground'
                 )}>
-                  {formatNumber(stage.value)}
+                  {stageEmpty ? '—' : formatCompact(stage.value)}
                 </span>
+
+                {/* Tooltip on hover */}
+                {!isFirst && !stageEmpty && (
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                    <div className="bg-surface border border-border text-[11px] font-semibold text-foreground-muted px-2 py-1 rounded-lg whitespace-nowrap" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                      {cumPctStr}{stage.time ? ` · ${stage.time}` : ''}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -82,7 +86,7 @@ export default function FunnelChart({ stages, pending }) {
         <div className="mt-3 pt-3 border-t border-border-light flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-warn shrink-0" />
           <span className="text-[13px] text-foreground-muted">
-            <span className="font-semibold">{formatNumber(pending)} offers in flight</span>
+            <span className="font-semibold">{formatCompact(pending)} offers in flight</span>
           </span>
         </div>
       )}

@@ -85,8 +85,8 @@ export default function HeroVisual({ className }) {
           <div className="absolute w-2 h-2 rounded-full bg-brand" />
           <div className="absolute w-2 h-2 rounded-full border-[1.5px] border-brand animate-[agent-glow_2s_ease-out_infinite]" />
         </div>
-        <span className="text-[13px] font-semibold text-foreground">
-          Agent acquiring customers
+        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground uppercase">
+          Acquiring customers
         </span>
       </div>
 
