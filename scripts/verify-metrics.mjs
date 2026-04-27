@@ -119,8 +119,12 @@ const m60 = computeDashboardMetrics(projection, { selectedDay: 60, dateRange: 30
 check('Day 60 effectiveDay = 60', m60.effectiveDay === 60);
 check('Day 60 funnel ≠ Day 30 funnel (real differentiation)',
   JSON.stringify(m60.funnel) !== JSON.stringify(m30.funnel));
-check('Day 60 audienceOverview.bands has 60 entries',
-  m60.audienceOverview.bands.advocates.length === 60);
+// S6: audience bands are windowed to dateRange. Day 60 with 30d range → 30 entries.
+check('Day 60 + 30d audienceOverview.bands has 30 entries (windowed)',
+  m60.audienceOverview.bands.advocates.length === 30);
+// Verify the window covers the right days
+check('Day 60 + 30d audienceOverview window = Days 31..60',
+  m60.audienceOverview.startDay === 31 && m60.audienceOverview.endDay === 60);
 check('Day 60 funnel.Active > Day 30 funnel.Active (more cumulative resolutions)',
   m60.funnel.find(s => s.label === 'Active User').value >
     m30.funnel.find(s => s.label === 'Active User').value);
@@ -227,6 +231,63 @@ console.log('\n═══ 9.6 S3 KPI/funnel tie-out (period covers full history) 
   }
   check('KPI activeUsers === funnel.Active when period covers full history',
     allTied, firstFail);
+}
+
+// ─── 9.6b S6: Windowed chart slices match dateRange ────────────────────
+// All three time-series charts (hero, audience, daily outreach) slice to
+// the last `dateRange` days ending at selectedDay (clipped to Day 1).
+console.log('\n═══ 9.6b S6 Windowed chart slices ═══');
+{
+  const cases = [
+    { day: 60, range: 30, expectedLen: 30, expectedStart: 31, expectedEnd: 60 },
+    { day: 60, range: 7, expectedLen: 7, expectedStart: 54, expectedEnd: 60 },
+    { day: 30, range: 30, expectedLen: 30, expectedStart: 1, expectedEnd: 30 },
+    { day: 30, range: 7, expectedLen: 7, expectedStart: 24, expectedEnd: 30 },
+    { day: 5, range: 30, expectedLen: 5, expectedStart: 1, expectedEnd: 5 },
+    { day: 1, range: 7, expectedLen: 1, expectedStart: 1, expectedEnd: 1 },
+  ];
+
+  let allOk = true;
+  let firstFail = '';
+  for (const c of cases) {
+    const m = computeDashboardMetrics(projection, { selectedDay: c.day, dateRange: c.range });
+    const heroLine = computeHeroChartForKPI(projection, 'activeUsers', c.day, c.range);
+    const heroCac = computeHeroChartForKPI(projection, 'cac', c.day, c.range);
+    // Audience bands
+    if (m.audienceOverview.bands.advocates.length !== c.expectedLen ||
+        m.audienceOverview.startDay !== c.expectedStart ||
+        m.audienceOverview.endDay !== c.expectedEnd) {
+      allOk = false;
+      firstFail = `audience day=${c.day} range=${c.range}: len=${m.audienceOverview.bands.advocates.length} (expected ${c.expectedLen}), start=${m.audienceOverview.startDay} end=${m.audienceOverview.endDay}`;
+      break;
+    }
+    // Hero line slice
+    if (heroLine.slice.length !== c.expectedLen ||
+        heroLine.startDay !== c.expectedStart ||
+        heroLine.endDay !== c.expectedEnd) {
+      allOk = false;
+      firstFail = `hero(activeUsers) day=${c.day} range=${c.range}: len=${heroLine.slice.length} (expected ${c.expectedLen})`;
+      break;
+    }
+    // Hero CAC stacked
+    if (heroCac.cacData.length !== c.expectedLen ||
+        heroCac.startDay !== c.expectedStart ||
+        heroCac.endDay !== c.expectedEnd) {
+      allOk = false;
+      firstFail = `hero(cac) day=${c.day} range=${c.range}: len=${heroCac.cacData.length} (expected ${c.expectedLen})`;
+      break;
+    }
+    // Daily outreach
+    if (m.dailyOutreach.paddedData.length !== c.expectedLen ||
+        m.dailyOutreach.startDay !== c.expectedStart ||
+        m.dailyOutreach.endDay !== c.expectedEnd) {
+      allOk = false;
+      firstFail = `dailyOutreach day=${c.day} range=${c.range}: len=${m.dailyOutreach.paddedData.length} (expected ${c.expectedLen})`;
+      break;
+    }
+  }
+  check('Windowed slices match dateRange across all 3 time-series charts',
+    allOk, firstFail);
 }
 
 // ─── 9.65 S6: Static-Rules ROAS line plumbed from engine ──────────────

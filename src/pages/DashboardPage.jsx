@@ -6,7 +6,7 @@ import StackedAreaChart from '../components/StackedAreaChart.jsx';
 import FunnelChart from '../components/FunnelChart.jsx';
 import StrategyCards, { DefaultBudgetSlider, BUDGET_CONFIG } from '../components/StrategyCards.jsx';
 import { cn } from '../lib/utils.js';
-import { niceYMax, dayXTicks, CHART_MARGIN, formatCompact } from '../components/chartUtils.js';
+import { niceYMax, dayXTicksWindowed, CHART_MARGIN, formatCompact } from '../components/chartUtils.js';
 import { computeDashboardProjection } from '../engine/projectionEngine.js';
 import { computeDashboardMetrics, computeHeroChartForKPI } from '../lib/metrics.js';
 
@@ -200,9 +200,9 @@ function KPISelector({ selected, onSelect, kpiCards }) {
 // ═══════════════════════════════════════════════════════════════════════
 // HERO CHART — renders the selected KPI's trend
 // ═══════════════════════════════════════════════════════════════════════
-function HeroChart({ selectedKPI, currentDay, projection }) {
-  const xLabels = dayXTicks(currentDay).map(d => ({ value: String(d), at: d }));
-  const hero = computeHeroChartForKPI(projection, selectedKPI, currentDay);
+function HeroChart({ selectedKPI, currentDay, dateRange, projection }) {
+  const hero = computeHeroChartForKPI(projection, selectedKPI, currentDay, dateRange);
+  const xLabels = dayXTicksWindowed(hero.startDay, hero.endDay);
 
   // CAC: stacked bar showing referrer + referee unit cost per day
   if (hero.kind === 'stacked') {
@@ -323,10 +323,10 @@ function DateRangeSelector({ selected, onSelect }) {
 // ═══════════════════════════════════════════════════════════════════════
 // BLOCK 2 LEFT: AUDIENCE HEALTH — propensity distribution + reach depth
 // ═══════════════════════════════════════════════════════════════════════
-function AudienceHealth({ audience, effectiveDay }) {
+function AudienceHealth({ audience }) {
   if (!audience) return null;
 
-  const { bands: bandData, convRateOverlay } = audience;
+  const { bands: bandData, convRateOverlay, startDay, endDay } = audience;
 
   // Stacked area: eligible pool per cluster over time
   const bands = [
@@ -337,7 +337,7 @@ function AudienceHealth({ audience, effectiveDay }) {
 
   const convRate = convRateOverlay;
 
-  const xLabels = dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }));
+  const xLabels = dayXTicksWindowed(startDay, endDay);
 
   return (
     <div className="flex-[5] p-5 min-w-0 flex flex-col">
@@ -476,6 +476,7 @@ export default function DashboardPage({ config, onHome }) {
                 <HeroChart
                   selectedKPI={selectedKPI}
                   currentDay={effectiveDay}
+                  dateRange={dateRange}
                   projection={projection}
                 />
               </div>
@@ -496,10 +497,7 @@ export default function DashboardPage({ config, onHome }) {
           {/* ── Block 2: Health + Operations ── */}
           <div className="flex flex-1 min-h-0">
             {/* LEFT: Audience Health — pool + conversion rate (dual axis) */}
-            <AudienceHealth
-              audience={metrics.audienceOverview}
-              effectiveDay={effectiveDay}
-            />
+            <AudienceHealth audience={metrics.audienceOverview} />
 
             {/* DIVIDER */}
             <div className="w-px bg-border-light shrink-0" />
@@ -516,7 +514,7 @@ export default function DashboardPage({ config, onHome }) {
                 <SectionLabel>Daily Outreach</SectionLabel>
                 <div className="flex-1 min-h-0">
                 {(() => {
-                  const { paddedData, latestCampaigns, maxTotal } = metrics.dailyOutreach;
+                  const { paddedData, latestCampaigns, maxTotal, startDay, endDay } = metrics.dailyOutreach;
                   const CAMPAIGN_COLORS = [
                     'var(--color-data-5)',  // step 5 — product-specific (highest volume)
                     'var(--color-data-4)',  // step 4
@@ -533,7 +531,7 @@ export default function DashboardPage({ config, onHome }) {
                         color: CAMPAIGN_COLORS[i] || 'var(--color-data-3)',
                       }))}
                       maxValue={yMax}
-                      xLabels={dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }))}
+                      xLabels={dayXTicksWindowed(startDay, endDay)}
                       yLabels={[yMax * 0.5, yMax]}
                       gridlines="from-labels"
                       cssHeight="100%"

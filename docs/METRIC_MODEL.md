@@ -299,6 +299,14 @@ Today, `Reached > Referred` violates this on every day. Asserted in `verify-metr
 
 ## Cross-cutting
 
+### MX.0 Chart axes (S6 windowing)
+
+All three time-series charts (Hero KPI, Audience Overview, Daily Outreach) shift from "full history through selectedDay" to "windowed view: last `dateRange` days ending at selectedDay, clipped to start at Day 1 if `selectedDay < dateRange`." This matches the period-windowing semantics of the KPI cards.
+
+- **X-axis**: shows day numbers across the windowed range (e.g., Day 60 + 30d → axis labels at 31, 40, 50, 60)
+- **Y-axis**: max derived from data within the window only. Auto-rescales when the user changes day-stop or range.
+- **Y-axis nice ceiling**: standard tick-step algorithm (`niceYMax`). Picks step size targeting ~5 ticks across the data range, rounds step to 1/2/5 × 10^n, applies 5% headroom. Adapts to any range without tier lists.
+
 ### MX.1 Day clamp
 
 - **Behavior (S5 onward)**: `effectiveDay = Math.min(selectedDay, ENGINE_MAX_DAYS)` where `ENGINE_MAX_DAYS = 60` (UI horizon). Engine internally simulates 90 days (60 visible + 30-day buffer for cohort maturation and offer expiration).

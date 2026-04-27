@@ -90,9 +90,11 @@ for (const selectedDay of DAY_STOPS) {
 
     for (const kpi of KPI_KEYS) {
       const heroKey = `${baseKey}|kpi=${kpi}`;
-      const hero = computeHeroChartForKPI(projection, kpi, metrics.effectiveDay);
+      const hero = computeHeroChartForKPI(projection, kpi, metrics.effectiveDay, dateRange);
       snapshot.cells[heroKey] = {
         kind: hero.kind,
+        startDay: hero.startDay,
+        endDay: hero.endDay,
         ...(hero.kind === 'stacked'
           ? { cacData: hero.cacData, maxVal: hero.maxVal }
           : {

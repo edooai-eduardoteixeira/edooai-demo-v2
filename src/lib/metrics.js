@@ -29,6 +29,17 @@ export const KPI_KEYS = ['activeUsers', 'cac', 'roi', 'fraudSaved'];
 const FOLLOW_UP_GRACE_DAYS = 3;
 const FOLLOW_UP_CAP = 0.35;
 
+/**
+ * Compute the windowed [startDay, endDay] range for a chart view.
+ * Mirrors the period-windowing used by KPI cards: last `dateRange` days
+ * ending at `selectedDay`, clipped to start at Day 1 if selectedDay < dateRange.
+ */
+export function computeWindow(selectedDay, dateRange) {
+  const endDay = selectedDay;
+  const startDay = Math.max(1, selectedDay - dateRange + 1);
+  return { startDay, endDay, length: endDay - startDay + 1 };
+}
+
 // ─── Day clamp (MX.1) ───────────────────────────────────────────────────
 /** @see METRIC_MODEL.md §MX.1 */
 export function computeEffectiveDay(selectedDay) {
@@ -190,64 +201,69 @@ export function computeKpiDelta(days, selectedDay, dateRange, key, betterWhen) {
  *   ROAS        → line of daily ROI (Σ value / Σ spend ties to KPI)
  *   fraudSaved  → line of daily fraud increments (sum to KPI)
  */
-export function computeHeroChart(projection, selectedKPI, currentDay) {
+export function computeHeroChart(projection, selectedKPI, currentDay, dateRange = currentDay) {
   const days = projection.days;
+  const { startDay, endDay } = computeWindow(currentDay, dateRange);
+  const startIdx = startDay - 1; // 0-indexed inclusive
+  const endIdx = endDay;         // 0-indexed exclusive
+
+  // Helper: daily increment of a cumulative engine field at engine index i.
+  // Uses days[i-1] for prev (NOT slice[i-1]) so windowed slices still compute
+  // correct daily values at the window's left edge.
+  const dailyIncr = (i, field) => {
+    const prev = i > 0 ? days[i - 1][field] : 0;
+    return days[i][field] - prev;
+  };
+  const dailyKpiIncr = (i, key) => {
+    const prev = i > 0 ? days[i - 1].kpiCumulative[key] : 0;
+    return days[i].kpiCumulative[key] - prev;
+  };
 
   // CAC: stacked bar of daily unit cost (referrer + referee).
   // Tie-out: KPI = Σ (daily reward paid) / Σ daily users, where daily reward
   // paid = (referrer + referee) × daily users for that day.
   if (selectedKPI === 'cac') {
-    const cacData = days.slice(0, currentDay).map(d => ({
+    const cacData = days.slice(startIdx, endIdx).map(d => ({
       values: [d.dailyReferrerCost, d.dailyRefereeCost],
     }));
     const maxVal = Math.max(...cacData.map(d => d.values[0] + d.values[1]), 0);
-    return { kind: 'stacked', cacData, maxVal };
+    return { kind: 'stacked', cacData, maxVal, startDay, endDay };
   }
 
-  let slice;
-  if (selectedKPI === 'activeUsers') {
-    // Daily new active users (resolution-time)
-    slice = projection.dailyCurve.slice(0, currentDay);
-  } else if (selectedKPI === 'roi') {
-    // Daily ROI = day's resolved value / day's actual reward payouts.
-    // (Not value/budget — budget is an allocation cap; actual spend is
-    // reward cost paid out on resolved conversions.)
-    slice = days.slice(0, currentDay).map((d, i) => {
-      const prevReward = i > 0 ? days[i - 1].cumulativeRewardCost : 0;
-      const prevValue = i > 0 ? days[i - 1].cumulativeValue : 0;
-      const dayReward = d.cumulativeRewardCost - prevReward;
-      const dayValue = d.cumulativeValue - prevValue;
-      return dayReward > 0 ? Math.round((dayValue / dayReward) * 10) / 10 : 0;
-    });
-  } else if (selectedKPI === 'fraudSaved') {
-    // Daily fraudSaved = day's increment of cumulative fraudSaved.
-    slice = days.slice(0, currentDay).map((d, i) => {
-      const prevFraud = i > 0 ? days[i - 1].kpiCumulative.fraudSaved : 0;
-      return Math.max(0, d.kpiCumulative.fraudSaved - prevFraud);
-    });
-  } else {
-    slice = days.slice(0, currentDay).map((d, i) => {
-      if (i === 0) return d.kpiCumulative[selectedKPI];
-      return Math.max(0, d.kpiCumulative[selectedKPI] - days[i - 1].kpiCumulative[selectedKPI]);
-    });
+  const slice = [];
+  for (let i = startIdx; i < endIdx; i++) {
+    if (selectedKPI === 'activeUsers') {
+      slice.push(projection.dailyCurve[i]);
+    } else if (selectedKPI === 'roi') {
+      // Daily ROI = day's resolved value / day's actual reward payouts.
+      // Engine spend (budget allocation) intentionally NOT used here — see
+      // METRIC_MODEL.md §M2.11.
+      const dayReward = dailyIncr(i, 'cumulativeRewardCost');
+      const dayValue = dailyIncr(i, 'cumulativeValue');
+      slice.push(dayReward > 0 ? Math.round((dayValue / dayReward) * 10) / 10 : 0);
+    } else if (selectedKPI === 'fraudSaved') {
+      slice.push(Math.max(0, dailyKpiIncr(i, 'fraudSaved')));
+    } else {
+      slice.push(Math.max(0, dailyKpiIncr(i, selectedKPI)));
+    }
   }
   const maxVal = Math.max(...slice, 0);
 
   // M2.12 ROAS: dashed static baseline = engine's staticMode daily ROAS.
-  // Same formula as agentic (day's value / day's reward cost), applied to
-  // the static-mode simulation result (efficiency locked at effFloor, revenue
-  // per user locked at baseRevenuePerUser — i.e., no agent learning).
+  // Windowed analogously to the agentic slice. Day 1 of either window uses
+  // a previous-day-of-zero (i.e., absolute Day 1 of engine).
   const isROAS = selectedKPI === 'roi';
   let staticSlice = null;
   if (isROAS && projection.staticBaseline?.days) {
     const sd = projection.staticBaseline.days;
-    staticSlice = sd.slice(0, currentDay).map((d, i) => {
+    staticSlice = [];
+    for (let i = startIdx; i < endIdx; i++) {
       const prevReward = i > 0 ? sd[i - 1].cumulativeRewardCost : 0;
       const prevValue = i > 0 ? sd[i - 1].cumulativeValue : 0;
-      const dayReward = d.cumulativeRewardCost - prevReward;
-      const dayValue = d.cumulativeValue - prevValue;
-      return dayReward > 0 ? Math.round((dayValue / dayReward) * 10) / 10 : 0;
-    });
+      const dayReward = sd[i].cumulativeRewardCost - prevReward;
+      const dayValue = sd[i].cumulativeValue - prevValue;
+      staticSlice.push(dayReward > 0 ? Math.round((dayValue / dayReward) * 10) / 10 : 0);
+    }
   }
 
   return {
@@ -257,6 +273,8 @@ export function computeHeroChart(projection, selectedKPI, currentDay) {
     maxVal,
     isROAS,
     hasData: maxVal > 0,
+    startDay,
+    endDay,
   };
 }
 
@@ -302,24 +320,30 @@ export function computeFunnel(dayData) {
 // ─── Region 4: Block 2 Left — Audience Overview ─────────────────────────
 
 /** @see METRIC_MODEL.md §M4.1–M4.4 */
-export function computeAudienceOverview(projection, effectiveDay) {
+export function computeAudienceOverview(projection, effectiveDay, dateRange = effectiveDay) {
   const ph = projection.propensityHealth;
   const ed = projection.effectivenessData;
   if (!ph) return null;
 
+  const { startDay, endDay } = computeWindow(effectiveDay, dateRange);
+  const startIdx = startDay - 1;
+  const endIdx = endDay;
+
   return {
     bands: {
-      advocates: ph.highEligible.slice(0, effectiveDay),
-      persuadable: ph.medEligible.slice(0, effectiveDay),
-      passive: ph.lowEligible.slice(0, effectiveDay),
+      advocates: ph.highEligible.slice(startIdx, endIdx),
+      persuadable: ph.medEligible.slice(startIdx, endIdx),
+      passive: ph.lowEligible.slice(startIdx, endIdx),
     },
-    convRateOverlay: ed?.dailyConversionRate?.slice(0, effectiveDay) || [],
+    convRateOverlay: ed?.dailyConversionRate?.slice(startIdx, endIdx) || [],
     totals: {
       highEligible: ph.highEligible,
       medEligible: ph.medEligible,
       lowEligible: ph.lowEligible,
       totalEligible: ph.totalEligible,
     },
+    startDay,
+    endDay,
   };
 }
 
@@ -357,16 +381,20 @@ export function computeCampaignList(projection, effectiveDay) {
  * stay aligned to campaign IDs across days. A campaign that hasn't started by
  * day d shows zero on that day; it's a real time series of share-of-voice.
  */
-export function computeDailyOutreach(projection, effectiveDay) {
+export function computeDailyOutreach(projection, effectiveDay, dateRange = effectiveDay) {
   // Segments shown = all campaigns that are active by `effectiveDay`,
   // in stable fixture order (so colors don't shuffle as new campaigns appear).
   const segments = CAMPAIGNS.filter(c =>
     effectiveDay >= c.startsDay && (c.endsDay == null || effectiveDay <= c.endsDay)
   );
 
+  const { startDay, endDay } = computeWindow(effectiveDay, dateRange);
+  const startIdx = startDay - 1;
+  const endIdx = endDay;
+
   // Per-day: for each segment, contactCount = today's journeys × segment's
   // active-day share. Inactive on day d → 0 in that segment slot.
-  const paddedData = projection.days.slice(0, effectiveDay).map((d) => {
+  const paddedData = projection.days.slice(startIdx, endIdx).map((d) => {
     const day = d.day;
     const journeysToday = d.journeysToday || 0;
     const dayActive = activeCampaigns(day);
@@ -392,6 +420,8 @@ export function computeDailyOutreach(projection, effectiveDay) {
     paddedData,
     latestCampaigns,
     maxTotal,
+    startDay,
+    endDay,
   };
 }
 
@@ -471,9 +501,9 @@ export function computeDashboardMetrics(projection, { selectedDay, dateRange }) 
     suggestedChange: computeSuggestedChange(projection, effectiveDay),
     kpiCards,
     funnel: computeFunnel(dayData),
-    audienceOverview: computeAudienceOverview(projection, effectiveDay),
+    audienceOverview: computeAudienceOverview(projection, effectiveDay, dateRange),
     campaignList: computeCampaignList(projection, effectiveDay),
-    dailyOutreach: computeDailyOutreach(projection, effectiveDay),
+    dailyOutreach: computeDailyOutreach(projection, effectiveDay, dateRange),
   };
 }
 
@@ -481,6 +511,6 @@ export function computeDashboardMetrics(projection, { selectedDay, dateRange }) 
  * Hero chart data is selectedKPI-specific and isolated for memoization
  * (rebuilds only when selectedKPI or currentDay changes).
  */
-export function computeHeroChartForKPI(projection, selectedKPI, currentDay) {
-  return computeHeroChart(projection, selectedKPI, currentDay);
+export function computeHeroChartForKPI(projection, selectedKPI, currentDay, dateRange = currentDay) {
+  return computeHeroChart(projection, selectedKPI, currentDay, dateRange);
 }
