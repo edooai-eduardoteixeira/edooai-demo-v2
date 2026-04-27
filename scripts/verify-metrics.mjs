@@ -16,9 +16,15 @@ import {
   computeDashboardMetrics,
   computeHeroChartForKPI,
   computeEffectiveDay,
+  computeCampaignList,
+  computeDailyOutreach,
+  computeFollowUpRate,
+  computeOpsDecomposition,
+  computeSuggestedChange,
   ENGINE_MAX_DAYS,
   KPI_KEYS,
 } from '../src/lib/metrics.js';
+import { CAMPAIGNS, activeCampaigns } from '../src/fixtures/campaigns.js';
 import neobank from '../src/config/neobank.js';
 
 const params = neobank.engineParams;
@@ -125,6 +131,86 @@ const usersKpi7 = m30_7.kpiCards.find(c => c.key === 'activeUsers').value;
 check('activeUsers: 30d sum >= 7d sum at Day 30',
   usersKpi30 >= usersKpi7,
   `30d=${usersKpi30}, 7d=${usersKpi7}`);
+
+// ─── 7. S2: Campaign roster stability (P4) ─────────────────────────────
+console.log('\n═══ 7. S2 Campaign roster stability ═══');
+{
+  // Active campaigns at every day must be a subset (in fixture order) of
+  // CAMPAIGNS — i.e., once a campaign starts, it keeps the same id and color.
+  let stableIds = true;
+  let stableColors = true;
+  let weightsValid = true;
+  for (let day = 1; day <= 30; day++) {
+    const active = activeCampaigns(day);
+    for (const c of active) {
+      const fixtureEntry = CAMPAIGNS.find(f => f.id === c.id);
+      if (!fixtureEntry || fixtureEntry.color !== c.color) stableColors = false;
+    }
+    const sumShares = active.reduce((s, c) => s + c.share, 0);
+    if (active.length > 0 && Math.abs(sumShares - 1) > 1e-9) weightsValid = false;
+    // IDs must appear in fixture order (subset preserves order)
+    const fixtureIdsInOrder = CAMPAIGNS.map(c => c.id);
+    let lastIdx = -1;
+    for (const c of active) {
+      const idx = fixtureIdsInOrder.indexOf(c.id);
+      if (idx <= lastIdx) stableIds = false;
+      lastIdx = idx;
+    }
+  }
+  check('Campaign IDs in stable fixture order on every day', stableIds);
+  check('Campaign colors stable per ID across all days', stableColors);
+  check('Active-campaign shares sum to 1.0 on every day', weightsValid);
+}
+
+// ─── 8. S2: Operations decomposition invariant ─────────────────────────
+console.log('\n═══ 8. S2 newContacts + followUps ≡ total ═══');
+{
+  let invariantOk = true;
+  let detail = '';
+  for (let day = 1; day <= 30; day++) {
+    const decomp = computeOpsDecomposition(projection.days, day);
+    if (decomp.newContacts + decomp.followUps !== decomp.total) {
+      invariantOk = false;
+      detail = `day ${day}: ${decomp.newContacts} + ${decomp.followUps} ≠ ${decomp.total}`;
+      break;
+    }
+  }
+  check('newContacts + followUps === total for all days 1..30', invariantOk, detail);
+
+  // Follow-up rate is 0 during grace window
+  check('Follow-up rate = 0 at Day 1', computeFollowUpRate(projection.days, 1) === 0);
+  check('Follow-up rate = 0 at Day 3 (within grace)', computeFollowUpRate(projection.days, 3) === 0);
+  // Follow-up rate ramps up after grace, capped at 0.35
+  const fr30 = computeFollowUpRate(projection.days, 30);
+  check(`Follow-up rate at Day 30 in (0, 0.35]`, fr30 > 0 && fr30 <= 0.35, `got ${fr30}`);
+}
+
+// ─── 9. S2: Suggested change comes from engine, not fabricated ─────────
+console.log('\n═══ 9. S2 SuggestedChange is engine-derived ═══');
+{
+  // Engine produces agentRecommendations array
+  check('projection.agentRecommendations is an array', Array.isArray(projection.agentRecommendations),
+    `type=${typeof projection.agentRecommendations}`);
+  check('projection.agentRecommendations length >= 30',
+    (projection.agentRecommendations?.length || 0) >= 30,
+    `length=${projection.agentRecommendations?.length}`);
+
+  // Day 1 suggestion: either null or computed from Day 1 data only (not horizon)
+  const recDay1 = computeSuggestedChange(projection, 1);
+  const recDay30 = computeSuggestedChange(projection, 30);
+  // No future leakage: rec at Day 1 should equal projection.agentRecommendations[0]
+  check('SuggestedChange at Day 1 uses agentRecommendations[0] (no future leakage)',
+    recDay1 === projection.agentRecommendations[0]);
+  // Day 30 surfaces the latest available rec (no fabricated $50/$75/3.2x text)
+  if (recDay30) {
+    const text = JSON.stringify(recDay30);
+    check('Day 30 recommendation does NOT contain fabricated "$50 credit" text',
+      !text.includes('$50 credit outperforms') && !text.includes('3.2x better'),
+      'fabricated text leaked');
+  } else {
+    check('Day 30 recommendation null is acceptable (no fabricated text)', true);
+  }
+}
 
 // ─── Summary ───────────────────────────────────────────────────────────
 console.log(`\n══════════════════════════════════════════════════════════════`);

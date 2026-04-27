@@ -1,5 +1,3 @@
-import { generateDayBriefing } from './nameGenerator.js';
-
 /**
  * Projection Engine v3/v4 — Journey Model with Distributed Resolution & Value Learning
  *
@@ -634,77 +632,6 @@ function runSimulation({ budget, params, staticMode = false }) {
 }
 
 /**
- * Derive learning annotations from simulation data.
- * These are specific, data-driven moments where the agent's behavior measurably changed.
- */
-function deriveLearningAnnotations(agenticDays, staticDays, params) {
-  const annotations = [];
-
-  // 1. Signal threshold: when minSignalVolume was reached
-  const signalDay = agenticDays.find(d => d.cumulativeN >= (params.minSignalVolume || 100));
-  if (signalDay) {
-    const effPct = Math.round(signalDay.efficiency * 100);
-    annotations.push({
-      day: signalDay.day,
-      type: 'signal',
-      title: 'Signal threshold reached',
-      description: `${signalDay.cumulativeN} conversions resolved. Targeting accuracy: ${effPct}% (up from ${Math.round(params.effFloor * 100)}% baseline).`,
-    });
-  }
-
-  // 2. Tier optimization: find day where Tier 1 usage meaningfully exceeds baseline
-  const baselineTier1 = agenticDays[0]?.tierDistribution[0] || 0;
-  const tierShiftDay = agenticDays.find(d =>
-    d.day >= 7 && d.tierDistribution[0] > baselineTier1 * 1.3 && d.tierDistribution[0] > 0.10
-  );
-  if (tierShiftDay) {
-    const tier1Pct = Math.round(tierShiftDay.tierDistribution[0] * 100);
-    const baselinePct = Math.round(baselineTier1 * 100);
-    const savingsPerConversion = params.referrerTiers[params.referrerTiers.length - 1] +
-      params.refereeTiers[params.refereeTiers.length - 1];
-    const organicCount = Math.round(tierShiftDay.funnelCumulative.activeUser * tierShiftDay.tierDistribution[0]);
-    annotations.push({
-      day: tierShiftDay.day,
-      type: 'tier',
-      title: 'Reward optimization',
-      description: `Tier 1 (organic) usage at ${tier1Pct}% (up from ${baselinePct}%). ${organicCount} customers identified as self-converting — $${savingsPerConversion} saved per conversion.`,
-    });
-  }
-
-  // 3. Value learning: find day where revenue per user meaningfully exceeds baseline
-  const baseRevenue = params.baseRevenuePerUser;
-  const valueDay = agenticDays.find(d =>
-    d.day >= 10 && d.effectiveRevenuePerUser > baseRevenue * 1.5
-  );
-  if (valueDay) {
-    annotations.push({
-      day: valueDay.day,
-      type: 'value',
-      title: 'High-value segment discovery',
-      description: `Revenue per converted user: $${valueDay.effectiveRevenuePerUser} (baseline: $${baseRevenue}). Agent targeting referrer segments that bring ${Math.round(valueDay.effectiveRevenuePerUser / baseRevenue * 10) / 10}x higher-LTV customers.`,
-    });
-  }
-
-  // 4. Divergence point: when agentic active users exceed static by >20%
-  for (let i = 0; i < agenticDays.length && i < staticDays.length; i++) {
-    const ag = agenticDays[i].cumulativeN;
-    const st = staticDays[i].cumulativeN;
-    if (ag > 0 && st > 0 && (ag - st) / st > 0.20 && agenticDays[i].day >= 5) {
-      const pctMore = Math.round(((ag - st) / st) * 100);
-      annotations.push({
-        day: agenticDays[i].day,
-        type: 'divergence',
-        title: 'Learning advantage visible',
-        description: `Agentic: ${Math.round(ag)} active users vs Static: ${Math.round(st)} — ${pctMore}% more conversions from the same budget.`,
-      });
-      break;
-    }
-  }
-
-  return annotations.sort((a, b) => a.day - b.day);
-}
-
-/**
  * Derive agent recommendation from simulation constraints.
  * Only uses known/factual numbers — no estimates or predictions.
  */
@@ -793,33 +720,16 @@ export function computeDashboardProjection({ budget, params }) {
   // Run static baseline (no learning — efficiency locked at floor)
   const static_ = runSimulation({ budget, params, staticMode: true });
 
-  // Derive learning annotations FIRST (briefings reference them)
-  const learningAnnotations = deriveLearningAnnotations(agentic.days, static_.days, params);
-
-  // Build annotation lookup by day for briefing generation
-  const annotationByDay = {};
-  for (const a of learningAnnotations) {
-    annotationByDay[a.day] = a;
-  }
-
-  // Generate daily briefings — annotation days get matched strategy shifts
-  const dailyBriefings = {};
-  for (let day = 1; day <= 30; day++) {
-    const dayData = agentic.days[day - 1];
-    const prevDayData = day > 1 ? agentic.days[day - 2] : null;
-
-    dailyBriefings[day] = generateDayBriefing({
-      day,
-      dayData,
-      prevDayData,
-      seed: 42,
-      tierDistribution: dayData.tierDistribution,
-      annotation: annotationByDay[day] || null,
-    });
-  }
-
-  // Derive agent recommendation
-  const agentRecommendation = deriveAgentRecommendation(agentic.days, params, budget);
+  // Per-day agent recommendations — computed using only data ≤ that day to
+  // prevent future leakage when the dashboard surfaces a rec at any selected
+  // day. agentRecommendations[d-1] is the rec appropriate at day d.
+  const agentRecommendations = agentic.days.map((_, idx) => {
+    const visibleDays = agentic.days.slice(0, idx + 1);
+    return deriveAgentRecommendation(visibleDays, params, budget);
+  });
+  // Top-level convenience: rec at horizon (kept for back-compat; UI now uses
+  // agentRecommendations indexed by selected day).
+  const agentRecommendation = agentRecommendations[agentRecommendations.length - 1] || null;
 
   // Build the cumulative daily curve for chart (matches v3 format)
   const dailyCurve = agentic.days.map(d => d.resolvedToday);
@@ -862,14 +772,9 @@ export function computeDashboardProjection({ budget, params }) {
       days: static_.days,
     },
 
-    // Daily briefings (structured, not flat log)
-    dailyBriefings,
-
-    // Learning annotations
-    learningAnnotations,
-
-    // Agent recommendation
+    // Agent recommendation (top-level = horizon; per-day array prevents future leakage)
     agentRecommendation,
+    agentRecommendations,
 
     // Lifecycle states for stacked area chart (Block 2, Graph 1)
     lifecycleStates,

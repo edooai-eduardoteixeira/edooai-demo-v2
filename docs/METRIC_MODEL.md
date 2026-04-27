@@ -97,8 +97,8 @@ S1's job is *no behavior change*. Later stages replace specific entries.
 - **Surfaces**: `SuggestedChangeStrip`'s "Suggested change: {action}" text
 - **Time base**: point-in-time (latest available recommendation at or before selected day)
 - **Derivation**: scan `briefings[d]` from `selectedDay` down to 1, return first `briefings[d].recommendation.action` found.
-- **Engine source**: today, `briefings[30].recommendation` is the only one set (hardcoded to fire on Day 30) with text containing fabricated "$50 credit outperforms $75 credit, 3.2x better, $12k/mo savings".
-- **Status**: S1 — preserve hardcoded fabricated text. **S2** — replaced by engine's `agentRecommendation`, constrained to use only data ≤ selected day.
+- **Engine source (S2 onward)**: `projection.agentRecommendations[]` — per-day array, each entry computed using only `agentic.days.slice(0, day)` (no future leakage).
+- **Status**: S1 — preserve hardcoded fabricated text. ✅ **S2 — replaced.** Now uses `agentRecommendations[selectedDay - 1]`, scanning back to find the most recent non-null rec. Briefings layer + nameGenerator.js deleted.
 
 ---
 
@@ -246,8 +246,8 @@ Today, `Reached > Referred` violates this on every day. Asserted in `verify-metr
 - **Surfaces**: cards with `c.title`, `c.contactCount`, plus expanded details (`whyRefer`, `channel`, `reward`, `example`)
 - **Time base**: point-in-time (campaigns active on Day N)
 - **Derivation**: `briefings[selectedDay].dailyPlan.campaigns[]`
-- **Engine source**: `nameGenerator.generateDayBriefing` which uses heuristic weights to allocate `dayData.journeysToday` across campaign IDs (with `startsDay` gating). Roster churns daily because nameGenerator generates fresh per call (P4).
-- **Status**: S1 — preserve. **S2** — `src/fixtures/campaigns.js` provides stable roster; numeric splits flow through `metrics.js`; nameGenerator role reduced to copy/text only.
+- **Engine source (S2 onward)**: `src/fixtures/campaigns.js` owns identity (id, title, copy, color, weight, startsDay, endsDay). `metrics.js` derives `contactCount` per campaign as `round(dayData.journeysToday × campaign.share)` where share is the campaign's fixture weight normalized over active campaigns that day.
+- **Status**: S1 — preserve. ✅ **S2 — done.** Roster stable. Colors locked to ID. nameGenerator.js deleted.
 
 ### M5.2 Daily Outreach stacked bar
 
@@ -259,23 +259,24 @@ Today, `Reached > Referred` violates this on every day. Asserted in `verify-metr
     dayCampaigns = briefings[d].dailyPlan.campaigns
     paddedSegments = pad(dayCampaigns.map(c => c.contactCount), maxCampaignsAcrossDays)
   ```
-- **Color assignment**: `CAMPAIGN_COLORS[i]` indexed by position in `latestCampaigns` — colors shift when campaign roster changes.
-- **Engine source**: `briefings[d].dailyPlan.campaigns[i].contactCount`
-- **Note**: also see operations decomposition (M5.3) — the stack treats every contact as new outreach, ignoring the engine's follow-up split.
-- **Status**: S1 — preserve. **S2** — stable color per campaign ID; counts come from `metrics.js`.
+- **Color assignment (S2 onward)**: each campaign carries its color in the fixture. Stack segments are ordered by fixture order (not lineup growth), so a campaign keeps its color whether it appears as segment 0 or segment 4.
+- **Engine source (S2 onward)**: `metrics.computeDailyOutreach` — per day d, per campaign c: `round(d.journeysToday × c.share)` where c.share = 0 if campaign isn't active on that day.
+- **Status**: S1 — preserve. ✅ **S2 — done.** Stable colors. No more "campaign disappeared/reappeared" visual.
 
 ### M5.3 Operations decomposition (newContacts vs followUps)
 
-- **Surfaces**: not directly rendered today; computed in engine as `projection.operationsData[d] = { day, newContacts, followUps, total }`
+- **Surfaces**: not directly rendered today; available via `metrics.computeOpsDecomposition(days, day)` for verify scripts and any future surface.
 - **Time base**: daily generation-time
-- **Derivation (current)**: 
+- **Derivation (S2 onward)**: 
   ```
   total = round(d.journeysToday)
-  followUpRate = min(0.35, (i / 30) * 0.35)  // linear ramp animation, P3
+  followUpRate = computeFollowUpRate(allDays, day) — see below
   followUps = round(total * followUpRate)
   newContacts = total - followUps
   ```
-- **Status**: S1 — preserve linear ramp. **S2** — follow-up rate becomes function of engine state (efficiency, unresolved cohort size); decomposition reflected in some visible surface.
+  `computeFollowUpRate`: 0 during a 3-day grace window after first contact, then ramps toward FOLLOW_UP_CAP (0.35) over ~30 days. Tied to engine `day` state (not to dashboard day index). Documented heuristic — the engine doesn't model repeat-contact strategy, so this is a defensible bounded function rather than a deep simulation.
+- **Invariant** (verified in `verify-metrics.mjs`): `newContacts + followUps === total` for every day.
+- **Status**: S1 — preserve linear ramp. ✅ **S2 — done.** Engine-derived; ramp is no longer a pure-time animation; invariant verified.
 
 ---
 
