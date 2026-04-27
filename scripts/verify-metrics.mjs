@@ -41,13 +41,14 @@ function check(name, condition, detail = '') {
   }
 }
 
-// ─── 1. Day clamp ───────────────────────────────────────────────────────
+// ─── 1. Day clamp (S5: extended to 60) ─────────────────────────────────
 console.log('\n═══ 1. Day clamp ═══');
 check('Day 1 → effectiveDay 1', computeEffectiveDay(1) === 1);
 check('Day 10 → effectiveDay 10', computeEffectiveDay(10) === 10);
 check('Day 30 → effectiveDay 30', computeEffectiveDay(30) === 30);
-check('Day 60 → effectiveDay 30 (S1: clamps)', computeEffectiveDay(60) === 30);
-check('ENGINE_MAX_DAYS = 30', ENGINE_MAX_DAYS === 30);
+check('Day 60 → effectiveDay 60 (S5: real Day 60 data)', computeEffectiveDay(60) === 60);
+check('Day 90 → clamp to 60 (UI horizon)', computeEffectiveDay(90) === 60);
+check('ENGINE_MAX_DAYS = 60 (UI horizon)', ENGINE_MAX_DAYS === 60);
 
 // ─── 2. Top-level orchestrator returns expected shape ──────────────────
 console.log('\n═══ 2. Shape ═══');
@@ -111,15 +112,18 @@ check('Day 1 hero chart for activeUsers does not crash',
 check('Day 1 hero chart for cac does not crash',
   computeHeroChartForKPI(projection, 'cac', 1) !== undefined);
 
-// ─── 5. Day 60 returns same as Day 30 (S1 clamp behavior preserved) ────
-console.log('\n═══ 5. Day 60 clamp parity ═══');
+// ─── 5. Day 60 differentiates from Day 30 (S5: real Day 60 data) ──────
+console.log('\n═══ 5. Day 60 differentiation ═══');
 const m30 = computeDashboardMetrics(projection, { selectedDay: 30, dateRange: 30 });
 const m60 = computeDashboardMetrics(projection, { selectedDay: 60, dateRange: 30 });
-check('Day 60 effectiveDay = 30', m60.effectiveDay === 30);
-check('Day 60 funnel = Day 30 funnel',
-  JSON.stringify(m60.funnel) === JSON.stringify(m30.funnel));
-check('Day 60 audienceOverview.bands = Day 30',
-  JSON.stringify(m60.audienceOverview.bands) === JSON.stringify(m30.audienceOverview.bands));
+check('Day 60 effectiveDay = 60', m60.effectiveDay === 60);
+check('Day 60 funnel ≠ Day 30 funnel (real differentiation)',
+  JSON.stringify(m60.funnel) !== JSON.stringify(m30.funnel));
+check('Day 60 audienceOverview.bands has 60 entries',
+  m60.audienceOverview.bands.advocates.length === 60);
+check('Day 60 funnel.Active > Day 30 funnel.Active (more cumulative resolutions)',
+  m60.funnel.find(s => s.label === 'Active User').value >
+    m30.funnel.find(s => s.label === 'Active User').value);
 
 // ─── 6. KPI period values: monotonic with window growth ────────────────
 console.log('\n═══ 6. KPI period sums grow with window (where additive) ═══');
@@ -140,7 +144,7 @@ console.log('\n═══ 7. S2 Campaign roster stability ═══');
   let stableIds = true;
   let stableColors = true;
   let weightsValid = true;
-  for (let day = 1; day <= 30; day++) {
+  for (let day = 1; day <= 60; day++) {
     const active = activeCampaigns(day);
     for (const c of active) {
       const fixtureEntry = CAMPAIGNS.find(f => f.id === c.id);
@@ -167,7 +171,7 @@ console.log('\n═══ 8. S2 newContacts + followUps ≡ total ═══');
 {
   let invariantOk = true;
   let detail = '';
-  for (let day = 1; day <= 30; day++) {
+  for (let day = 1; day <= 60; day++) {
     const decomp = computeOpsDecomposition(projection.days, day);
     if (decomp.newContacts + decomp.followUps !== decomp.total) {
       invariantOk = false;
@@ -190,7 +194,7 @@ console.log('\n═══ 9.5 S3 Funnel monotonicity ═══');
 {
   let allMonotonic = true;
   let firstViolation = null;
-  for (let day = 1; day <= 30; day++) {
+  for (let day = 1; day <= 60; day++) {
     const m = computeDashboardMetrics(projection, { selectedDay: day, dateRange: 30 });
     const values = m.funnel.map(s => s.value);
     for (let i = 1; i < values.length; i++) {
@@ -210,9 +214,9 @@ console.log('\n═══ 9.6 S3 KPI/funnel tie-out (period covers full history) 
 {
   let allTied = true;
   let firstFail = null;
-  for (let day = 1; day <= 30; day++) {
-    // dateRange >= day → period covers full history → KPI === cumulative funnel
-    const m = computeDashboardMetrics(projection, { selectedDay: day, dateRange: 30 });
+  for (let day = 1; day <= 60; day++) {
+    // Use dateRange = day so period covers full history every iteration.
+    const m = computeDashboardMetrics(projection, { selectedDay: day, dateRange: day });
     const kpiActive = m.kpiCards.find(c => c.key === 'activeUsers').value;
     const funnelActive = m.funnel.find(s => s.label === 'Active User').value;
     if (kpiActive !== funnelActive) {
@@ -230,7 +234,7 @@ console.log('\n═══ 9.7 S3 Hero chart values ═══');
 {
   let roiSane = true;
   let fraudSane = true;
-  for (let day = 1; day <= 30; day++) {
+  for (let day = 1; day <= 60; day++) {
     const roiHero = computeHeroChartForKPI(projection, 'roi', day);
     const fraudHero = computeHeroChartForKPI(projection, 'fraudSaved', day);
     if (roiHero.slice.some(v => Number.isNaN(v) || v < 0)) roiSane = false;
@@ -252,7 +256,7 @@ console.log('\n═══ 9.85 S4 GA-style delta visibility ═══');
   let deltaCorrect = true;
   let firstFail = '';
   for (const range of [7, 30]) {
-    for (let day = 1; day <= 30; day++) {
+    for (let day = 1; day <= 60; day++) {
       const m = computeDashboardMetrics(projection, { selectedDay: day, dateRange: range });
       const expectedHasAnyPrior = day - range >= 1;
       for (const card of m.kpiCards) {
@@ -287,7 +291,7 @@ console.log('\n═══ 9.8 KPI/hero aggregation tie-out (all windows) ══�
   let firstFail = { users: '', cac: '', roi: '', fraud: '' };
 
   for (const range of [7, 30]) {
-    for (let day = 1; day <= 30; day++) {
+    for (let day = 1; day <= 60; day++) {
       const m = computeDashboardMetrics(projection, { selectedDay: day, dateRange: range });
       const endIdx = day - 1;
       const startIdx = Math.max(0, endIdx - range + 1);

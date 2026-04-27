@@ -376,7 +376,7 @@ function getTierDistribution(tierReach, distCheap, distExpensive, eff, effTierDi
  * Run the core simulation loop and return detailed per-day data.
  * staticMode: if true, locks efficiency at floor (no learning).
  */
-function runSimulation({ budget, params, staticMode = false }) {
+function runSimulation({ budget, params, staticMode = false, horizonDays = 30 }) {
   const {
     totalCustomers, eligibilityRate, N_max, B_half, alpha,
     baseConvRate, accidentalConvRate, reachDecayExponent,
@@ -426,11 +426,13 @@ function runSimulation({ budget, params, staticMode = false }) {
 
   // Per-day outputs
   const days = [];
+  // dailySpend uses /30: budget represents a MONTHLY allocation. At horizons
+  // > 30 days, the budget renews each month (cumSpend at Day 60 = 2 × budget).
   const dailySpend = budget / 30;
   let cumulativeRewardCost = 0;
   let cumulativeReferrerCost = 0;
   let cumulativeRefereeCost = 0;
-  let thresholdDay = 30;
+  let thresholdDay = horizonDays;
   let thresholdFound = false;
 
   // Cumulative funnel counters
@@ -442,7 +444,7 @@ function runSimulation({ budget, params, staticMode = false }) {
   // Cohort resolution matrix: cohorts[startDay] = { contacted, resolutionByDay: {resolveDay: count} }
   const cohorts = {};
 
-  for (let day = 1; day <= 30; day++) {
+  for (let day = 1; day <= horizonDays; day++) {
     const eff = staticMode
       ? params.effFloor
       : allocationEfficiency(day, cumulativeN, params);
@@ -494,7 +496,7 @@ function runSimulation({ budget, params, staticMode = false }) {
       const count = dailyConversionsGenerated * resolutionWeights[delayIdx];
       const value = dailyValueGenerated * resolutionWeights[delayIdx];
 
-      if (resolveDay <= 30) {
+      if (resolveDay <= horizonDays) {
         pendingConversions.push({ startDay: day, resolveDay, count, value });
         cohorts[day].resolutionByDay[resolveDay] = (cohorts[day].resolutionByDay[resolveDay] || 0) + count;
       }
@@ -613,15 +615,16 @@ function runSimulation({ budget, params, staticMode = false }) {
   }
 
   const activeUsers = days.reduce((sum, d) => sum + d.resolvedToday, 0);
-  const finalCumN = days[29]?.cumulativeN || 0;
+  const lastDay = days[days.length - 1];
+  const finalCumN = lastDay?.cumulativeN || 0;
 
   return {
     days,
     cohorts,
     thresholdDay,
     activeUsers,
-    cac: finalCumN > 0 ? Math.round(days[29].cumulativeRewardCost / finalCumN) : 999,
-    roi: budget > 0 ? Math.round((days[29]?.cumulativeValue || 0) / budget * 10) / 10 : 0,
+    cac: finalCumN > 0 ? Math.round(lastDay.cumulativeRewardCost / finalCumN) : 999,
+    roi: budget > 0 ? Math.round((lastDay?.cumulativeValue || 0) / budget * 10) / 10 : 0,
     convRate: totalJourneysStarted > 0
       ? Math.round((finalCumN / totalJourneysStarted) * 10000) / 100 : 0,
     fraudSaved: Math.round(budget * fraudRate),
@@ -711,14 +714,17 @@ function deriveAgentRecommendation(agenticDays, params, budget) {
  * @param {Object} options.params - Engine parameters (from config)
  * @returns {Object} Full dashboard data
  */
-export function computeDashboardProjection({ budget, params }) {
+export function computeDashboardProjection({ budget, params, horizonDays = 90 }) {
   assertParams(params);
 
-  // Run agentic simulation (with learning)
-  const agentic = runSimulation({ budget, params, staticMode: false });
+  // Run agentic simulation (with learning) at extended horizon.
+  // Default 90 days = UI's 60-day visible horizon + 30-day buffer so all
+  // visible cohorts (1..60) fully resolve within their 14-day window AND
+  // offer expirations (30 days) land within the visible period.
+  const agentic = runSimulation({ budget, params, staticMode: false, horizonDays });
 
   // Run static baseline (no learning — efficiency locked at floor)
-  const static_ = runSimulation({ budget, params, staticMode: true });
+  const static_ = runSimulation({ budget, params, staticMode: true, horizonDays });
 
   // Per-day agent recommendations — computed using only data ≤ that day to
   // prevent future leakage when the dashboard surfaces a rec at any selected
@@ -992,14 +998,15 @@ function computePropensityHealth(simResult, params) {
 // ═══════════════════════════════════════════════════════════════════════
 
 function computeEffectivenessData(simResult, params) {
-  const { cohorts } = simResult;
+  const { cohorts, days } = simResult;
 
   // Cohorted conversion rate: for each cohort (people contacted on day X),
   // what % eventually converted? Uses the engine's per-cohort resolution data.
   // This is the proper leading indicator — tracks the same group from
   // contact to conversion, not mixing cohorts.
+  const horizonDays = days.length;
   const dailyConversionRate = [];
-  for (let d = 1; d <= 30; d++) {
+  for (let d = 1; d <= horizonDays; d++) {
     const cohort = cohorts[d];
     if (cohort && cohort.contacted > 0) {
       dailyConversionRate.push(Math.round(cohort.convRate * 10) / 10);

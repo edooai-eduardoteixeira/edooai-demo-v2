@@ -16,8 +16,11 @@
 
 import { CAMPAIGNS, activeCampaigns } from '../fixtures/campaigns.js';
 
-// ─── Constants (mirror DashboardPage.jsx for S1 parity) ─────────────────
-export const ENGINE_MAX_DAYS = 30;
+// ─── Constants ──────────────────────────────────────────────────────────
+// UI horizon: Day 60 is the highest day stop. Engine runs to 90 days (60 +
+// 30-day buffer for cohort maturation and offer expiration). See
+// computeDashboardProjection in projectionEngine.js.
+export const ENGINE_MAX_DAYS = 60;
 
 export const KPI_KEYS = ['activeUsers', 'cac', 'roi', 'fraudSaved'];
 

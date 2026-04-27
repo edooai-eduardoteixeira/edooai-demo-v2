@@ -296,9 +296,10 @@ Today, `Reached > Referred` violates this on every day. Asserted in `verify-metr
 
 ### MX.1 Day clamp
 
-- **Behavior**: `effectiveDay = Math.min(selectedDay, ENGINE_MAX_DAYS)` where `ENGINE_MAX_DAYS = 30`
-- **Effect**: selecting Day 60 silently uses Day 30 data
-- **Status**: S1 — preserve. **S5** — engine extends to 90 days; clamp removed.
+- **Behavior (S5 onward)**: `effectiveDay = Math.min(selectedDay, ENGINE_MAX_DAYS)` where `ENGINE_MAX_DAYS = 60` (UI horizon). Engine internally simulates 90 days (60 visible + 30-day buffer for cohort maturation and offer expiration).
+- **Effect**: Day 60 now shows actual Day 60 engine data — funnel, KPIs, audience, charts all reflect 60 days of operation. Cohorts contacted at Day 60 are fully simulated through Day 90, so the conversion-rate overlay and lifecycle bands are not truncated at the horizon edge.
+- **Budget semantics**: budget represents a monthly allocation, renewing each month. Engine continues using `dailySpend = budget / 30`, so cumulative engine spend at Day 60 = 2 × monthly budget; at Day 90 = 3 × monthly budget. The "Spent" strip uses `cumulativeRewardCost` (real reward payouts) regardless.
+- **Status**: ✅ **S5 — done.** P2 (Day 60 silent clamp) fixed. P17 (lifecycle bands carry boundary cohorts misleadingly) resolved structurally — offer expirations within 30-day window now land inside the visible 60-day UI horizon.
 
 ### MX.2 Engine projection pipeline
 
