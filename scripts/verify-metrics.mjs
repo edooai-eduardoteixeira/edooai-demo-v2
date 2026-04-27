@@ -240,6 +240,60 @@ console.log('\n═══ 9.7 S3 Hero chart values ═══');
   check('FraudSaved hero chart: no NaN, no negatives every day', fraudSane);
 }
 
+// ─── 9.8 S3: KPI ↔ hero chart aggregation tie-out (P10, P11) ───────────
+// Daily values in the hero chart, when aggregated by their natural rule,
+// must equal the KPI card's period value when the period covers full history.
+//
+//   activeUsers: sum(daily) === KPI value          (additive)
+//   roi:         (Σ daily value) / (Σ daily spend) === KPI value   (weighted ratio)
+//   fraudSaved:  sum(daily increments) === KPI value (additive)
+//
+// CAC is excluded — the hero chart is a cost-breakdown view, not a CAC ratio.
+// Documented as intentional dual view in METRIC_MODEL.md §M2.10.
+console.log('\n═══ 9.8 S3 KPI/hero aggregation tie-out (full-history window) ═══');
+{
+  let usersTie = true, roiTie = true, fraudTie = true;
+  let usersFail = '', roiFail = '', fraudFail = '';
+  for (let day = 1; day <= 30; day++) {
+    const m = computeDashboardMetrics(projection, { selectedDay: day, dateRange: 30 });
+    const days = projection.days;
+
+    // activeUsers: sum of dailyCurve === KPI value
+    const usersHero = computeHeroChartForKPI(projection, 'activeUsers', day);
+    const usersSum = usersHero.slice.reduce((s, v) => s + v, 0);
+    const usersKpi = m.kpiCards.find(c => c.key === 'activeUsers').value;
+    if (usersSum !== usersKpi) {
+      usersTie = false;
+      usersFail = `day ${day}: sum(daily)=${usersSum}, KPI=${usersKpi}`;
+    }
+
+    // ROI: weighted by daily spend
+    const lastDay = days[day - 1];
+    const cumSpend = lastDay.cumulativeSpend;
+    const cumValue = lastDay.cumulativeValue;
+    const expectedRoi = cumSpend > 0 ? Math.round((cumValue / cumSpend) * 10) / 10 : 0;
+    const roiKpi = m.kpiCards.find(c => c.key === 'roi').value;
+    if (roiKpi !== expectedRoi) {
+      roiTie = false;
+      roiFail = `day ${day}: KPI=${roiKpi}, expected=${expectedRoi} (cumValue/cumSpend)`;
+    }
+
+    // fraudSaved: sum of daily increments === cumulative === KPI value
+    const fraudHero = computeHeroChartForKPI(projection, 'fraudSaved', day);
+    const fraudSum = fraudHero.slice.reduce((s, v) => s + v, 0);
+    const fraudKpi = m.kpiCards.find(c => c.key === 'fraudSaved').value;
+    // fraudSaved KPI uses a slightly different formula (lastDay's fraudRate × period spend).
+    // Tolerate rounding (within $1) — the underlying values match by construction.
+    if (Math.abs(fraudSum - fraudKpi) > 1) {
+      fraudTie = false;
+      fraudFail = `day ${day}: sum(daily)=${fraudSum}, KPI=${fraudKpi}`;
+    }
+  }
+  check('activeUsers: sum(daily) === KPI value (full history)', usersTie, usersFail);
+  check('ROI: cumValue/cumSpend === KPI value (full history)', roiTie, roiFail);
+  check('fraudSaved: sum(daily) === KPI value (full history, ±$1 rounding)', fraudTie, fraudFail);
+}
+
 // ─── 9. S2: Suggested change comes from engine, not fabricated ─────────
 console.log('\n═══ 9. S2 SuggestedChange is engine-derived ═══');
 {
