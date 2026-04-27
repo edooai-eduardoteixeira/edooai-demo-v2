@@ -81,8 +81,8 @@ S1's job is *no behavior change*. Later stages replace specific entries.
 - **Time base**: period-windowed, ending at selected day
 - **Derivation**: `dayData.cumulativeSpend - days[startIdx-1].cumulativeSpend` where `startIdx = max(0, endIdx - dateRange + 1)` and `endIdx = selectedDay - 1`. If `startIdx == 0`, subtract 0.
 - **Engine source**: `days[i].cumulativeSpend`
-- **Edge cases**: Day 1 with 30d window → period collapses to 1 day; current behavior shows that 1-day spend. Status quo for S1; revisited in S4.
-- **Status**: S1 — preserve.
+- **Edge cases (S4 onward)**: Spent strip exposes `actualWindow` and `windowClipped`. When clipped (e.g., Day 1 with 30d range), the strip label shows "Spent (1d)" so the user sees the period is 1 day, not 30.
+- **Status**: S1 — preserve. ✅ **S4 — done.** Window clipping made visible.
 
 ### M1.4 Pacing
 
@@ -116,8 +116,8 @@ For each KPI in {`activeUsers`, `cac`, `roi`, `fraudSaved`}:
   - `roi`: period value / period spend (ratio, 1 decimal); 0 if spend == 0
   - `fraudSaved`: period spend × terminal-day fraud rate
 - **Engine source**: `days[i].dailyFunnel.activeUser`, `days[i].cumulativeSpend`, `days[i].cumulativeValue`, `days[lastIdx].kpiCumulative.fraudSaved`.
-- **Edge cases**: Period < dateRange because `selectedDay < dateRange`. Current behavior: returns smaller-window value. Status quo for S1; S4 either labels actual window or returns null.
-- **Status**: S1 — preserve. **S3** — pin time-base + ensure tie-out with hero chart. **S4** — handle period-window-shrink display honesty.
+- **Edge cases (S4 onward)**: `actualWindow = min(selectedDay, dateRange)` is exposed on every card. When `actualWindow < dateRange`, `windowClipped = true` and the UI surfaces "(Xd)" next to the KPI label so users see the truthful period size. The value itself is still a valid period sum/ratio over the available days — it's just transparent about how many days that is.
+- **Status**: S1 — preserve. ✅ **S3 — done** (time-base pinned, hero chart tie-out). ✅ **S4 — done** (window honesty exposed via actualWindow + windowClipped, surfaced in UI).
 
 ### M2.5–M2.8 KPI deltas
 
@@ -126,8 +126,8 @@ For each KPI, the delta vs prior period:
 - **Surfaces**: small ↑X% / ↓X% next to KPI card big number
 - **Time base**: period-windowed (current period vs preceding period of same length)
 - **Derivation**: `priorValue = getPeriodKPI(days, selectedDay - dateRange, dateRange, key)`; `deltaPct = ((value - priorValue) / priorValue) × 100`. Hidden when `selectedDay <= dateRange` (no prior period exists) or when `priorValue <= 0` or `deltaPct == 0`.
-- **Edge cases**: when prior window clips to fewer days than current (e.g., Day 8 with 7d range), the delta inflates. Current behavior: still shown.
-- **Status**: S1 — preserve. **S4** — return null when prior period < dateRange; UI shows "—".
+- **Edge cases (S4 onward)**: prior period must span a FULL unclipped `dateRange` window to qualify for a delta. Required: `selectedDay >= 2 * dateRange`. When the prior window would be clipped (e.g., Day 8 with 7d range), `deltaPct = null` and UI shows "—" instead of an inflated comparison.
+- **Status**: S1 — preserve. ✅ **S4 — done.** No more inflated deltas at low days.
 
 ### M2.9 Hero chart series — activeUsers
 
@@ -233,7 +233,8 @@ Today, `Reached > Referred` violates this on every day. Asserted in `verify-metr
 - **Derivation**: `propensityHealth.highEligible / medEligible / lowEligible` (each an array per day).
 - **Engine source**: `computePropensityHealth` in projectionEngine.js:1033, which uses hardcoded depletion coefficients (×2.2, ×0.85, ×0.35) and a replenish factor over the cumulative `funnelCumulative.contacted`.
 - **Note**: codex finding F. The whole *time series* is fabricated by the depletion math, not just the 30/45/25 starting split. Calling pools "decoration" is a partial fix; the time-series shape is also fake.
-- **Status**: S1 — preserve. **S6** — locked decoration: move whole series to `src/fixtures/audiencePools.js` (fixed-shape time series), or document that it's engine-generated decoration only.
+- **P17 (boundary cohorts)**: at the right edge of the engine's 30-day horizon, lifecycle bands carry boundary cohorts misleadingly (e.g., Day 1 cohort with 30-day offer expiration sits in "Engaged" right up to Day 30 with no transition into "Cooling Off"). Documented; structural fix arrives in S5 when engine extends to 90 days and offer expirations land within the visible UI horizon.
+- **Status**: S1 — preserve. **S5** — engine extension fixes the boundary cohort artifact. **S6** — locked decoration: move whole series to `src/fixtures/audiencePools.js` (fixed-shape time series), or document that it's engine-generated decoration only.
 
 ### M4.4 Conversion rate overlay
 

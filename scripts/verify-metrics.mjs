@@ -240,6 +240,62 @@ console.log('\n═══ 9.7 S3 Hero chart values ═══');
   check('FraudSaved hero chart: no NaN, no negatives every day', fraudSane);
 }
 
+// ─── 9.85 S4: Period-window honesty (P15, P16) ─────────────────────────
+// - deltaPct must be null when prior window can't span a full dateRange
+//   (i.e., when selectedDay < 2 * dateRange).
+// - actualWindow must be exposed and equal min(selectedDay, dateRange) on
+//   every period-windowed metric (KPI cards + campaignHealth.spent).
+// - windowClipped must reflect actualWindow < dateRange.
+console.log('\n═══ 9.85 S4 Period-window honesty ═══');
+{
+  let deltaNullingOk = true;
+  let actualWindowOk = true;
+  let clippedFlagOk = true;
+  let firstDeltaFail = '', firstWindowFail = '', firstClippedFail = '';
+
+  for (const range of [7, 30]) {
+    for (let day = 1; day <= 30; day++) {
+      const m = computeDashboardMetrics(projection, { selectedDay: day, dateRange: range });
+      const expectedActualWindow = Math.min(day, range);
+      const expectedClipped = expectedActualWindow < range;
+      const expectedHasDelta = day >= 2 * range;
+
+      // Each KPI card
+      for (const card of m.kpiCards) {
+        if (card.actualWindow !== expectedActualWindow) {
+          actualWindowOk = false;
+          firstWindowFail = `day=${day} range=${range} ${card.key}: actualWindow=${card.actualWindow}, expected=${expectedActualWindow}`;
+        }
+        if (card.windowClipped !== expectedClipped) {
+          clippedFlagOk = false;
+          firstClippedFail = `day=${day} range=${range} ${card.key}: clipped=${card.windowClipped}, expected=${expectedClipped}`;
+        }
+        if (!expectedHasDelta && card.deltaPct !== null) {
+          deltaNullingOk = false;
+          firstDeltaFail = `day=${day} range=${range} ${card.key}: deltaPct=${card.deltaPct}, expected null (prior would clip)`;
+        }
+      }
+
+      // Campaign health Spent strip
+      if (m.campaignHealth.actualWindow !== expectedActualWindow) {
+        actualWindowOk = false;
+        firstWindowFail = `day=${day} range=${range} health: actualWindow=${m.campaignHealth.actualWindow}, expected=${expectedActualWindow}`;
+      }
+      if (m.campaignHealth.windowClipped !== expectedClipped) {
+        clippedFlagOk = false;
+        firstClippedFail = `day=${day} range=${range} health: clipped=${m.campaignHealth.windowClipped}, expected=${expectedClipped}`;
+      }
+    }
+  }
+
+  check('deltaPct === null when selectedDay < 2*dateRange (prior would clip)',
+    deltaNullingOk, firstDeltaFail);
+  check('actualWindow === min(selectedDay, dateRange) on every cell',
+    actualWindowOk, firstWindowFail);
+  check('windowClipped flag matches actualWindow < dateRange',
+    clippedFlagOk, firstClippedFail);
+}
+
 // ─── 9.8 S3: KPI ↔ hero chart aggregation tie-out (P10, P11) ───────────
 // Daily values in the hero chart, when aggregated by their natural rule,
 // must equal the KPI card's period value when the period covers full history.

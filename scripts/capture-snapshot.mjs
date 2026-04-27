@@ -66,6 +66,8 @@ for (const selectedDay of DAY_STOPS) {
         deltaPct: c.deltaPct,
         showDelta: c.showDelta,
         isGood: c.isGood,
+        actualWindow: c.actualWindow,
+        windowClipped: c.windowClipped,
       })),
       funnel: metrics.funnel,
       audienceOverview: metrics.audienceOverview ? {

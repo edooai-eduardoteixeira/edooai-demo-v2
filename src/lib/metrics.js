@@ -55,12 +55,17 @@ export function computeCampaignHealth(projection, dayData, selectedDay, dateRang
   const startIdx = Math.max(0, endIdx - dateRange + 1);
   const startSpend = startIdx > 0 ? days[startIdx - 1].cumulativeSpend : 0;
   const periodSpend = Math.round(dayData.cumulativeSpend - startSpend);
+  // S4: actualWindow reflects truthful days covered (clipped at low days)
+  const actualWindow = Math.min(selectedDay, dateRange);
+  const windowClipped = actualWindow < dateRange;
 
   return {
     delivery: computeDeliveryState(projection, dayData, selectedDay),
     budget: projection.budget,
     periodSpend,
     monthlyPace,
+    actualWindow,
+    windowClipped,
   };
 }
 
@@ -126,19 +131,34 @@ export function computePeriodKPI(days, selectedDay, dateRange, key) {
   return 0;
 }
 
-/** @see METRIC_MODEL.md §M2.5–M2.8 */
+/**
+ * @see METRIC_MODEL.md §M2.5–M2.8
+ *
+ * S4: prior-period delta requires a FULL unclipped prior window.
+ * `selectedDay >= 2 * dateRange` ⇒ both current and prior period span the full
+ * `dateRange`. When prior would be clipped (e.g., Day 8 with 7d range → prior
+ * collapses to 1 day), deltaPct is null and the UI shows "—" instead of an
+ * inflated value.
+ *
+ * Also returns `actualWindow` — the real number of days the current period
+ * covers. UI surfaces this as "(showing Xd)" when actualWindow < dateRange.
+ */
 export function computeKpiDelta(days, selectedDay, dateRange, key, betterWhen) {
   const value = computePeriodKPI(days, selectedDay, dateRange, key);
-  const hasPriorPeriod = selectedDay > dateRange;
+  const actualWindow = Math.min(selectedDay, dateRange);
+
+  const hasPriorPeriod = selectedDay >= 2 * dateRange;
   const priorValue = hasPriorPeriod
     ? computePeriodKPI(days, selectedDay - dateRange, dateRange, key)
-    : 0;
+    : null;
   const hasDelta = hasPriorPeriod && priorValue > 0 && value > 0;
-  const deltaPct = hasDelta ? Math.round(((value - priorValue) / priorValue) * 100) : 0;
-  const isPositive = deltaPct > 0;
+  const deltaPct = hasDelta ? Math.round(((value - priorValue) / priorValue) * 100) : null;
+  const isPositive = deltaPct != null && deltaPct > 0;
   const isGood = betterWhen === 'up' ? isPositive : !isPositive;
-  const showDelta = hasDelta && deltaPct !== 0;
-  return { value, deltaPct, isPositive, isGood, showDelta };
+  const showDelta = hasDelta && deltaPct !== 0 && deltaPct != null;
+  const windowClipped = actualWindow < dateRange;
+
+  return { value, deltaPct, isPositive, isGood, showDelta, actualWindow, windowClipped };
 }
 
 /** @see METRIC_MODEL.md §M2.9–M2.13 */
