@@ -229,6 +229,28 @@ console.log('\n═══ 9.6 S3 KPI/funnel tie-out (period covers full history) 
     allTied, firstFail);
 }
 
+// ─── 9.65 S6: Static-Rules ROAS line plumbed from engine ──────────────
+// staticSlice for ROI must come from projection.staticBaseline.days, not
+// from agenticSlice × 0.7 (the prior placeholder). Verifies the line
+// represents real engine staticMode output (efficiency locked at effFloor).
+console.log('\n═══ 9.65 S6 Static-Rules ROAS plumbing ═══');
+{
+  const heroRoi = computeHeroChartForKPI(projection, 'roi', 30);
+  check('staticSlice exists for ROI hero chart', heroRoi.staticSlice !== null);
+  check('staticSlice has same length as agentic slice',
+    heroRoi.staticSlice.length === heroRoi.slice.length);
+  // Static is NOT just agentic × 0.7 (placeholder formula).
+  // Tolerance: allow up to 2 days where static happens to land near 0.7×
+  // (e.g. early days where both are 0).
+  const close = heroRoi.slice.reduce((cnt, v, i) => {
+    const expected = Math.round(v * 0.7 * 10) / 10;
+    return cnt + (heroRoi.staticSlice[i] === expected ? 1 : 0);
+  }, 0);
+  check('staticSlice differs structurally from agentic × 0.7',
+    close < heroRoi.slice.length - 2,
+    `${close}/${heroRoi.slice.length} days matched the placeholder formula`);
+}
+
 // ─── 9.7 S3: Hero chart values sane (no NaN, ROI/fraud non-negative) ───
 console.log('\n═══ 9.7 S3 Hero chart values ═══');
 {

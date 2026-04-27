@@ -164,10 +164,11 @@ For each KPI, the delta vs prior period:
 ### M2.12 Hero chart static baseline (ROAS only)
 
 - **Surfaces**: dashed gray line labeled "Static Rules"
-- **Time base**: daily (matches whatever the agentic series is showing)
-- **Derivation**: `agenticSlice.map(v => Math.round(v * 0.7 * 10) / 10)` — placeholder × 0.7
-- **Engine source**: ⚠ engine ALREADY computes `projection.staticBaseline` via `runSimulation({ staticMode: true })`, but the chart ignores it.
-- **Status**: S1 — preserve placeholder. **S6** — use real `projection.staticBaseline` data.
+- **Time base**: daily (matches the agentic series — daily ROAS = day's value / day's reward cost)
+- **Derivation (S6 onward)**: same daily ROAS formula applied to `projection.staticBaseline.days[]`. The engine's staticMode locks `efficiency = effFloor` (no learning) and `effectiveRevenuePerUser = baseRevenuePerUser` (no premium-customer discovery). Everything else is identical to the agentic run.
+- **What the line represents**: the same operation Vincor would run, but with a static rules-based system that never improves its targeting or finds high-LTV customers. Counterfactual to agentic learning.
+- **Status**: S1 — preserve placeholder × 0.7. ✅ **S6 — done.** Real engine staticMode plumbed through.
+- **Note (under review)**: the static-mode rule (efficiency floor + base revenue) is the engine's existing definition. Tweaking what "static rules" means (e.g., locking other params, using a different baseline) is its own design decision, deferred.
 
 ### M2.13 Y-axis label values
 

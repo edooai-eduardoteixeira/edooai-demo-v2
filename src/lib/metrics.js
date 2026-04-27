@@ -233,11 +233,22 @@ export function computeHeroChart(projection, selectedKPI, currentDay) {
   }
   const maxVal = Math.max(...slice, 0);
 
-  // M2.12 ROAS: dashed static baseline at 70% of agentic (PLACEHOLDER, S6 fixes)
+  // M2.12 ROAS: dashed static baseline = engine's staticMode daily ROAS.
+  // Same formula as agentic (day's value / day's reward cost), applied to
+  // the static-mode simulation result (efficiency locked at effFloor, revenue
+  // per user locked at baseRevenuePerUser — i.e., no agent learning).
   const isROAS = selectedKPI === 'roi';
-  const staticSlice = isROAS
-    ? slice.map(v => Math.round(v * 0.7 * 10) / 10)
-    : null;
+  let staticSlice = null;
+  if (isROAS && projection.staticBaseline?.days) {
+    const sd = projection.staticBaseline.days;
+    staticSlice = sd.slice(0, currentDay).map((d, i) => {
+      const prevReward = i > 0 ? sd[i - 1].cumulativeRewardCost : 0;
+      const prevValue = i > 0 ? sd[i - 1].cumulativeValue : 0;
+      const dayReward = d.cumulativeRewardCost - prevReward;
+      const dayValue = d.cumulativeValue - prevValue;
+      return dayReward > 0 ? Math.round((dayValue / dayReward) * 10) / 10 : 0;
+    });
+  }
 
   return {
     kind: 'line',
