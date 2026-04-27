@@ -81,8 +81,8 @@ S1's job is *no behavior change*. Later stages replace specific entries.
 - **Time base**: period-windowed, ending at selected day
 - **Derivation**: `dayData.cumulativeSpend - days[startIdx-1].cumulativeSpend` where `startIdx = max(0, endIdx - dateRange + 1)` and `endIdx = selectedDay - 1`. If `startIdx == 0`, subtract 0.
 - **Engine source**: `days[i].cumulativeSpend`
-- **Edge cases (S4 onward)**: Spent strip exposes `actualWindow` and `windowClipped`. When clipped (e.g., Day 1 with 30d range), the strip label shows "Spent (1d)" so the user sees the period is 1 day, not 30.
-- **Status**: S1 — preserve. ✅ **S4 — done.** Window clipping made visible.
+- **Edge cases**: When `selectedDay < dateRange`, period collapses to available days. Spent reflects actual days covered. No UI badge needed — the daily chart visually shows the data extent.
+- **Status**: S1 — preserve.
 
 ### M1.4 Pacing
 
@@ -116,8 +116,13 @@ For each KPI in {`activeUsers`, `cac`, `roi`, `fraudSaved`}:
   - `roi`: period value / period spend (ratio, 1 decimal); 0 if spend == 0
   - `fraudSaved`: period spend × terminal-day fraud rate
 - **Engine source**: `days[i].dailyFunnel.activeUser`, `days[i].cumulativeSpend`, `days[i].cumulativeValue`, `days[lastIdx].kpiCumulative.fraudSaved`.
-- **Edge cases (S4 onward)**: `actualWindow = min(selectedDay, dateRange)` is exposed on every card. When `actualWindow < dateRange`, `windowClipped = true` and the UI surfaces "(Xd)" next to the KPI label so users see the truthful period size. The value itself is still a valid period sum/ratio over the available days — it's just transparent about how many days that is.
-- **Status**: S1 — preserve. ✅ **S3 — done** (time-base pinned, hero chart tie-out). ✅ **S4 — done** (window honesty exposed via actualWindow + windowClipped, surfaced in UI).
+- **Period KPI formulas (S4 post-QA)** — aligned with chart's daily values for clean tie-out:
+  - **activeUsers** = Σ daily activeUser over period (additive)
+  - **CAC** = Σ daily reward cost / Σ daily users (weighted ratio, uses `cumulativeRewardCost`, not `cumulativeSpend`; matches engine's notion of CAC at projectionEngine.js line 304)
+  - **ROAS** = Σ daily value / Σ daily spend (weighted ratio)
+  - **fraudSaved** = Σ daily fraudSaved increments (additive)
+- **Edge cases**: When `selectedDay < dateRange`, the period naturally collapses to whatever days exist. The value is still a valid period sum/ratio. No UI badge — the daily chart already shows the data extent.
+- **Status**: S1 — preserve. ✅ **S3 — done** (time-base pinned, hero chart tie-out at full history). ✅ **S4 — done** (period formulas aligned with chart; tie-outs verified at any window).
 
 ### M2.5–M2.8 KPI deltas
 
@@ -126,8 +131,8 @@ For each KPI, the delta vs prior period:
 - **Surfaces**: small ↑X% / ↓X% next to KPI card big number
 - **Time base**: period-windowed (current period vs preceding period of same length)
 - **Derivation**: `priorValue = getPeriodKPI(days, selectedDay - dateRange, dateRange, key)`; `deltaPct = ((value - priorValue) / priorValue) × 100`. Hidden when `selectedDay <= dateRange` (no prior period exists) or when `priorValue <= 0` or `deltaPct == 0`.
-- **Edge cases (S4 onward)**: prior period must span a FULL unclipped `dateRange` window to qualify for a delta. Required: `selectedDay >= 2 * dateRange`. When the prior window would be clipped (e.g., Day 8 with 7d range), `deltaPct = null` and UI shows "—" instead of an inflated comparison.
-- **Status**: S1 — preserve. ✅ **S4 — done.** No more inflated deltas at low days.
+- **Delta rule (S4 post-QA, GA-style)**: Show delta whenever a prior period with positive value exists. Compute against whatever prior data is available (clipped or not) — matches Google Analytics "Compare to previous period" behavior. Show 0% as 0% (don't hide). Return null only when there is literally no prior period (`selectedDay <= dateRange`) or `priorValue == 0`.
+- **Status**: S1 — preserve. ✅ **S4 — done.** Always-visible delta with honest values; consistent UX across ranges.
 
 ### M2.9 Hero chart series — activeUsers
 
@@ -142,9 +147,8 @@ For each KPI, the delta vs prior period:
 - **Surfaces**: stacked bars per day, segments [referrer, referee]
 - **Time base**: daily generation-time (cost incurred when offer is paid out)
 - **Derivation**: `days.slice(0, currentDay).map(d => [d.dailyReferrerCost, d.dailyRefereeCost])`
-- **Pinned definition (S3)**: this chart shows the **daily reward cost breakdown** ($ per day, referrer + referee). The KPI card above shows **average cost per acquisition** ($ per resolved active user, period-windowed). Both are legitimate views — the units intentionally differ, the label "CAC" applies to the period-windowed ratio, and the chart's stacked-bar legend ("Referrer", "Referee") communicates that the chart is a cost decomposition, not a per-user ratio.
-- The two reconcile by construction: cumulative reward cost (sum of daily breakdown) divided by cumulative active users equals period CAC when period covers full history.
-- **Status**: S1 — preserve. ✅ **S3 — pinned.** Front-end unchanged (stacked bar retained). Documented as "cost breakdown" view; no unit confusion to fix.
+- **S4 post-QA**: CAC chart is now a daily CAC line — `daily reward cost / daily resolved users` per day — matching the units of the KPI card. The stacked bar (referrer + referee cost decomposition) was retired; the chart and KPI card now represent the same metric and tie out: weighted-by-users average of daily CACs equals period CAC.
+- **Status**: S1 — preserve. ✅ **S4 — line chart of daily CAC ratio.** Same chart kind as activeUsers/ROAS/fraudSaved; user can sum/average bars and the math reconciles with the KPI card.
 
 ### M2.11 Hero chart series — ROI / fraudSaved (line)
 

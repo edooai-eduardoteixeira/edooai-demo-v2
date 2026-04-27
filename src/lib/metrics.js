@@ -55,17 +55,11 @@ export function computeCampaignHealth(projection, dayData, selectedDay, dateRang
   const startIdx = Math.max(0, endIdx - dateRange + 1);
   const startSpend = startIdx > 0 ? days[startIdx - 1].cumulativeSpend : 0;
   const periodSpend = Math.round(dayData.cumulativeSpend - startSpend);
-  // S4: actualWindow reflects truthful days covered (clipped at low days)
-  const actualWindow = Math.min(selectedDay, dateRange);
-  const windowClipped = actualWindow < dateRange;
-
   return {
     delivery: computeDeliveryState(projection, dayData, selectedDay),
     budget: projection.budget,
     periodSpend,
     monthlyPace,
-    actualWindow,
-    windowClipped,
   };
 }
 
@@ -85,48 +79,55 @@ export function computeSuggestedChange(projection, selectedDay) {
 
 // ─── Region 2: Block 1 Left — KPI selector + hero chart ─────────────────
 
-/** @see METRIC_MODEL.md §M2.1–M2.4 — preserves current getPeriodKPI */
+/**
+ * @see METRIC_MODEL.md §M2.1–M2.4
+ *
+ * Period KPI formulas — aligned with the chart's daily values so the chart
+ * and KPI card represent the same metric and tie out under their natural
+ * aggregation rule.
+ *
+ *   activeUsers (sum):       Σ daily activeUser
+ *   CAC (weighted ratio):    Σ daily reward cost / Σ daily users
+ *   ROAS (weighted ratio):   Σ daily value / Σ daily spend
+ *   fraudSaved (sum):        Σ daily fraudSaved increment
+ *
+ * Note on CAC: uses `cumulativeRewardCost` (actual rewards paid out on
+ * resolved conversions), matching the engine's notion of CAC at line 304
+ * of projectionEngine.js. This is the real cost-per-acquisition; budget/30
+ * was an allocation cap, not actual cost.
+ */
 export function computePeriodKPI(days, selectedDay, dateRange, key) {
   const endIdx = selectedDay - 1;
   const startIdx = Math.max(0, endIdx - dateRange + 1);
   const periodDays = days.slice(startIdx, endIdx + 1);
+
+  // Helper: sum daily increments of a cumulative engine field over the period.
+  const sumDailyIncrements = (field) => periodDays.reduce((sum, d, i) => {
+    const dayIdx = startIdx + i;
+    const prev = dayIdx > 0 ? days[dayIdx - 1][field] : 0;
+    return sum + (d[field] - prev);
+  }, 0);
+  const sumDailyKpiIncrements = (key) => periodDays.reduce((sum, d, i) => {
+    const dayIdx = startIdx + i;
+    const prev = dayIdx > 0 ? days[dayIdx - 1].kpiCumulative[key] : 0;
+    return sum + (d.kpiCumulative[key] - prev);
+  }, 0);
 
   if (key === 'activeUsers') {
     return periodDays.reduce((sum, d) => sum + (d.dailyFunnel?.activeUser || 0), 0);
   }
   if (key === 'cac') {
     const users = periodDays.reduce((sum, d) => sum + (d.dailyFunnel?.activeUser || 0), 0);
-    const spend = periodDays.reduce((sum, d, i) => {
-      const dayIdx = startIdx + i;
-      const prevSpend = dayIdx > 0 ? days[dayIdx - 1].cumulativeSpend : 0;
-      return sum + (d.cumulativeSpend - prevSpend);
-    }, 0);
-    return users > 0 ? Math.round(spend / users) : 0;
+    const rewardCost = sumDailyIncrements('cumulativeRewardCost');
+    return users > 0 ? Math.round(rewardCost / users) : 0;
   }
   if (key === 'roi') {
-    const spend = periodDays.reduce((sum, d, i) => {
-      const dayIdx = startIdx + i;
-      const prevSpend = dayIdx > 0 ? days[dayIdx - 1].cumulativeSpend : 0;
-      return sum + (d.cumulativeSpend - prevSpend);
-    }, 0);
-    const value = periodDays.reduce((sum, d, i) => {
-      const dayIdx = startIdx + i;
-      const prevVal = dayIdx > 0 ? days[dayIdx - 1].cumulativeValue : 0;
-      return sum + (d.cumulativeValue - prevVal);
-    }, 0);
+    const spend = sumDailyIncrements('cumulativeSpend');
+    const value = sumDailyIncrements('cumulativeValue');
     return spend > 0 ? Math.round((value / spend) * 10) / 10 : 0;
   }
   if (key === 'fraudSaved') {
-    const spend = periodDays.reduce((sum, d, i) => {
-      const dayIdx = startIdx + i;
-      const prevSpend = dayIdx > 0 ? days[dayIdx - 1].cumulativeSpend : 0;
-      return sum + (d.cumulativeSpend - prevSpend);
-    }, 0);
-    const lastDay = periodDays[periodDays.length - 1];
-    const fraudRate = lastDay && lastDay.cumulativeSpend > 0
-      ? lastDay.kpiCumulative.fraudSaved / lastDay.cumulativeSpend
-      : 0;
-    return Math.round(spend * fraudRate);
+    return Math.max(0, sumDailyKpiIncrements('fraudSaved'));
   }
   return 0;
 }
@@ -134,54 +135,75 @@ export function computePeriodKPI(days, selectedDay, dateRange, key) {
 /**
  * @see METRIC_MODEL.md §M2.5–M2.8
  *
- * S4: prior-period delta requires a FULL unclipped prior window.
- * `selectedDay >= 2 * dateRange` ⇒ both current and prior period span the full
- * `dateRange`. When prior would be clipped (e.g., Day 8 with 7d range → prior
- * collapses to 1 day), deltaPct is null and the UI shows "—" instead of an
- * inflated value.
+ * GA-style delta rule (S4 revision):
+ * Show delta whenever there is ANY prior-period data — even if the prior
+ * window is shorter than the current one (clipped at the start of history).
+ * Show 0% as 0% (don't hide). Only return null when there is literally no
+ * prior period (selectedDay <= dateRange ⇒ current period covers all data).
  *
- * Also returns `actualWindow` — the real number of days the current period
- * covers. UI surfaces this as "(showing Xd)" when actualWindow < dateRange.
+ * Rationale: matches Google Analytics "Compare to previous period" behavior.
+ * Users expect a comparison whenever data exists; hiding it inconsistently
+ * (no delta on 30d view, ever) feels like the feature is broken.
  */
 export function computeKpiDelta(days, selectedDay, dateRange, key, betterWhen) {
   const value = computePeriodKPI(days, selectedDay, dateRange, key);
-  const actualWindow = Math.min(selectedDay, dateRange);
 
-  const hasPriorPeriod = selectedDay >= 2 * dateRange;
-  const priorValue = hasPriorPeriod
-    ? computePeriodKPI(days, selectedDay - dateRange, dateRange, key)
+  // Prior period starts one dateRange earlier and spans dateRange days.
+  // computePeriodKPI clips startIdx to 0, so a partial prior window is fine.
+  const priorEndDay = selectedDay - dateRange;
+  const hasAnyPriorData = priorEndDay >= 1;
+  const priorValue = hasAnyPriorData
+    ? computePeriodKPI(days, priorEndDay, dateRange, key)
     : null;
-  const hasDelta = hasPriorPeriod && priorValue > 0 && value > 0;
-  const deltaPct = hasDelta ? Math.round(((value - priorValue) / priorValue) * 100) : null;
-  const isPositive = deltaPct != null && deltaPct > 0;
-  const isGood = betterWhen === 'up' ? isPositive : !isPositive;
-  const showDelta = hasDelta && deltaPct !== 0 && deltaPct != null;
-  const windowClipped = actualWindow < dateRange;
 
-  return { value, deltaPct, isPositive, isGood, showDelta, actualWindow, windowClipped };
+  // Compute delta whenever priorValue is meaningful (> 0).
+  // For ratio metrics that round to 0 in early days, treat 0 as "no comparable
+  // value" and hide; otherwise compute even at 0% and show "0%" honestly.
+  const hasMeaningfulPrior = priorValue != null && priorValue > 0;
+  const deltaPct = hasMeaningfulPrior
+    ? Math.round(((value - priorValue) / priorValue) * 100)
+    : null;
+  const isPositive = deltaPct != null && deltaPct > 0;
+  // isGood is null when the delta is 0% — neither good nor bad, render neutrally.
+  const isGood = deltaPct === 0 ? null : (betterWhen === 'up' ? isPositive : !isPositive);
+  const showDelta = deltaPct != null;
+
+  return { value, deltaPct, isPositive, isGood, showDelta };
 }
 
-/** @see METRIC_MODEL.md §M2.9–M2.13 */
+/**
+ * @see METRIC_MODEL.md §M2.9–M2.13
+ *
+ * S4 (post-QA): all 4 KPIs render as line charts. Each chart's daily values
+ * aggregate to the KPI card via that metric's natural rule:
+ *
+ *   activeUsers → sum
+ *   fraudSaved  → sum
+ *   CAC         → weighted by daily users (daily reward cost ÷ daily users)
+ *   ROAS        → weighted by daily spend  (daily value ÷ daily spend)
+ *
+ * The CAC stacked-bar (referrer + referee cost breakdown) was removed in
+ * favour of a daily-CAC line so chart and KPI card represent the same
+ * metric. The breakdown can return as a separate widget if needed.
+ */
 export function computeHeroChart(projection, selectedKPI, currentDay) {
   const days = projection.days;
 
-  // M2.10 CAC: stacked bar [referrer, referee] cost per day
-  if (selectedKPI === 'cac') {
-    const cacData = days.slice(0, currentDay).map(d => ({
-      values: [d.dailyReferrerCost, d.dailyRefereeCost],
-    }));
-    const maxVal = Math.max(...cacData.map(d => d.values[0] + d.values[1]), 0);
-    return { kind: 'stacked', cacData, maxVal };
-  }
-
-  // M2.9 / M2.11: line chart — daily values per KPI
   let slice;
   if (selectedKPI === 'activeUsers') {
     // Daily new active users (resolution-time)
     slice = projection.dailyCurve.slice(0, currentDay);
+  } else if (selectedKPI === 'cac') {
+    // Daily CAC = day's reward cost / day's resolved active users.
+    // 0 on days with no resolutions (line dips, signaling volatility honestly).
+    slice = days.slice(0, currentDay).map((d, i) => {
+      const prevReward = i > 0 ? days[i - 1].cumulativeRewardCost : 0;
+      const dayReward = d.cumulativeRewardCost - prevReward;
+      const dayUsers = d.dailyFunnel?.activeUser || 0;
+      return dayUsers > 0 ? Math.round(dayReward / dayUsers) : 0;
+    });
   } else if (selectedKPI === 'roi') {
-    // S3 fix: daily ROI = day's value generated / day's spend.
-    // Replaces the meaningless cumulative-ratio diff used in S1.
+    // Daily ROI = day's value generated / day's spend.
     slice = days.slice(0, currentDay).map((d, i) => {
       const prevSpend = i > 0 ? days[i - 1].cumulativeSpend : 0;
       const prevValue = i > 0 ? days[i - 1].cumulativeValue : 0;
@@ -190,15 +212,12 @@ export function computeHeroChart(projection, selectedKPI, currentDay) {
       return daySpend > 0 ? Math.round((dayValue / daySpend) * 10) / 10 : 0;
     });
   } else if (selectedKPI === 'fraudSaved') {
-    // S3 fix: daily fraud saved = day's spend × cumulative fraud rate.
-    // Engine's kpiCumulative.fraudSaved is `cumSpend × fraudRate`, so daily
-    // increment is straightforward.
+    // Daily fraudSaved = day's increment of cumulative fraudSaved.
     slice = days.slice(0, currentDay).map((d, i) => {
       const prevFraud = i > 0 ? days[i - 1].kpiCumulative.fraudSaved : 0;
       return Math.max(0, d.kpiCumulative.fraudSaved - prevFraud);
     });
   } else {
-    // Defensive fallback for any future KPI key — same daily-diff pattern.
     slice = days.slice(0, currentDay).map((d, i) => {
       if (i === 0) return d.kpiCumulative[selectedKPI];
       return Math.max(0, d.kpiCumulative[selectedKPI] - days[i - 1].kpiCumulative[selectedKPI]);
@@ -206,7 +225,7 @@ export function computeHeroChart(projection, selectedKPI, currentDay) {
   }
   const maxVal = Math.max(...slice, 0);
 
-  // M2.12 ROAS: dashed static baseline at 70% of agentic (PLACEHOLDER, S1 preserves)
+  // M2.12 ROAS: dashed static baseline at 70% of agentic (PLACEHOLDER, S6 fixes)
   const isROAS = selectedKPI === 'roi';
   const staticSlice = isROAS
     ? slice.map(v => Math.round(v * 0.7 * 10) / 10)

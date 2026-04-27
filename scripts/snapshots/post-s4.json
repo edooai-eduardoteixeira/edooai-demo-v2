@@ -54,15 +54,13 @@
         ]
       },
       "campaignHealth": {
-        "actualWindow": 10,
         "budget": 150000,
         "delivery": {
           "active": true,
           "label": "Acquiring Customers"
         },
         "monthlyPace": 150000,
-        "periodSpend": 50000,
-        "windowClipped": true
+        "periodSpend": 50000
       },
       "campaignList": [
         {
@@ -206,44 +204,36 @@
       ],
       "kpiCards": [
         {
-          "actualWindow": 10,
           "deltaPct": null,
           "isGood": false,
           "key": "activeUsers",
           "label": "New Active Users",
           "showDelta": false,
-          "value": 197,
-          "windowClipped": true
+          "value": 197
         },
         {
-          "actualWindow": 10,
           "deltaPct": null,
           "isGood": true,
           "key": "cac",
           "label": "CAC",
           "showDelta": false,
-          "value": 254,
-          "windowClipped": true
+          "value": 81
         },
         {
-          "actualWindow": 10,
           "deltaPct": null,
           "isGood": false,
           "key": "roi",
           "label": "ROAS",
           "showDelta": false,
-          "value": 0.6,
-          "windowClipped": true
+          "value": 0.6
         },
         {
-          "actualWindow": 10,
           "deltaPct": null,
           "isGood": false,
           "key": "fraudSaved",
           "label": "Fraud Saved",
           "showDelta": false,
-          "value": 3500,
-          "windowClipped": true
+          "value": 3500
         }
       ],
       "suggestedChange": null
@@ -268,70 +258,23 @@
       "staticSlice": null
     },
     "day=10|range=30|kpi=cac": {
-      "cacData": [
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        }
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 88,
+      "slice": [
+        0,
+        88,
+        81,
+        80,
+        83,
+        81,
+        81,
+        80,
+        81,
+        80
       ],
-      "kind": "stacked",
-      "maxVal": 82
+      "staticSlice": null
     },
     "day=10|range=30|kpi=fraudSaved": {
       "hasData": true,
@@ -436,15 +379,13 @@
         ]
       },
       "campaignHealth": {
-        "actualWindow": 7,
         "budget": 150000,
         "delivery": {
           "active": true,
           "label": "Acquiring Customers"
         },
         "monthlyPace": 150000,
-        "periodSpend": 35000,
-        "windowClipped": false
+        "periodSpend": 35000
       },
       "campaignList": [
         {
@@ -588,44 +529,36 @@
       ],
       "kpiCards": [
         {
-          "actualWindow": 7,
-          "deltaPct": null,
-          "isGood": false,
+          "deltaPct": 1315,
+          "isGood": true,
           "key": "activeUsers",
           "label": "New Active Users",
-          "showDelta": false,
-          "value": 184,
-          "windowClipped": false
+          "showDelta": true,
+          "value": 184
         },
         {
-          "actualWindow": 7,
-          "deltaPct": null,
+          "deltaPct": -2,
           "isGood": true,
           "key": "cac",
           "label": "CAC",
-          "showDelta": false,
-          "value": 190,
-          "windowClipped": false
+          "showDelta": true,
+          "value": 81
         },
         {
-          "actualWindow": 7,
-          "deltaPct": null,
-          "isGood": false,
+          "deltaPct": 700,
+          "isGood": true,
           "key": "roi",
           "label": "ROAS",
-          "showDelta": false,
-          "value": 0.8,
-          "windowClipped": false
+          "showDelta": true,
+          "value": 0.8
         },
         {
-          "actualWindow": 7,
-          "deltaPct": null,
-          "isGood": false,
+          "deltaPct": 133,
+          "isGood": true,
           "key": "fraudSaved",
           "label": "Fraud Saved",
-          "showDelta": false,
-          "value": 2450,
-          "windowClipped": false
+          "showDelta": true,
+          "value": 2450
         }
       ],
       "suggestedChange": null
@@ -650,70 +583,23 @@
       "staticSlice": null
     },
     "day=10|range=7|kpi=cac": {
-      "cacData": [
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        }
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 88,
+      "slice": [
+        0,
+        88,
+        81,
+        80,
+        83,
+        81,
+        81,
+        80,
+        81,
+        80
       ],
-      "kind": "stacked",
-      "maxVal": 82
+      "staticSlice": null
     },
     "day=10|range=7|kpi=fraudSaved": {
       "hasData": true,
@@ -782,15 +668,13 @@
         ]
       },
       "campaignHealth": {
-        "actualWindow": 1,
         "budget": 150000,
         "delivery": {
           "active": false,
           "label": "Learning"
         },
         "monthlyPace": 150000,
-        "periodSpend": 5000,
-        "windowClipped": true
+        "periodSpend": 5000
       },
       "campaignList": [
         {
@@ -871,44 +755,36 @@
       ],
       "kpiCards": [
         {
-          "actualWindow": 1,
           "deltaPct": null,
           "isGood": false,
           "key": "activeUsers",
           "label": "New Active Users",
           "showDelta": false,
-          "value": 0,
-          "windowClipped": true
+          "value": 0
         },
         {
-          "actualWindow": 1,
           "deltaPct": null,
           "isGood": true,
           "key": "cac",
           "label": "CAC",
           "showDelta": false,
-          "value": 0,
-          "windowClipped": true
+          "value": 0
         },
         {
-          "actualWindow": 1,
           "deltaPct": null,
           "isGood": false,
           "key": "roi",
           "label": "ROAS",
           "showDelta": false,
-          "value": 0,
-          "windowClipped": true
+          "value": 0
         },
         {
-          "actualWindow": 1,
           "deltaPct": null,
           "isGood": false,
           "key": "fraudSaved",
           "label": "Fraud Saved",
           "showDelta": false,
-          "value": 350,
-          "windowClipped": true
+          "value": 350
         }
       ],
       "suggestedChange": null
@@ -924,16 +800,14 @@
       "staticSlice": null
     },
     "day=1|range=30|kpi=cac": {
-      "cacData": [
-        {
-          "values": [
-            50,
-            32
-          ]
-        }
+      "hasData": false,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 0,
+      "slice": [
+        0
       ],
-      "kind": "stacked",
-      "maxVal": 82
+      "staticSlice": null
     },
     "day=1|range=30|kpi=fraudSaved": {
       "hasData": true,
@@ -975,15 +849,13 @@
         ]
       },
       "campaignHealth": {
-        "actualWindow": 1,
         "budget": 150000,
         "delivery": {
           "active": false,
           "label": "Learning"
         },
         "monthlyPace": 150000,
-        "periodSpend": 5000,
-        "windowClipped": true
+        "periodSpend": 5000
       },
       "campaignList": [
         {
@@ -1064,44 +936,36 @@
       ],
       "kpiCards": [
         {
-          "actualWindow": 1,
           "deltaPct": null,
           "isGood": false,
           "key": "activeUsers",
           "label": "New Active Users",
           "showDelta": false,
-          "value": 0,
-          "windowClipped": true
+          "value": 0
         },
         {
-          "actualWindow": 1,
           "deltaPct": null,
           "isGood": true,
           "key": "cac",
           "label": "CAC",
           "showDelta": false,
-          "value": 0,
-          "windowClipped": true
+          "value": 0
         },
         {
-          "actualWindow": 1,
           "deltaPct": null,
           "isGood": false,
           "key": "roi",
           "label": "ROAS",
           "showDelta": false,
-          "value": 0,
-          "windowClipped": true
+          "value": 0
         },
         {
-          "actualWindow": 1,
           "deltaPct": null,
           "isGood": false,
           "key": "fraudSaved",
           "label": "Fraud Saved",
           "showDelta": false,
-          "value": 350,
-          "windowClipped": true
+          "value": 350
         }
       ],
       "suggestedChange": null
@@ -1117,16 +981,14 @@
       "staticSlice": null
     },
     "day=1|range=7|kpi=cac": {
-      "cacData": [
-        {
-          "values": [
-            50,
-            32
-          ]
-        }
+      "hasData": false,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 0,
+      "slice": [
+        0
       ],
-      "kind": "stacked",
-      "maxVal": 82
+      "staticSlice": null
     },
     "day=1|range=7|kpi=fraudSaved": {
       "hasData": true,
@@ -1284,15 +1146,13 @@
         ]
       },
       "campaignHealth": {
-        "actualWindow": 30,
         "budget": 150000,
         "delivery": {
           "active": true,
           "label": "Acquiring Customers"
         },
         "monthlyPace": 150000,
-        "periodSpend": 150000,
-        "windowClipped": false
+        "periodSpend": 150000
       },
       "campaignList": [
         {
@@ -1594,44 +1454,36 @@
       ],
       "kpiCards": [
         {
-          "actualWindow": 30,
           "deltaPct": null,
           "isGood": false,
           "key": "activeUsers",
           "label": "New Active Users",
           "showDelta": false,
-          "value": 1363,
-          "windowClipped": false
+          "value": 1363
         },
         {
-          "actualWindow": 30,
           "deltaPct": null,
           "isGood": true,
           "key": "cac",
           "label": "CAC",
           "showDelta": false,
-          "value": 110,
-          "windowClipped": false
+          "value": 79
         },
         {
-          "actualWindow": 30,
           "deltaPct": null,
           "isGood": false,
           "key": "roi",
           "label": "ROAS",
           "showDelta": false,
-          "value": 1.7,
-          "windowClipped": false
+          "value": 1.7
         },
         {
-          "actualWindow": 30,
           "deltaPct": null,
           "isGood": false,
           "key": "fraudSaved",
           "label": "Fraud Saved",
           "showDelta": false,
-          "value": 10500,
-          "windowClipped": false
+          "value": 10500
         }
       ],
       "suggestedChange": null
@@ -1676,190 +1528,43 @@
       "staticSlice": null
     },
     "day=30|range=30|kpi=cac": {
-      "cacData": [
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            48,
-            31
-          ]
-        },
-        {
-          "values": [
-            48,
-            31
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        }
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 88,
+      "slice": [
+        0,
+        88,
+        81,
+        80,
+        83,
+        81,
+        81,
+        80,
+        81,
+        80,
+        81,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        79,
+        79,
+        79,
+        79,
+        78,
+        79,
+        79,
+        78,
+        79,
+        78,
+        78,
+        78
       ],
-      "kind": "stacked",
-      "maxVal": 82
+      "staticSlice": null
     },
     "day=30|range=30|kpi=fraudSaved": {
       "hasData": true,
@@ -2104,15 +1809,13 @@
         ]
       },
       "campaignHealth": {
-        "actualWindow": 7,
         "budget": 150000,
         "delivery": {
           "active": true,
           "label": "Acquiring Customers"
         },
         "monthlyPace": 150000,
-        "periodSpend": 35000,
-        "windowClipped": false
+        "periodSpend": 35000
       },
       "campaignList": [
         {
@@ -2414,44 +2117,36 @@
       ],
       "kpiCards": [
         {
-          "actualWindow": 7,
           "deltaPct": 21,
           "isGood": true,
           "key": "activeUsers",
           "label": "New Active Users",
           "showDelta": true,
-          "value": 491,
-          "windowClipped": false
+          "value": 491
         },
         {
-          "actualWindow": 7,
-          "deltaPct": -17,
+          "deltaPct": -1,
           "isGood": true,
           "key": "cac",
           "label": "CAC",
           "showDelta": true,
-          "value": 71,
-          "windowClipped": false
+          "value": 78
         },
         {
-          "actualWindow": 7,
           "deltaPct": 36,
           "isGood": true,
           "key": "roi",
           "label": "ROAS",
           "showDelta": true,
-          "value": 3,
-          "windowClipped": false
+          "value": 3
         },
         {
-          "actualWindow": 7,
           "deltaPct": 0,
-          "isGood": false,
+          "isGood": null,
           "key": "fraudSaved",
           "label": "Fraud Saved",
-          "showDelta": false,
-          "value": 2450,
-          "windowClipped": false
+          "showDelta": true,
+          "value": 2450
         }
       ],
       "suggestedChange": null
@@ -2496,190 +2191,43 @@
       "staticSlice": null
     },
     "day=30|range=7|kpi=cac": {
-      "cacData": [
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            48,
-            31
-          ]
-        },
-        {
-          "values": [
-            48,
-            31
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        }
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 88,
+      "slice": [
+        0,
+        88,
+        81,
+        80,
+        83,
+        81,
+        81,
+        80,
+        81,
+        80,
+        81,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        79,
+        79,
+        79,
+        79,
+        78,
+        79,
+        79,
+        78,
+        79,
+        78,
+        78,
+        78
       ],
-      "kind": "stacked",
-      "maxVal": 82
+      "staticSlice": null
     },
     "day=30|range=7|kpi=fraudSaved": {
       "hasData": true,
@@ -2924,15 +2472,13 @@
         ]
       },
       "campaignHealth": {
-        "actualWindow": 30,
         "budget": 150000,
         "delivery": {
           "active": true,
           "label": "Acquiring Customers"
         },
         "monthlyPace": 150000,
-        "periodSpend": 150000,
-        "windowClipped": false
+        "periodSpend": 150000
       },
       "campaignList": [
         {
@@ -3234,44 +2780,36 @@
       ],
       "kpiCards": [
         {
-          "actualWindow": 30,
           "deltaPct": null,
           "isGood": false,
           "key": "activeUsers",
           "label": "New Active Users",
           "showDelta": false,
-          "value": 1363,
-          "windowClipped": false
+          "value": 1363
         },
         {
-          "actualWindow": 30,
           "deltaPct": null,
           "isGood": true,
           "key": "cac",
           "label": "CAC",
           "showDelta": false,
-          "value": 110,
-          "windowClipped": false
+          "value": 79
         },
         {
-          "actualWindow": 30,
           "deltaPct": null,
           "isGood": false,
           "key": "roi",
           "label": "ROAS",
           "showDelta": false,
-          "value": 1.7,
-          "windowClipped": false
+          "value": 1.7
         },
         {
-          "actualWindow": 30,
           "deltaPct": null,
           "isGood": false,
           "key": "fraudSaved",
           "label": "Fraud Saved",
           "showDelta": false,
-          "value": 10500,
-          "windowClipped": false
+          "value": 10500
         }
       ],
       "suggestedChange": null
@@ -3316,190 +2854,43 @@
       "staticSlice": null
     },
     "day=60|range=30|kpi=cac": {
-      "cacData": [
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            48,
-            31
-          ]
-        },
-        {
-          "values": [
-            48,
-            31
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        }
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 88,
+      "slice": [
+        0,
+        88,
+        81,
+        80,
+        83,
+        81,
+        81,
+        80,
+        81,
+        80,
+        81,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        79,
+        79,
+        79,
+        79,
+        78,
+        79,
+        79,
+        78,
+        79,
+        78,
+        78,
+        78
       ],
-      "kind": "stacked",
-      "maxVal": 82
+      "staticSlice": null
     },
     "day=60|range=30|kpi=fraudSaved": {
       "hasData": true,
@@ -3744,15 +3135,13 @@
         ]
       },
       "campaignHealth": {
-        "actualWindow": 7,
         "budget": 150000,
         "delivery": {
           "active": true,
           "label": "Acquiring Customers"
         },
         "monthlyPace": 150000,
-        "periodSpend": 35000,
-        "windowClipped": false
+        "periodSpend": 35000
       },
       "campaignList": [
         {
@@ -4054,44 +3443,36 @@
       ],
       "kpiCards": [
         {
-          "actualWindow": 7,
           "deltaPct": 21,
           "isGood": true,
           "key": "activeUsers",
           "label": "New Active Users",
           "showDelta": true,
-          "value": 491,
-          "windowClipped": false
+          "value": 491
         },
         {
-          "actualWindow": 7,
-          "deltaPct": -17,
+          "deltaPct": -1,
           "isGood": true,
           "key": "cac",
           "label": "CAC",
           "showDelta": true,
-          "value": 71,
-          "windowClipped": false
+          "value": 78
         },
         {
-          "actualWindow": 7,
           "deltaPct": 36,
           "isGood": true,
           "key": "roi",
           "label": "ROAS",
           "showDelta": true,
-          "value": 3,
-          "windowClipped": false
+          "value": 3
         },
         {
-          "actualWindow": 7,
           "deltaPct": 0,
-          "isGood": false,
+          "isGood": null,
           "key": "fraudSaved",
           "label": "Fraud Saved",
-          "showDelta": false,
-          "value": 2450,
-          "windowClipped": false
+          "showDelta": true,
+          "value": 2450
         }
       ],
       "suggestedChange": null
@@ -4136,190 +3517,43 @@
       "staticSlice": null
     },
     "day=60|range=7|kpi=cac": {
-      "cacData": [
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            32
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            50,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            49,
-            31
-          ]
-        },
-        {
-          "values": [
-            48,
-            31
-          ]
-        },
-        {
-          "values": [
-            48,
-            31
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        },
-        {
-          "values": [
-            48,
-            30
-          ]
-        }
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 88,
+      "slice": [
+        0,
+        88,
+        81,
+        80,
+        83,
+        81,
+        81,
+        80,
+        81,
+        80,
+        81,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        79,
+        79,
+        79,
+        79,
+        78,
+        79,
+        79,
+        78,
+        79,
+        78,
+        78,
+        78
       ],
-      "kind": "stacked",
-      "maxVal": 82
+      "staticSlice": null
     },
     "day=60|range=7|kpi=fraudSaved": {
       "hasData": true,

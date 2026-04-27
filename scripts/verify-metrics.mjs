@@ -240,114 +240,110 @@ console.log('\n═══ 9.7 S3 Hero chart values ═══');
   check('FraudSaved hero chart: no NaN, no negatives every day', fraudSane);
 }
 
-// ─── 9.85 S4: Period-window honesty (P15, P16) ─────────────────────────
-// - deltaPct must be null when prior window can't span a full dateRange
-//   (i.e., when selectedDay < 2 * dateRange).
-// - actualWindow must be exposed and equal min(selectedDay, dateRange) on
-//   every period-windowed metric (KPI cards + campaignHealth.spent).
-// - windowClipped must reflect actualWindow < dateRange.
-console.log('\n═══ 9.85 S4 Period-window honesty ═══');
+// ─── 9.85 S4 (post-QA): GA-style delta visibility ─────────────────────
+// - deltaPct is null only when there's literally no prior period
+//   (selectedDay <= dateRange ⇒ current period covers all data) OR when
+//   priorValue is 0 (ratio metrics that haven't accumulated meaningful data).
+// - When prior period exists with priorValue > 0, deltaPct is shown
+//   regardless of clipping (matches Google Analytics behavior).
+// - 0% deltas are shown (not hidden).
+console.log('\n═══ 9.85 S4 GA-style delta visibility ═══');
 {
-  let deltaNullingOk = true;
-  let actualWindowOk = true;
-  let clippedFlagOk = true;
-  let firstDeltaFail = '', firstWindowFail = '', firstClippedFail = '';
+  let deltaCorrect = true;
+  let firstFail = '';
+  for (const range of [7, 30]) {
+    for (let day = 1; day <= 30; day++) {
+      const m = computeDashboardMetrics(projection, { selectedDay: day, dateRange: range });
+      const expectedHasAnyPrior = day - range >= 1;
+      for (const card of m.kpiCards) {
+        // When no prior period exists, delta MUST be null
+        if (!expectedHasAnyPrior && card.deltaPct !== null) {
+          deltaCorrect = false;
+          firstFail = `day=${day} range=${range} ${card.key}: delta=${card.deltaPct} (expected null, no prior)`;
+          break;
+        }
+      }
+      if (!deltaCorrect) break;
+    }
+    if (!deltaCorrect) break;
+  }
+  check('deltaPct === null only when no prior period exists', deltaCorrect, firstFail);
+}
+
+// ─── 9.8 S3+S4: KPI ↔ hero chart aggregation tie-out at ANY window ─────
+// Daily chart values, aggregated under each metric's natural rule, must
+// equal the KPI card's period value at every window combination.
+//
+//   activeUsers: Σ daily over period === KPI                (additive)
+//   CAC:         (Σ day reward cost) / (Σ day users) === KPI (weighted ratio)
+//   ROAS:        (Σ day value) / (Σ day spend) === KPI       (weighted ratio)
+//   fraudSaved:  Σ day fraudSaved increments === KPI         (additive)
+//
+// All 4 KPIs verified at all (day, range) combinations.
+console.log('\n═══ 9.8 KPI/hero aggregation tie-out (all windows) ═══');
+{
+  const days = projection.days;
+  let usersTie = true, cacTie = true, roiTie = true, fraudTie = true;
+  let firstFail = { users: '', cac: '', roi: '', fraud: '' };
 
   for (const range of [7, 30]) {
     for (let day = 1; day <= 30; day++) {
       const m = computeDashboardMetrics(projection, { selectedDay: day, dateRange: range });
-      const expectedActualWindow = Math.min(day, range);
-      const expectedClipped = expectedActualWindow < range;
-      const expectedHasDelta = day >= 2 * range;
+      const endIdx = day - 1;
+      const startIdx = Math.max(0, endIdx - range + 1);
+      const periodDays = days.slice(startIdx, endIdx + 1);
 
-      // Each KPI card
-      for (const card of m.kpiCards) {
-        if (card.actualWindow !== expectedActualWindow) {
-          actualWindowOk = false;
-          firstWindowFail = `day=${day} range=${range} ${card.key}: actualWindow=${card.actualWindow}, expected=${expectedActualWindow}`;
-        }
-        if (card.windowClipped !== expectedClipped) {
-          clippedFlagOk = false;
-          firstClippedFail = `day=${day} range=${range} ${card.key}: clipped=${card.windowClipped}, expected=${expectedClipped}`;
-        }
-        if (!expectedHasDelta && card.deltaPct !== null) {
-          deltaNullingOk = false;
-          firstDeltaFail = `day=${day} range=${range} ${card.key}: deltaPct=${card.deltaPct}, expected null (prior would clip)`;
-        }
+      // Helper: sum daily increments of a cumulative engine field
+      const sumIncrements = (field) => periodDays.reduce((s, d, i) => {
+        const idx = startIdx + i;
+        const prev = idx > 0 ? days[idx - 1][field] : 0;
+        return s + (d[field] - prev);
+      }, 0);
+
+      // activeUsers: chart slice over period
+      const usersHero = computeHeroChartForKPI(projection, 'activeUsers', day).slice;
+      const usersPeriod = usersHero.slice(startIdx, endIdx + 1).reduce((s, v) => s + v, 0);
+      const usersKpi = m.kpiCards.find(c => c.key === 'activeUsers').value;
+      if (usersPeriod !== usersKpi && !firstFail.users) {
+        usersTie = false;
+        firstFail.users = `day=${day} range=${range}: chart sum=${usersPeriod}, KPI=${usersKpi}`;
       }
 
-      // Campaign health Spent strip
-      if (m.campaignHealth.actualWindow !== expectedActualWindow) {
-        actualWindowOk = false;
-        firstWindowFail = `day=${day} range=${range} health: actualWindow=${m.campaignHealth.actualWindow}, expected=${expectedActualWindow}`;
+      // CAC: weighted by daily users
+      const periodUsers = periodDays.reduce((s, d) => s + (d.dailyFunnel?.activeUser || 0), 0);
+      const periodReward = sumIncrements('cumulativeRewardCost');
+      const expectedCac = periodUsers > 0 ? Math.round(periodReward / periodUsers) : 0;
+      const cacKpi = m.kpiCards.find(c => c.key === 'cac').value;
+      if (cacKpi !== expectedCac && !firstFail.cac) {
+        cacTie = false;
+        firstFail.cac = `day=${day} range=${range}: KPI=${cacKpi}, expected=${expectedCac} (Σreward/Σusers)`;
       }
-      if (m.campaignHealth.windowClipped !== expectedClipped) {
-        clippedFlagOk = false;
-        firstClippedFail = `day=${day} range=${range} health: clipped=${m.campaignHealth.windowClipped}, expected=${expectedClipped}`;
+
+      // ROI: weighted by daily spend
+      const periodSpend = sumIncrements('cumulativeSpend');
+      const periodValue = sumIncrements('cumulativeValue');
+      const expectedRoi = periodSpend > 0 ? Math.round((periodValue / periodSpend) * 10) / 10 : 0;
+      const roiKpi = m.kpiCards.find(c => c.key === 'roi').value;
+      if (roiKpi !== expectedRoi && !firstFail.roi) {
+        roiTie = false;
+        firstFail.roi = `day=${day} range=${range}: KPI=${roiKpi}, expected=${expectedRoi}`;
+      }
+
+      // fraudSaved: chart slice over period
+      const fraudHero = computeHeroChartForKPI(projection, 'fraudSaved', day).slice;
+      const fraudPeriod = fraudHero.slice(startIdx, endIdx + 1).reduce((s, v) => s + v, 0);
+      const fraudKpi = m.kpiCards.find(c => c.key === 'fraudSaved').value;
+      if (Math.abs(fraudPeriod - fraudKpi) > 1 && !firstFail.fraud) {
+        fraudTie = false;
+        firstFail.fraud = `day=${day} range=${range}: chart sum=${fraudPeriod}, KPI=${fraudKpi}`;
       }
     }
   }
 
-  check('deltaPct === null when selectedDay < 2*dateRange (prior would clip)',
-    deltaNullingOk, firstDeltaFail);
-  check('actualWindow === min(selectedDay, dateRange) on every cell',
-    actualWindowOk, firstWindowFail);
-  check('windowClipped flag matches actualWindow < dateRange',
-    clippedFlagOk, firstClippedFail);
-}
-
-// ─── 9.8 S3: KPI ↔ hero chart aggregation tie-out (P10, P11) ───────────
-// Daily values in the hero chart, when aggregated by their natural rule,
-// must equal the KPI card's period value when the period covers full history.
-//
-//   activeUsers: sum(daily) === KPI value          (additive)
-//   roi:         (Σ daily value) / (Σ daily spend) === KPI value   (weighted ratio)
-//   fraudSaved:  sum(daily increments) === KPI value (additive)
-//
-// CAC is excluded — the hero chart is a cost-breakdown view, not a CAC ratio.
-// Documented as intentional dual view in METRIC_MODEL.md §M2.10.
-console.log('\n═══ 9.8 S3 KPI/hero aggregation tie-out (full-history window) ═══');
-{
-  let usersTie = true, roiTie = true, fraudTie = true;
-  let usersFail = '', roiFail = '', fraudFail = '';
-  for (let day = 1; day <= 30; day++) {
-    const m = computeDashboardMetrics(projection, { selectedDay: day, dateRange: 30 });
-    const days = projection.days;
-
-    // activeUsers: sum of dailyCurve === KPI value
-    const usersHero = computeHeroChartForKPI(projection, 'activeUsers', day);
-    const usersSum = usersHero.slice.reduce((s, v) => s + v, 0);
-    const usersKpi = m.kpiCards.find(c => c.key === 'activeUsers').value;
-    if (usersSum !== usersKpi) {
-      usersTie = false;
-      usersFail = `day ${day}: sum(daily)=${usersSum}, KPI=${usersKpi}`;
-    }
-
-    // ROI: weighted by daily spend
-    const lastDay = days[day - 1];
-    const cumSpend = lastDay.cumulativeSpend;
-    const cumValue = lastDay.cumulativeValue;
-    const expectedRoi = cumSpend > 0 ? Math.round((cumValue / cumSpend) * 10) / 10 : 0;
-    const roiKpi = m.kpiCards.find(c => c.key === 'roi').value;
-    if (roiKpi !== expectedRoi) {
-      roiTie = false;
-      roiFail = `day ${day}: KPI=${roiKpi}, expected=${expectedRoi} (cumValue/cumSpend)`;
-    }
-
-    // fraudSaved: sum of daily increments === cumulative === KPI value
-    const fraudHero = computeHeroChartForKPI(projection, 'fraudSaved', day);
-    const fraudSum = fraudHero.slice.reduce((s, v) => s + v, 0);
-    const fraudKpi = m.kpiCards.find(c => c.key === 'fraudSaved').value;
-    // fraudSaved KPI uses a slightly different formula (lastDay's fraudRate × period spend).
-    // Tolerate rounding (within $1) — the underlying values match by construction.
-    if (Math.abs(fraudSum - fraudKpi) > 1) {
-      fraudTie = false;
-      fraudFail = `day ${day}: sum(daily)=${fraudSum}, KPI=${fraudKpi}`;
-    }
-  }
-  check('activeUsers: sum(daily) === KPI value (full history)', usersTie, usersFail);
-  check('ROI: cumValue/cumSpend === KPI value (full history)', roiTie, roiFail);
-  check('fraudSaved: sum(daily) === KPI value (full history, ±$1 rounding)', fraudTie, fraudFail);
+  check('activeUsers: sum(daily over period) === KPI (any window)', usersTie, firstFail.users);
+  check('CAC: Σ reward cost / Σ users === KPI (any window)', cacTie, firstFail.cac);
+  check('ROAS: Σ value / Σ spend === KPI (any window)', roiTie, firstFail.roi);
+  check('fraudSaved: sum(daily over period) === KPI ±$1 (any window)', fraudTie, firstFail.fraud);
 }
 
 // ─── 9. S2: Suggested change comes from engine, not fabricated ─────────

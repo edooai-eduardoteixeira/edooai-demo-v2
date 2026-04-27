@@ -80,7 +80,7 @@ function fmtRate(n) {
 }
 
 function CampaignHealthRow({ health, onAdjustBudget }) {
-  const { delivery, budget, periodSpend, monthlyPace, actualWindow, windowClipped } = health;
+  const { delivery, budget, periodSpend, monthlyPace } = health;
 
   return (
     <div className="flex items-center bg-accent-subtle px-5 py-2.5 rounded-t-lg border-b border-border-light">
@@ -119,14 +119,7 @@ function CampaignHealthRow({ health, onAdjustBudget }) {
 
       {/* Spent */}
       <span className="flex items-center gap-2 shrink-0 min-w-[155px]">
-        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">
-          Spent
-          {windowClipped && (
-            <span className="ml-1 normal-case tracking-normal text-foreground-faint/70 font-medium">
-              ({actualWindow}d)
-            </span>
-          )}
-        </span>
+        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Spent</span>
         <span className="text-[13px] text-foreground-muted whitespace-nowrap">
           {fmtDollar(periodSpend)}
         </span>
@@ -162,7 +155,7 @@ function KPISelector({ selected, onSelect, kpiCards }) {
       {KPI_DEFS.map((kpi) => {
         const active = selected === kpi.key;
         const card = kpiCards.find((c) => c.key === kpi.key);
-        const { value, deltaPct, isPositive, isGood, showDelta, actualWindow, windowClipped } = card;
+        const { value, deltaPct, isPositive, isGood, showDelta } = card;
 
         return (
           <button
@@ -177,11 +170,6 @@ function KPISelector({ selected, onSelect, kpiCards }) {
           >
             <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase">
               {kpi.label}
-              {windowClipped && (
-                <span className="ml-1.5 normal-case tracking-normal text-foreground-faint/70 font-medium">
-                  ({actualWindow}d)
-                </span>
-              )}
             </span>
             <div className="flex items-baseline gap-2 mt-1">
               <span className={cn(
@@ -194,10 +182,12 @@ function KPISelector({ selected, onSelect, kpiCards }) {
               <span className={cn(
                 'text-[11px] font-semibold',
                 showDelta
-                  ? (isGood ? 'text-success' : 'text-warn')
+                  ? (isGood === null ? 'text-foreground-faint' : isGood ? 'text-success' : 'text-warn')
                   : 'invisible'
               )}>
-                {showDelta ? `${isPositive ? '↑' : '↓'}${Math.abs(deltaPct)}%` : '—'}
+                {showDelta
+                  ? (deltaPct === 0 ? '0%' : `${isPositive ? '↑' : '↓'}${Math.abs(deltaPct)}%`)
+                  : '—'}
               </span>
             </div>
           </button>
@@ -214,28 +204,7 @@ function HeroChart({ selectedKPI, currentDay, projection }) {
   const xLabels = dayXTicks(currentDay).map(d => ({ value: String(d), at: d }));
   const hero = computeHeroChartForKPI(projection, selectedKPI, currentDay);
 
-  // CAC: stacked bar chart showing referrer/referee cost breakdown
-  if (hero.kind === 'stacked') {
-    const yMax = niceYMax(hero.maxVal);
-    return (
-      <StackedBarChart
-        key={`cac-${currentDay}`}
-        data={hero.cacData}
-        segments={[
-          { color: 'var(--color-data-1)', label: 'Referrer' },
-          { color: 'var(--color-data-2)', label: 'Referee' },
-        ]}
-        maxValue={yMax}
-        cssHeight="100%"
-        xLabels={xLabels}
-        yLabels={hero.maxVal > 0 ? [yMax * 0.5, yMax] : []}
-        gridlines="from-labels"
-        legend
-      />
-    );
-  }
-
-  // Line chart (activeUsers / ROI / fraudSaved)
+  // All KPIs render as a line chart of daily values.
   const { slice, staticSlice, maxVal, isROAS, hasData } = hero;
   const yMax = niceYMax(maxVal);
   const formatLabel = selectedKPI === 'activeUsers'
