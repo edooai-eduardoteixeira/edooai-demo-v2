@@ -79,18 +79,17 @@ S1's job is *no behavior change*. Later stages replace specific entries.
 
 - **Surfaces**: "Spent" `$X` strip
 - **Time base**: period-windowed, ending at selected day
-- **Derivation**: `dayData.cumulativeSpend - days[startIdx-1].cumulativeSpend` where `startIdx = max(0, endIdx - dateRange + 1)` and `endIdx = selectedDay - 1`. If `startIdx == 0`, subtract 0.
-- **Engine source**: `days[i].cumulativeSpend`
-- **Edge cases**: When `selectedDay < dateRange`, period collapses to available days. Spent reflects actual days covered. No UI badge needed — the daily chart visually shows the data extent.
-- **Status**: S1 — preserve.
+- **Derivation (S4 post-QA)**: period sum of daily increments of `cumulativeRewardCost` — actual reward payouts on resolved conversions. Same domain principle as CAC and ROAS: cost flows through conversion, not contact.
+- **Engine source**: `days[i].cumulativeRewardCost`
+- **Edge cases**: When `selectedDay < dateRange`, period collapses to available days.
+- **Status**: ✅ **S4 — fixed.** Was using `cumulativeSpend` (budget allocation, $5K/day flat). Now uses real reward payouts.
 
 ### M1.4 Pacing
 
 - **Surfaces**: "Pacing ~$X/mo" strip
 - **Time base**: derived rate, normalized to monthly
-- **Derivation**: `(dayData.cumulativeSpend / selectedDay) * 30` rounded.
-- **Edge cases**: `selectedDay == 0` → 0 (UI never selects Day 0).
-- **Status**: S1 — preserve. (S5 confirms: extends naturally to Day 60 since rate is daily-spend-extrapolated-to-monthly.)
+- **Derivation (current — KNOWN BROKEN)**: `(dayData.cumulativeSpend / selectedDay) * 30` rounded. Uses budget allocation (`cumulativeSpend = budget/30 × days`), not real spend. So Pacing always ≈ budget. Lies.
+- **Status**: **DEFERRED.** Proper Pacing requires calendar-aware logic (current month length 28/29/30/31, days elapsed in this calendar month, projection for remaining days). The engine has projection capability (the strategy page uses it) so the data is available — but binding it to a calendar month + handling the engine's variable horizon (S5 lifts to 90 days) is its own design effort. **Not touched in S4** to avoid shipping an approximation we'd refactor. See "Deferred items" section in plan-numbers-consistency.md.
 
 ### M1.5 Suggested change action
 

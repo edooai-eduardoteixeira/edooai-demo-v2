@@ -50,11 +50,13 @@ export function computeCampaignHealth(projection, dayData, selectedDay, dateRang
   const dailySpendRate = selectedDay > 0 ? dayData.cumulativeSpend / selectedDay : 0;
   const monthlyPace = Math.round(dailySpendRate * 30);
 
-  // M1.3: Spent — period total based on date range
+  // M1.3: Spent — period total based on date range, using ACTUAL reward
+  // payouts (cumulativeRewardCost), not budget allocation (cumulativeSpend).
+  // Domain: cost flows through conversion, not contact.
   const endIdx = selectedDay - 1;
   const startIdx = Math.max(0, endIdx - dateRange + 1);
-  const startSpend = startIdx > 0 ? days[startIdx - 1].cumulativeSpend : 0;
-  const periodSpend = Math.round(dayData.cumulativeSpend - startSpend);
+  const startReward = startIdx > 0 ? days[startIdx - 1].cumulativeRewardCost : 0;
+  const periodSpend = Math.round(dayData.cumulativeRewardCost - startReward);
   return {
     delivery: computeDeliveryState(projection, dayData, selectedDay),
     budget: projection.budget,
