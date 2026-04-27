@@ -165,10 +165,14 @@ For each KPI, the delta vs prior period:
 
 - **Surfaces**: dashed gray line labeled "Static Rules"
 - **Time base**: daily (matches the agentic series — daily ROAS = day's value / day's reward cost)
-- **Derivation (S6 onward)**: same daily ROAS formula applied to `projection.staticBaseline.days[]`. The engine's staticMode locks `efficiency = effFloor` (no learning) and `effectiveRevenuePerUser = baseRevenuePerUser` (no premium-customer discovery). Everything else is identical to the agentic run.
-- **What the line represents**: the same operation Vincor would run, but with a static rules-based system that never improves its targeting or finds high-LTV customers. Counterfactual to agentic learning.
-- **Status**: S1 — preserve placeholder × 0.7. ✅ **S6 — done.** Real engine staticMode plumbed through.
-- **Note (under review)**: the static-mode rule (efficiency floor + base revenue) is the engine's existing definition. Tweaking what "static rules" means (e.g., locking other params, using a different baseline) is its own design decision, deferred.
+- **Derivation (S6 onward)**: same daily ROAS formula applied to `projection.staticBaseline.days[]`.
+- **The clean rule (S6 fix)**: `staticMode = true` locks `efficiency = effFloor`. THAT IS THE ONLY DIFFERENCE. Revenue per user, tier costs, everything else use the same formula in both modes — they just receive a frozen `eff` in static.
+  - Day 1 in agentic: `eff = effFloor` (no learning has happened yet) → revenue per user = `base + (premium - base) × effFloor` → identical to static
+  - Day N in agentic: `eff` improves toward 0.85+ → revenue per user climbs → diverges from static
+  - At every day, static stays at the eff = effFloor baseline; agentic measures the value of learning
+- **What the line represents**: same operation Vincor would run, but with the agent's targeting frozen at the baseline. The gap between the lines is the value of learning.
+- **Status**: S1 — preserve placeholder × 0.7. ✅ **S6 — done.** (a) Real engine staticMode plumbed through. (b) Engine rule cleaned up — was previously locking BOTH eff AND `effectiveRevenuePerUser` independently, which broke Day 1 parity. Now eff-lock is the sole differentiator. Day 1 agentic === Day 1 static, divergence reflects only learning.
+- **Note**: tweaking the static-mode rule further (e.g., using a worse-than-floor efficiency for stronger contrast) is a separate design decision, deferred. The current rule is now structurally clean.
 
 ### M2.13 Y-axis label values
 

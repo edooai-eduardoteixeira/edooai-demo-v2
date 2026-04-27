@@ -249,6 +249,13 @@ console.log('\n═══ 9.65 S6 Static-Rules ROAS plumbing ═══');
   check('staticSlice differs structurally from agentic × 0.7',
     close < heroRoi.slice.length - 2,
     `${close}/${heroRoi.slice.length} days matched the placeholder formula`);
+
+  // S6: at Day 2 (first day with non-zero ROAS), agentic and static must
+  // match — both have eff = effFloor (no learning has happened yet).
+  // Concept: "static = agentic without learning" requires Day 1 parity.
+  check('Day 2 agentic ROAS === static ROAS (parity before any learning)',
+    heroRoi.slice[1] === heroRoi.staticSlice[1],
+    `agentic=${heroRoi.slice[1]}x, static=${heroRoi.staticSlice[1]}x`);
 }
 
 // ─── 9.7 S3: Hero chart values sane (no NaN, ROI/fraud non-negative) ───

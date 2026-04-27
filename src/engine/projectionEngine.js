@@ -469,9 +469,13 @@ function runSimulation({ budget, params, staticMode = false, horizonDays = 30 })
     const accidentalConversions = poorlyTargeted * accidentalConvRate;
     const dailyConversionsGenerated = goodConversions + accidentalConversions;
 
-    const effectiveRevenuePerUser = staticMode
-      ? baseRevenuePerUser
-      : baseRevenuePerUser + (premiumRevenuePerUser - baseRevenuePerUser) * eff;
+    // Same formula in both modes — efficiency-lock in staticMode (eff = effFloor)
+    // is the SOLE difference between agentic and static. Revenue per user follows
+    // from eff. This gives Day 1 parity (both have eff = effFloor → identical
+    // revenue), with divergence starting only when agentic eff exceeds effFloor
+    // (i.e., when learning actually happens). See METRIC_MODEL.md §M2.12.
+    const effectiveRevenuePerUser = baseRevenuePerUser +
+      (premiumRevenuePerUser - baseRevenuePerUser) * eff;
     const dailyValueGenerated = dailyConversionsGenerated * effectiveRevenuePerUser;
 
     // Funnel sub-stages for today's cohort
