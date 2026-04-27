@@ -185,6 +185,61 @@ console.log('\n═══ 8. S2 newContacts + followUps ≡ total ═══');
   check(`Follow-up rate at Day 30 in (0, 0.35]`, fr30 > 0 && fr30 <= 0.35, `got ${fr30}`);
 }
 
+// ─── 9.5 S3: Funnel monotonicity (P1) ──────────────────────────────────
+console.log('\n═══ 9.5 S3 Funnel monotonicity ═══');
+{
+  let allMonotonic = true;
+  let firstViolation = null;
+  for (let day = 1; day <= 30; day++) {
+    const m = computeDashboardMetrics(projection, { selectedDay: day, dateRange: 30 });
+    const values = m.funnel.map(s => s.value);
+    for (let i = 1; i < values.length; i++) {
+      if (values[i] > values[i - 1]) {
+        allMonotonic = false;
+        firstViolation = `day ${day}: ${m.funnel[i - 1].label}=${values[i - 1]} < ${m.funnel[i].label}=${values[i]}`;
+        break;
+      }
+    }
+    if (!allMonotonic) break;
+  }
+  check('Funnel non-increasing across all 6 stages, every day 1..30', allMonotonic, firstViolation);
+}
+
+// ─── 9.6 S3: KPI ↔ funnel.activeUser tie-out (P7) ──────────────────────
+console.log('\n═══ 9.6 S3 KPI/funnel tie-out (period covers full history) ═══');
+{
+  let allTied = true;
+  let firstFail = null;
+  for (let day = 1; day <= 30; day++) {
+    // dateRange >= day → period covers full history → KPI === cumulative funnel
+    const m = computeDashboardMetrics(projection, { selectedDay: day, dateRange: 30 });
+    const kpiActive = m.kpiCards.find(c => c.key === 'activeUsers').value;
+    const funnelActive = m.funnel.find(s => s.label === 'Active User').value;
+    if (kpiActive !== funnelActive) {
+      allTied = false;
+      firstFail = `day ${day}: KPI.activeUsers=${kpiActive}, funnel.Active=${funnelActive}`;
+      break;
+    }
+  }
+  check('KPI activeUsers === funnel.Active when period covers full history',
+    allTied, firstFail);
+}
+
+// ─── 9.7 S3: Hero chart values sane (no NaN, ROI/fraud non-negative) ───
+console.log('\n═══ 9.7 S3 Hero chart values ═══');
+{
+  let roiSane = true;
+  let fraudSane = true;
+  for (let day = 1; day <= 30; day++) {
+    const roiHero = computeHeroChartForKPI(projection, 'roi', day);
+    const fraudHero = computeHeroChartForKPI(projection, 'fraudSaved', day);
+    if (roiHero.slice.some(v => Number.isNaN(v) || v < 0)) roiSane = false;
+    if (fraudHero.slice.some(v => Number.isNaN(v) || v < 0)) fraudSane = false;
+  }
+  check('ROI hero chart: no NaN, no negatives every day', roiSane);
+  check('FraudSaved hero chart: no NaN, no negatives every day', fraudSane);
+}
+
 // ─── 9. S2: Suggested change comes from engine, not fabricated ─────────
 console.log('\n═══ 9. S2 SuggestedChange is engine-derived ═══');
 {

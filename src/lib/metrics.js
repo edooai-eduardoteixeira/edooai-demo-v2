@@ -154,22 +154,35 @@ export function computeHeroChart(projection, selectedKPI, currentDay) {
     return { kind: 'stacked', cacData, maxVal };
   }
 
-  // M2.9 / M2.11: line chart
+  // M2.9 / M2.11: line chart — daily values per KPI
   let slice;
   if (selectedKPI === 'activeUsers') {
+    // Daily new active users (resolution-time)
     slice = projection.dailyCurve.slice(0, currentDay);
+  } else if (selectedKPI === 'roi') {
+    // S3 fix: daily ROI = day's value generated / day's spend.
+    // Replaces the meaningless cumulative-ratio diff used in S1.
+    slice = days.slice(0, currentDay).map((d, i) => {
+      const prevSpend = i > 0 ? days[i - 1].cumulativeSpend : 0;
+      const prevValue = i > 0 ? days[i - 1].cumulativeValue : 0;
+      const daySpend = d.cumulativeSpend - prevSpend;
+      const dayValue = d.cumulativeValue - prevValue;
+      return daySpend > 0 ? Math.round((dayValue / daySpend) * 10) / 10 : 0;
+    });
+  } else if (selectedKPI === 'fraudSaved') {
+    // S3 fix: daily fraud saved = day's spend × cumulative fraud rate.
+    // Engine's kpiCumulative.fraudSaved is `cumSpend × fraudRate`, so daily
+    // increment is straightforward.
+    slice = days.slice(0, currentDay).map((d, i) => {
+      const prevFraud = i > 0 ? days[i - 1].kpiCumulative.fraudSaved : 0;
+      return Math.max(0, d.kpiCumulative.fraudSaved - prevFraud);
+    });
   } else {
-    const dailyKPIs = projection.dailyKPIs;
-    if (dailyKPIs && dailyKPIs[selectedKPI]) {
-      slice = dailyKPIs[selectedKPI].slice(0, currentDay);
-    } else {
-      // Fallback: cumulative diff. Note: for ratio metrics (CAC, ROI) this is
-      // mathematically dubious but preserved for S1 parity. See §M2.11.
-      slice = days.slice(0, currentDay).map((d, i) => {
-        if (i === 0) return d.kpiCumulative[selectedKPI];
-        return Math.max(0, d.kpiCumulative[selectedKPI] - days[i - 1].kpiCumulative[selectedKPI]);
-      });
-    }
+    // Defensive fallback for any future KPI key — same daily-diff pattern.
+    slice = days.slice(0, currentDay).map((d, i) => {
+      if (i === 0) return d.kpiCumulative[selectedKPI];
+      return Math.max(0, d.kpiCumulative[selectedKPI] - days[i - 1].kpiCumulative[selectedKPI]);
+    });
   }
   const maxVal = Math.max(...slice, 0);
 
@@ -191,14 +204,32 @@ export function computeHeroChart(projection, selectedKPI, currentDay) {
 
 // ─── Region 3: Block 1 Right — Funnel ───────────────────────────────────
 
-/** @see METRIC_MODEL.md §M3.1–M3.6 — S1 preserves 0.77 and 1.4× hardcodes */
+/**
+ * @see METRIC_MODEL.md §M3.1–M3.6
+ *
+ * S3: Engaged and Reached defined as structural midpoints between adjacent
+ * engine-cumulative stages. Monotonic by construction (no magic multipliers).
+ *
+ *   Contacted ≥ Engaged ≥ Referred ≥ Reached ≥ SignedUp ≥ Active
+ *
+ * Engaged = (Contacted + Referred) / 2
+ *   At baseShareRate = 0.55 this lands ~77% of Contacted (matching the prior
+ *   hardcoded 0.77 multiplier) but properly responds to engine state changes
+ *   as efficiency lifts effectiveShareRate.
+ *
+ * Reached = (Referred + SignedUp) / 2
+ *   Replaces the impossible × 1.4 multiplier. Reached is now strictly bounded
+ *   by Referred (an engine cumulative) above and SignedUp (an engine
+ *   cumulative) below — invariant holds for every day.
+ */
 export function computeFunnel(dayData) {
   const contacted = dayData.funnelCumulative.contacted;
-  const engaged = Math.round(contacted * 0.77);
   const referred = dayData.funnelCumulative.referralSent;
-  const reached = Math.round(referred * 1.4);
   const signedUp = dayData.funnelCumulative.signedUp;
   const activeUser = dayData.funnelCumulative.activeUser;
+
+  const engaged = Math.round((contacted + referred) / 2);
+  const reached = Math.round((referred + signedUp) / 2);
 
   return [
     { label: 'Contacted', value: contacted, time: null, group: 'referrer' },

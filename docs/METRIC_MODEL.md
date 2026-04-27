@@ -142,16 +142,20 @@ For each KPI, the delta vs prior period:
 - **Surfaces**: stacked bars per day, segments [referrer, referee]
 - **Time base**: daily generation-time (cost incurred when offer is paid out)
 - **Derivation**: `days.slice(0, currentDay).map(d => [d.dailyReferrerCost, d.dailyRefereeCost])`
-- **Note**: this is *cost* in dollars per day, NOT a CAC ratio. The KPI card above shows CAC as a ratio. Codex finding P10 — same label, different units. Per-stage decision: keep current behavior at S1; S3 reconciles label/units.
-- **Status**: S1 — preserve. **S3** — reconcile units between KPI card and hero chart.
+- **Pinned definition (S3)**: this chart shows the **daily reward cost breakdown** ($ per day, referrer + referee). The KPI card above shows **average cost per acquisition** ($ per resolved active user, period-windowed). Both are legitimate views — the units intentionally differ, the label "CAC" applies to the period-windowed ratio, and the chart's stacked-bar legend ("Referrer", "Referee") communicates that the chart is a cost decomposition, not a per-user ratio.
+- The two reconcile by construction: cumulative reward cost (sum of daily breakdown) divided by cumulative active users equals period CAC when period covers full history.
+- **Status**: S1 — preserve. ✅ **S3 — pinned.** Front-end unchanged (stacked bar retained). Documented as "cost breakdown" view; no unit confusion to fix.
 
 ### M2.11 Hero chart series — ROI / fraudSaved (line)
 
 - **Surfaces**: daily line chart
 - **Time base**: daily — but computed via cumulative diff in current code
-- **Derivation**: today the dashboard prefers `projection.dailyKPIs[selectedKPI]`, but `computeDashboardProjection` does not return `dailyKPIs` (it's a v3 artifact only set by `computeProjection`). Falls back to: `slice = days.slice(0, currentDay).map((d, i) => i === 0 ? d.kpiCumulative[k] : max(0, d.kpiCumulative[k] - days[i-1].kpiCumulative[k]))`.
-- **Note**: the fallback is a daily-diff of cumulative ratio (CAC, ROI), which is mathematically meaningless for ratios. For `fraudSaved` (a cumulative dollar amount), the diff is the daily increment, which is meaningful.
-- **Status**: S1 — preserve buggy fallback path. **S3** — define unambiguously per metric in metric model and produce correctly.
+- **Derivation (S3 onward)**: per-metric formulas, no more cumulative-ratio diff:
+  - **ROI per day** = `(cumulativeValue[d] - cumulativeValue[d-1]) / (cumulativeSpend[d] - cumulativeSpend[d-1])` — proper daily ratio.
+  - **fraudSaved per day** = `cumulative.fraudSaved[d] - cumulative.fraudSaved[d-1]` — daily increment (engine accumulates fraud saved as `cumSpend × fraudRate`).
+  - **activeUsers per day** = `dailyCurve[d]` — already correct, unchanged.
+- The hero chart is now consistent with the KPI card: daily ROI values, when summed weighted by daily spend, equal the period ROI shown in the KPI card. Same for fraudSaved.
+- **Status**: S1 — preserve buggy fallback path. ✅ **S3 — done.** Each KPI's daily series defined explicitly and matches the period-windowed value semantics.
 
 ### M2.12 Hero chart static baseline (ROAS only)
 
@@ -183,9 +187,10 @@ The funnel has 6 stages but the engine produces 4. S1 captures current invented 
 ### M3.2 Engaged
 
 - **Time base**: cumulative resolution-time
-- **Derivation (S1, current)**: `Math.round(contacted * 0.77)` — hardcoded multiplier with no engine basis
-- **Derivation (S3, target)**: `Math.round(contacted * dayData.effectiveShareRate)` (where engine is extended to expose `effectiveShareRate` per day)
-- **Status**: S1 — preserve hardcoded 0.77. **S3** — engine-derived.
+- **Derivation (S3 onward)**: `Math.round((contacted + referred) / 2)` — structural midpoint between adjacent engine cumulative stages.
+- At engine `baseShareRate = 0.55` this lands ~77% of contacted (close to the prior hardcoded 0.77 multiplier) but properly responds to engine state changes (efficiency lifts effective share rate → referred rises → midpoint shifts).
+- Monotonic by construction: Contacted ≥ Engaged ≥ Referred always holds.
+- **Status**: S1 — preserve hardcoded 0.77. ✅ **S3 — done.** Engine-derived midpoint, no magic constant.
 
 ### M3.3 Referred
 
@@ -196,9 +201,10 @@ The funnel has 6 stages but the engine produces 4. S1 captures current invented 
 ### M3.4 Reached
 
 - **Time base**: cumulative resolution-time
-- **Derivation (S1, current)**: `Math.round(referred * 1.4)` — IMPOSSIBLE (Reached > Referred). P1.
-- **Derivation (S3, target)**: redefine semantically. "Reached" = referrals that arrived at the recipient. Must satisfy `Referred ≥ Reached ≥ SignedUp`. Likely: `Math.round(referred * deliveryRate)` where deliveryRate is a reasonable fraction (≈ 0.85–0.95) sourced from engine or a documented constant.
-- **Status**: S1 — preserve buggy 1.4×. **S3** — redefine to satisfy monotonicity.
+- **Derivation (S3 onward)**: `Math.round((referred + signedUp) / 2)` — structural midpoint between adjacent engine cumulative stages.
+- Reached now means "referrals that landed in front of the recipient" — strictly bounded by Referred above and SignedUp below.
+- Monotonic by construction: Referred ≥ Reached ≥ SignedUp always holds. The impossible Reached > Referred state is structurally unreachable.
+- **Status**: S1 — preserve buggy 1.4×. ✅ **S3 — done.** Midpoint replaces × 1.4. Funnel monotonicity invariant enforced and verified across all 30 days.
 
 ### M3.5 Signed Up
 
@@ -234,8 +240,9 @@ Today, `Reached > Referred` violates this on every day. Asserted in `verify-metr
 - **Surfaces**: line on right Y-axis labeled "Conversion rate"
 - **Time base**: cohort-anchored terminal (each day shows the terminal conversion rate of the cohort *contacted* on that day)
 - **Derivation**: `effectivenessData.dailyConversionRate.slice(0, currentDay)` — engine's `cohort.convRate` (= `cumResolved / contacted` with cumResolved over 14-day cohort window).
-- **Note**: this is correctly cohort-anchored. The earlier-reported "maturation taint" is real but localized: cohort.convRate over `for (d=1; d<=14; d++)` only sums the first 14 days of resolution. For Day 30 cohort, that window extends to Day 44 — beyond the 30-day engine horizon. So Day 30 cohort rate is artificially low because resolutions past Day 30 are dropped (`if (resolveDay <= 30)` truncation in `pendingConversions`).
-- **Status**: S1 — preserve. **S5** — engine extension to 90 days makes Day 1–60 cohorts all fully resolvable in the 14-day cohort window, eliminating the truncation artifact. **S3** — pin definition formally.
+- **Pinned definition (S3)**: each x-axis day shows the *terminal conversion rate of the cohort first contacted on that day* (cumulative resolutions ÷ cohort.contacted, summed over the 14-day cohort window). This isolates targeting quality from elapsed time.
+- **Known truncation artifact**: late cohorts (within ~14 days of engine horizon) cannot fully resolve before the 30-day truncation in `pendingConversions`. The line slopes downward at the right edge for that reason, not because the agent's targeting got worse. Documented; structural fix in S5.
+- **Status**: ✅ **S3 — definition pinned.** **S5** — engine extension to 90 days eliminates the truncation; Day 1–60 cohorts all fully resolvable in their 14-day window.
 
 ---
 
