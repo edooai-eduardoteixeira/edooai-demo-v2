@@ -122,9 +122,12 @@ export function computePeriodKPI(days, selectedDay, dateRange, key) {
     return users > 0 ? Math.round(rewardCost / users) : 0;
   }
   if (key === 'roi') {
-    const spend = sumDailyIncrements('cumulativeSpend');
+    // Spend here means actual reward payouts on resolved conversions
+    // (cumulativeRewardCost), NOT budget allocation. Aligns with the
+    // domain model: cost flows through conversion, not contact.
+    const rewardCost = sumDailyIncrements('cumulativeRewardCost');
     const value = sumDailyIncrements('cumulativeValue');
-    return spend > 0 ? Math.round((value / spend) * 10) / 10 : 0;
+    return rewardCost > 0 ? Math.round((value / rewardCost) * 10) / 10 : 0;
   }
   if (key === 'fraudSaved') {
     return Math.max(0, sumDailyKpiIncrements('fraudSaved'));
@@ -201,13 +204,15 @@ export function computeHeroChart(projection, selectedKPI, currentDay) {
     // Daily new active users (resolution-time)
     slice = projection.dailyCurve.slice(0, currentDay);
   } else if (selectedKPI === 'roi') {
-    // Daily ROI = day's value generated / day's spend.
+    // Daily ROI = day's resolved value / day's actual reward payouts.
+    // (Not value/budget — budget is an allocation cap; actual spend is
+    // reward cost paid out on resolved conversions.)
     slice = days.slice(0, currentDay).map((d, i) => {
-      const prevSpend = i > 0 ? days[i - 1].cumulativeSpend : 0;
+      const prevReward = i > 0 ? days[i - 1].cumulativeRewardCost : 0;
       const prevValue = i > 0 ? days[i - 1].cumulativeValue : 0;
-      const daySpend = d.cumulativeSpend - prevSpend;
+      const dayReward = d.cumulativeRewardCost - prevReward;
       const dayValue = d.cumulativeValue - prevValue;
-      return daySpend > 0 ? Math.round((dayValue / daySpend) * 10) / 10 : 0;
+      return dayReward > 0 ? Math.round((dayValue / dayReward) * 10) / 10 : 0;
     });
   } else if (selectedKPI === 'fraudSaved') {
     // Daily fraudSaved = day's increment of cumulative fraudSaved.

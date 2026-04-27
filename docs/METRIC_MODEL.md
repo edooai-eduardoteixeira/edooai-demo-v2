@@ -119,7 +119,7 @@ For each KPI in {`activeUsers`, `cac`, `roi`, `fraudSaved`}:
 - **Period KPI formulas (S4 post-QA)** — aligned with chart's daily values for clean tie-out:
   - **activeUsers** = Σ daily activeUser over period (additive)
   - **CAC** = Σ daily reward cost / Σ daily users (weighted ratio, uses `cumulativeRewardCost`, not `cumulativeSpend`; matches engine's notion of CAC at projectionEngine.js line 304)
-  - **ROAS** = Σ daily value / Σ daily spend (weighted ratio)
+  - **ROAS** = Σ daily value / Σ daily reward cost (weighted ratio). Spend = actual reward payouts on resolved conversions, NOT `budget/30 × days` allocation. Aligns with the domain model: cost flows through conversion, not contact.
   - **fraudSaved** = Σ daily fraudSaved increments (additive)
 - **Edge cases**: When `selectedDay < dateRange`, the period naturally collapses to whatever days exist. The value is still a valid period sum/ratio. No UI badge — the daily chart already shows the data extent.
 - **Status**: S1 — preserve. ✅ **S3 — done** (time-base pinned, hero chart tie-out at full history). ✅ **S4 — done** (period formulas aligned with chart; tie-outs verified at any window).

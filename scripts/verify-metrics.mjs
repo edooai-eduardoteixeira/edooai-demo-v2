@@ -322,10 +322,12 @@ console.log('\n═══ 9.8 KPI/hero aggregation tie-out (all windows) ══�
         firstFail.cac = `day=${day} range=${range}: KPI=${cacKpi}, expected=${expectedCac} (Σreward/Σusers)`;
       }
 
-      // ROI: weighted by daily spend
-      const periodSpend = sumIncrements('cumulativeSpend');
+      // ROAS: weighted by daily reward cost (actual payouts), NOT budget.
+      // KPI = Σ daily value / Σ daily reward cost = value-per-reward-dollar.
+      const periodRewardForRoi = sumIncrements('cumulativeRewardCost');
       const periodValue = sumIncrements('cumulativeValue');
-      const expectedRoi = periodSpend > 0 ? Math.round((periodValue / periodSpend) * 10) / 10 : 0;
+      const expectedRoi = periodRewardForRoi > 0
+        ? Math.round((periodValue / periodRewardForRoi) * 10) / 10 : 0;
       const roiKpi = m.kpiCards.find(c => c.key === 'roi').value;
       if (roiKpi !== expectedRoi && !firstFail.roi) {
         roiTie = false;
@@ -345,7 +347,7 @@ console.log('\n═══ 9.8 KPI/hero aggregation tie-out (all windows) ══�
 
   check('activeUsers: sum(daily over period) === KPI (any window)', usersTie, firstFail.users);
   check('CAC: Σ reward cost / Σ users === KPI (any window)', cacTie, firstFail.cac);
-  check('ROAS: Σ value / Σ spend === KPI (any window)', roiTie, firstFail.roi);
+  check('ROAS: Σ value / Σ reward cost === KPI (any window)', roiTie, firstFail.roi);
   check('fraudSaved: sum(daily over period) === KPI ±$1 (any window)', fraudTie, firstFail.fraud);
 }
 
