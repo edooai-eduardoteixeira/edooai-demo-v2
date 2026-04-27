@@ -1,0 +1,4390 @@
+{
+  "cells": {
+    "day=10|range=30": {
+      "audienceOverview": {
+        "bands": {
+          "advocates": [
+            125870,
+            124690,
+            123510,
+            122330,
+            121150,
+            119970,
+            118789,
+            117609,
+            116748,
+            115957
+          ],
+          "passive": [
+            105719,
+            105562,
+            105406,
+            105249,
+            105093,
+            104936,
+            104780,
+            104623,
+            104509,
+            104404
+          ],
+          "persuadable": [
+            189891,
+            189207,
+            188523,
+            187839,
+            187155,
+            186472,
+            185788,
+            185104,
+            184604,
+            184146
+          ]
+        },
+        "convRateOverlay": [
+          2.1,
+          2.1,
+          2.1,
+          2.1,
+          2.2,
+          2.2,
+          2.3,
+          2.4,
+          2.6,
+          2.7
+        ]
+      },
+      "campaignHealth": {
+        "budget": 150000,
+        "delivery": {
+          "active": true,
+          "label": "Acquiring Customers"
+        },
+        "monthlyPace": 150000,
+        "periodSpend": 50000
+      },
+      "campaignList": [
+        {
+          "channel": "push",
+          "contactCount": 780,
+          "id": "p2p-nonuser",
+          "reward": "$15 both-get",
+          "title": "Sent money to non-user"
+        },
+        {
+          "channel": "email",
+          "contactCount": 446,
+          "id": "first-deposit",
+          "reward": "$10 credit",
+          "title": "First paycheck deposited"
+        },
+        {
+          "channel": "email",
+          "contactCount": 364,
+          "id": "highly-rated",
+          "reward": "$10 credit",
+          "title": "Rated support highly"
+        },
+        {
+          "channel": "in-app",
+          "contactCount": 198,
+          "id": "seasonal-promo",
+          "reward": "$10 both-get",
+          "title": "Always-on referral offer"
+        }
+      ],
+      "dailyOutreach": {
+        "latestCampaignTitles": [
+          "Sent money to non-user",
+          "First paycheck deposited",
+          "Rated support highly",
+          "Always-on referral offer"
+        ],
+        "maxTotal": 1789,
+        "paddedData": [
+          [
+            813,
+            542,
+            433,
+            0
+          ],
+          [
+            846,
+            534,
+            409,
+            0
+          ],
+          [
+            876,
+            526,
+            386,
+            0
+          ],
+          [
+            905,
+            519,
+            364,
+            0
+          ],
+          [
+            931,
+            512,
+            345,
+            0
+          ],
+          [
+            956,
+            506,
+            326,
+            0
+          ],
+          [
+            979,
+            500,
+            309,
+            0
+          ],
+          [
+            1000,
+            495,
+            293,
+            0
+          ],
+          [
+            1021,
+            490,
+            278,
+            0
+          ],
+          [
+            780,
+            446,
+            364,
+            198
+          ]
+        ]
+      },
+      "effectiveDay": 10,
+      "funnel": [
+        {
+          "group": "referrer",
+          "label": "Contacted",
+          "time": null,
+          "value": 17880
+        },
+        {
+          "group": "referrer",
+          "label": "Engaged",
+          "time": "1 day",
+          "value": 13768
+        },
+        {
+          "group": "referrer",
+          "label": "Referred",
+          "time": "3 days",
+          "value": 10982
+        },
+        {
+          "group": "referee",
+          "label": "Reached",
+          "time": "4 days",
+          "value": 15375
+        },
+        {
+          "group": "referee",
+          "label": "Signed Up",
+          "time": "6 days",
+          "value": 3074
+        },
+        {
+          "group": "referee",
+          "label": "Active User",
+          "time": "12 days",
+          "value": 197
+        }
+      ],
+      "kpiCards": [
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "activeUsers",
+          "label": "New Active Users",
+          "showDelta": false,
+          "value": 197
+        },
+        {
+          "deltaPct": 0,
+          "isGood": true,
+          "key": "cac",
+          "label": "CAC",
+          "showDelta": false,
+          "value": 254
+        },
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "roi",
+          "label": "ROAS",
+          "showDelta": false,
+          "value": 0.6
+        },
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "fraudSaved",
+          "label": "Fraud Saved",
+          "showDelta": false,
+          "value": 3500
+        }
+      ],
+      "suggestedChange": null
+    },
+    "day=10|range=30|kpi=activeUsers": {
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 37,
+      "slice": [
+        0,
+        4,
+        9,
+        14,
+        18,
+        23,
+        27,
+        31,
+        34,
+        37
+      ],
+      "staticSlice": null
+    },
+    "day=10|range=30|kpi=cac": {
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        }
+      ],
+      "kind": "stacked",
+      "maxVal": 82
+    },
+    "day=10|range=30|kpi=fraudSaved": {
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 350,
+      "slice": [
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350
+      ],
+      "staticSlice": null
+    },
+    "day=10|range=30|kpi=roi": {
+      "hasData": true,
+      "isROAS": true,
+      "kind": "line",
+      "maxVal": 0.10000000000000003,
+      "slice": [
+        0,
+        0.1,
+        0,
+        0.1,
+        0.09999999999999998,
+        0.10000000000000003,
+        0,
+        0.09999999999999998,
+        0.09999999999999998,
+        0
+      ],
+      "staticSlice": [
+        0,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0
+      ]
+    },
+    "day=10|range=7": {
+      "audienceOverview": {
+        "bands": {
+          "advocates": [
+            125870,
+            124690,
+            123510,
+            122330,
+            121150,
+            119970,
+            118789,
+            117609,
+            116748,
+            115957
+          ],
+          "passive": [
+            105719,
+            105562,
+            105406,
+            105249,
+            105093,
+            104936,
+            104780,
+            104623,
+            104509,
+            104404
+          ],
+          "persuadable": [
+            189891,
+            189207,
+            188523,
+            187839,
+            187155,
+            186472,
+            185788,
+            185104,
+            184604,
+            184146
+          ]
+        },
+        "convRateOverlay": [
+          2.1,
+          2.1,
+          2.1,
+          2.1,
+          2.2,
+          2.2,
+          2.3,
+          2.4,
+          2.6,
+          2.7
+        ]
+      },
+      "campaignHealth": {
+        "budget": 150000,
+        "delivery": {
+          "active": true,
+          "label": "Acquiring Customers"
+        },
+        "monthlyPace": 150000,
+        "periodSpend": 35000
+      },
+      "campaignList": [
+        {
+          "channel": "push",
+          "contactCount": 780,
+          "id": "p2p-nonuser",
+          "reward": "$15 both-get",
+          "title": "Sent money to non-user"
+        },
+        {
+          "channel": "email",
+          "contactCount": 446,
+          "id": "first-deposit",
+          "reward": "$10 credit",
+          "title": "First paycheck deposited"
+        },
+        {
+          "channel": "email",
+          "contactCount": 364,
+          "id": "highly-rated",
+          "reward": "$10 credit",
+          "title": "Rated support highly"
+        },
+        {
+          "channel": "in-app",
+          "contactCount": 198,
+          "id": "seasonal-promo",
+          "reward": "$10 both-get",
+          "title": "Always-on referral offer"
+        }
+      ],
+      "dailyOutreach": {
+        "latestCampaignTitles": [
+          "Sent money to non-user",
+          "First paycheck deposited",
+          "Rated support highly",
+          "Always-on referral offer"
+        ],
+        "maxTotal": 1789,
+        "paddedData": [
+          [
+            813,
+            542,
+            433,
+            0
+          ],
+          [
+            846,
+            534,
+            409,
+            0
+          ],
+          [
+            876,
+            526,
+            386,
+            0
+          ],
+          [
+            905,
+            519,
+            364,
+            0
+          ],
+          [
+            931,
+            512,
+            345,
+            0
+          ],
+          [
+            956,
+            506,
+            326,
+            0
+          ],
+          [
+            979,
+            500,
+            309,
+            0
+          ],
+          [
+            1000,
+            495,
+            293,
+            0
+          ],
+          [
+            1021,
+            490,
+            278,
+            0
+          ],
+          [
+            780,
+            446,
+            364,
+            198
+          ]
+        ]
+      },
+      "effectiveDay": 10,
+      "funnel": [
+        {
+          "group": "referrer",
+          "label": "Contacted",
+          "time": null,
+          "value": 17880
+        },
+        {
+          "group": "referrer",
+          "label": "Engaged",
+          "time": "1 day",
+          "value": 13768
+        },
+        {
+          "group": "referrer",
+          "label": "Referred",
+          "time": "3 days",
+          "value": 10982
+        },
+        {
+          "group": "referee",
+          "label": "Reached",
+          "time": "4 days",
+          "value": 15375
+        },
+        {
+          "group": "referee",
+          "label": "Signed Up",
+          "time": "6 days",
+          "value": 3074
+        },
+        {
+          "group": "referee",
+          "label": "Active User",
+          "time": "12 days",
+          "value": 197
+        }
+      ],
+      "kpiCards": [
+        {
+          "deltaPct": 1315,
+          "isGood": true,
+          "key": "activeUsers",
+          "label": "New Active Users",
+          "showDelta": true,
+          "value": 184
+        },
+        {
+          "deltaPct": -84,
+          "isGood": true,
+          "key": "cac",
+          "label": "CAC",
+          "showDelta": true,
+          "value": 190
+        },
+        {
+          "deltaPct": 700,
+          "isGood": true,
+          "key": "roi",
+          "label": "ROAS",
+          "showDelta": true,
+          "value": 0.8
+        },
+        {
+          "deltaPct": 133,
+          "isGood": true,
+          "key": "fraudSaved",
+          "label": "Fraud Saved",
+          "showDelta": true,
+          "value": 2450
+        }
+      ],
+      "suggestedChange": null
+    },
+    "day=10|range=7|kpi=activeUsers": {
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 37,
+      "slice": [
+        0,
+        4,
+        9,
+        14,
+        18,
+        23,
+        27,
+        31,
+        34,
+        37
+      ],
+      "staticSlice": null
+    },
+    "day=10|range=7|kpi=cac": {
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        }
+      ],
+      "kind": "stacked",
+      "maxVal": 82
+    },
+    "day=10|range=7|kpi=fraudSaved": {
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 350,
+      "slice": [
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350
+      ],
+      "staticSlice": null
+    },
+    "day=10|range=7|kpi=roi": {
+      "hasData": true,
+      "isROAS": true,
+      "kind": "line",
+      "maxVal": 0.10000000000000003,
+      "slice": [
+        0,
+        0.1,
+        0,
+        0.1,
+        0.09999999999999998,
+        0.10000000000000003,
+        0,
+        0.09999999999999998,
+        0.09999999999999998,
+        0
+      ],
+      "staticSlice": [
+        0,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0
+      ]
+    },
+    "day=1|range=30": {
+      "audienceOverview": {
+        "bands": {
+          "advocates": [
+            125870
+          ],
+          "passive": [
+            105719
+          ],
+          "persuadable": [
+            189891
+          ]
+        },
+        "convRateOverlay": [
+          2.1
+        ]
+      },
+      "campaignHealth": {
+        "budget": 150000,
+        "delivery": {
+          "active": false,
+          "label": "Learning"
+        },
+        "monthlyPace": 150000,
+        "periodSpend": 5000
+      },
+      "campaignList": [
+        {
+          "channel": "push",
+          "contactCount": 813,
+          "id": "p2p-nonuser",
+          "reward": "$15 both-get",
+          "title": "Sent money to non-user"
+        },
+        {
+          "channel": "email",
+          "contactCount": 542,
+          "id": "highly-rated",
+          "reward": "$10 credit",
+          "title": "Rated support highly"
+        },
+        {
+          "channel": "in-app",
+          "contactCount": 433,
+          "id": "seasonal-promo",
+          "reward": "$10 both-get",
+          "title": "Always-on referral offer"
+        }
+      ],
+      "dailyOutreach": {
+        "latestCampaignTitles": [
+          "Sent money to non-user",
+          "Rated support highly",
+          "Always-on referral offer"
+        ],
+        "maxTotal": 1788,
+        "paddedData": [
+          [
+            813,
+            542,
+            433
+          ]
+        ]
+      },
+      "effectiveDay": 1,
+      "funnel": [
+        {
+          "group": "referrer",
+          "label": "Contacted",
+          "time": null,
+          "value": 1788
+        },
+        {
+          "group": "referrer",
+          "label": "Engaged",
+          "time": "1 day",
+          "value": 1377
+        },
+        {
+          "group": "referrer",
+          "label": "Referred",
+          "time": "3 days",
+          "value": 1086
+        },
+        {
+          "group": "referee",
+          "label": "Reached",
+          "time": "4 days",
+          "value": 1520
+        },
+        {
+          "group": "referee",
+          "label": "Signed Up",
+          "time": "6 days",
+          "value": 304
+        },
+        {
+          "group": "referee",
+          "label": "Active User",
+          "time": "12 days",
+          "value": 0
+        }
+      ],
+      "kpiCards": [
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "activeUsers",
+          "label": "New Active Users",
+          "showDelta": false,
+          "value": 0
+        },
+        {
+          "deltaPct": 0,
+          "isGood": true,
+          "key": "cac",
+          "label": "CAC",
+          "showDelta": false,
+          "value": 0
+        },
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "roi",
+          "label": "ROAS",
+          "showDelta": false,
+          "value": 0
+        },
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "fraudSaved",
+          "label": "Fraud Saved",
+          "showDelta": false,
+          "value": 350
+        }
+      ],
+      "suggestedChange": null
+    },
+    "day=1|range=30|kpi=activeUsers": {
+      "hasData": false,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 0,
+      "slice": [
+        0
+      ],
+      "staticSlice": null
+    },
+    "day=1|range=30|kpi=cac": {
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        }
+      ],
+      "kind": "stacked",
+      "maxVal": 82
+    },
+    "day=1|range=30|kpi=fraudSaved": {
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 350,
+      "slice": [
+        350
+      ],
+      "staticSlice": null
+    },
+    "day=1|range=30|kpi=roi": {
+      "hasData": false,
+      "isROAS": true,
+      "kind": "line",
+      "maxVal": 0,
+      "slice": [
+        0
+      ],
+      "staticSlice": [
+        0
+      ]
+    },
+    "day=1|range=7": {
+      "audienceOverview": {
+        "bands": {
+          "advocates": [
+            125870
+          ],
+          "passive": [
+            105719
+          ],
+          "persuadable": [
+            189891
+          ]
+        },
+        "convRateOverlay": [
+          2.1
+        ]
+      },
+      "campaignHealth": {
+        "budget": 150000,
+        "delivery": {
+          "active": false,
+          "label": "Learning"
+        },
+        "monthlyPace": 150000,
+        "periodSpend": 5000
+      },
+      "campaignList": [
+        {
+          "channel": "push",
+          "contactCount": 813,
+          "id": "p2p-nonuser",
+          "reward": "$15 both-get",
+          "title": "Sent money to non-user"
+        },
+        {
+          "channel": "email",
+          "contactCount": 542,
+          "id": "highly-rated",
+          "reward": "$10 credit",
+          "title": "Rated support highly"
+        },
+        {
+          "channel": "in-app",
+          "contactCount": 433,
+          "id": "seasonal-promo",
+          "reward": "$10 both-get",
+          "title": "Always-on referral offer"
+        }
+      ],
+      "dailyOutreach": {
+        "latestCampaignTitles": [
+          "Sent money to non-user",
+          "Rated support highly",
+          "Always-on referral offer"
+        ],
+        "maxTotal": 1788,
+        "paddedData": [
+          [
+            813,
+            542,
+            433
+          ]
+        ]
+      },
+      "effectiveDay": 1,
+      "funnel": [
+        {
+          "group": "referrer",
+          "label": "Contacted",
+          "time": null,
+          "value": 1788
+        },
+        {
+          "group": "referrer",
+          "label": "Engaged",
+          "time": "1 day",
+          "value": 1377
+        },
+        {
+          "group": "referrer",
+          "label": "Referred",
+          "time": "3 days",
+          "value": 1086
+        },
+        {
+          "group": "referee",
+          "label": "Reached",
+          "time": "4 days",
+          "value": 1520
+        },
+        {
+          "group": "referee",
+          "label": "Signed Up",
+          "time": "6 days",
+          "value": 304
+        },
+        {
+          "group": "referee",
+          "label": "Active User",
+          "time": "12 days",
+          "value": 0
+        }
+      ],
+      "kpiCards": [
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "activeUsers",
+          "label": "New Active Users",
+          "showDelta": false,
+          "value": 0
+        },
+        {
+          "deltaPct": 0,
+          "isGood": true,
+          "key": "cac",
+          "label": "CAC",
+          "showDelta": false,
+          "value": 0
+        },
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "roi",
+          "label": "ROAS",
+          "showDelta": false,
+          "value": 0
+        },
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "fraudSaved",
+          "label": "Fraud Saved",
+          "showDelta": false,
+          "value": 350
+        }
+      ],
+      "suggestedChange": null
+    },
+    "day=1|range=7|kpi=activeUsers": {
+      "hasData": false,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 0,
+      "slice": [
+        0
+      ],
+      "staticSlice": null
+    },
+    "day=1|range=7|kpi=cac": {
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        }
+      ],
+      "kind": "stacked",
+      "maxVal": 82
+    },
+    "day=1|range=7|kpi=fraudSaved": {
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 350,
+      "slice": [
+        350
+      ],
+      "staticSlice": null
+    },
+    "day=1|range=7|kpi=roi": {
+      "hasData": false,
+      "isROAS": true,
+      "kind": "line",
+      "maxVal": 0,
+      "slice": [
+        0
+      ],
+      "staticSlice": [
+        0
+      ]
+    },
+    "day=30|range=30": {
+      "audienceOverview": {
+        "bands": {
+          "advocates": [
+            125870,
+            124690,
+            123510,
+            122330,
+            121150,
+            119970,
+            118789,
+            117609,
+            116748,
+            115957,
+            115237,
+            114588,
+            114010,
+            113503,
+            113066,
+            112700,
+            112405,
+            112181,
+            112028,
+            111945,
+            111933,
+            111473,
+            110765,
+            110057,
+            109349,
+            108641,
+            107933,
+            107225,
+            106517,
+            105809
+          ],
+          "passive": [
+            105719,
+            105562,
+            105406,
+            105249,
+            105093,
+            104936,
+            104780,
+            104623,
+            104509,
+            104404,
+            104309,
+            104223,
+            104146,
+            104079,
+            104021,
+            103973,
+            103933,
+            103904,
+            103883,
+            103872,
+            103871,
+            103810,
+            103716,
+            103622,
+            103528,
+            103434,
+            103341,
+            103247,
+            103153,
+            103059
+          ],
+          "persuadable": [
+            189891,
+            189207,
+            188523,
+            187839,
+            187155,
+            186472,
+            185788,
+            185104,
+            184604,
+            184146,
+            183729,
+            183353,
+            183018,
+            182724,
+            182471,
+            182259,
+            182088,
+            181958,
+            181869,
+            181821,
+            181814,
+            181547,
+            181137,
+            180727,
+            180316,
+            179906,
+            179496,
+            179085,
+            178675,
+            178265
+          ]
+        },
+        "convRateOverlay": [
+          2.1,
+          2.1,
+          2.1,
+          2.1,
+          2.2,
+          2.2,
+          2.3,
+          2.4,
+          2.6,
+          2.7,
+          2.8,
+          2.9,
+          3,
+          3.2,
+          3.3,
+          3.4,
+          3.5,
+          3.5,
+          3.6,
+          3.6,
+          3.5,
+          3.4,
+          3.2,
+          2.9,
+          2.6,
+          2.1,
+          1.6,
+          1.1,
+          0.5,
+          0
+        ]
+      },
+      "campaignHealth": {
+        "budget": 150000,
+        "delivery": {
+          "active": true,
+          "label": "Acquiring Customers"
+        },
+        "monthlyPace": 150000,
+        "periodSpend": 150000
+      },
+      "campaignList": [
+        {
+          "channel": "push",
+          "contactCount": 622,
+          "id": "p2p-nonuser",
+          "reward": "$15 both-get",
+          "title": "Sent money to non-user"
+        },
+        {
+          "channel": "email",
+          "contactCount": 622,
+          "id": "first-deposit",
+          "reward": "$10 credit",
+          "title": "First paycheck deposited"
+        },
+        {
+          "channel": "push",
+          "contactCount": 233,
+          "id": "cashback-milestone",
+          "reward": "$5 bonus cashback",
+          "title": "Saved on cashback this month"
+        },
+        {
+          "channel": "email",
+          "contactCount": 233,
+          "id": "highly-rated",
+          "reward": "$10 credit",
+          "title": "Rated support highly"
+        },
+        {
+          "channel": "in-app",
+          "contactCount": 78,
+          "id": "seasonal-promo",
+          "reward": "$10 both-get",
+          "title": "Always-on referral offer"
+        }
+      ],
+      "dailyOutreach": {
+        "latestCampaignTitles": [
+          "Sent money to non-user",
+          "First paycheck deposited",
+          "Saved on cashback this month",
+          "Rated support highly",
+          "Always-on referral offer"
+        ],
+        "maxTotal": 1789,
+        "paddedData": [
+          [
+            813,
+            542,
+            433,
+            0,
+            0
+          ],
+          [
+            846,
+            534,
+            409,
+            0,
+            0
+          ],
+          [
+            876,
+            526,
+            386,
+            0,
+            0
+          ],
+          [
+            905,
+            519,
+            364,
+            0,
+            0
+          ],
+          [
+            931,
+            512,
+            345,
+            0,
+            0
+          ],
+          [
+            956,
+            506,
+            326,
+            0,
+            0
+          ],
+          [
+            979,
+            500,
+            309,
+            0,
+            0
+          ],
+          [
+            1000,
+            495,
+            293,
+            0,
+            0
+          ],
+          [
+            1021,
+            490,
+            278,
+            0,
+            0
+          ],
+          [
+            780,
+            446,
+            364,
+            198,
+            0
+          ],
+          [
+            784,
+            463,
+            356,
+            185,
+            0
+          ],
+          [
+            787,
+            479,
+            349,
+            174,
+            0
+          ],
+          [
+            789,
+            493,
+            342,
+            163,
+            0
+          ],
+          [
+            792,
+            507,
+            336,
+            153,
+            0
+          ],
+          [
+            794,
+            519,
+            330,
+            144,
+            0
+          ],
+          [
+            797,
+            531,
+            325,
+            136,
+            0
+          ],
+          [
+            799,
+            542,
+            319,
+            128,
+            0
+          ],
+          [
+            801,
+            552,
+            315,
+            120,
+            0
+          ],
+          [
+            803,
+            562,
+            310,
+            113,
+            0
+          ],
+          [
+            804,
+            571,
+            306,
+            107,
+            0
+          ],
+          [
+            806,
+            579,
+            302,
+            101,
+            0
+          ],
+          [
+            795,
+            596,
+            298,
+            99,
+            0
+          ],
+          [
+            784,
+            612,
+            294,
+            98,
+            0
+          ],
+          [
+            773,
+            628,
+            290,
+            97,
+            0
+          ],
+          [
+            763,
+            644,
+            286,
+            95,
+            0
+          ],
+          [
+            753,
+            659,
+            282,
+            94,
+            0
+          ],
+          [
+            743,
+            673,
+            279,
+            93,
+            0
+          ],
+          [
+            734,
+            688,
+            275,
+            92,
+            0
+          ],
+          [
+            724,
+            702,
+            272,
+            91,
+            0
+          ],
+          [
+            622,
+            622,
+            233,
+            233,
+            78
+          ]
+        ]
+      },
+      "effectiveDay": 30,
+      "funnel": [
+        {
+          "group": "referrer",
+          "label": "Contacted",
+          "time": null,
+          "value": 53640
+        },
+        {
+          "group": "referrer",
+          "label": "Engaged",
+          "time": "1 day",
+          "value": 41303
+        },
+        {
+          "group": "referrer",
+          "label": "Referred",
+          "time": "3 days",
+          "value": 34708
+        },
+        {
+          "group": "referee",
+          "label": "Reached",
+          "time": "4 days",
+          "value": 48591
+        },
+        {
+          "group": "referee",
+          "label": "Signed Up",
+          "time": "6 days",
+          "value": 9717
+        },
+        {
+          "group": "referee",
+          "label": "Active User",
+          "time": "12 days",
+          "value": 1363
+        }
+      ],
+      "kpiCards": [
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "activeUsers",
+          "label": "New Active Users",
+          "showDelta": false,
+          "value": 1363
+        },
+        {
+          "deltaPct": 0,
+          "isGood": true,
+          "key": "cac",
+          "label": "CAC",
+          "showDelta": false,
+          "value": 110
+        },
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "roi",
+          "label": "ROAS",
+          "showDelta": false,
+          "value": 1.7
+        },
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "fraudSaved",
+          "label": "Fraud Saved",
+          "showDelta": false,
+          "value": 10500
+        }
+      ],
+      "suggestedChange": {
+        "action": "Reduce max reward from $75 to $50 — same conversion rate, saves $12,000/mo.",
+        "observation": "$50 credit converts 3.2x better than $75 credit across all segments.",
+        "title": "$50 credit outperforms $75 credit"
+      }
+    },
+    "day=30|range=30|kpi=activeUsers": {
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 75,
+      "slice": [
+        0,
+        4,
+        9,
+        14,
+        18,
+        23,
+        27,
+        31,
+        34,
+        37,
+        39,
+        42,
+        44,
+        46,
+        48,
+        50,
+        52,
+        54,
+        56,
+        58,
+        60,
+        62,
+        64,
+        65,
+        67,
+        69,
+        70,
+        72,
+        73,
+        75
+      ],
+      "staticSlice": null
+    },
+    "day=30|range=30|kpi=cac": {
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        }
+      ],
+      "kind": "stacked",
+      "maxVal": 82
+    },
+    "day=30|range=30|kpi=fraudSaved": {
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 350,
+      "slice": [
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350
+      ],
+      "staticSlice": null
+    },
+    "day=30|range=30|kpi=roi": {
+      "hasData": true,
+      "isROAS": true,
+      "kind": "line",
+      "maxVal": 0.10000000000000009,
+      "slice": [
+        0,
+        0.1,
+        0,
+        0.1,
+        0.09999999999999998,
+        0.10000000000000003,
+        0,
+        0.09999999999999998,
+        0.09999999999999998,
+        0,
+        0.09999999999999998,
+        0,
+        0.10000000000000009,
+        0,
+        0.09999999999999998,
+        0.09999999999999998,
+        0,
+        0.10000000000000009,
+        0,
+        0.09999999999999987,
+        0,
+        0.10000000000000009,
+        0,
+        0.09999999999999987,
+        0.10000000000000009,
+        0,
+        0.10000000000000009,
+        0,
+        0.09999999999999987,
+        0
+      ],
+      "staticSlice": [
+        0,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0
+      ]
+    },
+    "day=30|range=7": {
+      "audienceOverview": {
+        "bands": {
+          "advocates": [
+            125870,
+            124690,
+            123510,
+            122330,
+            121150,
+            119970,
+            118789,
+            117609,
+            116748,
+            115957,
+            115237,
+            114588,
+            114010,
+            113503,
+            113066,
+            112700,
+            112405,
+            112181,
+            112028,
+            111945,
+            111933,
+            111473,
+            110765,
+            110057,
+            109349,
+            108641,
+            107933,
+            107225,
+            106517,
+            105809
+          ],
+          "passive": [
+            105719,
+            105562,
+            105406,
+            105249,
+            105093,
+            104936,
+            104780,
+            104623,
+            104509,
+            104404,
+            104309,
+            104223,
+            104146,
+            104079,
+            104021,
+            103973,
+            103933,
+            103904,
+            103883,
+            103872,
+            103871,
+            103810,
+            103716,
+            103622,
+            103528,
+            103434,
+            103341,
+            103247,
+            103153,
+            103059
+          ],
+          "persuadable": [
+            189891,
+            189207,
+            188523,
+            187839,
+            187155,
+            186472,
+            185788,
+            185104,
+            184604,
+            184146,
+            183729,
+            183353,
+            183018,
+            182724,
+            182471,
+            182259,
+            182088,
+            181958,
+            181869,
+            181821,
+            181814,
+            181547,
+            181137,
+            180727,
+            180316,
+            179906,
+            179496,
+            179085,
+            178675,
+            178265
+          ]
+        },
+        "convRateOverlay": [
+          2.1,
+          2.1,
+          2.1,
+          2.1,
+          2.2,
+          2.2,
+          2.3,
+          2.4,
+          2.6,
+          2.7,
+          2.8,
+          2.9,
+          3,
+          3.2,
+          3.3,
+          3.4,
+          3.5,
+          3.5,
+          3.6,
+          3.6,
+          3.5,
+          3.4,
+          3.2,
+          2.9,
+          2.6,
+          2.1,
+          1.6,
+          1.1,
+          0.5,
+          0
+        ]
+      },
+      "campaignHealth": {
+        "budget": 150000,
+        "delivery": {
+          "active": true,
+          "label": "Acquiring Customers"
+        },
+        "monthlyPace": 150000,
+        "periodSpend": 35000
+      },
+      "campaignList": [
+        {
+          "channel": "push",
+          "contactCount": 622,
+          "id": "p2p-nonuser",
+          "reward": "$15 both-get",
+          "title": "Sent money to non-user"
+        },
+        {
+          "channel": "email",
+          "contactCount": 622,
+          "id": "first-deposit",
+          "reward": "$10 credit",
+          "title": "First paycheck deposited"
+        },
+        {
+          "channel": "push",
+          "contactCount": 233,
+          "id": "cashback-milestone",
+          "reward": "$5 bonus cashback",
+          "title": "Saved on cashback this month"
+        },
+        {
+          "channel": "email",
+          "contactCount": 233,
+          "id": "highly-rated",
+          "reward": "$10 credit",
+          "title": "Rated support highly"
+        },
+        {
+          "channel": "in-app",
+          "contactCount": 78,
+          "id": "seasonal-promo",
+          "reward": "$10 both-get",
+          "title": "Always-on referral offer"
+        }
+      ],
+      "dailyOutreach": {
+        "latestCampaignTitles": [
+          "Sent money to non-user",
+          "First paycheck deposited",
+          "Saved on cashback this month",
+          "Rated support highly",
+          "Always-on referral offer"
+        ],
+        "maxTotal": 1789,
+        "paddedData": [
+          [
+            813,
+            542,
+            433,
+            0,
+            0
+          ],
+          [
+            846,
+            534,
+            409,
+            0,
+            0
+          ],
+          [
+            876,
+            526,
+            386,
+            0,
+            0
+          ],
+          [
+            905,
+            519,
+            364,
+            0,
+            0
+          ],
+          [
+            931,
+            512,
+            345,
+            0,
+            0
+          ],
+          [
+            956,
+            506,
+            326,
+            0,
+            0
+          ],
+          [
+            979,
+            500,
+            309,
+            0,
+            0
+          ],
+          [
+            1000,
+            495,
+            293,
+            0,
+            0
+          ],
+          [
+            1021,
+            490,
+            278,
+            0,
+            0
+          ],
+          [
+            780,
+            446,
+            364,
+            198,
+            0
+          ],
+          [
+            784,
+            463,
+            356,
+            185,
+            0
+          ],
+          [
+            787,
+            479,
+            349,
+            174,
+            0
+          ],
+          [
+            789,
+            493,
+            342,
+            163,
+            0
+          ],
+          [
+            792,
+            507,
+            336,
+            153,
+            0
+          ],
+          [
+            794,
+            519,
+            330,
+            144,
+            0
+          ],
+          [
+            797,
+            531,
+            325,
+            136,
+            0
+          ],
+          [
+            799,
+            542,
+            319,
+            128,
+            0
+          ],
+          [
+            801,
+            552,
+            315,
+            120,
+            0
+          ],
+          [
+            803,
+            562,
+            310,
+            113,
+            0
+          ],
+          [
+            804,
+            571,
+            306,
+            107,
+            0
+          ],
+          [
+            806,
+            579,
+            302,
+            101,
+            0
+          ],
+          [
+            795,
+            596,
+            298,
+            99,
+            0
+          ],
+          [
+            784,
+            612,
+            294,
+            98,
+            0
+          ],
+          [
+            773,
+            628,
+            290,
+            97,
+            0
+          ],
+          [
+            763,
+            644,
+            286,
+            95,
+            0
+          ],
+          [
+            753,
+            659,
+            282,
+            94,
+            0
+          ],
+          [
+            743,
+            673,
+            279,
+            93,
+            0
+          ],
+          [
+            734,
+            688,
+            275,
+            92,
+            0
+          ],
+          [
+            724,
+            702,
+            272,
+            91,
+            0
+          ],
+          [
+            622,
+            622,
+            233,
+            233,
+            78
+          ]
+        ]
+      },
+      "effectiveDay": 30,
+      "funnel": [
+        {
+          "group": "referrer",
+          "label": "Contacted",
+          "time": null,
+          "value": 53640
+        },
+        {
+          "group": "referrer",
+          "label": "Engaged",
+          "time": "1 day",
+          "value": 41303
+        },
+        {
+          "group": "referrer",
+          "label": "Referred",
+          "time": "3 days",
+          "value": 34708
+        },
+        {
+          "group": "referee",
+          "label": "Reached",
+          "time": "4 days",
+          "value": 48591
+        },
+        {
+          "group": "referee",
+          "label": "Signed Up",
+          "time": "6 days",
+          "value": 9717
+        },
+        {
+          "group": "referee",
+          "label": "Active User",
+          "time": "12 days",
+          "value": 1363
+        }
+      ],
+      "kpiCards": [
+        {
+          "deltaPct": 21,
+          "isGood": true,
+          "key": "activeUsers",
+          "label": "New Active Users",
+          "showDelta": true,
+          "value": 491
+        },
+        {
+          "deltaPct": -17,
+          "isGood": true,
+          "key": "cac",
+          "label": "CAC",
+          "showDelta": true,
+          "value": 71
+        },
+        {
+          "deltaPct": 36,
+          "isGood": true,
+          "key": "roi",
+          "label": "ROAS",
+          "showDelta": true,
+          "value": 3
+        },
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "fraudSaved",
+          "label": "Fraud Saved",
+          "showDelta": false,
+          "value": 2450
+        }
+      ],
+      "suggestedChange": {
+        "action": "Reduce max reward from $75 to $50 — same conversion rate, saves $12,000/mo.",
+        "observation": "$50 credit converts 3.2x better than $75 credit across all segments.",
+        "title": "$50 credit outperforms $75 credit"
+      }
+    },
+    "day=30|range=7|kpi=activeUsers": {
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 75,
+      "slice": [
+        0,
+        4,
+        9,
+        14,
+        18,
+        23,
+        27,
+        31,
+        34,
+        37,
+        39,
+        42,
+        44,
+        46,
+        48,
+        50,
+        52,
+        54,
+        56,
+        58,
+        60,
+        62,
+        64,
+        65,
+        67,
+        69,
+        70,
+        72,
+        73,
+        75
+      ],
+      "staticSlice": null
+    },
+    "day=30|range=7|kpi=cac": {
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        }
+      ],
+      "kind": "stacked",
+      "maxVal": 82
+    },
+    "day=30|range=7|kpi=fraudSaved": {
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 350,
+      "slice": [
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350
+      ],
+      "staticSlice": null
+    },
+    "day=30|range=7|kpi=roi": {
+      "hasData": true,
+      "isROAS": true,
+      "kind": "line",
+      "maxVal": 0.10000000000000009,
+      "slice": [
+        0,
+        0.1,
+        0,
+        0.1,
+        0.09999999999999998,
+        0.10000000000000003,
+        0,
+        0.09999999999999998,
+        0.09999999999999998,
+        0,
+        0.09999999999999998,
+        0,
+        0.10000000000000009,
+        0,
+        0.09999999999999998,
+        0.09999999999999998,
+        0,
+        0.10000000000000009,
+        0,
+        0.09999999999999987,
+        0,
+        0.10000000000000009,
+        0,
+        0.09999999999999987,
+        0.10000000000000009,
+        0,
+        0.10000000000000009,
+        0,
+        0.09999999999999987,
+        0
+      ],
+      "staticSlice": [
+        0,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0
+      ]
+    },
+    "day=60|range=30": {
+      "audienceOverview": {
+        "bands": {
+          "advocates": [
+            125870,
+            124690,
+            123510,
+            122330,
+            121150,
+            119970,
+            118789,
+            117609,
+            116748,
+            115957,
+            115237,
+            114588,
+            114010,
+            113503,
+            113066,
+            112700,
+            112405,
+            112181,
+            112028,
+            111945,
+            111933,
+            111473,
+            110765,
+            110057,
+            109349,
+            108641,
+            107933,
+            107225,
+            106517,
+            105809
+          ],
+          "passive": [
+            105719,
+            105562,
+            105406,
+            105249,
+            105093,
+            104936,
+            104780,
+            104623,
+            104509,
+            104404,
+            104309,
+            104223,
+            104146,
+            104079,
+            104021,
+            103973,
+            103933,
+            103904,
+            103883,
+            103872,
+            103871,
+            103810,
+            103716,
+            103622,
+            103528,
+            103434,
+            103341,
+            103247,
+            103153,
+            103059
+          ],
+          "persuadable": [
+            189891,
+            189207,
+            188523,
+            187839,
+            187155,
+            186472,
+            185788,
+            185104,
+            184604,
+            184146,
+            183729,
+            183353,
+            183018,
+            182724,
+            182471,
+            182259,
+            182088,
+            181958,
+            181869,
+            181821,
+            181814,
+            181547,
+            181137,
+            180727,
+            180316,
+            179906,
+            179496,
+            179085,
+            178675,
+            178265
+          ]
+        },
+        "convRateOverlay": [
+          2.1,
+          2.1,
+          2.1,
+          2.1,
+          2.2,
+          2.2,
+          2.3,
+          2.4,
+          2.6,
+          2.7,
+          2.8,
+          2.9,
+          3,
+          3.2,
+          3.3,
+          3.4,
+          3.5,
+          3.5,
+          3.6,
+          3.6,
+          3.5,
+          3.4,
+          3.2,
+          2.9,
+          2.6,
+          2.1,
+          1.6,
+          1.1,
+          0.5,
+          0
+        ]
+      },
+      "campaignHealth": {
+        "budget": 150000,
+        "delivery": {
+          "active": true,
+          "label": "Acquiring Customers"
+        },
+        "monthlyPace": 150000,
+        "periodSpend": 150000
+      },
+      "campaignList": [
+        {
+          "channel": "push",
+          "contactCount": 622,
+          "id": "p2p-nonuser",
+          "reward": "$15 both-get",
+          "title": "Sent money to non-user"
+        },
+        {
+          "channel": "email",
+          "contactCount": 622,
+          "id": "first-deposit",
+          "reward": "$10 credit",
+          "title": "First paycheck deposited"
+        },
+        {
+          "channel": "push",
+          "contactCount": 233,
+          "id": "cashback-milestone",
+          "reward": "$5 bonus cashback",
+          "title": "Saved on cashback this month"
+        },
+        {
+          "channel": "email",
+          "contactCount": 233,
+          "id": "highly-rated",
+          "reward": "$10 credit",
+          "title": "Rated support highly"
+        },
+        {
+          "channel": "in-app",
+          "contactCount": 78,
+          "id": "seasonal-promo",
+          "reward": "$10 both-get",
+          "title": "Always-on referral offer"
+        }
+      ],
+      "dailyOutreach": {
+        "latestCampaignTitles": [
+          "Sent money to non-user",
+          "First paycheck deposited",
+          "Saved on cashback this month",
+          "Rated support highly",
+          "Always-on referral offer"
+        ],
+        "maxTotal": 1789,
+        "paddedData": [
+          [
+            813,
+            542,
+            433,
+            0,
+            0
+          ],
+          [
+            846,
+            534,
+            409,
+            0,
+            0
+          ],
+          [
+            876,
+            526,
+            386,
+            0,
+            0
+          ],
+          [
+            905,
+            519,
+            364,
+            0,
+            0
+          ],
+          [
+            931,
+            512,
+            345,
+            0,
+            0
+          ],
+          [
+            956,
+            506,
+            326,
+            0,
+            0
+          ],
+          [
+            979,
+            500,
+            309,
+            0,
+            0
+          ],
+          [
+            1000,
+            495,
+            293,
+            0,
+            0
+          ],
+          [
+            1021,
+            490,
+            278,
+            0,
+            0
+          ],
+          [
+            780,
+            446,
+            364,
+            198,
+            0
+          ],
+          [
+            784,
+            463,
+            356,
+            185,
+            0
+          ],
+          [
+            787,
+            479,
+            349,
+            174,
+            0
+          ],
+          [
+            789,
+            493,
+            342,
+            163,
+            0
+          ],
+          [
+            792,
+            507,
+            336,
+            153,
+            0
+          ],
+          [
+            794,
+            519,
+            330,
+            144,
+            0
+          ],
+          [
+            797,
+            531,
+            325,
+            136,
+            0
+          ],
+          [
+            799,
+            542,
+            319,
+            128,
+            0
+          ],
+          [
+            801,
+            552,
+            315,
+            120,
+            0
+          ],
+          [
+            803,
+            562,
+            310,
+            113,
+            0
+          ],
+          [
+            804,
+            571,
+            306,
+            107,
+            0
+          ],
+          [
+            806,
+            579,
+            302,
+            101,
+            0
+          ],
+          [
+            795,
+            596,
+            298,
+            99,
+            0
+          ],
+          [
+            784,
+            612,
+            294,
+            98,
+            0
+          ],
+          [
+            773,
+            628,
+            290,
+            97,
+            0
+          ],
+          [
+            763,
+            644,
+            286,
+            95,
+            0
+          ],
+          [
+            753,
+            659,
+            282,
+            94,
+            0
+          ],
+          [
+            743,
+            673,
+            279,
+            93,
+            0
+          ],
+          [
+            734,
+            688,
+            275,
+            92,
+            0
+          ],
+          [
+            724,
+            702,
+            272,
+            91,
+            0
+          ],
+          [
+            622,
+            622,
+            233,
+            233,
+            78
+          ]
+        ]
+      },
+      "effectiveDay": 30,
+      "funnel": [
+        {
+          "group": "referrer",
+          "label": "Contacted",
+          "time": null,
+          "value": 53640
+        },
+        {
+          "group": "referrer",
+          "label": "Engaged",
+          "time": "1 day",
+          "value": 41303
+        },
+        {
+          "group": "referrer",
+          "label": "Referred",
+          "time": "3 days",
+          "value": 34708
+        },
+        {
+          "group": "referee",
+          "label": "Reached",
+          "time": "4 days",
+          "value": 48591
+        },
+        {
+          "group": "referee",
+          "label": "Signed Up",
+          "time": "6 days",
+          "value": 9717
+        },
+        {
+          "group": "referee",
+          "label": "Active User",
+          "time": "12 days",
+          "value": 1363
+        }
+      ],
+      "kpiCards": [
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "activeUsers",
+          "label": "New Active Users",
+          "showDelta": false,
+          "value": 1363
+        },
+        {
+          "deltaPct": 0,
+          "isGood": true,
+          "key": "cac",
+          "label": "CAC",
+          "showDelta": false,
+          "value": 110
+        },
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "roi",
+          "label": "ROAS",
+          "showDelta": false,
+          "value": 1.7
+        },
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "fraudSaved",
+          "label": "Fraud Saved",
+          "showDelta": false,
+          "value": 10500
+        }
+      ],
+      "suggestedChange": {
+        "action": "Reduce max reward from $75 to $50 — same conversion rate, saves $12,000/mo.",
+        "observation": "$50 credit converts 3.2x better than $75 credit across all segments.",
+        "title": "$50 credit outperforms $75 credit"
+      }
+    },
+    "day=60|range=30|kpi=activeUsers": {
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 75,
+      "slice": [
+        0,
+        4,
+        9,
+        14,
+        18,
+        23,
+        27,
+        31,
+        34,
+        37,
+        39,
+        42,
+        44,
+        46,
+        48,
+        50,
+        52,
+        54,
+        56,
+        58,
+        60,
+        62,
+        64,
+        65,
+        67,
+        69,
+        70,
+        72,
+        73,
+        75
+      ],
+      "staticSlice": null
+    },
+    "day=60|range=30|kpi=cac": {
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        }
+      ],
+      "kind": "stacked",
+      "maxVal": 82
+    },
+    "day=60|range=30|kpi=fraudSaved": {
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 350,
+      "slice": [
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350
+      ],
+      "staticSlice": null
+    },
+    "day=60|range=30|kpi=roi": {
+      "hasData": true,
+      "isROAS": true,
+      "kind": "line",
+      "maxVal": 0.10000000000000009,
+      "slice": [
+        0,
+        0.1,
+        0,
+        0.1,
+        0.09999999999999998,
+        0.10000000000000003,
+        0,
+        0.09999999999999998,
+        0.09999999999999998,
+        0,
+        0.09999999999999998,
+        0,
+        0.10000000000000009,
+        0,
+        0.09999999999999998,
+        0.09999999999999998,
+        0,
+        0.10000000000000009,
+        0,
+        0.09999999999999987,
+        0,
+        0.10000000000000009,
+        0,
+        0.09999999999999987,
+        0.10000000000000009,
+        0,
+        0.10000000000000009,
+        0,
+        0.09999999999999987,
+        0
+      ],
+      "staticSlice": [
+        0,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0
+      ]
+    },
+    "day=60|range=7": {
+      "audienceOverview": {
+        "bands": {
+          "advocates": [
+            125870,
+            124690,
+            123510,
+            122330,
+            121150,
+            119970,
+            118789,
+            117609,
+            116748,
+            115957,
+            115237,
+            114588,
+            114010,
+            113503,
+            113066,
+            112700,
+            112405,
+            112181,
+            112028,
+            111945,
+            111933,
+            111473,
+            110765,
+            110057,
+            109349,
+            108641,
+            107933,
+            107225,
+            106517,
+            105809
+          ],
+          "passive": [
+            105719,
+            105562,
+            105406,
+            105249,
+            105093,
+            104936,
+            104780,
+            104623,
+            104509,
+            104404,
+            104309,
+            104223,
+            104146,
+            104079,
+            104021,
+            103973,
+            103933,
+            103904,
+            103883,
+            103872,
+            103871,
+            103810,
+            103716,
+            103622,
+            103528,
+            103434,
+            103341,
+            103247,
+            103153,
+            103059
+          ],
+          "persuadable": [
+            189891,
+            189207,
+            188523,
+            187839,
+            187155,
+            186472,
+            185788,
+            185104,
+            184604,
+            184146,
+            183729,
+            183353,
+            183018,
+            182724,
+            182471,
+            182259,
+            182088,
+            181958,
+            181869,
+            181821,
+            181814,
+            181547,
+            181137,
+            180727,
+            180316,
+            179906,
+            179496,
+            179085,
+            178675,
+            178265
+          ]
+        },
+        "convRateOverlay": [
+          2.1,
+          2.1,
+          2.1,
+          2.1,
+          2.2,
+          2.2,
+          2.3,
+          2.4,
+          2.6,
+          2.7,
+          2.8,
+          2.9,
+          3,
+          3.2,
+          3.3,
+          3.4,
+          3.5,
+          3.5,
+          3.6,
+          3.6,
+          3.5,
+          3.4,
+          3.2,
+          2.9,
+          2.6,
+          2.1,
+          1.6,
+          1.1,
+          0.5,
+          0
+        ]
+      },
+      "campaignHealth": {
+        "budget": 150000,
+        "delivery": {
+          "active": true,
+          "label": "Acquiring Customers"
+        },
+        "monthlyPace": 150000,
+        "periodSpend": 35000
+      },
+      "campaignList": [
+        {
+          "channel": "push",
+          "contactCount": 622,
+          "id": "p2p-nonuser",
+          "reward": "$15 both-get",
+          "title": "Sent money to non-user"
+        },
+        {
+          "channel": "email",
+          "contactCount": 622,
+          "id": "first-deposit",
+          "reward": "$10 credit",
+          "title": "First paycheck deposited"
+        },
+        {
+          "channel": "push",
+          "contactCount": 233,
+          "id": "cashback-milestone",
+          "reward": "$5 bonus cashback",
+          "title": "Saved on cashback this month"
+        },
+        {
+          "channel": "email",
+          "contactCount": 233,
+          "id": "highly-rated",
+          "reward": "$10 credit",
+          "title": "Rated support highly"
+        },
+        {
+          "channel": "in-app",
+          "contactCount": 78,
+          "id": "seasonal-promo",
+          "reward": "$10 both-get",
+          "title": "Always-on referral offer"
+        }
+      ],
+      "dailyOutreach": {
+        "latestCampaignTitles": [
+          "Sent money to non-user",
+          "First paycheck deposited",
+          "Saved on cashback this month",
+          "Rated support highly",
+          "Always-on referral offer"
+        ],
+        "maxTotal": 1789,
+        "paddedData": [
+          [
+            813,
+            542,
+            433,
+            0,
+            0
+          ],
+          [
+            846,
+            534,
+            409,
+            0,
+            0
+          ],
+          [
+            876,
+            526,
+            386,
+            0,
+            0
+          ],
+          [
+            905,
+            519,
+            364,
+            0,
+            0
+          ],
+          [
+            931,
+            512,
+            345,
+            0,
+            0
+          ],
+          [
+            956,
+            506,
+            326,
+            0,
+            0
+          ],
+          [
+            979,
+            500,
+            309,
+            0,
+            0
+          ],
+          [
+            1000,
+            495,
+            293,
+            0,
+            0
+          ],
+          [
+            1021,
+            490,
+            278,
+            0,
+            0
+          ],
+          [
+            780,
+            446,
+            364,
+            198,
+            0
+          ],
+          [
+            784,
+            463,
+            356,
+            185,
+            0
+          ],
+          [
+            787,
+            479,
+            349,
+            174,
+            0
+          ],
+          [
+            789,
+            493,
+            342,
+            163,
+            0
+          ],
+          [
+            792,
+            507,
+            336,
+            153,
+            0
+          ],
+          [
+            794,
+            519,
+            330,
+            144,
+            0
+          ],
+          [
+            797,
+            531,
+            325,
+            136,
+            0
+          ],
+          [
+            799,
+            542,
+            319,
+            128,
+            0
+          ],
+          [
+            801,
+            552,
+            315,
+            120,
+            0
+          ],
+          [
+            803,
+            562,
+            310,
+            113,
+            0
+          ],
+          [
+            804,
+            571,
+            306,
+            107,
+            0
+          ],
+          [
+            806,
+            579,
+            302,
+            101,
+            0
+          ],
+          [
+            795,
+            596,
+            298,
+            99,
+            0
+          ],
+          [
+            784,
+            612,
+            294,
+            98,
+            0
+          ],
+          [
+            773,
+            628,
+            290,
+            97,
+            0
+          ],
+          [
+            763,
+            644,
+            286,
+            95,
+            0
+          ],
+          [
+            753,
+            659,
+            282,
+            94,
+            0
+          ],
+          [
+            743,
+            673,
+            279,
+            93,
+            0
+          ],
+          [
+            734,
+            688,
+            275,
+            92,
+            0
+          ],
+          [
+            724,
+            702,
+            272,
+            91,
+            0
+          ],
+          [
+            622,
+            622,
+            233,
+            233,
+            78
+          ]
+        ]
+      },
+      "effectiveDay": 30,
+      "funnel": [
+        {
+          "group": "referrer",
+          "label": "Contacted",
+          "time": null,
+          "value": 53640
+        },
+        {
+          "group": "referrer",
+          "label": "Engaged",
+          "time": "1 day",
+          "value": 41303
+        },
+        {
+          "group": "referrer",
+          "label": "Referred",
+          "time": "3 days",
+          "value": 34708
+        },
+        {
+          "group": "referee",
+          "label": "Reached",
+          "time": "4 days",
+          "value": 48591
+        },
+        {
+          "group": "referee",
+          "label": "Signed Up",
+          "time": "6 days",
+          "value": 9717
+        },
+        {
+          "group": "referee",
+          "label": "Active User",
+          "time": "12 days",
+          "value": 1363
+        }
+      ],
+      "kpiCards": [
+        {
+          "deltaPct": 21,
+          "isGood": true,
+          "key": "activeUsers",
+          "label": "New Active Users",
+          "showDelta": true,
+          "value": 491
+        },
+        {
+          "deltaPct": -17,
+          "isGood": true,
+          "key": "cac",
+          "label": "CAC",
+          "showDelta": true,
+          "value": 71
+        },
+        {
+          "deltaPct": 36,
+          "isGood": true,
+          "key": "roi",
+          "label": "ROAS",
+          "showDelta": true,
+          "value": 3
+        },
+        {
+          "deltaPct": 0,
+          "isGood": false,
+          "key": "fraudSaved",
+          "label": "Fraud Saved",
+          "showDelta": false,
+          "value": 2450
+        }
+      ],
+      "suggestedChange": {
+        "action": "Reduce max reward from $75 to $50 — same conversion rate, saves $12,000/mo.",
+        "observation": "$50 credit converts 3.2x better than $75 credit across all segments.",
+        "title": "$50 credit outperforms $75 credit"
+      }
+    },
+    "day=60|range=7|kpi=activeUsers": {
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 75,
+      "slice": [
+        0,
+        4,
+        9,
+        14,
+        18,
+        23,
+        27,
+        31,
+        34,
+        37,
+        39,
+        42,
+        44,
+        46,
+        48,
+        50,
+        52,
+        54,
+        56,
+        58,
+        60,
+        62,
+        64,
+        65,
+        67,
+        69,
+        70,
+        72,
+        73,
+        75
+      ],
+      "staticSlice": null
+    },
+    "day=60|range=7|kpi=cac": {
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        }
+      ],
+      "kind": "stacked",
+      "maxVal": 82
+    },
+    "day=60|range=7|kpi=fraudSaved": {
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 350,
+      "slice": [
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350
+      ],
+      "staticSlice": null
+    },
+    "day=60|range=7|kpi=roi": {
+      "hasData": true,
+      "isROAS": true,
+      "kind": "line",
+      "maxVal": 0.10000000000000009,
+      "slice": [
+        0,
+        0.1,
+        0,
+        0.1,
+        0.09999999999999998,
+        0.10000000000000003,
+        0,
+        0.09999999999999998,
+        0.09999999999999998,
+        0,
+        0.09999999999999998,
+        0,
+        0.10000000000000009,
+        0,
+        0.09999999999999998,
+        0.09999999999999998,
+        0,
+        0.10000000000000009,
+        0,
+        0.09999999999999987,
+        0,
+        0.10000000000000009,
+        0,
+        0.09999999999999987,
+        0.10000000000000009,
+        0,
+        0.10000000000000009,
+        0,
+        0.09999999999999987,
+        0
+      ],
+      "staticSlice": [
+        0,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0,
+        0.1,
+        0
+      ]
+    }
+  },
+  "meta": {
+    "budget": 150000,
+    "dateRanges": [
+      7,
+      30
+    ],
+    "dayStops": [
+      1,
+      10,
+      30,
+      60
+    ],
+    "kpiKeys": [
+      "activeUsers",
+      "cac",
+      "roi",
+      "fraudSaved"
+    ],
+    "schemaVersion": 1
+  }
+}

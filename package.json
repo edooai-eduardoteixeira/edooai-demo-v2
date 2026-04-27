@@ -10,6 +10,9 @@
     "server": "node server/index.js",
     "start": "node server/index.js",
     "verify-engine": "node scripts/verify-engine.mjs",
+    "verify-metrics": "node scripts/verify-metrics.mjs",
+    "snapshot:capture": "node scripts/capture-snapshot.mjs",
+    "snapshot:diff": "node scripts/capture-snapshot.mjs > /tmp/snapshot-current.json && node scripts/diff-snapshot.mjs scripts/snapshots/pre-s1.json /tmp/snapshot-current.json && rm /tmp/snapshot-current.json",
     "calibrate": "node scripts/calibrate-engine.mjs"
   },
   "keywords": [],
