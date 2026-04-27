@@ -174,34 +174,32 @@ export function computeKpiDelta(days, selectedDay, dateRange, key, betterWhen) {
 /**
  * @see METRIC_MODEL.md §M2.9–M2.13
  *
- * S4 (post-QA): all 4 KPIs render as line charts. Each chart's daily values
- * aggregate to the KPI card via that metric's natural rule:
- *
- *   activeUsers → sum
- *   fraudSaved  → sum
- *   CAC         → weighted by daily users (daily reward cost ÷ daily users)
- *   ROAS        → weighted by daily spend  (daily value ÷ daily spend)
- *
- * The CAC stacked-bar (referrer + referee cost breakdown) was removed in
- * favour of a daily-CAC line so chart and KPI card represent the same
- * metric. The breakdown can return as a separate widget if needed.
+ * Hero chart per KPI:
+ *   activeUsers → line of daily resolved users (sum to KPI)
+ *   CAC         → stacked bar of [dailyReferrerCost, dailyRefereeCost]
+ *                 (unit cost decomposition — users-weighted average ties
+ *                  to KPI CAC = Σ reward / Σ users)
+ *   ROAS        → line of daily ROI (Σ value / Σ spend ties to KPI)
+ *   fraudSaved  → line of daily fraud increments (sum to KPI)
  */
 export function computeHeroChart(projection, selectedKPI, currentDay) {
   const days = projection.days;
+
+  // CAC: stacked bar of daily unit cost (referrer + referee).
+  // Tie-out: KPI = Σ (daily reward paid) / Σ daily users, where daily reward
+  // paid = (referrer + referee) × daily users for that day.
+  if (selectedKPI === 'cac') {
+    const cacData = days.slice(0, currentDay).map(d => ({
+      values: [d.dailyReferrerCost, d.dailyRefereeCost],
+    }));
+    const maxVal = Math.max(...cacData.map(d => d.values[0] + d.values[1]), 0);
+    return { kind: 'stacked', cacData, maxVal };
+  }
 
   let slice;
   if (selectedKPI === 'activeUsers') {
     // Daily new active users (resolution-time)
     slice = projection.dailyCurve.slice(0, currentDay);
-  } else if (selectedKPI === 'cac') {
-    // Daily CAC = day's reward cost / day's resolved active users.
-    // 0 on days with no resolutions (line dips, signaling volatility honestly).
-    slice = days.slice(0, currentDay).map((d, i) => {
-      const prevReward = i > 0 ? days[i - 1].cumulativeRewardCost : 0;
-      const dayReward = d.cumulativeRewardCost - prevReward;
-      const dayUsers = d.dailyFunnel?.activeUser || 0;
-      return dayUsers > 0 ? Math.round(dayReward / dayUsers) : 0;
-    });
   } else if (selectedKPI === 'roi') {
     // Daily ROI = day's value generated / day's spend.
     slice = days.slice(0, currentDay).map((d, i) => {

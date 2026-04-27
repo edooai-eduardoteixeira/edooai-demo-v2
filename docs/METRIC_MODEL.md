@@ -147,8 +147,9 @@ For each KPI, the delta vs prior period:
 - **Surfaces**: stacked bars per day, segments [referrer, referee]
 - **Time base**: daily generation-time (cost incurred when offer is paid out)
 - **Derivation**: `days.slice(0, currentDay).map(d => [d.dailyReferrerCost, d.dailyRefereeCost])`
-- **S4 post-QA**: CAC chart is now a daily CAC line — `daily reward cost / daily resolved users` per day — matching the units of the KPI card. The stacked bar (referrer + referee cost decomposition) was retired; the chart and KPI card now represent the same metric and tie out: weighted-by-users average of daily CACs equals period CAC.
-- **Status**: S1 — preserve. ✅ **S4 — line chart of daily CAC ratio.** Same chart kind as activeUsers/ROAS/fraudSaved; user can sum/average bars and the math reconciles with the KPI card.
+- **Chart**: stacked bar of daily unit cost — `[dailyReferrerCost, dailyRefereeCost]` per day in $. The two segments are the per-conversion reward components.
+- **Tie-out to KPI card** (S4 post-QA): KPI CAC = Σ daily reward paid / Σ daily resolved users, where daily reward paid = unit cost × daily users. The chart shows unit cost (varies day-to-day with efficiency); the KPI is the users-weighted average of those daily unit costs. The KPI formula was corrected to use `cumulativeRewardCost` increments (matching engine's notion of CAC at projectionEngine.js:304), not budget allocation.
+- **Status**: S1 — preserve. ✅ **S4 — KPI math reconciled with chart**, chart unchanged.
 
 ### M2.11 Hero chart series — ROI / fraudSaved (line)
 

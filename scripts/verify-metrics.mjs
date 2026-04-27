@@ -309,7 +309,10 @@ console.log('\n═══ 9.8 KPI/hero aggregation tie-out (all windows) ══�
         firstFail.users = `day=${day} range=${range}: chart sum=${usersPeriod}, KPI=${usersKpi}`;
       }
 
-      // CAC: weighted by daily users
+      // CAC: weighted-by-users average of daily unit costs.
+      // Chart shows daily unit cost as stacked bar [referrer, referee].
+      // Engine: cumRewardCost increment per day = unit cost × resolved users.
+      // KPI = Σ (unit_cost × users) / Σ users = Σ cumRewardCost increments / Σ users.
       const periodUsers = periodDays.reduce((s, d) => s + (d.dailyFunnel?.activeUser || 0), 0);
       const periodReward = sumIncrements('cumulativeRewardCost');
       const expectedCac = periodUsers > 0 ? Math.round(periodReward / periodUsers) : 0;

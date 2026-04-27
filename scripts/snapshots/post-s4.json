@@ -258,23 +258,70 @@
       "staticSlice": null
     },
     "day=10|range=30|kpi=cac": {
-      "hasData": true,
-      "isROAS": false,
-      "kind": "line",
-      "maxVal": 88,
-      "slice": [
-        0,
-        88,
-        81,
-        80,
-        83,
-        81,
-        81,
-        80,
-        81,
-        80
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        }
       ],
-      "staticSlice": null
+      "kind": "stacked",
+      "maxVal": 82
     },
     "day=10|range=30|kpi=fraudSaved": {
       "hasData": true,
@@ -583,23 +630,70 @@
       "staticSlice": null
     },
     "day=10|range=7|kpi=cac": {
-      "hasData": true,
-      "isROAS": false,
-      "kind": "line",
-      "maxVal": 88,
-      "slice": [
-        0,
-        88,
-        81,
-        80,
-        83,
-        81,
-        81,
-        80,
-        81,
-        80
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        }
       ],
-      "staticSlice": null
+      "kind": "stacked",
+      "maxVal": 82
     },
     "day=10|range=7|kpi=fraudSaved": {
       "hasData": true,
@@ -800,14 +894,16 @@
       "staticSlice": null
     },
     "day=1|range=30|kpi=cac": {
-      "hasData": false,
-      "isROAS": false,
-      "kind": "line",
-      "maxVal": 0,
-      "slice": [
-        0
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        }
       ],
-      "staticSlice": null
+      "kind": "stacked",
+      "maxVal": 82
     },
     "day=1|range=30|kpi=fraudSaved": {
       "hasData": true,
@@ -981,14 +1077,16 @@
       "staticSlice": null
     },
     "day=1|range=7|kpi=cac": {
-      "hasData": false,
-      "isROAS": false,
-      "kind": "line",
-      "maxVal": 0,
-      "slice": [
-        0
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        }
       ],
-      "staticSlice": null
+      "kind": "stacked",
+      "maxVal": 82
     },
     "day=1|range=7|kpi=fraudSaved": {
       "hasData": true,
@@ -1528,43 +1626,190 @@
       "staticSlice": null
     },
     "day=30|range=30|kpi=cac": {
-      "hasData": true,
-      "isROAS": false,
-      "kind": "line",
-      "maxVal": 88,
-      "slice": [
-        0,
-        88,
-        81,
-        80,
-        83,
-        81,
-        81,
-        80,
-        81,
-        80,
-        81,
-        80,
-        80,
-        80,
-        80,
-        80,
-        80,
-        80,
-        79,
-        79,
-        79,
-        79,
-        78,
-        79,
-        79,
-        78,
-        79,
-        78,
-        78,
-        78
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        }
       ],
-      "staticSlice": null
+      "kind": "stacked",
+      "maxVal": 82
     },
     "day=30|range=30|kpi=fraudSaved": {
       "hasData": true,
@@ -2191,43 +2436,190 @@
       "staticSlice": null
     },
     "day=30|range=7|kpi=cac": {
-      "hasData": true,
-      "isROAS": false,
-      "kind": "line",
-      "maxVal": 88,
-      "slice": [
-        0,
-        88,
-        81,
-        80,
-        83,
-        81,
-        81,
-        80,
-        81,
-        80,
-        81,
-        80,
-        80,
-        80,
-        80,
-        80,
-        80,
-        80,
-        79,
-        79,
-        79,
-        79,
-        78,
-        79,
-        79,
-        78,
-        79,
-        78,
-        78,
-        78
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        }
       ],
-      "staticSlice": null
+      "kind": "stacked",
+      "maxVal": 82
     },
     "day=30|range=7|kpi=fraudSaved": {
       "hasData": true,
@@ -2854,43 +3246,190 @@
       "staticSlice": null
     },
     "day=60|range=30|kpi=cac": {
-      "hasData": true,
-      "isROAS": false,
-      "kind": "line",
-      "maxVal": 88,
-      "slice": [
-        0,
-        88,
-        81,
-        80,
-        83,
-        81,
-        81,
-        80,
-        81,
-        80,
-        81,
-        80,
-        80,
-        80,
-        80,
-        80,
-        80,
-        80,
-        79,
-        79,
-        79,
-        79,
-        78,
-        79,
-        79,
-        78,
-        79,
-        78,
-        78,
-        78
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        }
       ],
-      "staticSlice": null
+      "kind": "stacked",
+      "maxVal": 82
     },
     "day=60|range=30|kpi=fraudSaved": {
       "hasData": true,
@@ -3517,43 +4056,190 @@
       "staticSlice": null
     },
     "day=60|range=7|kpi=cac": {
-      "hasData": true,
-      "isROAS": false,
-      "kind": "line",
-      "maxVal": 88,
-      "slice": [
-        0,
-        88,
-        81,
-        80,
-        83,
-        81,
-        81,
-        80,
-        81,
-        80,
-        81,
-        80,
-        80,
-        80,
-        80,
-        80,
-        80,
-        80,
-        79,
-        79,
-        79,
-        79,
-        78,
-        79,
-        79,
-        78,
-        79,
-        78,
-        78,
-        78
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        }
       ],
-      "staticSlice": null
+      "kind": "stacked",
+      "maxVal": 82
     },
     "day=60|range=7|kpi=fraudSaved": {
       "hasData": true,

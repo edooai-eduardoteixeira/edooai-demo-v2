@@ -204,7 +204,28 @@ function HeroChart({ selectedKPI, currentDay, projection }) {
   const xLabels = dayXTicks(currentDay).map(d => ({ value: String(d), at: d }));
   const hero = computeHeroChartForKPI(projection, selectedKPI, currentDay);
 
-  // All KPIs render as a line chart of daily values.
+  // CAC: stacked bar showing referrer + referee unit cost per day
+  if (hero.kind === 'stacked') {
+    const yMax = niceYMax(hero.maxVal);
+    return (
+      <StackedBarChart
+        key={`cac-${currentDay}`}
+        data={hero.cacData}
+        segments={[
+          { color: 'var(--color-data-1)', label: 'Referrer' },
+          { color: 'var(--color-data-2)', label: 'Referee' },
+        ]}
+        maxValue={yMax}
+        cssHeight="100%"
+        xLabels={xLabels}
+        yLabels={hero.maxVal > 0 ? [yMax * 0.5, yMax] : []}
+        gridlines="from-labels"
+        legend
+      />
+    );
+  }
+
+  // Line chart (activeUsers / ROI / fraudSaved)
   const { slice, staticSlice, maxVal, isROAS, hasData } = hero;
   const yMax = niceYMax(maxVal);
   const formatLabel = selectedKPI === 'activeUsers'
