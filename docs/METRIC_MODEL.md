@@ -95,9 +95,10 @@ S1's job is *no behavior change*. Later stages replace specific entries.
 
 - **Surfaces**: `SuggestedChangeStrip`'s "Suggested change: {action}" text
 - **Time base**: point-in-time (latest available recommendation at or before selected day)
-- **Derivation**: scan `briefings[d]` from `selectedDay` down to 1, return first `briefings[d].recommendation.action` found.
-- **Engine source (S2 onward)**: `projection.agentRecommendations[]` — per-day array, each entry computed using only `agentic.days.slice(0, day)` (no future leakage).
-- **Status**: S1 — preserve hardcoded fabricated text. ✅ **S2 — replaced.** Now uses `agentRecommendations[selectedDay - 1]`, scanning back to find the most recent non-null rec. Briefings layer + nameGenerator.js deleted.
+- **Derivation**: scan `projection.agentRecommendations[]` from index `selectedDay − 1` back to 0, return the first non-null entry. Each entry was computed using only data ≤ that day (no future leakage).
+- **Engine source**: `projection.agentRecommendations[]` (built in `projectionEngine.js` from `deriveAgentRecommendation(agentic.days.slice(0, idx + 1), params, budget)`).
+- **Status**: ✅ **S2 — done.** Briefings layer + nameGenerator.js deleted.
+- **Known gap (Item 3 pending)**: at any reasonable budget, `deriveAgentRecommendation` rarely surfaces a recommendation (the engine only proposes budget changes, and budget in the recommended range produces null). The strip is empty most of the time at default budget. Open product question on what to surface instead.
 
 ---
 
@@ -109,11 +110,7 @@ For each KPI in {`activeUsers`, `cac`, `roi`, `fraudSaved`}:
 
 - **Surfaces**: KPI card big number
 - **Time base**: period-windowed
-- **Derivation**: `getPeriodKPI(days, selectedDay, dateRange, key)` (see DashboardPage.jsx:174–221 for the formula per key).
-  - `activeUsers`: sum of `dailyFunnel.activeUser` over period
-  - `cac`: period spend / period users; 0 if users == 0
-  - `roi`: period value / period spend (ratio, 1 decimal); 0 if spend == 0
-  - `fraudSaved`: period spend × terminal-day fraud rate
+- **Derivation**: `computePeriodKPI(days, selectedDay, dateRange, key)` in `src/lib/metrics.js`. Per-key formulas listed in the "Period KPI formulas" sub-bullet below.
 - **Engine source**: `days[i].dailyFunnel.activeUser`, `days[i].cumulativeSpend`, `days[i].cumulativeValue`, `days[lastIdx].kpiCumulative.fraudSaved`.
 - **Period KPI formulas (S4 post-QA)** — aligned with chart's daily values for clean tie-out:
   - **activeUsers** = Σ daily activeUser over period (additive)
@@ -129,23 +126,22 @@ For each KPI, the delta vs prior period:
 
 - **Surfaces**: small ↑X% / ↓X% next to KPI card big number
 - **Time base**: period-windowed (current period vs preceding period of same length)
-- **Derivation**: `priorValue = getPeriodKPI(days, selectedDay - dateRange, dateRange, key)`; `deltaPct = ((value - priorValue) / priorValue) × 100`. Hidden when `selectedDay <= dateRange` (no prior period exists) or when `priorValue <= 0` or `deltaPct == 0`.
-- **Delta rule (S4 post-QA, GA-style)**: Show delta whenever a prior period with positive value exists. Compute against whatever prior data is available (clipped or not) — matches Google Analytics "Compare to previous period" behavior. Show 0% as 0% (don't hide). Return null only when there is literally no prior period (`selectedDay <= dateRange`) or `priorValue == 0`.
-- **Status**: S1 — preserve. ✅ **S4 — done.** Always-visible delta with honest values; consistent UX across ranges.
+- **Derivation (S4, GA-style)**: `priorValue = computePeriodKPI(days, selectedDay − dateRange, dateRange, key)`; `deltaPct = ((value − priorValue) / priorValue) × 100`. Show delta whenever a prior period with positive value exists. Compute against whatever prior data is available (clipped at start of history is fine). Show 0% as 0% (don't hide). Return null only when there is literally no prior period (`selectedDay − dateRange < 1`) or `priorValue == 0`.
+- **Status**: ✅ **S4 — done.** Always-visible delta with honest values; consistent UX across ranges.
 
 ### M2.9 Hero chart series — activeUsers
 
 - **Surfaces**: line chart of daily active users
-- **Time base**: daily resolution-time
-- **Derivation**: `projection.dailyCurve.slice(0, currentDay)` (resolved per day)
-- **Engine source**: `dailyCurve[i]`
-- **Status**: S1 — preserve.
+- **Time base**: daily resolution-time, windowed to `[startDay..endDay]` per the dateRange selector (S6.6)
+- **Derivation**: `projection.dailyCurve[i]` for `i ∈ [startIdx..endIdx)` where `startIdx = startDay − 1` and `endIdx = endDay` (computed from `computeWindow(currentDay, dateRange)`).
+- **Engine source**: `dailyCurve[i]` (length = engine horizon).
+- **Status**: ✅ S6.6 — windowed to range selector.
 
 ### M2.10 Hero chart series — CAC (stacked bar)
 
 - **Surfaces**: stacked bars per day, segments [referrer, referee]
-- **Time base**: daily generation-time (cost incurred when offer is paid out)
-- **Derivation**: `days.slice(0, currentDay).map(d => [d.dailyReferrerCost, d.dailyRefereeCost])`
+- **Time base**: daily generation-time (cost incurred when offer is paid out), windowed to `[startDay..endDay]` per the dateRange selector (S6.6)
+- **Derivation**: `days.slice(startIdx, endIdx).map(d => [d.dailyReferrerCost, d.dailyRefereeCost])` where `startIdx, endIdx` come from `computeWindow(currentDay, dateRange)`.
 - **Chart**: stacked bar of daily unit cost — `[dailyReferrerCost, dailyRefereeCost]` per day in $. The two segments are the per-conversion reward components.
 - **Tie-out to KPI card** (S4 post-QA): KPI CAC = Σ daily reward paid / Σ daily resolved users, where daily reward paid = unit cost × daily users. The chart shows unit cost (varies day-to-day with efficiency); the KPI is the users-weighted average of those daily unit costs. The KPI formula was corrected to use `cumulativeRewardCost` increments (matching engine's notion of CAC at projectionEngine.js:304), not budget allocation.
 - **Status**: S1 — preserve. ✅ **S4 — KPI math reconciled with chart**, chart unchanged.
@@ -231,7 +227,7 @@ The funnel has 6 stages but the engine produces 4. S1 captures current invented 
 
 `Contacted ≥ Engaged ≥ Referred ≥ Reached ≥ SignedUp ≥ Active`
 
-Today, `Reached > Referred` violates this on every day. Asserted in `verify-metrics.mjs` only after S3.
+Holds by construction: Engaged and Reached are midpoints between adjacent engine-cumulative stages (which are themselves monotonically non-increasing through the funnel). Asserted in `verify-metrics.mjs` for every day in 1..60.
 
 ---
 
@@ -286,23 +282,26 @@ Today, `Reached > Referred` violates this on every day. Asserted in `verify-metr
 
 - **Surfaces**: cards with `c.title`, `c.contactCount`, plus expanded details (`whyRefer`, `channel`, `reward`, `example`)
 - **Time base**: point-in-time (campaigns active on Day N)
-- **Derivation**: `briefings[selectedDay].dailyPlan.campaigns[]`
-- **Engine source (S2 onward)**: `src/fixtures/campaigns.js` owns identity (id, title, copy, color, weight, startsDay, endsDay). `metrics.js` derives `contactCount` per campaign as `round(dayData.journeysToday × campaign.share)` where share is the campaign's fixture weight normalized over active campaigns that day.
-- **Status**: S1 — preserve. ✅ **S2 — done.** Roster stable. Colors locked to ID. nameGenerator.js deleted.
+- **Derivation**: `computeCampaignList(projection, effectiveDay)` in `metrics.js`. For each active campaign on Day N: `contactCount = round(dayData.journeysToday × campaign.share)` (campaign-card display only — not the same allocation as the Daily Outreach chart, which uses largest-remainder).
+- **Engine source**: `src/fixtures/campaigns.js` owns identity (id, title, copy, color, weight, startsDay, endsDay). `metrics.js` reads `dayData.journeysToday` from the engine and the campaign's normalized share over active campaigns that day.
+- **Status**: ✅ **S2 — done.** Roster stable. Colors locked to ID. nameGenerator.js deleted.
 
 ### M5.2 Daily Outreach stacked bar
 
 - **Surfaces**: stacked bar per day, one segment per active campaign
-- **Time base**: daily generation-time (contacts per campaign per day)
-- **Derivation**: 
-  ```
-  for each day d in 1..effectiveDay:
-    dayCampaigns = briefings[d].dailyPlan.campaigns
-    paddedSegments = pad(dayCampaigns.map(c => c.contactCount), maxCampaignsAcrossDays)
-  ```
-- **Color assignment (S2 onward)**: each campaign carries its color in the fixture. Stack segments are ordered by fixture order (not lineup growth), so a campaign keeps its color whether it appears as segment 0 or segment 4.
-- **Engine source (S2 onward)**: `metrics.computeDailyOutreach` — per day d, per campaign c: `round(d.journeysToday × c.share)` where c.share = 0 if campaign isn't active on that day.
-- **Status**: S1 — preserve. ✅ **S2 — done.** Stable colors. No more "campaign disappeared/reappeared" visual.
+- **Time base**: daily generation-time (contacts per campaign per day), windowed to `[startDay..endDay]` per the dateRange selector (S6.6)
+- **Derivation (S6 Item 2 close-out)**: per-day **largest-remainder allocation**. For each day d in window:
+  - `target = d.dailyFunnel.contacted` (engine's rounded daily total)
+  - `rawShares` = each segment's share on day d (0 if campaign not active that day)
+  - `exact = rawShares.map(s => target × s)`; `floors = floor(exact)`
+  - Distribute remaining `target − Σ floors` to segments by largest fractional part
+  - Result: integer per-campaign counts whose sum exactly equals `target` (no per-campaign rounding drift)
+- **Color assignment**: each campaign carries its color in the fixture. Stack segments are ordered by fixture order (not lineup growth), so a campaign keeps its color whether it appears as segment 0 or segment 4.
+- **Engine source**: `dailyFunnel.contacted` (the engine's authoritative daily contact count) + `src/fixtures/campaigns.js` for shares.
+- **Tie-out invariants** (verified in `verify-metrics.mjs §11`):
+  - Σ campaigns per day === `engine.dailyFunnel.contacted` at every day (hard equality)
+  - Σ daily outreach across period === `funnel.Contacted` at every (day × range) combo
+- **Status**: ✅ **S2** stable colors / fixture roster. ✅ **S6.6** windowed. ✅ **S6 Item 2 close-out** exact tie-out via largest-remainder.
 
 ### M5.3 Operations decomposition (newContacts vs followUps)
 
@@ -341,12 +340,13 @@ All three time-series charts (Hero KPI, Audience Overview, Daily Outreach) shift
 ### MX.2 Engine projection pipeline
 
 `computeDashboardProjection({ budget, params })` is the only engine entry point used by the dashboard. It returns:
-- `days[]` — per-day records
-- `dailyCurve[]` — daily resolved per day (length 30)
-- `dailyBriefings{}` — Day → briefing
-- `propensityHealth`, `effectivenessData`, `operationsData`, `cohorts`
-- `staticBaseline` (ignored by UI today)
-- `agentRecommendation` (ignored by UI today)
+- `days[]` — per-day records (length = engine horizon, currently 90 — UI horizon 60 + 30-day buffer for cohort maturation)
+- `dailyCurve[]` — daily resolved per day (length = engine horizon, 90)
+- `cohorts{}` — per-cohort tracking: contacted, totalReferralSent, totalSignedUp, totalResolved, convRate, cumulativeResolved, resolutionByDay
+- `propensityHealth` — audience flow model output (highEligible/medEligible/lowEligible per day, plus `_totalPromotions` and `_totalInternalAcq` for tie-out tests)
+- `effectivenessData` — daily conversion rate overlay (cohort-anchored)
+- `staticBaseline` — engine's staticMode result, used by the M2.12 dashed line on the ROAS hero chart
+- `agentRecommendation` (top-level, kept for back-compat) and `agentRecommendations[]` (per-day array used by M1.5 Suggested Change)
 - `thresholdDay`, scalar metrics (`activeUsers`, `cac`, `roi`, `convRate`, `fraudSaved`)
 
 All numbers above derive from this projection.
@@ -376,7 +376,7 @@ All numbers above derive from this projection.
 | 2 | Static baseline | preserve fake | — | — | — | — | real `staticBaseline` |
 | 3 | Funnel: Engaged | preserve 0.77 | — | engine `effectiveShareRate` | — | — | — |
 | 3 | Funnel: Reached | preserve 1.4× | — | redefine to satisfy monotonicity | — | — | — |
-| 4 | Eligible bands | preserve | — | — | — | — | locked decoration |
+| 4 | Eligible bands | preserve | — | — | — | — | integrated audience model v3 (acquisition + promotion + demotion, ties to engine) |
 | 4 | Conv rate overlay | preserve | — | pin definition | — | extension fixes truncation | — |
 | 5 | Campaign list | preserve | stable roster fixture | — | — | — | — |
 | 5 | Daily outreach | preserve | stable colors | — | — | — | — |
