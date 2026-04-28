@@ -16,6 +16,7 @@ import {
   computeDashboardMetrics,
   computeHeroChartForKPI,
   computeEffectiveDay,
+  computeCampaignHealth,
   computeCampaignList,
   computeDailyOutreach,
   computeFollowUpRate,
@@ -24,6 +25,7 @@ import {
   ENGINE_MAX_DAYS,
   KPI_KEYS,
 } from '../src/lib/metrics.js';
+import { monthBoundsForDay, dateForDay, dayForDate, DAY_ONE } from '../src/lib/calendar.js';
 import { CAMPAIGNS, activeCampaigns } from '../src/fixtures/campaigns.js';
 import {
   dayFromElapsed,
@@ -691,6 +693,127 @@ console.log('\n═══ 12. S6 Item 5 Animation timing ═══');
     isAnimationComplete(ANIMATION_TOTAL_MS) === true);
   check('isAnimationComplete(false) when elapsed < total',
     isAnimationComplete(ANIMATION_TOTAL_MS - 1) === false);
+}
+
+// ─── N. Calendar helpers (S6 items 4+7) ────────────────────────────────
+console.log('\n═══ N. Calendar (DAY_ONE = April 1, 2026) ═══');
+{
+  check('DAY_ONE is April 1, 2026',
+    DAY_ONE.getFullYear() === 2026 && DAY_ONE.getMonth() === 3 && DAY_ONE.getDate() === 1);
+
+  check('dateForDay(1) → April 1', () => {
+    const d = dateForDay(1);
+    return d.getMonth() === 3 && d.getDate() === 1;
+  });
+  check('dateForDay(30) → April 30', () => {
+    const d = dateForDay(30);
+    return d.getMonth() === 3 && d.getDate() === 30;
+  });
+  check('dateForDay(31) → May 1', () => {
+    const d = dateForDay(31);
+    return d.getMonth() === 4 && d.getDate() === 1;
+  });
+  check('dateForDay(60) → May 30', () => {
+    const d = dateForDay(60);
+    return d.getMonth() === 4 && d.getDate() === 30;
+  });
+
+  check('dayForDate(dateForDay(N)) === N (round-trip)', () => {
+    return [1, 14, 30, 31, 45, 60, 90].every(n => dayForDate(dateForDay(n)) === n);
+  });
+
+  const aprilMid = monthBoundsForDay(15);
+  check('monthBoundsForDay(15) → April { first:1, last:30, days:30 }',
+    aprilMid.firstDayN === 1 && aprilMid.lastDayN === 30 && aprilMid.daysInMonth === 30 && aprilMid.monthLabel === 'April');
+
+  const aprilEdge = monthBoundsForDay(30);
+  check('monthBoundsForDay(30) → April (last day)',
+    aprilEdge.firstDayN === 1 && aprilEdge.lastDayN === 30);
+
+  const mayStart = monthBoundsForDay(31);
+  check('monthBoundsForDay(31) → May { first:31, last:61, days:31 }',
+    mayStart.firstDayN === 31 && mayStart.lastDayN === 61 && mayStart.daysInMonth === 31 && mayStart.monthLabel === 'May');
+
+  const mayLate = monthBoundsForDay(60);
+  check('monthBoundsForDay(60) → May (still)',
+    mayLate.firstDayN === 31 && mayLate.lastDayN === 61);
+}
+
+// ─── N+1. Calendar-aware Campaign Health (S6 items 4+7) ────────────────
+console.log('\n═══ N+1. Campaign Health: Spent MTD + Pacing ═══');
+{
+  const proj = computeDashboardProjection({ budget: 150_000, params });
+  const days = proj.days;
+  const at = (n) => computeCampaignHealth(proj, days[n - 1], n);
+
+  // Shape: returns the new field names, not the old ones.
+  const h30 = at(30);
+  check('campaignHealth has spentMTD field (renamed from periodSpend)', 'spentMTD' in h30);
+  check('campaignHealth has projectedMonthSpend field (renamed from monthlyPace)',
+    'projectedMonthSpend' in h30);
+  check('campaignHealth no longer has periodSpend', !('periodSpend' in h30));
+  check('campaignHealth no longer has monthlyPace', !('monthlyPace' in h30));
+
+  // M1.3: Spent MTD = full April at Day 30.
+  check('Day 30 Spent MTD === days[29].cumulativeRewardCost (full April)',
+    h30.spentMTD === Math.round(days[29].cumulativeRewardCost),
+    `got ${h30.spentMTD}, expected ${Math.round(days[29].cumulativeRewardCost)}`);
+
+  // M1.4 invariant: at last day of month, Pacing == Spent MTD (no projection left).
+  check('Day 30 (April 30): projectedMonthSpend === spentMTD',
+    h30.projectedMonthSpend === h30.spentMTD,
+    `Pacing ${h30.projectedMonthSpend}, MTD ${h30.spentMTD}`);
+
+  // First-of-month reset: Day 31 (May 1) spentMTD is just one day, not April carryover.
+  const h31 = at(31);
+  const day31Reward = Math.round(days[30].cumulativeRewardCost - days[29].cumulativeRewardCost);
+  check('Day 31 (May 1): spentMTD === one day reward (calendar reset)',
+    h31.spentMTD === day31Reward,
+    `got ${h31.spentMTD}, expected ${day31Reward}`);
+  check('Day 31 spentMTD is much smaller than Day 30 spentMTD (visible reset)',
+    h31.spentMTD < h30.spentMTD / 5);
+
+  // Pacing within a month is constant (deterministic engine).
+  const h7 = at(7);
+  const h20 = at(20);
+  check('April Pacing is constant within month (Day 7 === Day 20 === Day 30)',
+    h7.projectedMonthSpend === h20.projectedMonthSpend &&
+    h20.projectedMonthSpend === h30.projectedMonthSpend);
+
+  // Pacing jumps at month boundary (April → May projection differs).
+  check('Pacing jumps at month boundary (Day 30 April !== Day 31 May)',
+    h30.projectedMonthSpend !== h31.projectedMonthSpend);
+
+  // REGRESSION: Pacing must not mechanically equal Budget.
+  // Original bug: monthlyPace = (cumulativeSpend / day) × 30 ≈ budget always.
+  const budgets = [50_000, 150_000, 300_000];
+  const days_to_check = [5, 15, 30, 45, 60];
+  let anyDifferent = false;
+  for (const b of budgets) {
+    const p = computeDashboardProjection({ budget: b, params });
+    for (const d of days_to_check) {
+      const h = computeCampaignHealth(p, p.days[d - 1], d);
+      if (Math.abs(h.projectedMonthSpend - b) > 100) anyDifferent = true;
+    }
+  }
+  check('REGRESSION: Pacing !== Budget mechanically (the original bug stays fixed)',
+    anyDifferent,
+    'Pacing equaled Budget across all (budget, day) combos — the old bug is back');
+
+  // MTD bounded by cumulative.
+  let mtdBoundsOk = true;
+  for (const d of [1, 7, 15, 30, 31, 45, 60]) {
+    const h = computeCampaignHealth(proj, days[d - 1], d);
+    if (h.spentMTD < 0 || h.spentMTD > Math.round(days[d - 1].cumulativeRewardCost)) {
+      mtdBoundsOk = false;
+    }
+  }
+  check('Spent MTD ∈ [0, cumulativeRewardCost] for all selectedDay', mtdBoundsOk);
+
+  // Defensive: signature drops dateRange — extra args ignored.
+  const h30Extra = computeCampaignHealth(proj, days[29], 30, 999);
+  check('computeCampaignHealth ignores extra args (dateRange dropped)',
+    h30Extra.spentMTD === h30.spentMTD && h30Extra.projectedMonthSpend === h30.projectedMonthSpend);
 }
 
 // ─── Summary ───────────────────────────────────────────────────────────
