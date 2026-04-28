@@ -14,7 +14,7 @@
  * the fabricated "$50 credit / 3.2x" placeholder.
  */
 
-import { CAMPAIGNS, activeCampaigns } from '../fixtures/campaigns.js';
+import { CAMPAIGNS, activeCampaigns, campaignMembership } from '../fixtures/campaigns.js';
 
 // ─── Constants ──────────────────────────────────────────────────────────
 // UI horizon: Day 60 is the highest day stop. Engine runs to 90 days (60 +
@@ -369,40 +369,30 @@ export function computeAudienceOverview(projection, effectiveDay, dateRange = ef
  * fixture's normalized share. The campaign roster does NOT churn day-to-day
  * (only changes when a campaign's startsDay/endsDay window opens or closes).
  *
- * Each entry also carries cumContacts — cumulative contacts attributed to the
- * campaign over [day 1, effectiveDay]. cumContacts is what the campaign card
- * surfaces; it grows visibly as the run progresses and lands close to the
- * addressable pool by day 60, mirroring /insights' audience figures.
+ * Each entry also carries `membership` — the count of customers currently
+ * assigned to the campaign at `effectiveDay`. Membership includes customers
+ * in cooldown (the campaign still owns them; they're just temporarily un-
+ * contactable). Day-1 values match /insights audience pool exactly. The sum
+ * of memberships across the roster grows by the audience model's external
+ * acquisition rate (≈667/day), so the right-list total stays in agreement
+ * with the left-side audience graph.
  */
 export function computeCampaignList(projection, effectiveDay) {
   const dayData = projection.days[effectiveDay - 1];
   if (!dayData) return [];
   const journeysToday = dayData.journeysToday || 0;
 
-  // Cumulative contacts per campaign over [1..effectiveDay]. Re-evaluates the
-  // active set per day so a campaign that activates partway through only
-  // accumulates from its startsDay onward.
-  const cumByCampaign = {};
-  for (let d = 1; d <= effectiveDay; d++) {
-    const dData = projection.days[d - 1];
-    if (!dData) continue;
-    const journeysOnDay = dData.journeysToday || 0;
-    for (const c of activeCampaigns(d)) {
-      cumByCampaign[c.id] = (cumByCampaign[c.id] || 0) + journeysOnDay * c.share;
-    }
-  }
-
   return activeCampaigns(effectiveDay).map(c => ({
     id: c.id,
     type: c.type,
     title: c.title,
-    whyRefer: c.whyRefer,
     example: c.example,
-    channel: c.channel,
-    reward: c.reward,
+    crmChannel: c.crmChannel,
+    inAppPlacement: c.inAppPlacement,
+    rewardChip: c.rewardChip,
     color: c.color,
     contactCount: Math.round(journeysToday * c.share),
-    cumContacts: Math.round(cumByCampaign[c.id] || 0),
+    membership: campaignMembership(c, effectiveDay),
   }));
 }
 
