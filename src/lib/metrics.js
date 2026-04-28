@@ -15,6 +15,7 @@
  */
 
 import { CAMPAIGNS, activeCampaigns } from '../fixtures/campaigns.js';
+import { monthBoundsForDay } from './calendar.js';
 
 // ─── Constants ──────────────────────────────────────────────────────────
 // UI horizon: Day 60 is the highest day stop. Engine runs to 90 days (60 +
@@ -56,26 +57,42 @@ export function computeDeliveryState(projection, dayData, selectedDay) {
   return { label: 'Acquiring Customers', active: true };
 }
 
-/** @see METRIC_MODEL.md §M1.3 §M1.4 §M1.2 */
-export function computeCampaignHealth(projection, dayData, selectedDay, dateRange) {
+/** @see METRIC_MODEL.md §M1.3 §M1.4 §M1.2
+ *
+ * Strip semantics: Budget, Spent MTD, and Pacing all live on the monthly
+ * calendar. The strip answers "am I on track to hit my monthly budget?" The
+ * chart underneath uses the period selector for performance exploration —
+ * different question, different time base.
+ *
+ * Pacing = engine projection of total spend through end of current calendar
+ * month. Within a month it's a constant benchmark (the deterministic engine
+ * already knows where it'll land); it changes when crossing month boundaries
+ * or when budget changes. Day-to-day "are we trending hot/cold" signal would
+ * require engine drift (see S7).
+ */
+export function computeCampaignHealth(projection, dayData, selectedDay) {
   const days = projection.days;
+  const { firstDayN, lastDayN } = monthBoundsForDay(selectedDay);
 
-  // M1.4: Pacing — annualize current daily spend rate to monthly
-  const dailySpendRate = selectedDay > 0 ? dayData.cumulativeSpend / selectedDay : 0;
-  const monthlyPace = Math.round(dailySpendRate * 30);
+  // Spent MTD: actual cumulative reward cost from start of calendar month → today.
+  const mtdStartIdx = firstDayN - 1;
+  const startReward = mtdStartIdx > 0 ? days[mtdStartIdx - 1].cumulativeRewardCost : 0;
+  const spentMTD = Math.max(0, Math.round(dayData.cumulativeRewardCost - startReward));
 
-  // M1.3: Spent — period total based on date range, using ACTUAL reward
-  // payouts (cumulativeRewardCost), not budget allocation (cumulativeSpend).
-  // Domain: cost flows through conversion, not contact.
-  const endIdx = selectedDay - 1;
-  const startIdx = Math.max(0, endIdx - dateRange + 1);
-  const startReward = startIdx > 0 ? days[startIdx - 1].cumulativeRewardCost : 0;
-  const periodSpend = Math.round(dayData.cumulativeRewardCost - startReward);
+  // Pacing: engine's projected total reward cost for the whole calendar month.
+  // Clamp lastDayN to the engine's horizon defensively (engine runs to Day 90;
+  // for selectedDay ≤ 60 the relevant lastDayN ≤ 61, so clamping is a safety net).
+  const lastDayIdx = Math.min(lastDayN, days.length) - 1;
+  const projectedMonthSpend = Math.max(
+    0,
+    Math.round(days[lastDayIdx].cumulativeRewardCost - startReward),
+  );
+
   return {
     delivery: computeDeliveryState(projection, dayData, selectedDay),
     budget: projection.budget,
-    periodSpend,
-    monthlyPace,
+    spentMTD,
+    projectedMonthSpend,
   };
 }
 
@@ -525,7 +542,7 @@ export function computeDashboardMetrics(projection, { selectedDay, dateRange }) 
   return {
     effectiveDay,
     dayData,
-    campaignHealth: computeCampaignHealth(projection, dayData, effectiveDay, dateRange),
+    campaignHealth: computeCampaignHealth(projection, dayData, effectiveDay),
     suggestedChange: computeSuggestedChange(projection, effectiveDay),
     kpiCards,
     funnel: computeFunnel(projection, effectiveDay, dateRange),
