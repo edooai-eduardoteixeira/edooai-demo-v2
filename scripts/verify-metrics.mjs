@@ -25,6 +25,18 @@ import {
   KPI_KEYS,
 } from '../src/lib/metrics.js';
 import { CAMPAIGNS, activeCampaigns } from '../src/fixtures/campaigns.js';
+import {
+  dayFromElapsed,
+  withinDayProgress,
+  easeOutCubic,
+  lerp,
+  targetForPhase,
+  ANIMATION_TOTAL_MS,
+  ANIMATION_TOTAL_DAYS,
+  MS_PER_DAY,
+  isAnimationComplete,
+  PHASES,
+} from '../src/lib/animation.js';
 import neobank from '../src/config/neobank.js';
 
 const params = neobank.engineParams;
@@ -607,6 +619,78 @@ console.log('\n═══ 11. S6 Item 2 close-out — daily-outreach tie-out ═�
   }
   check('Σ daily outreach across period === funnel.Contacted at every (day × range)',
     allPeriodTied, firstPeriodFail);
+}
+
+// ─── 12. S6 Item 5: Animation timing pure functions ───────────────────
+// Drives the dashboard's 90-second Day 1 → 60 animation. Test the pure
+// helpers so timing math is provably correct (no drift, correct day index).
+console.log('\n═══ 12. S6 Item 5 Animation timing ═══');
+{
+  // Day 1 covers [0, 1500ms); Day 2 covers [1500, 3000ms); ... ; Day 60 covers [88500, 90000ms].
+  check('dayFromElapsed(0) === 1 (very start)',          dayFromElapsed(0) === 1);
+  check('dayFromElapsed(750) === 1 (mid Day 1)',         dayFromElapsed(750) === 1);
+  check('dayFromElapsed(1499) === 1 (end of Day 1)',     dayFromElapsed(1499) === 1);
+  check('dayFromElapsed(1500) === 2 (start of Day 2)',   dayFromElapsed(1500) === 2);
+  check('dayFromElapsed(45000) === 31 (mid animation)',  dayFromElapsed(45000) === 31);
+  check('dayFromElapsed(89999) === 60 (end of Day 60)',  dayFromElapsed(89999) === 60);
+  check('dayFromElapsed(99999) === 60 (clamp at horizon)', dayFromElapsed(99999) === 60);
+  check('dayFromElapsed(-100) === 1 (clamp negative)',   dayFromElapsed(-100) === 1);
+
+  // withinDayProgress: 0 at day boundary, 1 just before next boundary.
+  check('withinDayProgress(0) === 0',                    withinDayProgress(0) === 0);
+  check('withinDayProgress(750) === 0.5 (mid Day 1)',
+    Math.abs(withinDayProgress(750) - 0.5) < 0.001);
+  check('withinDayProgress(1500) === 0 (start of Day 2)',
+    Math.abs(withinDayProgress(1500) - 0) < 0.001);
+  check('withinDayProgress(2250) === 0.5 (mid Day 2)',
+    Math.abs(withinDayProgress(2250) - 0.5) < 0.001);
+  check('withinDayProgress(ANIMATION_TOTAL_MS) === 1 (final state)',
+    withinDayProgress(ANIMATION_TOTAL_MS) === 1);
+
+  // No drift: 60 day boundaries exactly at multiples of MS_PER_DAY.
+  check('60 days × MS_PER_DAY === ANIMATION_TOTAL_MS (no drift)',
+    ANIMATION_TOTAL_DAYS * MS_PER_DAY === ANIMATION_TOTAL_MS);
+
+  // Easing bounds.
+  check('easeOutCubic(0) === 0', easeOutCubic(0) === 0);
+  check('easeOutCubic(1) === 1', easeOutCubic(1) === 1);
+  check('easeOutCubic(0.5) > 0.5 (eases out)', easeOutCubic(0.5) > 0.5);
+
+  // Target phase gating (replaces beat-window logic).
+  check('targetForPhase before phase returns prev',
+    targetForPhase(10, 90, 0.0, PHASES.audience) === 10);
+  check('targetForPhase at phase returns curr',
+    targetForPhase(10, 90, PHASES.audience, PHASES.audience) === 90);
+  check('targetForPhase after phase returns curr',
+    targetForPhase(10, 90, 1.0, PHASES.audience) === 90);
+
+  // Phase ordering: cascading start times follow the funnel order.
+  check('Phase ordering: audience ≤ engaged ≤ referred ≤ reached ≤ signedUp ≤ active ≤ kpis',
+    PHASES.audience <= PHASES.engaged
+    && PHASES.engaged <= PHASES.referred
+    && PHASES.referred <= PHASES.reached
+    && PHASES.reached <= PHASES.signedUp
+    && PHASES.signedUp <= PHASES.active
+    && PHASES.active <= PHASES.kpis);
+
+  // Lerp formula: at one frame (16.67ms) at 60Hz lerp rate 0.10, displayed
+  // moves 10% of the way to target. Identity check + monotonic approach.
+  check('lerp(0, 100, ~16.67) ≈ 10 (one frame at 60Hz, 10% rate)', () => {
+    const v = lerp(0, 100, 16.67);
+    return v > 9.5 && v < 10.5;
+  });
+  check('lerp(50, 50, dt) === 50 (no motion when displayed === target)',
+    lerp(50, 50, 16.67) === 50);
+  check('lerp converges over many frames (≥99% in ~1s at 60Hz)', () => {
+    let v = 0;
+    for (let i = 0; i < 60; i++) v = lerp(v, 100, 16.67);
+    return v >= 99;
+  });
+
+  check('isAnimationComplete(true) when elapsed >= total',
+    isAnimationComplete(ANIMATION_TOTAL_MS) === true);
+  check('isAnimationComplete(false) when elapsed < total',
+    isAnimationComplete(ANIMATION_TOTAL_MS - 1) === false);
 }
 
 // ─── Summary ───────────────────────────────────────────────────────────

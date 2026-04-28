@@ -78,9 +78,14 @@ export function buildMonotonePath(points) {
   return d;
 }
 
-export function computePoints(data, chartLeft, chartTop, chartW, chartH, maxVal) {
+export function computePoints(data, chartLeft, chartTop, chartW, chartH, maxVal, axisWidth) {
+  // axisWidth (S6 Item 5 polish): when provided and > data.length, position
+  // points based on the fixed axis width so the chart doesn't visually stretch
+  // during the warmup days (selectedDay < dateRange). Data fills the leftmost
+  // slots; remaining slots stay empty.
+  const denom = Math.max((axisWidth || data.length) - 1, 1);
   return data.map((v, i) => ({
-    x: chartLeft + (i / Math.max(data.length - 1, 1)) * chartW,
+    x: chartLeft + (i / denom) * chartW,
     y: chartTop + chartH - (v / maxVal) * chartH,
   }));
 }
@@ -185,7 +190,10 @@ export function dayXTicks(dataLen) {
   return ticks;
 }
 
-export function resolveXLabels(xLabels, dataLen, chartLeft, chartW) {
+export function resolveXLabels(xLabels, dataLen, chartLeft, chartW, axisWidth) {
+  // axisWidth (S6 Item 5 polish): when provided, x-positions for {value, at}
+  // labels use the fixed axis width so labels stay anchored even during
+  // warmup days when data hasn't filled the axis yet.
   if (!xLabels || xLabels.length === 0) return [];
   if (typeof xLabels[0] === 'string') {
     if (xLabels.length === 1) {
@@ -203,9 +211,10 @@ export function resolveXLabels(xLabels, dataLen, chartLeft, chartW) {
       anchor: i === 0 ? 'start' : i === xLabels.length - 1 ? 'end' : 'middle',
     }));
   }
+  const denom = Math.max((axisWidth || dataLen) - 1, 1);
   return xLabels.map((item) => ({
     label: String(item.value),
-    x: chartLeft + ((item.at - 1) / Math.max(dataLen - 1, 1)) * chartW,
+    x: chartLeft + ((item.at - 1) / denom) * chartW,
     anchor: 'middle',
   }));
 }

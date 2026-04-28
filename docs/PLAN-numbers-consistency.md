@@ -151,6 +151,70 @@ Tune params (likely `externalAcquisitionPerMonth`, possibly `agentContactMix` an
 - Calibration loop: ~30 min
 - Total: ~3 hours work, single session.
 
+## Item 5 — Live operations animation (2026-04-28, locked spec)
+
+> Re-scoped from "add Day 40, 50 stops" to a real animation feature. Goal: dashboard tells the operations story in motion, not as a still snapshot.
+
+### What changes for the user
+
+**1. Dashboard plays itself on arrival.** User lands → animation starts at Day 1 → progresses to Day 60 over **90 seconds** → stops. No play button, no speed controls.
+
+**2. Day selector replaced.** Today: four buttons (Day 1 / 10 / 30 / 60). New: a continuous **day slider** spanning 1–60 with a "Day N" legend showing the current day.
+
+**3. Within each day** (1.5 seconds), three visual beats reflect how operations actually unfold:
+- **Beat 1 (0.0–0.5s)** — Audience bands move + Daily Outreach bar grows + Funnel "Contacted" updates. **All synced.** Top-of-funnel event from three views.
+- **Beat 2 (0.4–1.25s)** — middle funnel stages flow as a wave: Engaged → Referred → Reached → SignedUp, each starting ~0.15s after the previous.
+- **Beat 3 (1.15–1.5s)** — Funnel "Active" + all KPI cards + Hero chart update. **All synced.** Bottom-of-funnel = outcomes, same event.
+
+**4. Manual day-slider touch stops animation at that day.** User can then freely scrub. No auto-resume.
+
+**5. Budget slider change restarts animation from Day 1** with new numbers. Clean restart, no splicing.
+
+**6. At Day 60: stops and stays there.** No looping.
+
+### What does NOT change
+
+- Engine math: untouched. Animation is purely a UI reveal of existing engine outputs.
+- Numbers shown on any given day: identical to today. We're just unveiling them in motion.
+- All other dashboard interactions (KPI selector, period selector, drawers).
+- Snapshot tests: the final state at Day 60 should match the current Day 60 snapshot byte-for-byte.
+
+### Files touched (engineering-only — user can skip)
+
+- `src/pages/DashboardPage.jsx` — animation state machine + day slider component + transition coordination.
+- Likely chart components (`StackedAreaChart.jsx`, `FunnelChart.jsx`, `StackedBarChart.jsx`, `Chart.jsx`) — staggered transition timing per beat.
+- `docs/METRIC_MODEL.md` §MX.1 — note slider replaces buttons.
+
+### Tests
+
+- New verify-metrics: nothing breaks (all existing 105 tests still pass; final-day numbers unchanged).
+- New behavioral checks: animation increments day over time; manual slider stops it; budget change restarts; halts at Day 60.
+- Snapshot at Day 60 unchanged.
+
+### Risks (eng-review refinements baked in)
+
+- **Animation jank**: 60 day-transitions × multiple chart re-renders. At 0.67Hz day-stepping, no concern.
+- **Chart transitions**: current chart components render fixed values, no value tweening. Solved via centralized interpolation in DashboardPage (computes per-beat interpolated values from prev-day → current-day, passes to charts as plain data — charts stay dumb).
+- **HeroChart re-mount footgun**: `key={selectedKPI-currentDay}` would force a fresh mount each day, killing animation continuity. Fixed: drop `currentDay` from the key, keep `selectedKPI` only.
+- **Timer drift over 90s**: avoid `setInterval`. Use `requestAnimationFrame` with absolute time math (`elapsed = now − animationStart`). Self-correcting.
+- **Slider source ambiguity**: distinguish animation-driven vs user-driven `selectedDay` updates via a ref (`sourceRef.current = 'animation' | 'user'`). User-touch clears the animation timer.
+- **Budget change reset**: useEffect on `[budget]` resets animation state to Day 1 + restarts.
+- **StrictMode double-mount in dev**: cleanup function in useEffect cancels prior RAF loop.
+- **Tab backgrounded**: browser throttles RAF; deferred (acceptable for demo, not a blocker).
+
+### NOT in scope
+
+- Sub-day numerical animation. The engine produces whole-day numbers; we animate the *appearance* of those numbers in 3 beats. We don't simulate intra-day micro-events.
+- Pause / play controls beyond touching the slider.
+- Speed adjustment.
+- Looping back to Day 1.
+- Mid-animation budget splice (we chose the restart approach).
+- Adding extra day stops 40, 50 (the original scope of Item 5 — replaced by the slider, which spans every day).
+
+### Effort
+
+~3–5 hours, including animation polish and tests.
+
 ## Item 2 close-out plan (2026-04-27)
 
 **Goal**: every dashboard number cohort-traceable and exactly tied. After this work, picking any day and following the cohort through the funnel uses real engine numbers, not aggregate-ratio estimates.
