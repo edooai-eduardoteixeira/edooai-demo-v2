@@ -76,7 +76,83 @@ const neobank = {
       '2 sources connected \u00b7 847,000 customer records \u00b7 4 of 4 required fields detected',
   },
 
-  // ─── Screen 3 — Customer Offer Allocation ───
+  // ─── Screen 3 — Insights (campaign portfolio preview) ───
+  // Sits between /connect and /strategy. Cards are CAMPAIGN PROPOSALS the agent
+  // composes by applying skills (invisible knowledge layer) to the dataRead.
+  // For the demo: hardcoded JSON. Post-demo: skills.md parser.
+  insights: {
+    pageTitle: 'Top campaigns from your data',
+
+    // Felix's existing referral program. Revealed AFTER the loading sequence
+    // (the "Reviewing your existing referral program" step makes this feel
+    // ingested, not pre-filled).
+    companyContext: {
+      label: 'EXISTING PROGRAM',
+      items: [
+        '$20 referrer on referee’s first transaction',
+        '$10 welcome on first transfer',
+        '+$40 Mother’s Day bonus after 3 referrals',
+      ],
+    },
+
+    // Composition theater (moved from /strategy). Staged ~1400ms each via
+    // <LoadingReveal>. Step 2 ("Reviewing your existing referral program")
+    // motivates the EXISTING PROGRAM strip that reveals at the end.
+    reasoningSteps: [
+      'Scanning your CRM and transaction data to find natural referrers',
+      'Reviewing your existing referral program',
+      'Filtering out anyone who shouldn’t be asked right now',
+      'Matching the right reward to each segment',
+      'Placing the reward at the right step in the journey',
+    ],
+
+    // Campaigns proposed by the agent, ordered by audience size descending.
+    // Audiences are mutually exclusive: one customer is in one campaign at a time.
+    // Card title is the one-word goal (Reactivation / Advocacy / Activation).
+    // Audience sizes partition the eligibility pool (~423,500 = 847K × 0.50).
+    // Segments are mutually exclusive: every eligible customer is assigned to
+    // exactly one campaign at a time.
+    campaigns: [
+      {
+        id: 'reactivation',
+        name: 'Reactivation',
+        audienceSize: 198400,
+        segmentLabel: 'lapsed customers',
+        invite: 'After 30+ days inactive',
+        reward: 'Dual-sided with 2 tiers',
+      },
+      {
+        id: 'advocacy',
+        name: 'Advocacy',
+        audienceSize: 195100,
+        segmentLabel: 'active customers',
+        invite: 'After each successful transaction',
+        reward: 'Dual-sided with 3 tiers',
+      },
+      {
+        id: 'activation',
+        name: 'Activation',
+        audienceSize: 30000,
+        segmentLabel: 'new signups via referral',
+        invite: 'Days 7–30 post-signup',
+        reward: 'Dual-sided with 4 tiers',
+      },
+    ],
+
+    // Page-level data caption — what the agent acquired from the connection.
+    dataCaption:
+      'Reading customer profiles, transactions, and contact preferences.',
+
+    supportingLine:
+      'Top campaigns based on your data. New campaigns are regularly tested as Vincor operates your referral channel.',
+
+    cta: {
+      text: 'Budget & forecast',
+      href: '/strategy',
+    },
+  },
+
+  // ─── Screen 4 — Customer Offer Allocation ───
 
   // Single strategy
   strategy: {

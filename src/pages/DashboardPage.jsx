@@ -414,22 +414,30 @@ function CampaignList({ campaigns }) {
           >
             <div className="flex items-baseline justify-between gap-1">
               <span className="text-[11px] font-semibold text-foreground leading-tight truncate">{c.title}</span>
-              <span className="text-[11px] text-foreground-faint tabular-nums shrink-0">{fmt(c.contactCount)}</span>
+              <span className="text-[11px] text-foreground-faint tabular-nums shrink-0">{fmt(c.membership)}</span>
             </div>
           </button>
         ))}
         </div>
       </div>
 
-      {/* Right: selected campaign detail */}
+      {/* Right: selected campaign detail. Channel chips render dynamically:
+          in-app placement chip only when present, CRM chip always. Reward chip
+          shows the asymmetric tier amounts (e.g., "$50 / $25"). */}
       {selected && (
         <div className="flex-1 min-w-0 pl-8 pr-6 self-start">
-          <p className="text-[13px] font-medium text-foreground-muted leading-relaxed">{selected.whyRefer}</p>
-          <div className="flex items-center gap-2 mt-3">
-            <span className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-border-light text-foreground-muted">{selected.channel}</span>
-            <span className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-border-light text-foreground-muted">{selected.reward}</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            {selected.inAppPlacement && (
+              <span className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-border-light text-foreground-muted">{selected.inAppPlacement}</span>
+            )}
+            {selected.crmChannel && (
+              <span className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-border-light text-foreground-muted">{selected.crmChannel}</span>
+            )}
+            {selected.rewardChip && (
+              <span className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-border-light text-foreground-muted">{selected.rewardChip}</span>
+            )}
           </div>
-          <p className="text-[13px] text-foreground-faint leading-relaxed mt-3 border-l-2 border-border-light pl-3">{selected.example.replace(/^(Push|Email|In-app|SMS):\s*/i, '')}</p>
+          <p className="text-[13px] text-foreground-faint leading-relaxed mt-3 border-l-2 border-border-light pl-3">{selected.example}</p>
         </div>
       )}
     </div>

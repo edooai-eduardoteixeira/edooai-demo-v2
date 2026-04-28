@@ -7,6 +7,7 @@ import { useProjections } from '../hooks/useProjections.js';
 import StrategyCards, { GearIcon, ChevronRight } from '../components/StrategyCards.jsx';
 import WhatUsersSee from '../components/WhatUsersSee.jsx';
 import Chart from '../components/Chart.jsx';
+import LoadingReveal from '../components/LoadingReveal.jsx';
 
 /* ───────── Sparkline helpers ───────── */
 
@@ -242,7 +243,6 @@ export default function StrategyBuilderPage({ config, onNext, onHome }) {
   const [hoveredSparkline, setHoveredSparkline] = useState(null);
 
   const cancelRef = useRef(false);
-  const hasStartedRef = useRef(false);
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -264,53 +264,27 @@ export default function StrategyBuilderPage({ config, onNext, onHome }) {
     setShowCTA(true);
   }, []);
 
-  /* ── Reasoning animation (Phase 1 → Phase 2 transition) ── */
+  /* ── Allocation theater (composition theater is on /insights) ── */
   const REASONING_STEPS = useMemo(() => [
-    'Scanning your CRM and transaction data to find natural referrers',
-    'Filtering out anyone who shouldn\u2019t be asked right now',
-    'Matching the right reward to each segment',
-    'Placing the reward at the right step in the journey',
+    'Allocating your budget across the 3 campaigns',
+    'Sizing rewards per campaign segment',
+    'Pacing daily activations to your spend curve',
+    'Computing 30-day projections',
   ], []);
 
-  const [phase, setPhase] = useState('reasoning'); // 'reasoning' | 'complete' | 'revealing' | 'done'
-  const [visibleLines, setVisibleLines] = useState(0);
-  const isRevealed = phase === 'revealing' || phase === 'done';
+  const [isRevealed, setIsRevealed] = useState(false);
 
-  // Run reasoning sequence on mount, then transition to strategy
+  // Cancellation guard for the runReveal sequence on unmount.
   useEffect(() => {
-    if (hasStartedRef.current) return;
-    hasStartedRef.current = true;
     cancelRef.current = false;
-
-    const run = async () => {
-      for (let i = 1; i <= 4; i++) {
-        if (cancelRef.current) return;
-        setVisibleLines(i);
-        await sleep(1400);
-      }
-      // "Complete" moment — all checkmarks, no dots
-      if (cancelRef.current) return;
-      setPhase('complete');
-      // Reading pause — user sees all 4 lines with checkmarks
-      await sleep(1200);
-      // Reveal — reasoning collapses, skeletons swap to real values
-      if (cancelRef.current) return;
-      setPhase('revealing');
-      await sleep(600);
-      if (cancelRef.current) return;
-      setPhase('done');
-    };
-    run();
-
     return () => { cancelRef.current = true; };
   }, []);
 
-  // Start strategy reveal when phase transitions
-  useEffect(() => {
-    if (phase === 'revealing') {
-      runReveal();
-    }
-  }, [phase, runReveal]);
+  // Trigger strategy reveal when LoadingReveal starts collapsing.
+  const handleLoadingReveal = useCallback(() => {
+    setIsRevealed(true);
+    runReveal();
+  }, [runReveal]);
 
   const formatCurrency = (val) => '$' + val.toLocaleString('en-US');
 
@@ -333,82 +307,12 @@ export default function StrategyBuilderPage({ config, onNext, onHome }) {
           marginBottom: 32,
         }}>Your Referral Strategy</h3>
 
-        {/* ════════════════════════════════════════════
-            REASONING BLOCK — collapses after complete
-            ════════════════════════════════════════════ */}
-        <div
-          style={{
-            overflow: 'hidden',
-            transition: 'max-height 0.5s ease, opacity 0.4s ease',
-            maxHeight: isRevealed ? 0 : 500,
-            opacity: isRevealed ? 0 : 1,
-            ...(phase === 'done' ? { display: 'none' } : {}),
-            marginTop: 24,
-            marginBottom: 32,
-          }}
-        >
-          {REASONING_STEPS.map((text, i) => {
-            const isVisible = i < visibleLines;
-            const isActive = i === visibleLines - 1;
-            const isCompleted = i < visibleLines - 1;
-            const isAllDone = phase === 'complete' || phase === 'revealing';
-
-            if (!isVisible) return null;
-
-            return (
-              <div
-                key={i}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: '8px 0',
-                  animation: 'reasonLineIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                }}
-              >
-                {/* Checkmark or spinner */}
-                <span
-                  style={{
-                    flexShrink: 0,
-                    width: 20,
-                    height: 20,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  {isCompleted || isAllDone ? (
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ animation: 'reasonCheckIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}>
-                      <path d="M3 8.5L6.5 12L13 4" stroke="var(--text-tertiary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  ) : (
-                    <span style={{
-                      display: 'inline-block',
-                      width: 12,
-                      height: 12,
-                      border: '1.5px solid var(--border)',
-                      borderTopColor: 'var(--text-tertiary)',
-                      borderRadius: '50%',
-                      animation: 'spin 0.8s linear infinite',
-                    }} />
-                  )}
-                </span>
-
-                {/* Text */}
-                <span
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 400,
-                    lineHeight: 1.5,
-                    color: isActive && !isAllDone ? 'var(--text-primary)' : 'var(--text-tertiary)',
-                    transition: 'color var(--transition-slow) ease',
-                  }}
-                >
-                  {text}
-                </span>
-              </div>
-            );
-          })}
+        {/* Allocation theater — composition theater lives on /insights */}
+        <div style={{ marginTop: 24, marginBottom: 32 }}>
+          <LoadingReveal
+            steps={REASONING_STEPS}
+            onReveal={handleLoadingReveal}
+          />
         </div>
 
         {/* ════════════════════════════════════════════

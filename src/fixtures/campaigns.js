@@ -5,79 +5,91 @@
  * and a stable share-of-voice weight. Engine totals are split across the
  * roster via these weights; campaign IDs/colors stay stable across days.
  *
- * Stage 2 of the number-consistency plan: this fixture replaces the
- * day-dependent maturity-weighted allocation that lived in nameGenerator.js,
- * which made the campaign roster (and chart colors) churn day-to-day.
+ * Roster is aligned with /insights' three campaign archetypes
+ * (Reactivation / Advocacy / Activation) so the same campaigns appear on
+ * both pages, only at different stages of the run. A fourth campaign,
+ * Promoter Push, is composed by the agent around day 20 once enough
+ * Zendesk signal has accumulated to identify high-CSAT customers.
  *
  * Color assignment is by campaign ID, not by stack position, so a campaign's
  * color is preserved as the lineup grows over time.
+ *
+ * Each campaign carries membership math (initialPool + dailyDelta and, for
+ * Promoter Push, startDay/startPool). Day-1 pools match /insights audience
+ * exactly. Daily deltas are tuned so the sum across all four campaigns
+ * grows by the audience model's external acquisition rate (≈667/day),
+ * keeping the right-list total in agreement with the left-side audience
+ * graph at every day.
  */
 
 export const CAMPAIGNS = [
   {
-    id: 'p2p-nonuser',
+    id: 'reactivation',
     type: 'specific',
-    title: 'Sent money to non-user',
-    whyRefer: 'Their friend would get the money instantly with the app. Referral solves the friction they just hit.',
-    example: 'Push: "Sarah would get this instantly with the app. Invite her — you both get $15."',
-    channel: 'push',
-    reward: '$15 both-get',
+    title: 'Reactivation',
+    crmChannel: 'Email',
+    inAppPlacement: null,
+    rewardChip: '$75 / $50',
+    example:
+      'Maria, your last transfer to Mexico was 6 weeks ago. 👋 Bring a friend along — you get $75, they get $50. felix.com/maria',
     color: 'var(--color-data-5)',
-    weight: 4.0,
+    weight: 4.5,
     startsDay: 1,
     endsDay: null,
+    initialPool: 198400,
+    dailyDelta: -500,
   },
   {
-    id: 'highly-rated',
+    id: 'advocacy',
     type: 'transactional',
-    title: 'Rated support highly',
-    whyRefer: 'Satisfaction is fresh. The moment right after a great experience is when people recommend naturally.',
-    example: 'Email: "Glad we could help! Know someone who’d love banking this way? You both get $10."',
-    channel: 'email',
-    reward: '$10 credit',
+    title: 'Advocacy',
+    crmChannel: 'WhatsApp',
+    inAppPlacement: 'Post-Transaction',
+    rewardChip: '$50 / $25',
+    example:
+      'Carlos, you just sent $200 to your mom in Guadalajara. 💸 Your friends could too — you get $50, they get $25. felix.com/carlos',
     color: 'var(--color-data-4)',
+    weight: 3.0,
+    startsDay: 1,
+    endsDay: null,
+    initialPool: 195100,
+    dailyDelta: 1267,         // gains R (-500/day) + Act (-100/day) graduates
+                              //   + external (+667/day) = +1,267/day
+    carveAtDay: 20,           // 25K members carved out to Promoter Push at day 20
+    carveAmount: 25000,
+  },
+  {
+    id: 'activation',
+    type: 'specific',
+    title: 'Activation',
+    crmChannel: 'WhatsApp',
+    inAppPlacement: 'Onboarding Success',
+    rewardChip: '$10 / $20',
+    example:
+      'Sofia, your friend just invited you to Felix. 🎁 Make your first transfer — you get $20, they get $10. felix.com/sofia',
+    color: 'var(--color-data-3)',
     weight: 1.5,
     startsDay: 1,
     endsDay: null,
+    initialPool: 30000,
+    dailyDelta: -100,
   },
   {
-    id: 'seasonal-promo',
-    type: 'promo',
-    title: 'Always-on referral offer',
-    whyRefer: 'Catches customers who refer on their own timeline, not ours. Broadens reach beyond triggered moments.',
-    example: 'In-app: "Refer a friend, you both get $10. Share your link anytime."',
-    channel: 'in-app',
-    reward: '$10 both-get',
-    color: 'var(--color-data-1)',
-    weight: 0.5,
-    startsDay: 1,
-    endsDay: null,
-  },
-  {
-    id: 'first-deposit',
-    type: 'specific',
-    title: 'First paycheck deposited',
-    whyRefer: 'They just committed to fee-free banking. Their friends are still paying fees they no longer pay.',
-    example: 'Email: "You’re saving on fees now. Your friends could too — share and you both get $10."',
-    channel: 'email',
-    reward: '$10 credit',
-    color: 'var(--color-data-3)',
-    weight: 3.5,
-    startsDay: 10,
-    endsDay: null,
-  },
-  {
-    id: 'cashback-milestone',
-    type: 'specific',
-    title: 'Saved on cashback this month',
-    whyRefer: 'The savings are fresh and tangible. Friends would get the same cashback from day one.',
-    example: 'Push: "You saved $47 this month. Give your friends the same deal — plus $5 bonus for you."',
-    channel: 'push',
-    reward: '$5 bonus cashback',
+    id: 'promoter-push',
+    type: 'transactional',
+    title: 'Promoter Push',
+    crmChannel: 'WhatsApp',
+    inAppPlacement: null,
+    rewardChip: '$0 / $10',
+    example:
+      'Diego, glad we got your money home fast. ⭐ Share with a friend — they get a $10 welcome on us. felix.com/diego',
     color: 'var(--color-data-2)',
-    weight: 3.0,
-    startsDay: 30,
+    weight: 1.0,
+    startsDay: 20,
     endsDay: null,
+    initialPool: 0,
+    startPool: 25000,         // jumps to 25K when it activates at day 20
+    dailyDelta: 0,            // holds steady through day 60
   },
 ];
 
@@ -95,4 +107,27 @@ export function activeCampaigns(day) {
     ...c,
     share: c.weight / totalWeight,
   }));
+}
+
+/**
+ * Campaign membership at a given day.
+ *
+ * Formula:
+ *   Before startsDay → 0
+ *   On/after startsDay → (startPool ?? initialPool) + dailyDelta × (day - startsDay)
+ *   Minus carveAmount if day ≥ carveAtDay (one-time internal transfer to
+ *   another campaign — used for Advocacy → Promoter Push at day 20).
+ *
+ * Day-1 values match /insights audience pool. Day-60 values sum to the
+ * eligible audience total at that day (initial 423,500 + 667 × 59).
+ */
+export function campaignMembership(c, day) {
+  if (day < c.startsDay) return 0;
+  const base = c.startPool != null ? c.startPool : c.initialPool;
+  const delta = c.dailyDelta || 0;
+  let val = base + delta * (day - c.startsDay);
+  if (c.carveAtDay && day >= c.carveAtDay) {
+    val -= c.carveAmount || 0;
+  }
+  return Math.max(0, Math.round(val));
 }

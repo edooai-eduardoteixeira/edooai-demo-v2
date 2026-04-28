@@ -14,7 +14,7 @@
  * the fabricated "$50 credit / 3.2x" placeholder.
  */
 
-import { CAMPAIGNS, activeCampaigns } from '../fixtures/campaigns.js';
+import { CAMPAIGNS, activeCampaigns, campaignMembership } from '../fixtures/campaigns.js';
 import { monthBoundsForDay } from './calendar.js';
 
 // ─── Constants ──────────────────────────────────────────────────────────
@@ -385,21 +385,31 @@ export function computeAudienceOverview(projection, effectiveDay, dateRange = ef
  * weights). contactCount is derived from engine's daily journey total × the
  * fixture's normalized share. The campaign roster does NOT churn day-to-day
  * (only changes when a campaign's startsDay/endsDay window opens or closes).
+ *
+ * Each entry also carries `membership` — the count of customers currently
+ * assigned to the campaign at `effectiveDay`. Membership includes customers
+ * in cooldown (the campaign still owns them; they're just temporarily un-
+ * contactable). Day-1 values match /insights audience pool exactly. The sum
+ * of memberships across the roster grows by the audience model's external
+ * acquisition rate (≈667/day), so the right-list total stays in agreement
+ * with the left-side audience graph.
  */
 export function computeCampaignList(projection, effectiveDay) {
   const dayData = projection.days[effectiveDay - 1];
   if (!dayData) return [];
   const journeysToday = dayData.journeysToday || 0;
+
   return activeCampaigns(effectiveDay).map(c => ({
     id: c.id,
     type: c.type,
     title: c.title,
-    whyRefer: c.whyRefer,
     example: c.example,
-    channel: c.channel,
-    reward: c.reward,
+    crmChannel: c.crmChannel,
+    inAppPlacement: c.inAppPlacement,
+    rewardChip: c.rewardChip,
     color: c.color,
     contactCount: Math.round(journeysToday * c.share),
+    membership: campaignMembership(c, effectiveDay),
   }));
 }
 
