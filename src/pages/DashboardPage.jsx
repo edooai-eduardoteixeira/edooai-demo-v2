@@ -77,7 +77,7 @@ function fmtRate(n) {
 }
 
 function CampaignHealthRow({ health, onAdjustBudget }) {
-  const { delivery, budget, periodSpend, monthlyPace } = health;
+  const { delivery, budget, spentMTD, projectedMonthSpend } = health;
 
   return (
     <div className="flex items-center bg-accent-subtle px-5 py-2.5 rounded-t-lg border-b border-border-light">
@@ -114,22 +114,22 @@ function CampaignHealthRow({ health, onAdjustBudget }) {
       {/* Divider */}
       <div className="w-px h-5 bg-border-light shrink-0 mx-4" />
 
-      {/* Spent */}
-      <span className="flex items-center gap-2 shrink-0 min-w-[155px]">
-        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Spent</span>
+      {/* Spent MTD */}
+      <span className="flex items-center gap-2 shrink-0 min-w-[170px]">
+        <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Spent MTD</span>
         <span className="text-[13px] text-foreground-muted whitespace-nowrap">
-          {fmtDollar(periodSpend)}
+          {fmtDollar(spentMTD)}
         </span>
       </span>
 
       {/* Divider */}
       <div className="w-px h-5 bg-border-light shrink-0 mx-4" />
 
-      {/* Pacing */}
+      {/* Pacing — projected total spend through end of current calendar month */}
       <span className="flex items-center gap-2 shrink-0 min-w-[195px]">
         <span className="text-[11px] font-semibold tracking-[0.05em] text-foreground-faint uppercase shrink-0">Pacing</span>
         <span className="text-[13px] text-foreground-muted whitespace-nowrap">
-          ~{fmtRate(monthlyPace)}
+          ~{fmtRate(projectedMonthSpend)}
         </span>
       </span>
     </div>

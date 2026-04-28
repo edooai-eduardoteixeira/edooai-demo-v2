@@ -75,21 +75,30 @@ S1's job is *no behavior change*. Later stages replace specific entries.
 - **Derivation**: `projection.budget` (set by user via slider; defaults to `config.recommendedBudget.amount` ?? 150_000)
 - **Status**: S1 — preserve. (S5 confirms semantics: monthly budget renews; Day 60 = 2 months of operation at the same rate.)
 
-### M1.3 Spent (period)
+### M1.3 Spent MTD
 
-- **Surfaces**: "Spent" `$X` strip
-- **Time base**: period-windowed, ending at selected day
-- **Derivation (S4 post-QA)**: period sum of daily increments of `cumulativeRewardCost` — actual reward payouts on resolved conversions. Same domain principle as CAC and ROAS: cost flows through conversion, not contact.
+- **Surfaces**: "Spent MTD" `$X` strip
+- **Time base**: month-to-date (calendar month containing selected day)
+- **Derivation (S6 items 4+7)**: `dayData.cumulativeRewardCost − days[firstDayOfMonth − 2].cumulativeRewardCost` rounded, clamped ≥ 0. Uses actual reward payouts on resolved conversions. Calendar boundaries from `monthBoundsForDay(selectedDay)` in `src/lib/calendar.js`.
 - **Engine source**: `days[i].cumulativeRewardCost`
-- **Edge cases**: When `selectedDay < dateRange`, period collapses to available days.
-- **Status**: ✅ **S4 — fixed.** Was using `cumulativeSpend` (budget allocation, $5K/day flat). Now uses real reward payouts.
+- **Calendar anchor**: `DAY_ONE = April 1, 2026` (hardcoded for demo determinism). Day 30 = April 30, Day 31 = May 1, Day 60 = May 30.
+- **Edge cases**: At `selectedDay = firstDayN` (start of new month) Spent MTD shows one day's reward — visible "reset" between Day 30 → Day 31 is the intended calendar story.
+- **Status**: ✅ **S6 items 4+7 — fixed.** Was period-windowed (7d/30d), creating mixed time bases on the strip. Now monthly to match Budget and Pacing — strip tells one coherent budget-health story.
 
 ### M1.4 Pacing
 
 - **Surfaces**: "Pacing ~$X/mo" strip
-- **Time base**: derived rate, normalized to monthly
-- **Derivation (current — KNOWN BROKEN)**: `(dayData.cumulativeSpend / selectedDay) * 30` rounded. Uses budget allocation (`cumulativeSpend = budget/30 × days`), not real spend. So Pacing always ≈ budget. Lies.
-- **Status**: **DEFERRED.** Proper Pacing requires calendar-aware logic (current month length 28/29/30/31, days elapsed in this calendar month, projection for remaining days). The engine has projection capability (the strategy page uses it) so the data is available — but binding it to a calendar month + handling the engine's variable horizon (S5 lifts to 90 days) is its own design effort. **Not touched in S4** to avoid shipping an approximation we'd refactor. See "Deferred items" section in plan-numbers-consistency.md.
+- **Time base**: projected total for current calendar month
+- **Derivation (S6 items 4+7)**: `days[lastDayOfMonth − 1].cumulativeRewardCost − days[firstDayOfMonth − 2].cumulativeRewardCost` rounded, clamped ≥ 0. The engine's deterministic projection of total reward cost across the entire calendar month. Equivalent to Spent MTD + projected remainder.
+- **Engine source**: `days[i].cumulativeRewardCost` (engine runs to Day 90; lastDayOfMonth ≤ 61 for selectedDay ≤ 60, so always available).
+- **Behavior**:
+  - **Within a month**: Pacing is constant. The deterministic engine already knows where it'll land; without engine-side drift (planned in S7), there's no daily signal to react to. Pacing is a benchmark, not a journey — the chart underneath shows movement.
+  - **Month boundary**: Pacing jumps when `selectedDay` crosses from one calendar month to the next (e.g., Day 30 → Day 31: $108K → $212K with default $150K budget). This IS the engine's honest forecast for the new month given current audience state.
+  - **End of month**: at `selectedDay = lastDayN`, Pacing equals Spent MTD exactly (no projection left to add).
+- **Known artifacts** (engine-side, will resolve when S7 lands):
+  - **May overshoot**: with default $150K budget, the engine projects $212K for May because daily reward cost is not capped at `budget/30`; once audience scales (Day 31+), daily reward exceeds the $5K/day pace. Pacing surfaces this honestly. S7 (engine main-path refactor) is expected to enforce budget caps and audience pool capacity.
+  - **31-day month variance**: even when capped, May has 31 days vs the engine's 30-day-basis budget — a fully on-track agent would still pace ~3.3% above budget in 31-day months. This is real-world honest, not a bug.
+- **Status**: ✅ **S6 items 4+7 — fixed.** Was `(cumulativeSpend / selectedDay) × 30` which mechanically equaled Budget (cumulativeSpend = budget/30 × days). Strip stopped lying; now reflects engine's actual projected month-end spend.
 
 ### M1.5 Suggested change action
 

@@ -1,0 +1,3412 @@
+{
+  "cells": {
+    "day=10|range=30": {
+      "audienceOverview": {
+        "bands": {
+          "advocates": [
+            126725,
+            126404,
+            127251,
+            128102,
+            128959,
+            129820,
+            130687,
+            131559,
+            132435,
+            133315
+          ],
+          "passive": [
+            105676,
+            105477,
+            105459,
+            105441,
+            105425,
+            105410,
+            105395,
+            105381,
+            105368,
+            105356
+          ],
+          "persuadable": [
+            189976,
+            189375,
+            189218,
+            189058,
+            188894,
+            188728,
+            188558,
+            188385,
+            188209,
+            188029
+          ]
+        },
+        "convRateOverlay": [
+          2.1,
+          2.1,
+          2.1,
+          2.1,
+          2.2,
+          2.2,
+          2.3,
+          2.4,
+          2.6,
+          2.7
+        ]
+      },
+      "campaignHealth": {
+        "budget": 150000,
+        "delivery": {
+          "active": true,
+          "label": "Acquiring Customers"
+        },
+        "projectedMonthSpend": 108051,
+        "spentMTD": 15955
+      },
+      "campaignList": [
+        {
+          "channel": "push",
+          "contactCount": 753,
+          "id": "p2p-nonuser",
+          "reward": "$15 both-get",
+          "title": "Sent money to non-user"
+        },
+        {
+          "channel": "email",
+          "contactCount": 282,
+          "id": "highly-rated",
+          "reward": "$10 credit",
+          "title": "Rated support highly"
+        },
+        {
+          "channel": "in-app",
+          "contactCount": 94,
+          "id": "seasonal-promo",
+          "reward": "$10 both-get",
+          "title": "Always-on referral offer"
+        },
+        {
+          "channel": "email",
+          "contactCount": 659,
+          "id": "first-deposit",
+          "reward": "$10 credit",
+          "title": "First paycheck deposited"
+        }
+      ],
+      "dailyOutreach": {
+        "latestCampaignTitles": [
+          "Sent money to non-user",
+          "Rated support highly",
+          "Always-on referral offer",
+          "First paycheck deposited"
+        ],
+        "maxTotal": 1788,
+        "paddedData": [
+          [
+            1192,
+            447,
+            149,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659
+          ]
+        ]
+      },
+      "effectiveDay": 10,
+      "funnel": [
+        {
+          "group": "referrer",
+          "label": "Contacted",
+          "time": null,
+          "value": 17880
+        },
+        {
+          "group": "referrer",
+          "label": "Engaged",
+          "time": "1 day",
+          "value": 14431
+        },
+        {
+          "group": "referrer",
+          "label": "Referred",
+          "time": "3 days",
+          "value": 10982
+        },
+        {
+          "group": "referee",
+          "label": "Reached",
+          "time": "4 days",
+          "value": 7028
+        },
+        {
+          "group": "referee",
+          "label": "Signed Up",
+          "time": "6 days",
+          "value": 3074
+        },
+        {
+          "group": "referee",
+          "label": "Active User",
+          "time": "12 days",
+          "value": 197
+        }
+      ],
+      "kpiCards": [
+        {
+          "deltaPct": null,
+          "isGood": false,
+          "key": "activeUsers",
+          "label": "New Active Users",
+          "showDelta": false,
+          "value": 197
+        },
+        {
+          "deltaPct": null,
+          "isGood": true,
+          "key": "cac",
+          "label": "CAC",
+          "showDelta": false,
+          "value": 81
+        },
+        {
+          "deltaPct": null,
+          "isGood": false,
+          "key": "roi",
+          "label": "ROAS",
+          "showDelta": false,
+          "value": 1.9
+        },
+        {
+          "deltaPct": null,
+          "isGood": false,
+          "key": "fraudSaved",
+          "label": "Fraud Saved",
+          "showDelta": false,
+          "value": 3500
+        }
+      ],
+      "suggestedChange": null
+    },
+    "day=10|range=30|kpi=activeUsers": {
+      "endDay": 10,
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 37,
+      "slice": [
+        0,
+        4,
+        9,
+        14,
+        18,
+        23,
+        27,
+        31,
+        34,
+        37
+      ],
+      "startDay": 1,
+      "staticSlice": null
+    },
+    "day=10|range=30|kpi=cac": {
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        }
+      ],
+      "endDay": 10,
+      "kind": "stacked",
+      "maxVal": 82,
+      "startDay": 1
+    },
+    "day=10|range=30|kpi=fraudSaved": {
+      "endDay": 10,
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 350,
+      "slice": [
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350
+      ],
+      "startDay": 1,
+      "staticSlice": null
+    },
+    "day=10|range=30|kpi=roi": {
+      "endDay": 10,
+      "hasData": true,
+      "isROAS": true,
+      "kind": "line",
+      "maxVal": 2,
+      "slice": [
+        0,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        2,
+        2
+      ],
+      "startDay": 1,
+      "staticSlice": [
+        0,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9
+      ]
+    },
+    "day=10|range=7": {
+      "audienceOverview": {
+        "bands": {
+          "advocates": [
+            128102,
+            128959,
+            129820,
+            130687,
+            131559,
+            132435,
+            133315
+          ],
+          "passive": [
+            105441,
+            105425,
+            105410,
+            105395,
+            105381,
+            105368,
+            105356
+          ],
+          "persuadable": [
+            189058,
+            188894,
+            188728,
+            188558,
+            188385,
+            188209,
+            188029
+          ]
+        },
+        "convRateOverlay": [
+          2.1,
+          2.2,
+          2.2,
+          2.3,
+          2.4,
+          2.6,
+          2.7
+        ]
+      },
+      "campaignHealth": {
+        "budget": 150000,
+        "delivery": {
+          "active": true,
+          "label": "Acquiring Customers"
+        },
+        "projectedMonthSpend": 108051,
+        "spentMTD": 15955
+      },
+      "campaignList": [
+        {
+          "channel": "push",
+          "contactCount": 753,
+          "id": "p2p-nonuser",
+          "reward": "$15 both-get",
+          "title": "Sent money to non-user"
+        },
+        {
+          "channel": "email",
+          "contactCount": 282,
+          "id": "highly-rated",
+          "reward": "$10 credit",
+          "title": "Rated support highly"
+        },
+        {
+          "channel": "in-app",
+          "contactCount": 94,
+          "id": "seasonal-promo",
+          "reward": "$10 both-get",
+          "title": "Always-on referral offer"
+        },
+        {
+          "channel": "email",
+          "contactCount": 659,
+          "id": "first-deposit",
+          "reward": "$10 credit",
+          "title": "First paycheck deposited"
+        }
+      ],
+      "dailyOutreach": {
+        "latestCampaignTitles": [
+          "Sent money to non-user",
+          "Rated support highly",
+          "Always-on referral offer",
+          "First paycheck deposited"
+        ],
+        "maxTotal": 1788,
+        "paddedData": [
+          [
+            1192,
+            447,
+            149,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659
+          ]
+        ]
+      },
+      "effectiveDay": 10,
+      "funnel": [
+        {
+          "group": "referrer",
+          "label": "Contacted",
+          "time": null,
+          "value": 12516
+        },
+        {
+          "group": "referrer",
+          "label": "Engaged",
+          "time": "1 day",
+          "value": 10120
+        },
+        {
+          "group": "referrer",
+          "label": "Referred",
+          "time": "3 days",
+          "value": 7723
+        },
+        {
+          "group": "referee",
+          "label": "Reached",
+          "time": "4 days",
+          "value": 4943
+        },
+        {
+          "group": "referee",
+          "label": "Signed Up",
+          "time": "6 days",
+          "value": 2162
+        },
+        {
+          "group": "referee",
+          "label": "Active User",
+          "time": "12 days",
+          "value": 184
+        }
+      ],
+      "kpiCards": [
+        {
+          "deltaPct": 1315,
+          "isGood": true,
+          "key": "activeUsers",
+          "label": "New Active Users",
+          "showDelta": true,
+          "value": 184
+        },
+        {
+          "deltaPct": -2,
+          "isGood": true,
+          "key": "cac",
+          "label": "CAC",
+          "showDelta": true,
+          "value": 81
+        },
+        {
+          "deltaPct": 0,
+          "isGood": null,
+          "key": "roi",
+          "label": "ROAS",
+          "showDelta": true,
+          "value": 1.9
+        },
+        {
+          "deltaPct": 133,
+          "isGood": true,
+          "key": "fraudSaved",
+          "label": "Fraud Saved",
+          "showDelta": true,
+          "value": 2450
+        }
+      ],
+      "suggestedChange": null
+    },
+    "day=10|range=7|kpi=activeUsers": {
+      "endDay": 10,
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 37,
+      "slice": [
+        14,
+        18,
+        23,
+        27,
+        31,
+        34,
+        37
+      ],
+      "startDay": 4,
+      "staticSlice": null
+    },
+    "day=10|range=7|kpi=cac": {
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        }
+      ],
+      "endDay": 10,
+      "kind": "stacked",
+      "maxVal": 82,
+      "startDay": 4
+    },
+    "day=10|range=7|kpi=fraudSaved": {
+      "endDay": 10,
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 350,
+      "slice": [
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350
+      ],
+      "startDay": 4,
+      "staticSlice": null
+    },
+    "day=10|range=7|kpi=roi": {
+      "endDay": 10,
+      "hasData": true,
+      "isROAS": true,
+      "kind": "line",
+      "maxVal": 2,
+      "slice": [
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        2,
+        2
+      ],
+      "startDay": 4,
+      "staticSlice": [
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9
+      ]
+    },
+    "day=1|range=30": {
+      "audienceOverview": {
+        "bands": {
+          "advocates": [
+            126725
+          ],
+          "passive": [
+            105676
+          ],
+          "persuadable": [
+            189976
+          ]
+        },
+        "convRateOverlay": [
+          2.1
+        ]
+      },
+      "campaignHealth": {
+        "budget": 150000,
+        "delivery": {
+          "active": false,
+          "label": "Learning"
+        },
+        "projectedMonthSpend": 108051,
+        "spentMTD": 0
+      },
+      "campaignList": [
+        {
+          "channel": "push",
+          "contactCount": 1192,
+          "id": "p2p-nonuser",
+          "reward": "$15 both-get",
+          "title": "Sent money to non-user"
+        },
+        {
+          "channel": "email",
+          "contactCount": 447,
+          "id": "highly-rated",
+          "reward": "$10 credit",
+          "title": "Rated support highly"
+        },
+        {
+          "channel": "in-app",
+          "contactCount": 149,
+          "id": "seasonal-promo",
+          "reward": "$10 both-get",
+          "title": "Always-on referral offer"
+        }
+      ],
+      "dailyOutreach": {
+        "latestCampaignTitles": [
+          "Sent money to non-user",
+          "Rated support highly",
+          "Always-on referral offer"
+        ],
+        "maxTotal": 1788,
+        "paddedData": [
+          [
+            1192,
+            447,
+            149
+          ]
+        ]
+      },
+      "effectiveDay": 1,
+      "funnel": [
+        {
+          "group": "referrer",
+          "label": "Contacted",
+          "time": null,
+          "value": 1788
+        },
+        {
+          "group": "referrer",
+          "label": "Engaged",
+          "time": "1 day",
+          "value": 1437
+        },
+        {
+          "group": "referrer",
+          "label": "Referred",
+          "time": "3 days",
+          "value": 1086
+        },
+        {
+          "group": "referee",
+          "label": "Reached",
+          "time": "4 days",
+          "value": 695
+        },
+        {
+          "group": "referee",
+          "label": "Signed Up",
+          "time": "6 days",
+          "value": 304
+        },
+        {
+          "group": "referee",
+          "label": "Active User",
+          "time": "12 days",
+          "value": 0
+        }
+      ],
+      "kpiCards": [
+        {
+          "deltaPct": null,
+          "isGood": false,
+          "key": "activeUsers",
+          "label": "New Active Users",
+          "showDelta": false,
+          "value": 0
+        },
+        {
+          "deltaPct": null,
+          "isGood": true,
+          "key": "cac",
+          "label": "CAC",
+          "showDelta": false,
+          "value": 0
+        },
+        {
+          "deltaPct": null,
+          "isGood": false,
+          "key": "roi",
+          "label": "ROAS",
+          "showDelta": false,
+          "value": 0
+        },
+        {
+          "deltaPct": null,
+          "isGood": false,
+          "key": "fraudSaved",
+          "label": "Fraud Saved",
+          "showDelta": false,
+          "value": 350
+        }
+      ],
+      "suggestedChange": null
+    },
+    "day=1|range=30|kpi=activeUsers": {
+      "endDay": 1,
+      "hasData": false,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 0,
+      "slice": [
+        0
+      ],
+      "startDay": 1,
+      "staticSlice": null
+    },
+    "day=1|range=30|kpi=cac": {
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        }
+      ],
+      "endDay": 1,
+      "kind": "stacked",
+      "maxVal": 82,
+      "startDay": 1
+    },
+    "day=1|range=30|kpi=fraudSaved": {
+      "endDay": 1,
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 350,
+      "slice": [
+        350
+      ],
+      "startDay": 1,
+      "staticSlice": null
+    },
+    "day=1|range=30|kpi=roi": {
+      "endDay": 1,
+      "hasData": false,
+      "isROAS": true,
+      "kind": "line",
+      "maxVal": 0,
+      "slice": [
+        0
+      ],
+      "startDay": 1,
+      "staticSlice": [
+        0
+      ]
+    },
+    "day=1|range=7": {
+      "audienceOverview": {
+        "bands": {
+          "advocates": [
+            126725
+          ],
+          "passive": [
+            105676
+          ],
+          "persuadable": [
+            189976
+          ]
+        },
+        "convRateOverlay": [
+          2.1
+        ]
+      },
+      "campaignHealth": {
+        "budget": 150000,
+        "delivery": {
+          "active": false,
+          "label": "Learning"
+        },
+        "projectedMonthSpend": 108051,
+        "spentMTD": 0
+      },
+      "campaignList": [
+        {
+          "channel": "push",
+          "contactCount": 1192,
+          "id": "p2p-nonuser",
+          "reward": "$15 both-get",
+          "title": "Sent money to non-user"
+        },
+        {
+          "channel": "email",
+          "contactCount": 447,
+          "id": "highly-rated",
+          "reward": "$10 credit",
+          "title": "Rated support highly"
+        },
+        {
+          "channel": "in-app",
+          "contactCount": 149,
+          "id": "seasonal-promo",
+          "reward": "$10 both-get",
+          "title": "Always-on referral offer"
+        }
+      ],
+      "dailyOutreach": {
+        "latestCampaignTitles": [
+          "Sent money to non-user",
+          "Rated support highly",
+          "Always-on referral offer"
+        ],
+        "maxTotal": 1788,
+        "paddedData": [
+          [
+            1192,
+            447,
+            149
+          ]
+        ]
+      },
+      "effectiveDay": 1,
+      "funnel": [
+        {
+          "group": "referrer",
+          "label": "Contacted",
+          "time": null,
+          "value": 1788
+        },
+        {
+          "group": "referrer",
+          "label": "Engaged",
+          "time": "1 day",
+          "value": 1437
+        },
+        {
+          "group": "referrer",
+          "label": "Referred",
+          "time": "3 days",
+          "value": 1086
+        },
+        {
+          "group": "referee",
+          "label": "Reached",
+          "time": "4 days",
+          "value": 695
+        },
+        {
+          "group": "referee",
+          "label": "Signed Up",
+          "time": "6 days",
+          "value": 304
+        },
+        {
+          "group": "referee",
+          "label": "Active User",
+          "time": "12 days",
+          "value": 0
+        }
+      ],
+      "kpiCards": [
+        {
+          "deltaPct": null,
+          "isGood": false,
+          "key": "activeUsers",
+          "label": "New Active Users",
+          "showDelta": false,
+          "value": 0
+        },
+        {
+          "deltaPct": null,
+          "isGood": true,
+          "key": "cac",
+          "label": "CAC",
+          "showDelta": false,
+          "value": 0
+        },
+        {
+          "deltaPct": null,
+          "isGood": false,
+          "key": "roi",
+          "label": "ROAS",
+          "showDelta": false,
+          "value": 0
+        },
+        {
+          "deltaPct": null,
+          "isGood": false,
+          "key": "fraudSaved",
+          "label": "Fraud Saved",
+          "showDelta": false,
+          "value": 350
+        }
+      ],
+      "suggestedChange": null
+    },
+    "day=1|range=7|kpi=activeUsers": {
+      "endDay": 1,
+      "hasData": false,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 0,
+      "slice": [
+        0
+      ],
+      "startDay": 1,
+      "staticSlice": null
+    },
+    "day=1|range=7|kpi=cac": {
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        }
+      ],
+      "endDay": 1,
+      "kind": "stacked",
+      "maxVal": 82,
+      "startDay": 1
+    },
+    "day=1|range=7|kpi=fraudSaved": {
+      "endDay": 1,
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 350,
+      "slice": [
+        350
+      ],
+      "startDay": 1,
+      "staticSlice": null
+    },
+    "day=1|range=7|kpi=roi": {
+      "endDay": 1,
+      "hasData": false,
+      "isROAS": true,
+      "kind": "line",
+      "maxVal": 0,
+      "slice": [
+        0
+      ],
+      "startDay": 1,
+      "staticSlice": [
+        0
+      ]
+    },
+    "day=30|range=30": {
+      "audienceOverview": {
+        "bands": {
+          "advocates": [
+            126725,
+            126404,
+            127251,
+            128102,
+            128959,
+            129820,
+            130687,
+            131559,
+            132435,
+            133315,
+            134198,
+            135085,
+            135975,
+            136868,
+            137765,
+            138664,
+            139567,
+            140472,
+            141380,
+            142291,
+            143205,
+            144122,
+            145042,
+            145963,
+            146887,
+            147814,
+            148743,
+            149674,
+            150606,
+            151541
+          ],
+          "passive": [
+            105676,
+            105477,
+            105459,
+            105441,
+            105425,
+            105410,
+            105395,
+            105381,
+            105368,
+            105356,
+            105345,
+            105335,
+            105325,
+            105316,
+            105308,
+            105300,
+            105294,
+            105288,
+            105283,
+            105278,
+            105274,
+            105271,
+            105269,
+            105267,
+            105266,
+            105266,
+            105266,
+            105267,
+            105269,
+            105271
+          ],
+          "persuadable": [
+            189976,
+            189375,
+            189218,
+            189058,
+            188894,
+            188728,
+            188558,
+            188385,
+            188209,
+            188029,
+            187846,
+            187659,
+            187469,
+            187276,
+            187079,
+            186880,
+            186677,
+            186471,
+            186262,
+            186051,
+            185836,
+            185619,
+            185398,
+            185176,
+            184950,
+            184722,
+            184492,
+            184258,
+            184023,
+            183785
+          ]
+        },
+        "convRateOverlay": [
+          2.1,
+          2.1,
+          2.1,
+          2.1,
+          2.2,
+          2.2,
+          2.3,
+          2.4,
+          2.6,
+          2.7,
+          2.8,
+          2.9,
+          3,
+          3.2,
+          3.3,
+          3.4,
+          3.5,
+          3.6,
+          3.7,
+          3.8,
+          3.9,
+          3.9,
+          4,
+          4.1,
+          4.2,
+          4.3,
+          4.3,
+          4.4,
+          4.5,
+          4.5
+        ]
+      },
+      "campaignHealth": {
+        "budget": 150000,
+        "delivery": {
+          "active": true,
+          "label": "Acquiring Customers"
+        },
+        "projectedMonthSpend": 108051,
+        "spentMTD": 108051
+      },
+      "campaignList": [
+        {
+          "channel": "push",
+          "contactCount": 572,
+          "id": "p2p-nonuser",
+          "reward": "$15 both-get",
+          "title": "Sent money to non-user"
+        },
+        {
+          "channel": "email",
+          "contactCount": 215,
+          "id": "highly-rated",
+          "reward": "$10 credit",
+          "title": "Rated support highly"
+        },
+        {
+          "channel": "in-app",
+          "contactCount": 72,
+          "id": "seasonal-promo",
+          "reward": "$10 both-get",
+          "title": "Always-on referral offer"
+        },
+        {
+          "channel": "email",
+          "contactCount": 501,
+          "id": "first-deposit",
+          "reward": "$10 credit",
+          "title": "First paycheck deposited"
+        },
+        {
+          "channel": "push",
+          "contactCount": 429,
+          "id": "cashback-milestone",
+          "reward": "$5 bonus cashback",
+          "title": "Saved on cashback this month"
+        }
+      ],
+      "dailyOutreach": {
+        "latestCampaignTitles": [
+          "Sent money to non-user",
+          "Rated support highly",
+          "Always-on referral offer",
+          "First paycheck deposited",
+          "Saved on cashback this month"
+        ],
+        "maxTotal": 1788,
+        "paddedData": [
+          [
+            1192,
+            447,
+            149,
+            0,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0,
+            0
+          ],
+          [
+            1192,
+            447,
+            149,
+            0,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ]
+        ]
+      },
+      "effectiveDay": 30,
+      "funnel": [
+        {
+          "group": "referrer",
+          "label": "Contacted",
+          "time": null,
+          "value": 53640
+        },
+        {
+          "group": "referrer",
+          "label": "Engaged",
+          "time": "1 day",
+          "value": 44174
+        },
+        {
+          "group": "referrer",
+          "label": "Referred",
+          "time": "3 days",
+          "value": 34708
+        },
+        {
+          "group": "referee",
+          "label": "Reached",
+          "time": "4 days",
+          "value": 22213
+        },
+        {
+          "group": "referee",
+          "label": "Signed Up",
+          "time": "6 days",
+          "value": 9717
+        },
+        {
+          "group": "referee",
+          "label": "Active User",
+          "time": "12 days",
+          "value": 1363
+        }
+      ],
+      "kpiCards": [
+        {
+          "deltaPct": null,
+          "isGood": false,
+          "key": "activeUsers",
+          "label": "New Active Users",
+          "showDelta": false,
+          "value": 1363
+        },
+        {
+          "deltaPct": null,
+          "isGood": true,
+          "key": "cac",
+          "label": "CAC",
+          "showDelta": false,
+          "value": 79
+        },
+        {
+          "deltaPct": null,
+          "isGood": false,
+          "key": "roi",
+          "label": "ROAS",
+          "showDelta": false,
+          "value": 2.4
+        },
+        {
+          "deltaPct": null,
+          "isGood": false,
+          "key": "fraudSaved",
+          "label": "Fraud Saved",
+          "showDelta": false,
+          "value": 10500
+        }
+      ],
+      "suggestedChange": null
+    },
+    "day=30|range=30|kpi=activeUsers": {
+      "endDay": 30,
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 75,
+      "slice": [
+        0,
+        4,
+        9,
+        14,
+        18,
+        23,
+        27,
+        31,
+        34,
+        37,
+        39,
+        42,
+        44,
+        46,
+        48,
+        50,
+        52,
+        54,
+        56,
+        58,
+        60,
+        62,
+        64,
+        65,
+        67,
+        69,
+        70,
+        72,
+        73,
+        75
+      ],
+      "startDay": 1,
+      "staticSlice": null
+    },
+    "day=30|range=30|kpi=cac": {
+      "cacData": [
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            32
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            50,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            49,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            31
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        }
+      ],
+      "endDay": 30,
+      "kind": "stacked",
+      "maxVal": 82,
+      "startDay": 1
+    },
+    "day=30|range=30|kpi=fraudSaved": {
+      "endDay": 30,
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 350,
+      "slice": [
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350
+      ],
+      "startDay": 1,
+      "staticSlice": null
+    },
+    "day=30|range=30|kpi=roi": {
+      "endDay": 30,
+      "hasData": true,
+      "isROAS": true,
+      "kind": "line",
+      "maxVal": 2.8,
+      "slice": [
+        0,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        2,
+        2,
+        2,
+        2.1,
+        2.1,
+        2.1,
+        2.2,
+        2.2,
+        2.3,
+        2.3,
+        2.4,
+        2.4,
+        2.5,
+        2.5,
+        2.6,
+        2.6,
+        2.6,
+        2.7,
+        2.7,
+        2.7,
+        2.8,
+        2.8
+      ],
+      "startDay": 1,
+      "staticSlice": [
+        0,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9
+      ]
+    },
+    "day=30|range=7": {
+      "audienceOverview": {
+        "bands": {
+          "advocates": [
+            145963,
+            146887,
+            147814,
+            148743,
+            149674,
+            150606,
+            151541
+          ],
+          "passive": [
+            105267,
+            105266,
+            105266,
+            105266,
+            105267,
+            105269,
+            105271
+          ],
+          "persuadable": [
+            185176,
+            184950,
+            184722,
+            184492,
+            184258,
+            184023,
+            183785
+          ]
+        },
+        "convRateOverlay": [
+          4.1,
+          4.2,
+          4.3,
+          4.3,
+          4.4,
+          4.5,
+          4.5
+        ]
+      },
+      "campaignHealth": {
+        "budget": 150000,
+        "delivery": {
+          "active": true,
+          "label": "Acquiring Customers"
+        },
+        "projectedMonthSpend": 108051,
+        "spentMTD": 108051
+      },
+      "campaignList": [
+        {
+          "channel": "push",
+          "contactCount": 572,
+          "id": "p2p-nonuser",
+          "reward": "$15 both-get",
+          "title": "Sent money to non-user"
+        },
+        {
+          "channel": "email",
+          "contactCount": 215,
+          "id": "highly-rated",
+          "reward": "$10 credit",
+          "title": "Rated support highly"
+        },
+        {
+          "channel": "in-app",
+          "contactCount": 72,
+          "id": "seasonal-promo",
+          "reward": "$10 both-get",
+          "title": "Always-on referral offer"
+        },
+        {
+          "channel": "email",
+          "contactCount": 501,
+          "id": "first-deposit",
+          "reward": "$10 credit",
+          "title": "First paycheck deposited"
+        },
+        {
+          "channel": "push",
+          "contactCount": 429,
+          "id": "cashback-milestone",
+          "reward": "$5 bonus cashback",
+          "title": "Saved on cashback this month"
+        }
+      ],
+      "dailyOutreach": {
+        "latestCampaignTitles": [
+          "Sent money to non-user",
+          "Rated support highly",
+          "Always-on referral offer",
+          "First paycheck deposited",
+          "Saved on cashback this month"
+        ],
+        "maxTotal": 1788,
+        "paddedData": [
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            753,
+            282,
+            94,
+            659,
+            0
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ]
+        ]
+      },
+      "effectiveDay": 30,
+      "funnel": [
+        {
+          "group": "referrer",
+          "label": "Contacted",
+          "time": null,
+          "value": 12516
+        },
+        {
+          "group": "referrer",
+          "label": "Engaged",
+          "time": "1 day",
+          "value": 10529
+        },
+        {
+          "group": "referrer",
+          "label": "Referred",
+          "time": "3 days",
+          "value": 8541
+        },
+        {
+          "group": "referee",
+          "label": "Reached",
+          "time": "4 days",
+          "value": 5467
+        },
+        {
+          "group": "referee",
+          "label": "Signed Up",
+          "time": "6 days",
+          "value": 2392
+        },
+        {
+          "group": "referee",
+          "label": "Active User",
+          "time": "12 days",
+          "value": 491
+        }
+      ],
+      "kpiCards": [
+        {
+          "deltaPct": 21,
+          "isGood": true,
+          "key": "activeUsers",
+          "label": "New Active Users",
+          "showDelta": true,
+          "value": 491
+        },
+        {
+          "deltaPct": -1,
+          "isGood": true,
+          "key": "cac",
+          "label": "CAC",
+          "showDelta": true,
+          "value": 78
+        },
+        {
+          "deltaPct": 13,
+          "isGood": true,
+          "key": "roi",
+          "label": "ROAS",
+          "showDelta": true,
+          "value": 2.7
+        },
+        {
+          "deltaPct": 0,
+          "isGood": null,
+          "key": "fraudSaved",
+          "label": "Fraud Saved",
+          "showDelta": true,
+          "value": 2450
+        }
+      ],
+      "suggestedChange": null
+    },
+    "day=30|range=7|kpi=activeUsers": {
+      "endDay": 30,
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 75,
+      "slice": [
+        65,
+        67,
+        69,
+        70,
+        72,
+        73,
+        75
+      ],
+      "startDay": 24,
+      "staticSlice": null
+    },
+    "day=30|range=7|kpi=cac": {
+      "cacData": [
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        }
+      ],
+      "endDay": 30,
+      "kind": "stacked",
+      "maxVal": 78,
+      "startDay": 24
+    },
+    "day=30|range=7|kpi=fraudSaved": {
+      "endDay": 30,
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 350,
+      "slice": [
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350
+      ],
+      "startDay": 24,
+      "staticSlice": null
+    },
+    "day=30|range=7|kpi=roi": {
+      "endDay": 30,
+      "hasData": true,
+      "isROAS": true,
+      "kind": "line",
+      "maxVal": 2.8,
+      "slice": [
+        2.6,
+        2.6,
+        2.7,
+        2.7,
+        2.7,
+        2.8,
+        2.8
+      ],
+      "startDay": 24,
+      "staticSlice": [
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9
+      ]
+    },
+    "day=60|range=30": {
+      "audienceOverview": {
+        "bands": {
+          "advocates": [
+            152478,
+            153417,
+            154356,
+            155298,
+            156242,
+            157187,
+            158134,
+            159082,
+            160031,
+            160981,
+            161932,
+            162885,
+            163839,
+            164794,
+            165750,
+            166707,
+            167665,
+            168624,
+            169584,
+            170545,
+            171506,
+            172468,
+            173431,
+            174395,
+            175359,
+            176325,
+            177290,
+            178257,
+            179224,
+            180191
+          ],
+          "passive": [
+            105274,
+            105277,
+            105281,
+            105286,
+            105291,
+            105297,
+            105304,
+            105311,
+            105318,
+            105327,
+            105335,
+            105345,
+            105355,
+            105365,
+            105376,
+            105387,
+            105399,
+            105412,
+            105425,
+            105439,
+            105453,
+            105467,
+            105482,
+            105498,
+            105514,
+            105530,
+            105547,
+            105565,
+            105583,
+            105601
+          ],
+          "persuadable": [
+            183545,
+            183302,
+            183057,
+            182810,
+            182560,
+            182309,
+            182055,
+            181800,
+            181542,
+            181282,
+            181021,
+            180757,
+            180491,
+            180224,
+            179954,
+            179683,
+            179410,
+            179136,
+            178859,
+            178581,
+            178301,
+            178020,
+            177736,
+            177452,
+            177165,
+            176877,
+            176588,
+            176297,
+            176005,
+            175711
+          ]
+        },
+        "convRateOverlay": [
+          4.6,
+          4.6,
+          4.7,
+          4.7,
+          4.8,
+          4.8,
+          4.9,
+          4.9,
+          5,
+          5,
+          5.1,
+          5.1,
+          5.1,
+          5.2,
+          5.2,
+          5.2,
+          5.3,
+          5.3,
+          5.3,
+          5.3,
+          5.4,
+          5.4,
+          5.4,
+          5.4,
+          5.5,
+          5.5,
+          5.5,
+          5.5,
+          5.5,
+          5.6
+        ]
+      },
+      "campaignHealth": {
+        "budget": 150000,
+        "delivery": {
+          "active": true,
+          "label": "Acquiring Customers"
+        },
+        "projectedMonthSpend": 212552,
+        "spentMTD": 205067
+      },
+      "campaignList": [
+        {
+          "channel": "push",
+          "contactCount": 572,
+          "id": "p2p-nonuser",
+          "reward": "$15 both-get",
+          "title": "Sent money to non-user"
+        },
+        {
+          "channel": "email",
+          "contactCount": 215,
+          "id": "highly-rated",
+          "reward": "$10 credit",
+          "title": "Rated support highly"
+        },
+        {
+          "channel": "in-app",
+          "contactCount": 72,
+          "id": "seasonal-promo",
+          "reward": "$10 both-get",
+          "title": "Always-on referral offer"
+        },
+        {
+          "channel": "email",
+          "contactCount": 501,
+          "id": "first-deposit",
+          "reward": "$10 credit",
+          "title": "First paycheck deposited"
+        },
+        {
+          "channel": "push",
+          "contactCount": 429,
+          "id": "cashback-milestone",
+          "reward": "$5 bonus cashback",
+          "title": "Saved on cashback this month"
+        }
+      ],
+      "dailyOutreach": {
+        "latestCampaignTitles": [
+          "Sent money to non-user",
+          "Rated support highly",
+          "Always-on referral offer",
+          "First paycheck deposited",
+          "Saved on cashback this month"
+        ],
+        "maxTotal": 1788,
+        "paddedData": [
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ]
+        ]
+      },
+      "effectiveDay": 60,
+      "funnel": [
+        {
+          "group": "referrer",
+          "label": "Contacted",
+          "time": null,
+          "value": 53640
+        },
+        {
+          "group": "referrer",
+          "label": "Engaged",
+          "time": "1 day",
+          "value": 45882
+        },
+        {
+          "group": "referrer",
+          "label": "Referred",
+          "time": "3 days",
+          "value": 38124
+        },
+        {
+          "group": "referee",
+          "label": "Reached",
+          "time": "4 days",
+          "value": 24400
+        },
+        {
+          "group": "referee",
+          "label": "Signed Up",
+          "time": "6 days",
+          "value": 10675
+        },
+        {
+          "group": "referee",
+          "label": "Active User",
+          "time": "12 days",
+          "value": 2660
+        }
+      ],
+      "kpiCards": [
+        {
+          "deltaPct": 95,
+          "isGood": true,
+          "key": "activeUsers",
+          "label": "New Active Users",
+          "showDelta": true,
+          "value": 2660
+        },
+        {
+          "deltaPct": -3,
+          "isGood": true,
+          "key": "cac",
+          "label": "CAC",
+          "showDelta": true,
+          "value": 77
+        },
+        {
+          "deltaPct": 33,
+          "isGood": true,
+          "key": "roi",
+          "label": "ROAS",
+          "showDelta": true,
+          "value": 3.2
+        },
+        {
+          "deltaPct": 0,
+          "isGood": null,
+          "key": "fraudSaved",
+          "label": "Fraud Saved",
+          "showDelta": true,
+          "value": 10500
+        }
+      ],
+      "suggestedChange": null
+    },
+    "day=60|range=30|kpi=activeUsers": {
+      "endDay": 60,
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 97,
+      "slice": [
+        76,
+        77,
+        78,
+        79,
+        81,
+        82,
+        83,
+        84,
+        85,
+        85,
+        86,
+        87,
+        88,
+        89,
+        89,
+        90,
+        91,
+        91,
+        92,
+        93,
+        93,
+        94,
+        94,
+        95,
+        95,
+        96,
+        96,
+        97,
+        97,
+        97
+      ],
+      "startDay": 31,
+      "staticSlice": null
+    },
+    "day=60|range=30|kpi=cac": {
+      "cacData": [
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            48,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        }
+      ],
+      "endDay": 60,
+      "kind": "stacked",
+      "maxVal": 78,
+      "startDay": 31
+    },
+    "day=60|range=30|kpi=fraudSaved": {
+      "endDay": 60,
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 350,
+      "slice": [
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350
+      ],
+      "startDay": 31,
+      "staticSlice": null
+    },
+    "day=60|range=30|kpi=roi": {
+      "endDay": 60,
+      "hasData": true,
+      "isROAS": true,
+      "kind": "line",
+      "maxVal": 3.4,
+      "slice": [
+        2.8,
+        2.9,
+        2.9,
+        2.9,
+        3,
+        3,
+        3,
+        3,
+        3.1,
+        3.1,
+        3.1,
+        3.1,
+        3.2,
+        3.2,
+        3.2,
+        3.2,
+        3.2,
+        3.2,
+        3.3,
+        3.3,
+        3.3,
+        3.3,
+        3.3,
+        3.3,
+        3.3,
+        3.4,
+        3.4,
+        3.4,
+        3.4,
+        3.4
+      ],
+      "startDay": 31,
+      "staticSlice": [
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9
+      ]
+    },
+    "day=60|range=7": {
+      "audienceOverview": {
+        "bands": {
+          "advocates": [
+            174395,
+            175359,
+            176325,
+            177290,
+            178257,
+            179224,
+            180191
+          ],
+          "passive": [
+            105498,
+            105514,
+            105530,
+            105547,
+            105565,
+            105583,
+            105601
+          ],
+          "persuadable": [
+            177452,
+            177165,
+            176877,
+            176588,
+            176297,
+            176005,
+            175711
+          ]
+        },
+        "convRateOverlay": [
+          5.4,
+          5.5,
+          5.5,
+          5.5,
+          5.5,
+          5.5,
+          5.6
+        ]
+      },
+      "campaignHealth": {
+        "budget": 150000,
+        "delivery": {
+          "active": true,
+          "label": "Acquiring Customers"
+        },
+        "projectedMonthSpend": 212552,
+        "spentMTD": 205067
+      },
+      "campaignList": [
+        {
+          "channel": "push",
+          "contactCount": 572,
+          "id": "p2p-nonuser",
+          "reward": "$15 both-get",
+          "title": "Sent money to non-user"
+        },
+        {
+          "channel": "email",
+          "contactCount": 215,
+          "id": "highly-rated",
+          "reward": "$10 credit",
+          "title": "Rated support highly"
+        },
+        {
+          "channel": "in-app",
+          "contactCount": 72,
+          "id": "seasonal-promo",
+          "reward": "$10 both-get",
+          "title": "Always-on referral offer"
+        },
+        {
+          "channel": "email",
+          "contactCount": 501,
+          "id": "first-deposit",
+          "reward": "$10 credit",
+          "title": "First paycheck deposited"
+        },
+        {
+          "channel": "push",
+          "contactCount": 429,
+          "id": "cashback-milestone",
+          "reward": "$5 bonus cashback",
+          "title": "Saved on cashback this month"
+        }
+      ],
+      "dailyOutreach": {
+        "latestCampaignTitles": [
+          "Sent money to non-user",
+          "Rated support highly",
+          "Always-on referral offer",
+          "First paycheck deposited",
+          "Saved on cashback this month"
+        ],
+        "maxTotal": 1788,
+        "paddedData": [
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ],
+          [
+            572,
+            215,
+            71,
+            501,
+            429
+          ]
+        ]
+      },
+      "effectiveDay": 60,
+      "funnel": [
+        {
+          "group": "referrer",
+          "label": "Contacted",
+          "time": null,
+          "value": 12516
+        },
+        {
+          "group": "referrer",
+          "label": "Engaged",
+          "time": "1 day",
+          "value": 10778
+        },
+        {
+          "group": "referrer",
+          "label": "Referred",
+          "time": "3 days",
+          "value": 9040
+        },
+        {
+          "group": "referee",
+          "label": "Reached",
+          "time": "4 days",
+          "value": 5786
+        },
+        {
+          "group": "referee",
+          "label": "Signed Up",
+          "time": "6 days",
+          "value": 2532
+        },
+        {
+          "group": "referee",
+          "label": "Active User",
+          "time": "12 days",
+          "value": 673
+        }
+      ],
+      "kpiCards": [
+        {
+          "deltaPct": 4,
+          "isGood": true,
+          "key": "activeUsers",
+          "label": "New Active Users",
+          "showDelta": true,
+          "value": 673
+        },
+        {
+          "deltaPct": 0,
+          "isGood": null,
+          "key": "cac",
+          "label": "CAC",
+          "showDelta": true,
+          "value": 77
+        },
+        {
+          "deltaPct": 3,
+          "isGood": true,
+          "key": "roi",
+          "label": "ROAS",
+          "showDelta": true,
+          "value": 3.4
+        },
+        {
+          "deltaPct": 0,
+          "isGood": null,
+          "key": "fraudSaved",
+          "label": "Fraud Saved",
+          "showDelta": true,
+          "value": 2450
+        }
+      ],
+      "suggestedChange": null
+    },
+    "day=60|range=7|kpi=activeUsers": {
+      "endDay": 60,
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 97,
+      "slice": [
+        95,
+        95,
+        96,
+        96,
+        97,
+        97,
+        97
+      ],
+      "startDay": 54,
+      "staticSlice": null
+    },
+    "day=60|range=7|kpi=cac": {
+      "cacData": [
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        },
+        {
+          "values": [
+            47,
+            30
+          ]
+        }
+      ],
+      "endDay": 60,
+      "kind": "stacked",
+      "maxVal": 77,
+      "startDay": 54
+    },
+    "day=60|range=7|kpi=fraudSaved": {
+      "endDay": 60,
+      "hasData": true,
+      "isROAS": false,
+      "kind": "line",
+      "maxVal": 350,
+      "slice": [
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350
+      ],
+      "startDay": 54,
+      "staticSlice": null
+    },
+    "day=60|range=7|kpi=roi": {
+      "endDay": 60,
+      "hasData": true,
+      "isROAS": true,
+      "kind": "line",
+      "maxVal": 3.4,
+      "slice": [
+        3.3,
+        3.3,
+        3.4,
+        3.4,
+        3.4,
+        3.4,
+        3.4
+      ],
+      "startDay": 54,
+      "staticSlice": [
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9,
+        1.9
+      ]
+    }
+  },
+  "meta": {
+    "budget": 150000,
+    "dateRanges": [
+      7,
+      30
+    ],
+    "dayStops": [
+      1,
+      10,
+      30,
+      60
+    ],
+    "kpiKeys": [
+      "activeUsers",
+      "cac",
+      "roi",
+      "fraudSaved"
+    ],
+    "schemaVersion": 1
+  }
+}

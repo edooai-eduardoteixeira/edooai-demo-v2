@@ -37,7 +37,7 @@ The following 12 items are S6's complete scope (everything previously deferred i
 | 1 | Static-Rules ROAS line | ✅ done (`9046ed1` + `3051fc3`) |
 | 2 | Audience pools (P5 + codex finding F) | ✅ done — v3 integrated model with hard tie-outs to engine |
 | 3 | Day 1–~18 SuggestedChange empty under default budget (P13) | pending — needs UX decision |
-| 4+7 | Calendar-aware Pacing + health-bar semantics (bundled) | pending — engine surface decision needed |
+| 4+7 | Calendar-aware Pacing + health-bar semantics (bundled) | ✅ done (`3f08de4`, PR #155) — DAY_ONE = April 1 2026; Spent MTD + projected-month-end Pacing; engine date-agnostic |
 | 5 | Additional day stops (40, 50) | pending |
 | 6 | X-axis tied to range selector + tick-step Y-axis | ✅ done (`a3a86d6`) |
 | 8 | CAC chart Day 1 readability (P18) | ❌ deferred — already in §"NOT in scope"; was a duplicate listing |
@@ -46,7 +46,7 @@ The following 12 items are S6's complete scope (everything previously deferred i
 | 11 | Final METRIC_MODEL.md read-through | pending |
 | 12 | Final `/qa-only` regression sweep + totality sweep | pending |
 
-**S6 net items remaining**: 8 (was 10 — Items 4+7 bundled; Item 8 deferred to backlog).
+**S6 net items remaining**: 7 (was 10 — Items 4+7 bundled & shipped; Item 8 deferred to backlog).
 
 ## Item 2 — locked spec v3 (2026-04-27, integrated audience model)
 
