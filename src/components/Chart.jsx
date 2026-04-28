@@ -47,6 +47,8 @@ export default function Chart({
   annotations,
   marker,
   legend,
+  axisWidth,
+  continuousFraction = 1,
 }) {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [animated, setAnimated] = useState(false);
@@ -116,10 +118,21 @@ export default function Chart({
   // When all data is zero, render a clean empty chart (no dots, no lines, no tooltips)
   const hasData = maxVal > 0;
 
-  // Compute points and paths for every series
-  const allSeriesPoints = series.map((s) =>
-    computePoints(s.data || [], chartLeft, chartTop, chartW, chartH, maxVal),
-  );
+  // Compute points and paths for every series. axisWidth (S6 Item 5 polish):
+  // when provided, points are positioned along a fixed-width axis so warmup
+  // days don't visually stretch the chart.
+  // continuousFraction (S6 Item 5 polish v2): slide the LAST point's x
+  // continuously across day boundaries so the line extends smoothly instead
+  // of jumping by 1 slot every 1.5s. Other points stay fixed.
+  const allSeriesPoints = series.map((s) => {
+    const pts = computePoints(s.data || [], chartLeft, chartTop, chartW, chartH, maxVal, axisWidth);
+    if (pts.length >= 2 && continuousFraction < 1) {
+      const denom = Math.max((axisWidth || pts.length) - 1, 1);
+      const lastIdx = pts.length - 1;
+      pts[lastIdx] = { ...pts[lastIdx], x: chartLeft + ((lastIdx - 1 + continuousFraction) / denom) * chartW };
+    }
+    return pts;
+  });
   const allSeriesPaths = allSeriesPoints.map((pts) => buildMonotonePath(pts));
 
   const primaryPoints = allSeriesPoints[0] || [];
@@ -128,11 +141,12 @@ export default function Chart({
   const lastVal = primaryData[primaryData.length - 1];
 
   const hasThreshold = threshold && threshold.at != null;
+  const threshDenom = Math.max((axisWidth || primaryLen) - 1, 1);
   const threshX = hasThreshold
-    ? chartLeft + (threshold.at / Math.max(primaryLen - 1, 1)) * chartW
+    ? chartLeft + (threshold.at / threshDenom) * chartW
     : null;
 
-  const resolvedXLabels = resolveXLabels(xLabels, primaryLen, chartLeft, chartW);
+  const resolvedXLabels = resolveXLabels(xLabels, primaryLen, chartLeft, chartW, axisWidth);
 
   // Filter x-labels to only those within the primary data range
   const clampedXLabels = resolvedXLabels.filter((item) => {

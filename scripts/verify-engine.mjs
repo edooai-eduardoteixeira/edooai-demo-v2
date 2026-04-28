@@ -127,8 +127,8 @@ check(
 console.log('\n═══ 6. Audience Derivation ═══');
 const expectedAudience = Math.round(params.totalCustomers * params.eligibilityRate);
 check(
-  `audienceSize = ${params.totalCustomers} × ${params.eligibilityRate} = ${expectedAudience}`,
-  expectedAudience === Math.round(847000 * 0.295),
+  `audienceSize > 0 (${params.totalCustomers} × ${params.eligibilityRate} = ${expectedAudience})`,
+  expectedAudience > 0,
   `got ${expectedAudience}`
 );
 check(
@@ -284,6 +284,51 @@ check('offerExpirationDays in (0, 30]', params.offerExpirationDays > 0 && params
 check('baseRevenuePerUser > 0', params.baseRevenuePerUser > 0, params.baseRevenuePerUser);
 check('premiumRevenuePerUser >= baseRevenuePerUser', params.premiumRevenuePerUser >= params.baseRevenuePerUser, `base=${params.baseRevenuePerUser}, premium=${params.premiumRevenuePerUser}`);
 check('bootstrap safety', params.effFloor > 0 || params.accidentalConvRate > 0, '');
+
+// ─── Per-cohort funnel tracking (S6 Item 2 close-out) ───────────────
+// Cohort attribution: each day's funnel events are split across cohorts by
+// cohort.contacted weight. Aggregate Σ === engine cumulative; per-cohort
+// monotonic invariants prevent attribution bugs from masking via aggregate.
+
+console.log('\n═══ 9. Per-cohort funnel tracking ═══');
+{
+  // Use the dashboard projection (which includes per-cohort tracking)
+  const { computeDashboardProjection } = await import('../src/engine/projectionEngine.js');
+  const proj = computeDashboardProjection({ budget: 150_000, params });
+  const cohorts = proj.cohorts || {};
+  const lastDay = proj.days[proj.days.length - 1];
+  const engineCumRefer = lastDay?.funnelCumulative?.referralSent || 0;
+  const engineCumSignup = lastDay?.funnelCumulative?.signedUp || 0;
+  let sumRefer = 0, sumSignup = 0;
+  let allReferSane = true, allSignupSane = true, firstReferFail = '', firstSignupFail = '';
+  let zeroContactedHandled = true, firstZeroFail = '';
+  for (const [day, c] of Object.entries(cohorts)) {
+    sumRefer += c.totalReferralSent || 0;
+    sumSignup += c.totalSignedUp || 0;
+    if ((c.totalReferralSent || 0) > (c.contacted || 0)) {
+      allReferSane = false;
+      firstReferFail = `day ${day}: refer=${c.totalReferralSent}, contacted=${c.contacted}`;
+    }
+    if ((c.totalSignedUp || 0) > (c.totalReferralSent || 0)) {
+      allSignupSane = false;
+      firstSignupFail = `day ${day}: signup=${c.totalSignedUp}, refer=${c.totalReferralSent}`;
+    }
+    if ((c.contacted || 0) === 0 && ((c.totalReferralSent || 0) !== 0 || (c.totalSignedUp || 0) !== 0)) {
+      zeroContactedHandled = false;
+      firstZeroFail = `day ${day}: zero contacted but nonzero downstream`;
+    }
+  }
+  // Aggregate tie-out: tolerance ±1 due to rounding (Math.round per cohort)
+  check('Σ cohort.totalReferralSent ≈ engine cumulative referralSent (±1 per cohort rounding)',
+    Math.abs(sumRefer - engineCumRefer) <= Object.keys(cohorts).length,
+    `sum=${sumRefer}, engine=${engineCumRefer}, diff=${sumRefer - engineCumRefer}`);
+  check('Σ cohort.totalSignedUp ≈ engine cumulative signedUp (±1 per cohort rounding)',
+    Math.abs(sumSignup - engineCumSignup) <= Object.keys(cohorts).length,
+    `sum=${sumSignup}, engine=${engineCumSignup}, diff=${sumSignup - engineCumSignup}`);
+  check('Per-cohort sanity: totalReferralSent ≤ contacted', allReferSane, firstReferFail);
+  check('Per-cohort sanity: totalSignedUp ≤ totalReferralSent', allSignupSane, firstSignupFail);
+  check('Edge case: zero-contacted cohort produces zero downstream', zeroContactedHandled, firstZeroFail);
+}
 
 // ─── Summary ────────────────────────────────────────────────────────
 

@@ -78,9 +78,14 @@ export function buildMonotonePath(points) {
   return d;
 }
 
-export function computePoints(data, chartLeft, chartTop, chartW, chartH, maxVal) {
+export function computePoints(data, chartLeft, chartTop, chartW, chartH, maxVal, axisWidth) {
+  // axisWidth (S6 Item 5 polish): when provided and > data.length, position
+  // points based on the fixed axis width so the chart doesn't visually stretch
+  // during the warmup days (selectedDay < dateRange). Data fills the leftmost
+  // slots; remaining slots stay empty.
+  const denom = Math.max((axisWidth || data.length) - 1, 1);
   return data.map((v, i) => ({
-    x: chartLeft + (i / Math.max(data.length - 1, 1)) * chartW,
+    x: chartLeft + (i / denom) * chartW,
     y: chartTop + chartH - (v / maxVal) * chartH,
   }));
 }
@@ -99,34 +104,85 @@ export function formatCompact(val) {
 }
 
 /**
- * Compute a "nice" Y-axis ceiling for a given max value.
- * Returns a clean round number ≥ maxVal that produces readable mid-ticks.
- * Works for any scale: single digits, hundreds, thousands, millions.
+ * Compute a "nice" Y-axis ceiling using the standard tick-step algorithm.
+ *
+ * Picks a step size targeting ~5 ticks across the data range, where the step
+ * is rounded to 1, 2, or 5 × 10^n (the conventional "nice number" set used by
+ * d3 and most charting libraries). Adds 5% headroom so the data line doesn't
+ * touch the chart top.
+ *
+ * Adapts to any range: 0.001..1e9. No tier list to maintain.
+ *
+ * Examples:
+ *   maxVal=2.0  → 2.5    (was 2 — gives breathing room)
+ *   maxVal=2.8  → 3.0    (was 5 — much tighter)
+ *   maxVal=3.4  → 4.0    (was 5)
+ *   maxVal=100  → 120
+ *   maxVal=1247 → 1400   (was 5000)
  */
 export function niceYMax(maxVal) {
   if (maxVal <= 0) return 10;
-  // Find the order of magnitude, then round up to a nice multiple
-  const magnitude = Math.pow(10, Math.floor(Math.log10(maxVal)));
-  const normalized = maxVal / magnitude; // 1.0 – 9.99
-  // Pick the next nice number: 1, 2, 5, 10
-  let nice;
-  if (normalized <= 1) nice = 1;
-  else if (normalized <= 2) nice = 2;
-  else if (normalized <= 5) nice = 5;
-  else nice = 10;
-  return nice * magnitude;
+  const TARGET_TICKS = 5;
+  const HEADROOM = 1.05;
+  const target = maxVal * HEADROOM;
+  const roughStep = target / TARGET_TICKS;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
+  const normalized = roughStep / magnitude;
+  let niceStep;
+  if (normalized < 1.5) niceStep = 1;
+  else if (normalized < 3) niceStep = 2;
+  else if (normalized < 7.5) niceStep = 5;
+  else niceStep = 10;
+  niceStep *= magnitude;
+  return Math.ceil(target / niceStep) * niceStep;
 }
 
 /**
- * Generate X-axis day ticks appropriate for the data length.
- * Returns an array of day numbers (1-indexed) with ~3-4 evenly spaced ticks.
+ * Generate X-axis day ticks for a windowed view (start..end inclusive).
+ *
+ * Returns ready-to-use {value, at} pairs where:
+ *   value: the actual day number to render (e.g. "54")
+ *   at:    1-indexed position within the windowed data (used by chart
+ *          components to compute the x coordinate)
+ *
+ * Adapts tick density to the window width so labels don't crowd.
+ */
+export function dayXTicksWindowed(startDay, endDay) {
+  const dataLen = endDay - startDay + 1;
+  if (dataLen <= 1) return [{ value: String(endDay), at: 1 }];
+
+  let dayNumbers;
+  if (dataLen <= 3) {
+    dayNumbers = [startDay, endDay];
+  } else if (dataLen <= 15) {
+    const mid = Math.round((startDay + endDay) / 2);
+    dayNumbers = [startDay, mid, endDay];
+  } else {
+    const step = dataLen <= 35 ? 10 : 20;
+    dayNumbers = [startDay];
+    let d = Math.ceil((startDay + 1) / step) * step;
+    while (d < endDay) {
+      dayNumbers.push(d);
+      d += step;
+    }
+    if (dayNumbers[dayNumbers.length - 1] !== endDay) dayNumbers.push(endDay);
+  }
+
+  return dayNumbers.map(d => ({
+    value: String(d),
+    at: d - startDay + 1,
+  }));
+}
+
+/**
+ * Backward-compatible alias: full-history view (Day 1 to selectedDay).
+ * @deprecated Use dayXTicksWindowed(1, selectedDay) directly. Kept until all
+ * callers migrate.
  */
 export function dayXTicks(dataLen) {
   if (dataLen <= 1) return [1];
   if (dataLen <= 3) return [1, dataLen];
-  if (dataLen <= 7) return [1, Math.round(dataLen / 2), dataLen];
   if (dataLen <= 15) return [1, Math.round(dataLen / 2), dataLen];
-  // 16+ days: ticks at 1, then every ~10 days, ending at dataLen
   const step = dataLen <= 35 ? 10 : 20;
   const ticks = [1];
   for (let d = step; d < dataLen; d += step) ticks.push(d);
@@ -134,7 +190,10 @@ export function dayXTicks(dataLen) {
   return ticks;
 }
 
-export function resolveXLabels(xLabels, dataLen, chartLeft, chartW) {
+export function resolveXLabels(xLabels, dataLen, chartLeft, chartW, axisWidth) {
+  // axisWidth (S6 Item 5 polish): when provided, x-positions for {value, at}
+  // labels use the fixed axis width so labels stay anchored even during
+  // warmup days when data hasn't filled the axis yet.
   if (!xLabels || xLabels.length === 0) return [];
   if (typeof xLabels[0] === 'string') {
     if (xLabels.length === 1) {
@@ -152,9 +211,10 @@ export function resolveXLabels(xLabels, dataLen, chartLeft, chartW) {
       anchor: i === 0 ? 'start' : i === xLabels.length - 1 ? 'end' : 'middle',
     }));
   }
+  const denom = Math.max((axisWidth || dataLen) - 1, 1);
   return xLabels.map((item) => ({
     label: String(item.value),
-    x: chartLeft + ((item.at - 1) / Math.max(dataLen - 1, 1)) * chartW,
+    x: chartLeft + ((item.at - 1) / denom) * chartW,
     anchor: 'middle',
   }));
 }
