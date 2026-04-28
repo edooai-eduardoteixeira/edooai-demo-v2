@@ -368,11 +368,30 @@ export function computeAudienceOverview(projection, effectiveDay, dateRange = ef
  * weights). contactCount is derived from engine's daily journey total × the
  * fixture's normalized share. The campaign roster does NOT churn day-to-day
  * (only changes when a campaign's startsDay/endsDay window opens or closes).
+ *
+ * Each entry also carries cumContacts — cumulative contacts attributed to the
+ * campaign over [day 1, effectiveDay]. cumContacts is what the campaign card
+ * surfaces; it grows visibly as the run progresses and lands close to the
+ * addressable pool by day 60, mirroring /insights' audience figures.
  */
 export function computeCampaignList(projection, effectiveDay) {
   const dayData = projection.days[effectiveDay - 1];
   if (!dayData) return [];
   const journeysToday = dayData.journeysToday || 0;
+
+  // Cumulative contacts per campaign over [1..effectiveDay]. Re-evaluates the
+  // active set per day so a campaign that activates partway through only
+  // accumulates from its startsDay onward.
+  const cumByCampaign = {};
+  for (let d = 1; d <= effectiveDay; d++) {
+    const dData = projection.days[d - 1];
+    if (!dData) continue;
+    const journeysOnDay = dData.journeysToday || 0;
+    for (const c of activeCampaigns(d)) {
+      cumByCampaign[c.id] = (cumByCampaign[c.id] || 0) + journeysOnDay * c.share;
+    }
+  }
+
   return activeCampaigns(effectiveDay).map(c => ({
     id: c.id,
     type: c.type,
@@ -383,6 +402,7 @@ export function computeCampaignList(projection, effectiveDay) {
     reward: c.reward,
     color: c.color,
     contactCount: Math.round(journeysToday * c.share),
+    cumContacts: Math.round(cumByCampaign[c.id] || 0),
   }));
 }
 

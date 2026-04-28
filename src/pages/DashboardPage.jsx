@@ -414,7 +414,7 @@ function CampaignList({ campaigns }) {
           >
             <div className="flex items-baseline justify-between gap-1">
               <span className="text-[11px] font-semibold text-foreground leading-tight truncate">{c.title}</span>
-              <span className="text-[11px] text-foreground-faint tabular-nums shrink-0">{fmt(c.contactCount)}</span>
+              <span className="text-[11px] text-foreground-faint tabular-nums shrink-0">{fmt(c.cumContacts)}</span>
             </div>
           </button>
         ))}
