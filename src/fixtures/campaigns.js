@@ -65,7 +65,7 @@ export const CAMPAIGNS = [
     inAppPlacement: 'Onboarding Success',
     rewardChip: '$10 / $20',
     example:
-      'Sofia, welcome to Felix. Make your first transfer with a friend’s invite — you get $20, they get $10. felix.com/sofia',
+      'Sofia, your friend just invited you to Felix. 🎁 Make your first transfer — you get $20, they get $10. felix.com/sofia',
     color: 'var(--color-data-3)',
     weight: 1.5,
     startsDay: 1,
