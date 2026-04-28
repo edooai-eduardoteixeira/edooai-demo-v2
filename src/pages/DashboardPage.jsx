@@ -217,7 +217,8 @@ function HeroChart({ selectedKPI, currentDay, dateRange, projection, withinDay =
     displayedRef.current = pursueHero(displayedRef.current, heroPrev, heroCurr, withinDay, dt);
     hero = displayedRef.current;
   }
-  const xLabels = dayXTicksWindowed(hero.startDay, hero.endDay);
+  // Axis labels span the full dateRange (pre-populated), data fills in over time.
+  const xLabels = dayXTicksWindowed(hero.startDay, hero.startDay + dateRange - 1);
 
   // CAC: stacked bar showing referrer + referee unit cost per day
   if (hero.kind === 'stacked') {
@@ -346,6 +347,8 @@ function AudienceHealth({ audience, axisWidth, continuousFraction = 1 }) {
   if (!audience) return null;
 
   const { bands: bandData, convRateOverlay, startDay, endDay } = audience;
+  // Axis labels span full dateRange so users see "Day 30" even before data fills.
+  const axisEndDay = axisWidth ? startDay + axisWidth - 1 : endDay;
 
   // Stacked area: eligible pool per cluster over time
   const bands = [
@@ -356,7 +359,7 @@ function AudienceHealth({ audience, axisWidth, continuousFraction = 1 }) {
 
   const convRate = convRateOverlay;
 
-  const xLabels = dayXTicksWindowed(startDay, endDay);
+  const xLabels = dayXTicksWindowed(startDay, axisEndDay);
 
   return (
     <div className="flex-[5] p-5 min-w-0 flex flex-col">
@@ -588,7 +591,7 @@ export default function DashboardPage({ config, onHome }) {
                         color: CAMPAIGN_COLORS[i] || 'var(--color-data-3)',
                       }))}
                       maxValue={yMax}
-                      xLabels={dayXTicksWindowed(startDay, endDay)}
+                      xLabels={dayXTicksWindowed(startDay, startDay + dateRange - 1)}
                       yLabels={[yMax * 0.5, yMax]}
                       gridlines="from-labels"
                       cssHeight="100%"
