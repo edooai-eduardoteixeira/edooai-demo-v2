@@ -20,7 +20,7 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<LandingPage config={config} onNext={() => go('/connect')} onHome={onHome} />} />
+      <Route path="/" element={<LandingPage config={config} onNext={() => go('/insights')} onConnect={() => go('/connect')} onHome={onHome} />} />
       <Route path="/connect" element={<DataConnectionPage config={config} onNext={() => go('/insights')} onHome={onHome} />} />
       <Route path="/insights" element={<InsightsPage config={config} onNext={() => go('/strategy')} onHome={onHome} />} />
       <Route path="/strategy" element={<StrategyBuilderPage config={config} onNext={() => go('/dashboard')} onHome={onHome} />} />

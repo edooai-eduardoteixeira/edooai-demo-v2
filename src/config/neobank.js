@@ -11,6 +11,7 @@ const neobank = {
     subheadline:
       'We operate your referrals end-to-end. Active customers at a fraction of your CAC.',
     ctaText: 'See the Demo',
+    connectCtaText: 'Connect Data',
     missionLine: 'On a mission to scale distribution for the best products on earth.',
   },
 
