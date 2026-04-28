@@ -4,7 +4,7 @@ import Logo from '../components/Logo.jsx';
 import CTAButton from '../components/CTAButton.jsx';
 import HeroVisual from '../components/HeroVisual.jsx';
 
-export default function LandingPage({ config, onNext, onHome }) {
+export default function LandingPage({ config, onNext, onConnect, onHome }) {
   const { landing } = config;
 
   return (
@@ -40,6 +40,17 @@ export default function LandingPage({ config, onNext, onHome }) {
             ))}
           </p>
           <CTAButton variant="brand" onClick={onNext}>{landing.ctaText}</CTAButton>
+          <div className="mt-6">
+            <button
+              onClick={onConnect}
+              className="inline-flex items-center gap-2 p-0 rounded-sm text-[15px] font-medium text-foreground-muted cursor-pointer transition-colors duration-150 ease-out hover:text-foreground focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+            >
+              {landing.connectCtaText}
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </div>
         </main>
 
         <HeroVisual className="absolute bottom-0 right-0 hidden lg:block" />
