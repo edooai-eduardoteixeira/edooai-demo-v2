@@ -6,18 +6,15 @@ import StackedAreaChart from '../components/StackedAreaChart.jsx';
 import FunnelChart from '../components/FunnelChart.jsx';
 import StrategyCards, { DefaultBudgetSlider, BUDGET_CONFIG } from '../components/StrategyCards.jsx';
 import { cn } from '../lib/utils.js';
-import { niceYMax, dayXTicks, CHART_MARGIN, formatCompact } from '../components/chartUtils.js';
+import { niceYMax, dayXTicksWindowed, CHART_MARGIN, formatCompact } from '../components/chartUtils.js';
 import { computeDashboardProjection } from '../engine/projectionEngine.js';
+import { computeDashboardMetrics, computeHeroChartForKPI } from '../lib/metrics.js';
+import { useDashboardAnimation } from '../lib/useDashboardAnimation.js';
+import { pursueMetrics, pursueHero } from '../lib/pursuitMetrics.js';
+import { ANIMATION_TOTAL_DAYS } from '../lib/animation.js';
 
 // ─── Constants ────────────────────────────────────────────────────────
-const DAY_STOPS = [1, 10, 30, 60];
-const DAY_META = {
-  1: { label: 'Day 1', subtitle: 'Cold Start' },
-  10: { label: 'Day 10', subtitle: 'First Learnings' },
-  30: { label: 'Day 30', subtitle: 'Hitting Stride' },
-  60: { label: 'Day 60', subtitle: 'Mature Operation' },
-};
-const ENGINE_MAX_DAYS = 30; // Engine currently generates 30 days; clamp beyond this
+// (DAY_STOPS/DAY_META removed in S6 Item 5 — replaced by continuous DaySlider.)
 
 // ─── Formatting helpers ──────────────────────────────────────────────
 function fmt(n) { return Math.round(n).toLocaleString('en-US'); }
@@ -33,30 +30,30 @@ function SectionLabel({ children }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// DAY SELECTOR
+// DAY SLIDER (S6 Item 5) — replaces the four DAY_STOPS buttons.
+// Continuous 1..60 slider with a "Day N" legend. Animation drives the value;
+// user-touch stops animation and lets the user scrub manually.
 // ═══════════════════════════════════════════════════════════════════════
-function DaySelector({ selected, onSelect }) {
+function DaySlider({ day, isAnimating, onUserChange }) {
   return (
-    <div className="flex items-center gap-0.5 bg-surface border border-border rounded-sm p-0.5">
-      {DAY_STOPS.map((day) => {
-        const active = selected === day;
-        const meta = DAY_META[day];
-        return (
-          <button
-            key={day}
-            onClick={() => onSelect(day)}
-            title={meta.subtitle}
-            className={cn(
-              'px-4 py-2 rounded-sm text-[13px] font-semibold transition-colors duration-200 ease-out',
-              active
-                ? 'bg-accent-subtle text-foreground'
-                : 'text-foreground-muted hover:text-foreground'
-            )}
-          >
-            {meta.label}
-          </button>
-        );
-      })}
+    <div className="flex items-center gap-3 bg-surface border border-border rounded-sm px-3 py-1.5 min-w-[260px]">
+      <span className="text-[12px] font-semibold tracking-[0.05em] uppercase text-foreground-faint shrink-0">
+        Day
+      </span>
+      <span className="text-[14px] font-semibold tabular-nums text-foreground shrink-0 min-w-[18px] text-right">
+        {day}
+      </span>
+      <input
+        type="range"
+        min={1}
+        max={ANIMATION_TOTAL_DAYS}
+        step={1}
+        value={day}
+        onInput={(e) => onUserChange(parseInt(e.target.value, 10))}
+        aria-label="Select day"
+        className="flex-1 cursor-pointer"
+        title={isAnimating ? 'Animating — drag to take control' : 'Drag to scrub days'}
+      />
     </div>
   );
 }
@@ -75,33 +72,12 @@ const CHART_FILLS = {
 // CAMPAIGN HEALTH ROW — compact status strip at top of Block 1
 // ═══════════════════════════════════════════════════════════════════════
 
-function getDeliveryState(dayData, selectedDay, projection) {
-  const isLearning = selectedDay <= projection.thresholdDay;
-  if (isLearning) return { label: 'Learning', active: false };
-
-  // Limited by Budget: agent could acquire more but daily budget caps contact volume
-  if (dayData.capHit) return { label: 'Limited by Budget', active: false };
-
-  return { label: 'Acquiring Customers', active: true };
-}
-
 function fmtRate(n) {
   return fmtDollar(n) + '/mo';
 }
 
-function CampaignHealthRow({ dayData, selectedDay, projection, onAdjustBudget, dateRange, days }) {
-  const budget = projection.budget;
-  const delivery = getDeliveryState(dayData, selectedDay, projection);
-
-  // Pacing: annualize current daily spend rate to monthly
-  const dailySpendRate = selectedDay > 0 ? dayData.cumulativeSpend / selectedDay : 0;
-  const monthlyPace = Math.round(dailySpendRate * 30);
-
-  // Spent: period total based on date range
-  const endIdx = selectedDay - 1;
-  const startIdx = Math.max(0, endIdx - dateRange + 1);
-  const startSpend = startIdx > 0 ? days[startIdx - 1].cumulativeSpend : 0;
-  const periodSpend = Math.round(dayData.cumulativeSpend - startSpend);
+function CampaignHealthRow({ health, onAdjustBudget }) {
+  const { delivery, budget, periodSpend, monthlyPace } = health;
 
   return (
     <div className="flex items-center bg-accent-subtle px-5 py-2.5 rounded-t-lg border-b border-border-light">
@@ -170,73 +146,13 @@ const KPI_DEFS = [
   { key: 'fraudSaved', label: 'Fraud Saved', format: (v) => fmtDollar(v), betterWhen: 'up' },
 ];
 
-// Compute KPI value for a period (sum daily values within window)
-function getPeriodKPI(days, selectedDay, dateRange, key) {
-  const endIdx = selectedDay - 1; // 0-based
-  const startIdx = Math.max(0, endIdx - dateRange + 1);
-  const periodDays = days.slice(startIdx, endIdx + 1);
-
-  if (key === 'activeUsers') {
-    // Sum daily new active users in the period
-    return periodDays.reduce((sum, d) => sum + (d.dailyFunnel?.activeUser || 0), 0);
-  }
-  if (key === 'cac') {
-    // Period spend / period users
-    const users = periodDays.reduce((sum, d) => sum + (d.dailyFunnel?.activeUser || 0), 0);
-    const spend = periodDays.reduce((sum, d, i) => {
-      const dayIdx = startIdx + i;
-      const prevSpend = dayIdx > 0 ? days[dayIdx - 1].cumulativeSpend : 0;
-      return sum + (d.cumulativeSpend - prevSpend);
-    }, 0);
-    return users > 0 ? Math.round(spend / users) : 0;
-  }
-  if (key === 'roi') {
-    // Period value / period spend
-    const spend = periodDays.reduce((sum, d, i) => {
-      const dayIdx = startIdx + i;
-      const prevSpend = dayIdx > 0 ? days[dayIdx - 1].cumulativeSpend : 0;
-      return sum + (d.cumulativeSpend - prevSpend);
-    }, 0);
-    const value = periodDays.reduce((sum, d, i) => {
-      const dayIdx = startIdx + i;
-      const prevVal = dayIdx > 0 ? days[dayIdx - 1].cumulativeValue : 0;
-      return sum + (d.cumulativeValue - prevVal);
-    }, 0);
-    return spend > 0 ? Math.round((value / spend) * 10) / 10 : 0;
-  }
-  if (key === 'fraudSaved') {
-    // Sum daily fraud savings
-    const spend = periodDays.reduce((sum, d, i) => {
-      const dayIdx = startIdx + i;
-      const prevSpend = dayIdx > 0 ? days[dayIdx - 1].cumulativeSpend : 0;
-      return sum + (d.cumulativeSpend - prevSpend);
-    }, 0);
-    // fraudSaved is spend * fraudRate — use the cumulative ratio
-    const lastDay = periodDays[periodDays.length - 1];
-    const fraudRate = lastDay.cumulativeSpend > 0
-      ? lastDay.kpiCumulative.fraudSaved / lastDay.cumulativeSpend : 0;
-    return Math.round(spend * fraudRate);
-  }
-  return 0;
-}
-
-function KPISelector({ selected, onSelect, dayData, days, selectedDay, dateRange }) {
+function KPISelector({ selected, onSelect, kpiCards }) {
   return (
     <div className="flex">
       {KPI_DEFS.map((kpi) => {
         const active = selected === kpi.key;
-        const value = getPeriodKPI(days, selectedDay, dateRange, kpi.key);
-
-        // Delta: compare current period vs prior period
-        const hasPriorPeriod = selectedDay > dateRange;
-        const priorValue = hasPriorPeriod
-          ? getPeriodKPI(days, selectedDay - dateRange, dateRange, kpi.key)
-          : 0;
-        const hasDelta = hasPriorPeriod && priorValue > 0 && value > 0;
-        const deltaPct = hasDelta ? Math.round(((value - priorValue) / priorValue) * 100) : 0;
-        const isPositive = deltaPct > 0;
-        const isGood = kpi.betterWhen === 'up' ? isPositive : !isPositive;
-        const showDelta = hasDelta && deltaPct !== 0;
+        const card = kpiCards.find((c) => c.key === kpi.key);
+        const { value, deltaPct, isPositive, isGood, showDelta } = card;
 
         return (
           <button
@@ -263,10 +179,12 @@ function KPISelector({ selected, onSelect, dayData, days, selectedDay, dateRange
               <span className={cn(
                 'text-[11px] font-semibold',
                 showDelta
-                  ? (isGood ? 'text-success' : 'text-warn')
+                  ? (isGood === null ? 'text-foreground-faint' : isGood ? 'text-success' : 'text-warn')
                   : 'invisible'
               )}>
-                {showDelta ? `${isPositive ? '↑' : '↓'}${Math.abs(deltaPct)}%` : '—'}
+                {showDelta
+                  ? (deltaPct === 0 ? '0%' : `${isPositive ? '↑' : '↓'}${Math.abs(deltaPct)}%`)
+                  : '—'}
               </span>
             </div>
           </button>
@@ -277,78 +195,66 @@ function KPISelector({ selected, onSelect, dayData, days, selectedDay, dateRange
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// HERO CHART — renders the selected KPI's 30-day trend
+// HERO CHART — renders the selected KPI's trend
 // ═══════════════════════════════════════════════════════════════════════
-function HeroChart({ selectedKPI, days, currentDay, projection }) {
-  const xLabels = dayXTicks(currentDay).map(d => ({ value: String(d), at: d }));
+function HeroChart({ selectedKPI, currentDay, dateRange, projection, withinDay = 1, frameTs = 0, isAnimating = false, continuousFraction = 1 }) {
+  // S6 Item 5: pursuit lerp toward phase-gated targets. Persistent displayed
+  // state across frames lives in a ref. When animation is off (manual scrub or
+  // post-Day-60), snap to current values so the chart matches the day exactly.
+  const heroCurr = computeHeroChartForKPI(projection, selectedKPI, currentDay, dateRange);
+  const heroPrev = currentDay > 1
+    ? computeHeroChartForKPI(projection, selectedKPI, currentDay - 1, dateRange)
+    : null;
+  const displayedRef = useRef(null);
+  const lastTsRef = useRef(frameTs);
+  let hero;
+  if (!isAnimating || withinDay >= 1) {
+    displayedRef.current = null;
+    hero = heroCurr;
+  } else {
+    const dt = Math.max(1, frameTs - lastTsRef.current);
+    lastTsRef.current = frameTs;
+    displayedRef.current = pursueHero(displayedRef.current, heroPrev, heroCurr, withinDay, dt);
+    hero = displayedRef.current;
+  }
+  const xLabels = dayXTicksWindowed(hero.startDay, hero.endDay);
 
-  // CAC: stacked bar chart showing referrer/referee cost breakdown
-  if (selectedKPI === 'cac') {
-    const cacData = days.slice(0, currentDay).map(d => ({
-      values: [d.dailyReferrerCost, d.dailyRefereeCost],
-    }));
-    const maxVal = Math.max(...cacData.map(d => d.values[0] + d.values[1]));
-    const yMax = niceYMax(maxVal);
-
+  // CAC: stacked bar showing referrer + referee unit cost per day
+  if (hero.kind === 'stacked') {
+    const yMax = niceYMax(hero.maxVal);
     return (
       <StackedBarChart
-        key={`cac-${currentDay}`}
-        data={cacData}
+        key={selectedKPI}
+        data={hero.cacData}
         segments={[
           { color: 'var(--color-data-1)', label: 'Referrer' },
           { color: 'var(--color-data-2)', label: 'Referee' },
         ]}
         maxValue={yMax}
         cssHeight="100%"
-
         xLabels={xLabels}
-        yLabels={maxVal > 0 ? [yMax * 0.5, yMax] : []}
+        yLabels={hero.maxVal > 0 ? [yMax * 0.5, yMax] : []}
         gridlines="from-labels"
         legend
+        axisWidth={dateRange}
+        continuousFraction={continuousFraction}
       />
     );
   }
 
-  // All other KPIs: daily values line chart
-  let slice, yMax, formatLabel;
-
-  if (selectedKPI === 'activeUsers') {
-    slice = projection.dailyCurve.slice(0, currentDay);
-    const maxVal = Math.max(...slice, 0);
-    yMax = niceYMax(maxVal);
-    formatLabel = (v) => fmt(v);
-  } else {
-    const dailyKPIs = projection.dailyKPIs;
-    if (dailyKPIs && dailyKPIs[selectedKPI]) {
-      slice = dailyKPIs[selectedKPI].slice(0, currentDay);
-    } else {
-      slice = days.slice(0, currentDay).map((d, i) => {
-        if (i === 0) return d.kpiCumulative[selectedKPI];
-        return Math.max(0, d.kpiCumulative[selectedKPI] - days[i - 1].kpiCumulative[selectedKPI]);
-      });
-    }
-    const maxVal = Math.max(...slice, 0);
-    if (selectedKPI === 'roi') {
-      yMax = niceYMax(maxVal);
-      formatLabel = (v) => `${v}x`;
-    } else {
-      yMax = niceYMax(maxVal);
-      formatLabel = (v) => fmtDollar(v);
-    }
-  }
-
-  // Static baseline for ROAS — placeholder at 70% of agentic values
-  const isROAS = selectedKPI === 'roi';
-  const staticSlice = isROAS
-    ? slice.map(v => Math.round(v * 0.7 * 10) / 10)
-    : null;
-
-  const hasData = Math.max(...(slice || []), 0) > 0;
+  // Line chart (activeUsers / ROI / fraudSaved)
+  const { slice, staticSlice, maxVal, isROAS, hasData } = hero;
+  const yMax = niceYMax(maxVal);
+  const formatLabel = selectedKPI === 'activeUsers'
+    ? (v) => fmt(v)
+    : isROAS
+      ? (v) => `${v}x`
+      : (v) => fmtDollar(v);
   const yLabels = hasData ? [yMax * 0.5, yMax] : [];
 
   return (
     <Chart
-      key={`${selectedKPI}-${currentDay}`}
+      key={selectedKPI}
       series={isROAS ? [
         { data: slice, color: 'var(--color-brand)', label: 'Vincor Agent' },
         { data: staticSlice, color: 'var(--color-gray-300)', dashed: true, width: 1.5, label: 'Static Rules' },
@@ -364,39 +270,35 @@ function HeroChart({ selectedKPI, days, currentDay, projection }) {
       fill={{ color: 'var(--color-brand)', opacity: 0.07 }}
       endpointLabel={(v) => formatLabel(v)}
       formatYLabel={isROAS ? (v) => `${v}x` : undefined}
+      axisWidth={dateRange}
+      continuousFraction={continuousFraction}
     />
   );
 }
 
-function SuggestedChangeStrip({ briefings, selectedDay, onReview }) {
+function SuggestedChangeStrip({ recommendation, onReview }) {
   const [dismissed, setDismissed] = useState(false);
-  if (dismissed) return null;
+  if (dismissed || !recommendation) return null;
 
-  for (let d = selectedDay; d >= 1; d--) {
-    const rec = briefings?.[d]?.recommendation;
-    if (rec) {
-      return (
-        <div className="flex items-center border-l-[3px] border-l-brand border-b border-border-light px-5 py-2.5">
-          <span className="text-[13px] text-foreground-muted">
-            <span className="font-semibold text-brand">Suggested change:</span> {rec.action}
-          </span>
-          <button
-            onClick={onReview}
-            className="py-1 px-2.5 text-[13px] font-semibold rounded-sm bg-surface text-brand border border-brand/30 hover:bg-brand-light transition-all duration-200 shrink-0 ml-3"
-          >
-            Review
-          </button>
-          <button
-            onClick={() => setDismissed(true)}
-            className="w-6 h-6 flex items-center justify-center rounded-sm text-foreground-faint hover:text-foreground hover:bg-accent-subtle transition-colors duration-200 shrink-0 ml-auto"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-          </button>
-        </div>
-      );
-    }
-  }
-  return null;
+  return (
+    <div className="flex items-center border-l-[3px] border-l-brand border-b border-border-light px-5 py-2.5">
+      <span className="text-[13px] text-foreground-muted">
+        <span className="font-semibold text-brand">Suggested change:</span> {recommendation.action}
+      </span>
+      <button
+        onClick={onReview}
+        className="py-1 px-2.5 text-[13px] font-semibold rounded-sm bg-surface text-brand border border-brand/30 hover:bg-brand-light transition-all duration-200 shrink-0 ml-3"
+      >
+        Review
+      </button>
+      <button
+        onClick={() => setDismissed(true)}
+        className="w-6 h-6 flex items-center justify-center rounded-sm text-foreground-faint hover:text-foreground hover:bg-accent-subtle transition-colors duration-200 shrink-0 ml-auto"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -440,23 +342,21 @@ function DateRangeSelector({ selected, onSelect }) {
 // ═══════════════════════════════════════════════════════════════════════
 // BLOCK 2 LEFT: AUDIENCE HEALTH — propensity distribution + reach depth
 // ═══════════════════════════════════════════════════════════════════════
-function AudienceHealth({ propensityHealth, effectivenessData, effectiveDay }) {
-  if (!propensityHealth) return null;
+function AudienceHealth({ audience, axisWidth, continuousFraction = 1 }) {
+  if (!audience) return null;
 
-  const { highEligible, medEligible, lowEligible, totalEligible } = propensityHealth;
-  const dataSlice = effectiveDay;
+  const { bands: bandData, convRateOverlay, startDay, endDay } = audience;
 
   // Stacked area: eligible pool per cluster over time
   const bands = [
-    { label: 'Advocates', color: CHART_FILLS.high, data: highEligible.slice(0, dataSlice) },
-    { label: 'Persuadable', color: CHART_FILLS.medium, data: medEligible.slice(0, dataSlice) },
-    { label: 'Passive', color: CHART_FILLS.low, data: lowEligible.slice(0, dataSlice) },
+    { label: 'Advocates', color: CHART_FILLS.high, data: bandData.advocates },
+    { label: 'Persuadable', color: CHART_FILLS.medium, data: bandData.persuadable },
+    { label: 'Passive', color: CHART_FILLS.low, data: bandData.passive },
   ];
 
-  // Overlay: daily conversion rate on right Y-axis
-  const convRate = effectivenessData?.dailyConversionRate?.slice(0, dataSlice) || [];
+  const convRate = convRateOverlay;
 
-  const xLabels = dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }));
+  const xLabels = dayXTicksWindowed(startDay, endDay);
 
   return (
     <div className="flex-[5] p-5 min-w-0 flex flex-col">
@@ -468,6 +368,8 @@ function AudienceHealth({ propensityHealth, effectivenessData, effectiveDay }) {
           xLabels={xLabels}
           legend
           formatTooltip={(i, v) => formatCompact(v)}
+          axisWidth={axisWidth}
+          continuousFraction={continuousFraction}
           overlayLine={{
             data: convRate,
             color: 'var(--color-brand)',
@@ -535,32 +437,64 @@ function CampaignList({ campaigns }) {
 // MAIN DASHBOARD PAGE
 // ═══════════════════════════════════════════════════════════════════════
 export default function DashboardPage({ config, onHome }) {
-  const [selectedDay, setSelectedDay] = useState(1);
   const [selectedKPI, setSelectedKPI] = useState('activeUsers');
   const [dateRange, setDateRange] = useState(30);
   const [activeDrawer, setActiveDrawer] = useState(null);
   const [budget, setBudget] = useState(config.recommendedBudget?.amount || 150000);
+
+  // S6 Item 5: animation engine drives `selectedDay` automatically (1 → 60 over
+  // 90s). `withinDay` + `frameTs` drive per-chart pursuit lerps that stagger
+  // their target updates by phase (audience early, outcomes late). Manual
+  // slider input takes over via `setDayManual`. Budget change restarts from Day 1.
+  const { displayDay, withinDay, isAnimating, setDayManual, frameTs } = useDashboardAnimation(budget);
+  const selectedDay = displayDay;
 
   // Run v4 engine with current budget
   const projection = useMemo(() => {
     return computeDashboardProjection({ budget, params: config.engineParams });
   }, [config, budget]);
 
-  // Current day data — clamp to engine range
-  const effectiveDay = Math.min(selectedDay, ENGINE_MAX_DAYS);
-  const dayData = projection.days[effectiveDay - 1];
+  // Single source of truth — see docs/METRIC_MODEL.md and src/lib/metrics.js
+  const metricsCurr = useMemo(
+    () => computeDashboardMetrics(projection, { selectedDay, dateRange }),
+    [projection, selectedDay, dateRange]
+  );
+  const metricsPrev = useMemo(
+    () => selectedDay > 1
+      ? computeDashboardMetrics(projection, { selectedDay: selectedDay - 1, dateRange })
+      : null,
+    [projection, selectedDay, dateRange]
+  );
 
-  // All daily briefings (for scrollable history)
-  const briefings = projection.dailyBriefings;
+  // Pursuit state: each chart's displayed values lerp toward staggered
+  // targets across frames. Mutated in place; frameTs change forces re-render.
+  const displayedRef = useRef(null);
+  const lastFrameTsRef = useRef(frameTs);
+
+  const metrics = useMemo(() => {
+    if (!isAnimating || withinDay >= 1) {
+      // Animation finished or user-driven scrub: snap displayed to curr so
+      // the chart matches the day exactly. Reset pursuit state.
+      displayedRef.current = null;
+      return metricsCurr;
+    }
+    const dt = Math.max(1, frameTs - lastFrameTsRef.current);
+    lastFrameTsRef.current = frameTs;
+    displayedRef.current = pursueMetrics(displayedRef.current, metricsPrev, metricsCurr, withinDay, dt);
+    return displayedRef.current;
+  }, [isAnimating, withinDay, frameTs, metricsPrev, metricsCurr]);
+
+  const { effectiveDay, dayData } = metrics;
 
   return (
     <div className="h-screen flex flex-col w-full px-6 animate-page-enter overflow-hidden">
       {/* Header: Logo + Day Selector — compact, left-aligned together */}
       <header className="flex items-center gap-8 py-2 mb-2">
         <Logo variant="mark" onClick={onHome} />
-        <DaySelector
-          selected={selectedDay}
-          onSelect={setSelectedDay}
+        <DaySlider
+          day={selectedDay}
+          isAnimating={isAnimating}
+          onUserChange={setDayManual}
         />
         <div className="ml-auto">
           <DateRangeSelector selected={dateRange} onSelect={setDateRange} />
@@ -572,17 +506,12 @@ export default function DashboardPage({ config, onHome }) {
         <div className="bg-surface border border-border rounded-lg shadow-sm h-full flex flex-col">
           {/* Campaign Health Row — permanent agent status, top of card */}
           <CampaignHealthRow
-            dayData={dayData}
-            selectedDay={effectiveDay}
-            projection={projection}
+            health={metrics.campaignHealth}
             onAdjustBudget={() => setActiveDrawer('budget')}
-            dateRange={dateRange}
-            days={projection.days}
           />
           {/* Suggested change — below health row, adds height when visible */}
           <SuggestedChangeStrip
-            briefings={briefings}
-            selectedDay={effectiveDay}
+            recommendation={metrics.suggestedChange}
             onReview={() => setActiveDrawer('budget')}
           />
 
@@ -593,18 +522,19 @@ export default function DashboardPage({ config, onHome }) {
               <KPISelector
                 selected={selectedKPI}
                 onSelect={setSelectedKPI}
-                dayData={dayData}
-                days={projection.days}
-                selectedDay={effectiveDay}
-                dateRange={dateRange}
+                kpiCards={metrics.kpiCards}
               />
               {/* Hero chart fills remaining height */}
               <div className="mt-4 flex-1 min-h-0">
                 <HeroChart
                   selectedKPI={selectedKPI}
-                  days={projection.days}
                   currentDay={effectiveDay}
+                  dateRange={dateRange}
                   projection={projection}
+                  withinDay={withinDay}
+                  frameTs={frameTs}
+                  isAnimating={isAnimating}
+                  continuousFraction={isAnimating ? withinDay : 1}
                 />
               </div>
             </div>
@@ -613,24 +543,7 @@ export default function DashboardPage({ config, onHome }) {
             <div className="flex-1 min-w-0 flex flex-col pt-2.5 pl-4">
               <SectionLabel>Referral Funnel</SectionLabel>
               <div className="flex-1 min-h-0 pb-6">
-                <FunnelChart
-                  stages={(() => {
-                    const contacted = dayData.funnelCumulative.contacted;
-                    const engaged = Math.round(contacted * 0.77);
-                    const referred = dayData.funnelCumulative.referralSent;
-                    const reached = Math.round(referred * 1.4);
-                    const signedUp = dayData.funnelCumulative.signedUp;
-                    const activeUser = dayData.funnelCumulative.activeUser;
-                    return [
-                      { label: 'Contacted', value: contacted, time: null, group: 'referrer' },
-                      { label: 'Engaged', value: engaged, time: '1 day', group: 'referrer' },
-                      { label: 'Referred', value: referred, time: '3 days', group: 'referrer' },
-                      { label: 'Reached', value: reached, time: '4 days', group: 'referee' },
-                      { label: 'Signed Up', value: signedUp, time: '6 days', group: 'referee' },
-                      { label: 'Active User', value: activeUser, time: '12 days', group: 'referee' },
-                    ];
-                  })()}
-                />
+                <FunnelChart stages={metrics.funnel} />
               </div>
             </div>
           </div>
@@ -641,11 +554,7 @@ export default function DashboardPage({ config, onHome }) {
           {/* ── Block 2: Health + Operations ── */}
           <div className="flex flex-1 min-h-0">
             {/* LEFT: Audience Health — pool + conversion rate (dual axis) */}
-            <AudienceHealth
-              propensityHealth={projection.propensityHealth}
-              effectivenessData={projection.effectivenessData}
-              effectiveDay={effectiveDay}
-            />
+            <AudienceHealth audience={metrics.audienceOverview} axisWidth={dateRange} continuousFraction={isAnimating ? withinDay : 1} />
 
             {/* DIVIDER */}
             <div className="w-px bg-border-light shrink-0" />
@@ -654,7 +563,7 @@ export default function DashboardPage({ config, onHome }) {
             <div className="flex-[5] px-5 flex flex-col">
               {/* The playbook — fixed 50%, scrolls if needed */}
               <div className="flex-[2] min-h-0 overflow-hidden pt-5 pb-3">
-                <CampaignList campaigns={briefings?.[effectiveDay]?.dailyPlan?.campaigns || []} />
+                <CampaignList campaigns={metrics.campaignList} />
               </div>
 
               {/* The execution over time — fixed 50%, py only (column handles px) */}
@@ -662,21 +571,7 @@ export default function DashboardPage({ config, onHome }) {
                 <SectionLabel>Daily Outreach</SectionLabel>
                 <div className="flex-1 min-h-0">
                 {(() => {
-                  const opsSlice = projection.operationsData.slice(0, effectiveDay);
-                  // Build per-campaign data over time
-                  const campaignData = opsSlice.map(d => {
-                    const dayCampaigns = briefings?.[d.day]?.dailyPlan?.campaigns || [];
-                    return dayCampaigns.map(c => c.contactCount);
-                  });
-                  // Pad to max campaign count (campaigns appear over time)
-                  const maxCampaigns = Math.max(...campaignData.map(d => d.length), 1);
-                  const paddedData = campaignData.map(d => {
-                    const padded = [...d];
-                    while (padded.length < maxCampaigns) padded.push(0);
-                    return padded;
-                  });
-                  // Get campaign names from the latest day (has all campaigns)
-                  const latestCampaigns = briefings?.[effectiveDay]?.dailyPlan?.campaigns || [];
+                  const { paddedData, latestCampaigns, maxTotal, startDay, endDay } = metrics.dailyOutreach;
                   const CAMPAIGN_COLORS = [
                     'var(--color-data-5)',  // step 5 — product-specific (highest volume)
                     'var(--color-data-4)',  // step 4
@@ -684,24 +579,22 @@ export default function DashboardPage({ config, onHome }) {
                     'var(--color-data-2)',  // step 2 — transactional
                     'var(--color-data-1)',  // step 1 — generic promo (lowest volume)
                   ];
-                  // Y-axis: mid + max labels (matching other charts)
-                  const maxTotal = Math.max(...paddedData.map(v => v.reduce((a, b) => a + b, 0)), 1);
                   const yMax = niceYMax(maxTotal);
                   return (
                     <StackedBarChart
-                      data={paddedData.map((values, i) => ({
-                        values,
-                      }))}
+                      data={paddedData.map((values) => ({ values }))}
                       segments={latestCampaigns.map((c, i) => ({
                         label: c.title,
-                        color: CAMPAIGN_COLORS[i] || 'var(--color-data-3)',  // terracotta fallback
+                        color: CAMPAIGN_COLORS[i] || 'var(--color-data-3)',
                       }))}
                       maxValue={yMax}
-                      xLabels={dayXTicks(effectiveDay).map(d => ({ value: String(d), at: d }))}
+                      xLabels={dayXTicksWindowed(startDay, endDay)}
                       yLabels={[yMax * 0.5, yMax]}
                       gridlines="from-labels"
                       cssHeight="100%"
                       legend
+                      axisWidth={dateRange}
+                      continuousFraction={isAnimating ? withinDay : 1}
                     />
                   );
                 })()}

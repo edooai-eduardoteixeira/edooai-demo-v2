@@ -22,6 +22,8 @@ export default function StackedAreaChart({
   legend,
   formatTooltip,
   overlayLine,       // { data: [], color: '', label: '', maxValue: number } — dual Y-axis line
+  axisWidth,         // S6 Item 5: fixed-width axis (= dateRange) so warmup days don't stretch
+  continuousFraction = 1, // S6 Item 5 v2: slide last point's x continuously across day boundaries
 }) {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [animated, setAnimated] = useState(false);
@@ -57,6 +59,9 @@ export default function StackedAreaChart({
   }, []);
 
   const dataLen = bands[0]?.data?.length || 0;
+  // axisWidth (S6 Item 5): when provided, x-positions span the fixed axis
+  // width; data fills leftmost slots. Falls back to dataLen when not set.
+  const axisDenom = Math.max((axisWidth || dataLen) - 1, 1);
 
   // Compute viewBox height based on container aspect ratio
   const viewBoxH = (cssHeight && svgDims)
@@ -94,12 +99,20 @@ export default function StackedAreaChart({
     cumulatives.push(cum);
   }
 
-  // Convert cumulative values to SVG points
+  // Convert cumulative values to SVG points. axisDenom honors axisWidth;
+  // continuousFraction slides the last point's x smoothly across day boundaries
+  // so the area extends continuously instead of jumping by 1 slot per day.
   function toSvgPoints(values) {
-    return values.map((v, i) => ({
-      x: chartLeft + (i / Math.max(dataLen - 1, 1)) * chartW,
-      y: chartTop + chartH - (v / maxVal) * chartH,
-    }));
+    const len = values.length;
+    return values.map((v, i) => {
+      let x;
+      if (i === len - 1 && len >= 2 && continuousFraction < 1) {
+        x = chartLeft + ((i - 1 + continuousFraction) / axisDenom) * chartW;
+      } else {
+        x = chartLeft + (i / axisDenom) * chartW;
+      }
+      return { x, y: chartTop + chartH - (v / maxVal) * chartH };
+    });
   }
 
   // Build area paths for each band
@@ -123,18 +136,24 @@ export default function StackedAreaChart({
   const overlayMax = overlayLine?.maxValue || (hasOverlay ? Math.max(...overlayLine.data, 1) * 1.1 : 1);
   let overlayPath = '';
   if (hasOverlay) {
-    const pts = overlayLine.data.map((v, i) => ({
-      x: chartLeft + (i / Math.max(dataLen - 1, 1)) * chartW,
-      y: chartTop + chartH - (v / overlayMax) * chartH,
-    }));
+    const olen = overlayLine.data.length;
+    const pts = overlayLine.data.map((v, i) => {
+      let x;
+      if (i === olen - 1 && olen >= 2 && continuousFraction < 1) {
+        x = chartLeft + ((i - 1 + continuousFraction) / axisDenom) * chartW;
+      } else {
+        x = chartLeft + (i / axisDenom) * chartW;
+      }
+      return { x, y: chartTop + chartH - (v / overlayMax) * chartH };
+    });
     overlayPath = buildMonotonePath(pts);
   }
 
-  // X labels
+  // X labels (axisDenom honors axisWidth for fixed-axis warmup behavior)
   const resolvedXLabels = xLabels
     ? xLabels.map((item) => ({
         label: String(item.value),
-        x: chartLeft + ((item.at - 1) / Math.max(dataLen - 1, 1)) * chartW,
+        x: chartLeft + ((item.at - 1) / axisDenom) * chartW,
         anchor: 'middle',
       }))
     : [];

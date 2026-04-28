@@ -30,6 +30,8 @@ export default function StackedBarChart({
   hoverHighlight = false, // When true, hovered bar lightens (like funnel) instead of dimming others
   showBarValues = false,  // When true, show value label above each bar (like funnel), suppress Y-axis
   formatBarValue,         // Format function for bar value labels (default: formatCompact)
+  axisWidth,              // S6 Item 5: fixed-width axis (= dateRange) so warmup days don't stretch
+  continuousFraction = 1, // S6 Item 5 v2: last bar's width grows from 0 to full as day progresses
 }) {
   const [hoveredBar, setHoveredBar] = useState(null);
   const [animated, setAnimated] = useState(false);
@@ -88,14 +90,18 @@ export default function StackedBarChart({
   const chartBottom = viewBoxH;
 
   const n = data.length;
+  const slotCount = axisWidth || n;
   const maxVal = maxValue || Math.max(...data.map(d => d.values.reduce((a, b) => a + b, 0)), 1);
 
-  // Bar geometry
-  const totalSlotWidth = chartW / Math.max(n, 1);
+  // Bar geometry — slot width based on `slotCount` so warmup days don't
+  // stretch (data fills first `n` slots; remaining `slotCount-n` stay empty).
+  const totalSlotWidth = chartW / Math.max(slotCount, 1);
   const gap = Math.max(totalSlotWidth * GAP_RATIO, 2);
   const barWidth = totalSlotWidth - gap;
 
-  // Compute bar rects
+  // Compute bar rects. New bars grow bottom-up via pursuit (height lerps from
+  // 0 to target). Width stays full — width-grow would create a left-to-right
+  // wipe, which doesn't match how a bar visually "fills up" with data.
   const bars = data.map((d, i) => {
     const x = chartLeft + i * totalSlotWidth + gap / 2;
     let yOffset = 0;
@@ -137,7 +143,7 @@ export default function StackedBarChart({
     label: String(item.value),
     x: categorical
       ? chartLeft + idx * totalSlotWidth + totalSlotWidth / 2
-      : chartLeft + ((item.at - 1) / Math.max(n - 1, 1)) * chartW,
+      : chartLeft + ((item.at - 1) / Math.max(slotCount - 1, 1)) * chartW,
   }));
 
   // Resolve y-axis gridlines

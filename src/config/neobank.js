@@ -136,6 +136,17 @@ const neobank = {
     totalCustomers: 847000,            // Total customer base (from data ingestion)
     eligibilityRate: 0.50,             // Fraction eligible for referral program → ~424K
 
+    // Audience flow model (S6 Item 2 v3). Drives the Audience Overview chart
+    // as an integrated observer of the engine's funnel — every per-segment
+    // movement ties to engine cohort outputs (contacted, referralSent, activeUser).
+    // See docs/METRIC_MODEL.md §M4.1–M4.3 and docs/PLAN-numbers-consistency.md
+    // "Item 2 — locked spec v3 (integrated audience model)".
+    externalAcquisitionPerMonth: 20000,    // Other-channel new active users → Advocate
+    segmentShares:           { high: 0.30, med: 0.45, low: 0.25 },  // Initial pool composition
+    agentContactMix:         { high: 0.65, med: 0.25, low: 0.10 },  // Contact priority
+    segmentEngageMultiplier: { high: 1.30, med: 0.55, low: 0.20 },  // Engagement rate by segment (weighted avg ≈ 1.0 under contactMix)
+    demotionMonthlyRate:     0.33,         // 33%/mo of contacted-not-engaged subset → next-lower segment
+
     // Supply curve — theoretical max CONVERSIONS at given budget
     N_max: 25000,                      // Ceiling: max conversions at infinite budget (NOT audience size)
     B_half: 200000,                    // Budget for 50% of N_max ($)
@@ -220,8 +231,8 @@ const neobank = {
             description: 'Accounts with historical fraud indicators' },
           { id: 'compliance_holds', label: 'Compliance holds', controlType: 'toggle', default: true,
             description: 'Regulatory or compliance restrictions' },
-          { id: 'min_tenure', label: 'Account too new', controlType: 'threshold', default: 60,
-            unit: 'days', description: 'Accounts under threshold age' },
+          { id: 'min_tenure', label: 'Account too new', controlType: 'threshold', default: 0,
+            unit: 'days', description: 'Accounts under threshold age (default 0 = no waiting period; new active users immediately eligible)' },
           { id: 'inactive', label: 'Inactive accounts', controlType: 'threshold', default: 90,
             unit: 'days', description: 'No activity beyond threshold' },
         ],
