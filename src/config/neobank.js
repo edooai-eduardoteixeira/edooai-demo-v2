@@ -124,7 +124,7 @@ const neobank = {
       {
         id: 'advocacy',
         name: 'Advocacy',
-        audienceSize: 149200,
+        audienceSize: 195100,
         segmentLabel: 'active customers',
         invite: 'After each successful transaction',
         reward: 'Dual-sided with 3 tiers',
@@ -132,8 +132,8 @@ const neobank = {
       {
         id: 'activation',
         name: 'Activation',
-        audienceSize: 75900,
-        segmentLabel: 'new signups',
+        audienceSize: 30000,
+        segmentLabel: 'new signups via referral',
         invite: 'Days 7–30 post-signup',
         reward: 'Dual-sided with 4 tiers',
       },

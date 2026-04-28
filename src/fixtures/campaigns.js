@@ -52,8 +52,9 @@ export const CAMPAIGNS = [
     weight: 3.0,
     startsDay: 1,
     endsDay: null,
-    initialPool: 149200,
-    dailyDelta: 1417,         // gains R+Act graduates + external acquisition
+    initialPool: 195100,
+    dailyDelta: 1267,         // gains R (-500/day) + Act (-100/day) graduates
+                              //   + external (+667/day) = +1,267/day
     carveAtDay: 20,           // 25K members carved out to Promoter Push at day 20
     carveAmount: 25000,
   },
@@ -70,8 +71,8 @@ export const CAMPAIGNS = [
     weight: 1.5,
     startsDay: 1,
     endsDay: null,
-    initialPool: 75900,
-    dailyDelta: -250,
+    initialPool: 30000,
+    dailyDelta: -100,
   },
   {
     id: 'promoter-push',
