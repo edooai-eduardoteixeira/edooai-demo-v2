@@ -213,23 +213,28 @@ console.log('\n═══ 9.5 S3 Funnel monotonicity ═══');
   check('Funnel non-increasing across all 6 stages, every day 1..30', allMonotonic, firstViolation);
 }
 
-// ─── 9.6 S3: KPI ↔ funnel.activeUser tie-out (P7) ──────────────────────
-console.log('\n═══ 9.6 S3 KPI/funnel tie-out (period covers full history) ═══');
+// ─── 9.6 KPI ↔ funnel tie-out (period-windowed, all combos) ────────────
+// Funnel is now period-windowed (Item 2 v3 close-out). KPI activeUsers and
+// funnel "Active User" should match at every (day × range) combo, not just
+// when the period covers full history.
+console.log('\n═══ 9.6 KPI/funnel tie-out (period-windowed, all day×range combos) ═══');
 {
   let allTied = true;
   let firstFail = null;
-  for (let day = 1; day <= 60; day++) {
-    // Use dateRange = day so period covers full history every iteration.
-    const m = computeDashboardMetrics(projection, { selectedDay: day, dateRange: day });
-    const kpiActive = m.kpiCards.find(c => c.key === 'activeUsers').value;
-    const funnelActive = m.funnel.find(s => s.label === 'Active User').value;
-    if (kpiActive !== funnelActive) {
-      allTied = false;
-      firstFail = `day ${day}: KPI.activeUsers=${kpiActive}, funnel.Active=${funnelActive}`;
-      break;
+  const ranges = [7, 30];
+  for (let day = 1; day <= 60 && allTied; day++) {
+    for (const range of ranges) {
+      const m = computeDashboardMetrics(projection, { selectedDay: day, dateRange: range });
+      const kpiActive = m.kpiCards.find(c => c.key === 'activeUsers').value;
+      const funnelActive = m.funnel.find(s => s.label === 'Active User').value;
+      if (kpiActive !== funnelActive) {
+        allTied = false;
+        firstFail = `day ${day}, range ${range}d: KPI.activeUsers=${kpiActive}, funnel.Active=${funnelActive}`;
+        break;
+      }
     }
   }
-  check('KPI activeUsers === funnel.Active when period covers full history',
+  check('KPI activeUsers === funnel.Active at every (day × range) combo',
     allTied, firstFail);
 }
 
@@ -470,6 +475,138 @@ console.log('\n═══ 9. S2 SuggestedChange is engine-derived ═══');
   } else {
     check('Day 30 recommendation null is acceptable (no fabricated text)', true);
   }
+}
+
+// ─── 10. S6 Item 2: Audience flow model ───────────────────────────────
+// Replaces the old propensity-coefficient placeholder with a real
+// bookkeeping model (acquisition + per-segment contact + cooldown return
+// + event-driven promotion + decay). See METRIC_MODEL.md §M4.1–M4.3.
+console.log('\n═══ 10. S6 Item 2 v3 Integrated audience model ═══');
+{
+  const ph = projection.propensityHealth;
+
+  // 10.1 — Bands non-negative at every day
+  let allNonNeg = true;
+  let firstNeg = '';
+  for (let d = 0; d < ph.highEligible.length; d++) {
+    if (ph.highEligible[d] < 0 || ph.medEligible[d] < 0 || ph.lowEligible[d] < 0) {
+      allNonNeg = false;
+      firstNeg = `day=${d + 1}: high=${ph.highEligible[d]} med=${ph.medEligible[d]} low=${ph.lowEligible[d]}`;
+      break;
+    }
+  }
+  check('Audience bands non-negative every day', allNonNeg, firstNeg);
+
+  // 10.2 — Day 1 bands match initial 30/45/25 split (within rounding +
+  //        one day of acquisition + first-day contacts/decay)
+  const day1Total = ph.highEligible[0] + ph.medEligible[0] + ph.lowEligible[0];
+  const initialTotal = ph.highStart + ph.medStart + ph.lowStart;
+  // Day 1 should be within 1% of initial total (acquisition adds, contacts/decay subtract)
+  check('Day 1 total ≈ initial eligible (within 1%)',
+    Math.abs(day1Total - initialTotal) / initialTotal < 0.01,
+    `day1=${day1Total}, initial=${initialTotal}`);
+
+  // 10.3 — TIE-OUT: audience promotions = engine cumulative referralSent.
+  //        Single source of truth — every advocate earned ties to a refer event.
+  const cumReferred = projection.days[projection.days.length - 1]?.funnelCumulative?.referralSent || 0;
+  const audiencePromos = Math.round(ph._totalPromotions || 0);
+  check('Tie-out: audience promotions === engine cumulative referralSent',
+    audiencePromos === cumReferred,
+    `audience=${audiencePromos}, engine=${cumReferred}`);
+
+  // 10.4 — TIE-OUT: audience internal acq = engine cumulative activeUser
+  const cumActive = projection.days[projection.days.length - 1]?.funnelCumulative?.activeUser || 0;
+  const audienceInt = Math.round(ph._totalInternalAcq || 0);
+  check('Tie-out: audience internal acquisition === engine cumulative activeUser',
+    audienceInt === cumActive,
+    `audience=${audienceInt}, engine=${cumActive}`);
+
+  // 10.5 — Higher budget grows Advocate band more than zero budget
+  //        (more contacts → more refers → more promotions)
+  const projZero = computeDashboardProjection({ budget: 0, params });
+  const projHigh = computeDashboardProjection({ budget: 300_000, params });
+  const advZeroDay60 = projZero.propensityHealth.highEligible[59];
+  const advHighDay60 = projHigh.propensityHealth.highEligible[59];
+  check('Higher budget grows Advocate band more than zero budget',
+    advHighDay60 > advZeroDay60,
+    `zero=${advZeroDay60}, $300K=${advHighDay60}`);
+
+  // 10.6 — At zero budget: zero promotions, zero internal acquisition
+  //        (no contacts → no refers → no actives). Pool grows only via external acq.
+  check('Zero budget: zero promotions (no refer events without contacts)',
+    Math.round(projZero.propensityHealth._totalPromotions) === 0);
+  check('Zero budget: zero internal acquisition',
+    Math.round(projZero.propensityHealth._totalInternalAcq) === 0);
+
+  // 10.7 — Pool grows over 60 days at any budget (external acquisition is
+  //        positive every day, budget-independent).
+  const total1 = ph.highEligible[0] + ph.medEligible[0] + ph.lowEligible[0];
+  const total60 = ph.highEligible[59] + ph.medEligible[59] + ph.lowEligible[59];
+  check('Pool total grows over 60 days (acquisition adds; only Pas-exits remove)',
+    total60 > total1,
+    `day1=${total1}, day60=${total60}`);
+
+  // 10.8 — Pool total similar across budgets (external acq is budget-independent;
+  //        only Pas-exit removes, scaled by demotion volume which is small)
+  const totalZero60 = projZero.propensityHealth.highEligible[59] +
+                      projZero.propensityHealth.medEligible[59] +
+                      projZero.propensityHealth.lowEligible[59];
+  const totalHigh60 = projHigh.propensityHealth.highEligible[59] +
+                      projHigh.propensityHealth.medEligible[59] +
+                      projHigh.propensityHealth.lowEligible[59];
+  const totalDriftPct = Math.abs(totalZero60 - totalHigh60) / totalZero60 * 100;
+  check('Pool total drift between zero and high budget < 5% (acquisition dominates)',
+    totalDriftPct < 5,
+    `zero=${totalZero60}, $300K=${totalHigh60}, drift=${totalDriftPct.toFixed(2)}%`);
+}
+
+// ─── 11. S6 Item 2 close-out: Daily outreach tie-out ───────────────────
+// Largest-remainder allocation makes Σ campaigns per day === engine.dailyFunnel.contacted exactly.
+console.log('\n═══ 11. S6 Item 2 close-out — daily-outreach tie-out ═══');
+{
+  // 11.1 — Σ campaigns per day === engine.dailyFunnel.contacted at every day
+  let allTied = true;
+  let firstFail = '';
+  for (let day = 1; day <= 60 && allTied; day++) {
+    const m = computeDashboardMetrics(projection, { selectedDay: day, dateRange: day });
+    // paddedData has length = day; index 0 = day 1, ..., index day-1 = current day
+    for (let i = 0; i < m.dailyOutreach.paddedData.length; i++) {
+      const dayN = i + 1;
+      const sumCampaigns = m.dailyOutreach.paddedData[i].reduce((a, b) => a + b, 0);
+      const engineDaily = projection.days[dayN - 1]?.dailyFunnel?.contacted || 0;
+      if (sumCampaigns !== engineDaily) {
+        allTied = false;
+        firstFail = `day ${dayN} (selectedDay=${day}): sum=${sumCampaigns}, engine=${engineDaily}`;
+        break;
+      }
+    }
+  }
+  check('Σ campaigns at every day === engine.dailyFunnel.contacted (hard equality)',
+    allTied, firstFail);
+
+  // 11.2 — Period sum across (day × range) === funnel.Contacted at that combo
+  const periodCases = [
+    { day: 60, range: 30 }, { day: 60, range: 7 },
+    { day: 30, range: 30 }, { day: 30, range: 7 },
+    { day: 10, range: 7 }, { day: 1, range: 7 },
+  ];
+  let allPeriodTied = true;
+  let firstPeriodFail = '';
+  for (const c of periodCases) {
+    const m = computeDashboardMetrics(projection, { selectedDay: c.day, dateRange: c.range });
+    let outreachSum = 0;
+    m.dailyOutreach.paddedData.forEach(perDay => {
+      outreachSum += perDay.reduce((a, b) => a + b, 0);
+    });
+    const funnelContacted = m.funnel.find(s => s.label === 'Contacted').value;
+    if (outreachSum !== funnelContacted) {
+      allPeriodTied = false;
+      firstPeriodFail = `day ${c.day} range ${c.range}: outreach sum=${outreachSum}, funnel=${funnelContacted}`;
+      break;
+    }
+  }
+  check('Σ daily outreach across period === funnel.Contacted at every (day × range)',
+    allPeriodTied, firstPeriodFail);
 }
 
 // ─── Summary ───────────────────────────────────────────────────────────

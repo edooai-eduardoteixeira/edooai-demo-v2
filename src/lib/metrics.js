@@ -298,11 +298,23 @@ export function computeHeroChart(projection, selectedKPI, currentDay, dateRange 
  *   by Referred (an engine cumulative) above and SignedUp (an engine
  *   cumulative) below — invariant holds for every day.
  */
-export function computeFunnel(dayData) {
-  const contacted = dayData.funnelCumulative.contacted;
-  const referred = dayData.funnelCumulative.referralSent;
-  const signedUp = dayData.funnelCumulative.signedUp;
-  const activeUser = dayData.funnelCumulative.activeUser;
+export function computeFunnel(projection, effectiveDay, dateRange = effectiveDay) {
+  // Period-windowed funnel (S6 item 2 close-out): each engine-cumulative stage
+  // is reported as the delta over the selected period [startDay..endDay], so
+  // the funnel ties out with the period-windowed KPI cards. Derived midpoints
+  // (Engaged, Reached) re-compute naturally from the period values.
+  const days = projection.days;
+  const endIdx = effectiveDay - 1;
+  const startIdx = Math.max(0, endIdx - dateRange + 1);
+  const fcEnd = days[endIdx]?.funnelCumulative || {};
+  const fcStart = startIdx > 0 ? (days[startIdx - 1]?.funnelCumulative || {}) : {};
+
+  const periodDelta = (key) => Math.max(0, (fcEnd[key] || 0) - (fcStart[key] || 0));
+
+  const contacted = periodDelta('contacted');
+  const referred = periodDelta('referralSent');
+  const signedUp = periodDelta('signedUp');
+  const activeUser = periodDelta('activeUser');
 
   const engaged = Math.round((contacted + referred) / 2);
   const reached = Math.round((referred + signedUp) / 2);
@@ -392,17 +404,33 @@ export function computeDailyOutreach(projection, effectiveDay, dateRange = effec
   const startIdx = startDay - 1;
   const endIdx = endDay;
 
-  // Per-day: for each segment, contactCount = today's journeys × segment's
-  // active-day share. Inactive on day d → 0 in that segment slot.
+  // Per-day: each segment's contact count is allocated via largest-remainder
+  // (S6 Item 2 close-out). Sum of campaign contacts === engine's `dailyFunnel.contacted`
+  // exactly each day, so daily outreach period sums tie out with funnel "Contacted".
+  // Edge case: zero active campaigns or zero target → all zeros.
   const paddedData = projection.days.slice(startIdx, endIdx).map((d) => {
     const day = d.day;
-    const journeysToday = d.journeysToday || 0;
+    const target = d.dailyFunnel?.contacted || 0;
     const dayActive = activeCampaigns(day);
+    if (target === 0 || dayActive.length === 0) {
+      return segments.map(() => 0);
+    }
+    // Segment-level shares (zero if not active that day)
     const shareById = new Map(dayActive.map(c => [c.id, c.share]));
-    return segments.map(seg => {
-      const share = shareById.get(seg.id) || 0;
-      return Math.round(journeysToday * share);
-    });
+    const rawShares = segments.map(seg => shareById.get(seg.id) || 0);
+    // Largest-remainder allocation: floor each, then distribute remainder
+    // by largest fractional part. Result: ints summing exactly to target.
+    const exact = rawShares.map(s => target * s);
+    const floors = exact.map(v => Math.floor(v));
+    const remainders = exact.map((v, i) => ({ i, frac: v - floors[i] }));
+    const allocatedSum = floors.reduce((a, b) => a + b, 0);
+    let remaining = target - allocatedSum;
+    remainders.sort((a, b) => b.frac - a.frac);
+    const out = floors.slice();
+    for (let r = 0; r < remaining && r < remainders.length; r++) {
+      out[remainders[r].i] += 1;
+    }
+    return out;
   });
 
   // Y-max from per-day stack totals
@@ -500,7 +528,7 @@ export function computeDashboardMetrics(projection, { selectedDay, dateRange }) 
     campaignHealth: computeCampaignHealth(projection, dayData, effectiveDay, dateRange),
     suggestedChange: computeSuggestedChange(projection, effectiveDay),
     kpiCards,
-    funnel: computeFunnel(dayData),
+    funnel: computeFunnel(projection, effectiveDay, dateRange),
     audienceOverview: computeAudienceOverview(projection, effectiveDay, dateRange),
     campaignList: computeCampaignList(projection, effectiveDay),
     dailyOutreach: computeDailyOutreach(projection, effectiveDay, dateRange),

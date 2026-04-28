@@ -618,6 +618,38 @@ function runSimulation({ budget, params, staticMode = false, horizonDays = 30 })
       ? Math.round((cumResolved / cohort.contacted) * 10000) / 100 : 0;
   }
 
+  // Per-cohort funnel attribution (S6 Item 2 close-out): proportional cohort
+  // allocation. Each day's aggregate funnel event count (referralSent, signedUp)
+  // is split across cohorts in proportion to each cohort.contacted weight.
+  // This ties out exactly at the aggregate level (Σ across cohorts === engine
+  // cumulative) while letting any cohort be inspected end-to-end.
+  //
+  // Note: signedUp is monotonic-bounded by referralSent (referee can't sign up
+  // unless someone referred them); referralSent is bounded by contacted (you
+  // can't refer if you weren't asked). We clamp to enforce these invariants.
+  const totalContactedAcrossCohorts = Object.values(cohorts).reduce(
+    (sum, c) => sum + (c.contacted || 0), 0
+  );
+  if (totalContactedAcrossCohorts > 0) {
+    const finalDay = days[days.length - 1] || {};
+    const finalRefer = finalDay.funnelCumulative?.referralSent || 0;
+    const finalSignup = finalDay.funnelCumulative?.signedUp || 0;
+    for (const startDay of Object.keys(cohorts)) {
+      const cohort = cohorts[startDay];
+      const weight = (cohort.contacted || 0) / totalContactedAcrossCohorts;
+      // Allocate proportionally and clamp to per-cohort sanity invariants
+      const referAllocated = Math.round(finalRefer * weight);
+      cohort.totalReferralSent = Math.min(referAllocated, cohort.contacted || 0);
+      const signupAllocated = Math.round(finalSignup * weight);
+      cohort.totalSignedUp = Math.min(signupAllocated, cohort.totalReferralSent);
+    }
+  } else {
+    for (const startDay of Object.keys(cohorts)) {
+      cohorts[startDay].totalReferralSent = 0;
+      cohorts[startDay].totalSignedUp = 0;
+    }
+  }
+
   const activeUsers = days.reduce((sum, d) => sum + d.resolvedToday, 0);
   const lastDay = days[days.length - 1];
   const finalCumN = lastDay?.cumulativeN || 0;
@@ -793,7 +825,7 @@ export function computeDashboardProjection({ budget, params, horizonDays = 90 })
     cohortWaves,
 
     // Propensity health for Block 2 (audience health chart)
-    propensityHealth: computePropensityHealth(agentic, params),
+    propensityHealth: computeAudienceModel(agentic, params),
 
     // Effectiveness data for Block 2 (engagement effectiveness chart)
     effectivenessData: computeEffectivenessData(agentic, params),
@@ -941,57 +973,162 @@ function computeCohortWaves(simResult, params) {
 
 
 // ═══════════════════════════════════════════════════════════════════════
-// Propensity Health — H/M/L distribution + reach depth over time
-// Used by Block 2 Left: Audience Health stacked area chart
+// Audience Flow Model (v3) — Block 2 Left: Audience Overview chart
 // ═══════════════════════════════════════════════════════════════════════
+// Integrated observer of the funnel. Three segments {Advocate, Persuadable,
+// Passive}. Bands shown = total per segment minus users currently blocked
+// by fatigue guardrails (rest_period). Per-segment movements all tie to
+// engine cohort outputs:
+//
+//   POOL GROWS:
+//     - external acquisition (other channels) → Advocate (new active users)
+//     - internal acquisition (engine "Active" event) → Advocate
+//
+//   POOL SHRINKS:
+//     - Passive demotion exits eligible (the only exit path)
+//
+//   SEGMENTS MOVE:
+//     - PROMOTION at engine "Referred" event: origin → Advocate
+//     - DEMOTION of contacted-not-engaged subset (33%/mo): origin → lower
+//
+// Min_tenure guardrail default = 0 (no waiting period; new active users
+// immediately eligible). See docs/PLAN-numbers-consistency.md "Item 2 — v3".
 
-function computePropensityHealth(simResult, params) {
-  const { days } = simResult;
-  const { totalCustomers, eligibilityRate } = params;
-  const totalEligible = Math.round(totalCustomers * eligibilityRate);
+function computeAudienceModel(simResult, params) {
+  const { days, cohorts } = simResult;
+  const {
+    totalCustomers,
+    eligibilityRate,
+    externalAcquisitionPerMonth,
+    segmentShares,
+    agentContactMix,
+    segmentEngageMultiplier,
+    demotionMonthlyRate,
+    guardrails,
+  } = params;
 
-  // Starting cluster sizes
-  const highStart = Math.round(totalEligible * 0.30);
-  const medStart = Math.round(totalEligible * 0.45);
-  const lowStart = totalEligible - highStart - medStart;
+  // Read fatigue guardrail values from config (no hardcoded defaults beyond fallback)
+  const restRule = guardrails?.customerFatigue?.rules?.find(r => r.id === 'rest_period');
+  const restPeriodDays = Math.max(1, restRule?.default ?? 2);
 
-  // Eligible pool per cluster over time
-  // Pool shrinks as agent contacts people, recovers as customers return from cooldown
-  // Replenishment rate determines sustainability
+  const dailyExternalAcq = externalAcquisitionPerMonth / 30;
+  const dailyDemotionRate = demotionMonthlyRate / 30;
+
+  const totalEligible = totalCustomers * eligibilityRate;
+
+  // State: total per segment (people in this segment, regardless of contact status)
+  const inSegment = {
+    high: totalEligible * segmentShares.high,
+    med:  totalEligible * segmentShares.med,
+    low:  totalEligible * segmentShares.low,
+  };
+
+  // Demotion pool: contacted-not-engaged users awaiting demotion (drained at dailyDemotionRate)
+  const demotionPool = { high: 0, med: 0, low: 0 };
+
+  // Rolling window of daily contacts per segment (for rest_period blocking)
+  const contactsWindow = { high: [], med: [], low: [] };
+
+  // Tracking aggregates for verify-metrics tie-out tests
+  let totalPromotions = 0;        // sum across all days (= engine referralSent total)
+  let totalInternalAcq = 0;       // sum across all days (= engine activeUser total)
+
   const highEligible = [];
   const medEligible = [];
   const lowEligible = [];
 
   for (let d = 0; d < days.length; d++) {
     const dayData = days[d];
-    const contacted = dayData.funnelCumulative.contacted;
-    const overallDepth = Math.min(1, contacted / totalEligible);
+    const daily = dayData.dailyFunnel || {};
+    const dailyContacted = daily.contacted || 0;
+    const dailyReferred  = daily.referralSent || 0;
+    const dailyActive    = daily.activeUser || 0;
 
-    // Agent contacts high-propensity first
-    const hUsed = Math.min(1, overallDepth * 2.2);
-    const mUsed = Math.min(1, overallDepth * 0.85);
-    const lUsed = Math.min(1, Math.max(0, overallDepth * 0.35));
+    // 1. ACQUISITION → Advocate (both external and internal)
+    inSegment.high += dailyExternalAcq;
+    inSegment.high += dailyActive;
+    totalInternalAcq += dailyActive;
 
-    // Replenishment: customers return from cooldown after ~7 days
-    // Earlier cohorts start returning, partially refilling the pool
-    const replenishFactor = d > 7 ? Math.min(0.4, (d - 7) * 0.03) : 0;
+    // 2. CONTACTS — distributed across segments by agentContactMix.
+    //    Contacts do NOT remove people from their segment; they just block
+    //    them from re-contact for rest_period days.
+    const contacts = {
+      high: dailyContacted * agentContactMix.high,
+      med:  dailyContacted * agentContactMix.med,
+      low:  dailyContacted * agentContactMix.low,
+    };
+    contactsWindow.high.push(contacts.high);
+    contactsWindow.med.push(contacts.med);
+    contactsWindow.low.push(contacts.low);
+    if (contactsWindow.high.length > restPeriodDays) {
+      contactsWindow.high.shift();
+      contactsWindow.med.shift();
+      contactsWindow.low.shift();
+    }
 
-    // Eligible = starting pool - used + replenished
-    const hElig = Math.round(highStart * (1 - hUsed + hUsed * replenishFactor));
-    const mElig = Math.round(medStart * (1 - mUsed + mUsed * replenishFactor));
-    const lElig = Math.round(lowStart * (1 - lUsed + lUsed * replenishFactor));
+    // 3. PROMOTIONS — engine's "Referred" event count distributed across origin
+    //    segments by (contactMix × engageMultiplier) weights, normalized.
+    //    Promoted users move from origin → Advocate.
+    const w = {
+      high: agentContactMix.high * segmentEngageMultiplier.high,
+      med:  agentContactMix.med  * segmentEngageMultiplier.med,
+      low:  agentContactMix.low  * segmentEngageMultiplier.low,
+    };
+    const wSum = w.high + w.med + w.low || 1;
+    const promotedFromMed = dailyReferred * w.med / wSum;
+    const promotedFromLow = dailyReferred * w.low / wSum;
+    // promotedFromHigh stays in Advocate (already there)
+    inSegment.med  -= promotedFromMed;
+    inSegment.low  -= promotedFromLow;
+    inSegment.high += promotedFromMed + promotedFromLow;
+    totalPromotions += dailyReferred;
 
-    highEligible.push(hElig);
-    medEligible.push(mElig);
-    lowEligible.push(lElig);
+    // 4. DEMOTIONS — non-engaged subset added to demotion pool, drained at rate.
+    //    Engaged ≈ midpoint(Contacted, Referred) per the funnel chart's definition.
+    //    Per-segment non-engagement rate = 1 − (engagement_rate × engageMultiplier_seg).
+    const dailyEngaged = (dailyContacted + dailyReferred) / 2;
+    const overallEngagedRate = dailyContacted > 0 ? dailyEngaged / dailyContacted : 0;
+    const nonEngagedRate = {
+      high: Math.max(0, 1 - overallEngagedRate * segmentEngageMultiplier.high),
+      med:  Math.max(0, 1 - overallEngagedRate * segmentEngageMultiplier.med),
+      low:  Math.max(0, 1 - overallEngagedRate * segmentEngageMultiplier.low),
+    };
+    demotionPool.high += contacts.high * nonEngagedRate.high;
+    demotionPool.med  += contacts.med  * nonEngagedRate.med;
+    demotionPool.low  += contacts.low  * nonEngagedRate.low;
+    // Drain pool at daily rate (33%/mo ≈ 1/90 daily)
+    const demoteHigh = demotionPool.high * dailyDemotionRate;
+    const demoteMed  = demotionPool.med  * dailyDemotionRate;
+    const demoteLow  = demotionPool.low  * dailyDemotionRate;
+    demotionPool.high -= demoteHigh;
+    demotionPool.med  -= demoteMed;
+    demotionPool.low  -= demoteLow;
+    inSegment.high -= demoteHigh;
+    inSegment.med  += demoteHigh;  // Adv → Per
+    inSegment.med  -= demoteMed;
+    inSegment.low  += demoteMed;   // Per → Pas
+    inSegment.low  -= demoteLow;   // Pas → exits eligible (lost from pool)
+
+    // 5. BAND OUTPUT — total per segment minus rest_period-blocked users
+    const blockedHigh = contactsWindow.high.reduce((a, b) => a + b, 0);
+    const blockedMed  = contactsWindow.med.reduce((a, b) => a + b, 0);
+    const blockedLow  = contactsWindow.low.reduce((a, b) => a + b, 0);
+
+    highEligible.push(Math.max(0, Math.round(inSegment.high - blockedHigh)));
+    medEligible.push(Math.max(0, Math.round(inSegment.med  - blockedMed)));
+    lowEligible.push(Math.max(0, Math.round(inSegment.low  - blockedLow)));
   }
-
-  // Current utilization: what fraction of eligible is being actively worked
-  const totalReached = days[days.length - 1]?.funnelCumulative?.contacted || 0;
 
   return {
     highEligible, medEligible, lowEligible,
-    highStart, medStart, lowStart, totalEligible, totalReached,
+    highStart: Math.round(totalEligible * segmentShares.high),
+    medStart:  Math.round(totalEligible * segmentShares.med),
+    lowStart:  Math.round(totalEligible * segmentShares.low),
+    totalEligible: Math.round(totalEligible),
+    totalReached: days[days.length - 1]?.funnelCumulative?.contacted || 0,
+    // Tie-out aggregates (consumed by verify-metrics.mjs)
+    _totalPromotions: totalPromotions,
+    _totalInternalAcq: totalInternalAcq,
   };
 }
 

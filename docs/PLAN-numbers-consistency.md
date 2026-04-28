@@ -35,17 +35,224 @@ The following 12 items are S6's complete scope (everything previously deferred i
 | # | Item | Status |
 |---|---|---|
 | 1 | Static-Rules ROAS line | ✅ done (`9046ed1` + `3051fc3`) |
-| 2 | Audience pools (P5 + codex finding F) | ⏭ next — needs user 1:1 |
-| 3 | Day 30 SuggestedChange empty under default budget (P13) | pending |
-| 4 | Calendar-aware Pacing | pending |
+| 2 | Audience pools (P5 + codex finding F) | ✅ done — v3 integrated model with hard tie-outs to engine |
+| 3 | Day 1–~18 SuggestedChange empty under default budget (P13) | pending — needs UX decision |
+| 4+7 | Calendar-aware Pacing + health-bar semantics (bundled) | pending — engine surface decision needed |
 | 5 | Additional day stops (40, 50) | pending |
 | 6 | X-axis tied to range selector + tick-step Y-axis | ✅ done (`a3a86d6`) |
-| 7 | Health-bar coherence (Spent period vs Budget/Pacing monthly) | pending — likely tied to #4 |
-| 8 | CAC chart Day 1 readability (P18) | pending |
-| 9 | Briefings null silent vanish (P19) | pending — likely moot post-S2 |
+| 8 | CAC chart Day 1 readability (P18) | ❌ deferred — already in §"NOT in scope"; was a duplicate listing |
+| 9 | Briefings null silent vanish (P19) | pending — verify-and-dismiss only (folded into #12) |
 | 10 | Re-verify cohort decisions post-S5 (M4.4) | pending — verification only |
 | 11 | Final METRIC_MODEL.md read-through | pending |
-| 12 | Final `/qa-only` regression sweep | pending |
+| 12 | Final `/qa-only` regression sweep + totality sweep | pending |
+
+**S6 net items remaining**: 8 (was 10 — Items 4+7 bundled; Item 8 deferred to backlog).
+
+## Item 2 — locked spec v3 (2026-04-27, integrated audience model)
+
+> **Supersedes** the prior v1 lock (cooldown-bucket model, available+inFlow bands, decay-based segment movement). v3 makes the audience model an integrated observer of the engine's funnel — three views (Audience / Funnel / Outcomes) of one flow, no parallel narratives.
+
+### The model in plain language
+
+**Three propensity segments**: Advocate, Persuadable, Passive. Initial composition 30/45/25 of the eligible base (~424k).
+
+**Pool grows two ways** (both → Advocate):
+- **External acquisition**: 20k/month (acquired new active customers from outside channels, e.g. paid media, organic; they've already had the AHA moment).
+- **Internal acquisition**: each new "Active" event from the funnel (referee transacted) → Advocate.
+
+**Pool shrinks one way**:
+- **Passive exits eligible**: only via demotion below — opted-out, churned, deeply disengaged.
+
+**Segments move via two events**:
+- **Promotion** at funnel "Referred" event: a contacted user who *sends a referral* (regardless of whether the referee converts) → moves to Advocate.
+- **Demotion** at the drop-off from "Contacted" to "Engaged": of the *contacted-not-engaged subset*, 33%/month move down one segment. Adv→Per, Per→Pas, Pas→exits. Never-contacted users don't decay.
+
+**Bands shown** = total per segment *minus* users currently blocked by fatigue guardrails (rest_period, max_touchpoints per stage, campaign window). All numbers from the guardrails config — no hardcoded numbers.
+
+### Why this is integrated, not parallel
+
+The audience model is a *faithful observer* of engine outputs. Every cross-chart number ties out:
+- Audience promotions over period = engine "Referred" delta over same period.
+- Audience internal acquisition over period = engine "Active" delta over same period.
+- Audience demotions per segment over period are derived from engine's per-cohort (Contacted − Engaged).
+
+If the funnel says X people referred, the audience chart will show X new advocates. Same event, two views.
+
+### Files touched
+
+| File | Change |
+|---|---|
+| `src/engine/projectionEngine.js` | Replace current `computeAudienceModel` with v3 (segment bookkeeping driven by engine cohort outputs; no internal cooldown bucket) |
+| `src/config/neobank.js` | Update params (see below). Set `min_tenure` guardrail default to 0. |
+| `scripts/verify-metrics.mjs` | Replace Item-2 invariants with new tie-out tests |
+| `scripts/snapshots/post-s6-item2.json` | Regenerate (intentional — bands shift) |
+| `docs/METRIC_MODEL.md` | Rewrite §M4.1–M4.3 to reflect v3 |
+
+### Config params
+
+```
+externalAcquisitionPerMonth: 20000              // → Advocate
+segmentShares:               { adv: 0.30, per: 0.45, pas: 0.25 }   // initial pool composition
+agentContactMix:             { adv: 0.65, per: 0.25, pas: 0.10 }   // contact priority
+segmentEngageMultiplier:     { adv: 1.30, per: 0.55, pas: 0.20 }   // splits engaged/refer/active across segments; weighted avg ≈ 1.0 under contactMix
+demotionMonthlyRate:         0.33               // 33%/mo of non-engaged subset → next-lower segment
+```
+
+`min_tenure` guardrail default: `60 → 0`. Rule remains configurable; default is "no waiting period." (User-confirmed: 60 was unintended; should default off.)
+
+### Tie-out tests in verify-metrics.mjs
+
+1. **Band non-negativity**: every (day × segment) is `≥ 0`.
+2. **Day-1 composition**: bands match `totalEligible × segmentShares` ± rounding.
+3. **Promotion tie-out**: sum of audience-model promotions over any period = engine's "Referred" delta over same period (within 1% rounding tolerance).
+4. **Internal acquisition tie-out**: sum of audience-model internal acquisitions = engine's "Active" delta over same period.
+5. **Demotion sanity**: zero budget → zero promotions → zero demotions (no contacts → no non-engagement). Pool grows only from external acq.
+6. **Pool conservation**: `total(t) = total(0) + (external + internal acquisitions) − (Pas exits)`. No contact-driven losses.
+7. **Window invariant preserved**: bands length matches dateRange at all (day × range) combos including clipped windows.
+
+### Expected snapshot impact
+
+Bands intentionally shift again (this is the third regeneration of `post-s6-item2.json`). Directional expectations to verify after running:
+- **Advocate** band trends *up* over 60 days (external + internal acquisition feed it; demotion takes only from non-engaged subset)
+- **Persuadable** band drifts based on Adv decay arriving + Per decay leaving + no inflow now
+- **Passive** band shrinks slowly via Pas-exit
+- **Total pool** grows roughly linearly from acquisition; budget level affects only the segment composition, not the total
+
+### NOT in scope (Item 2)
+
+- Engine main-path refactor (Michaelis-Menten supply curve untouched; engine's contact/refer/signup/active math unchanged).
+- Per-segment funnel intermediate stage rates (Engaged, Reached differentiation by segment).
+- Visualizing fatigue-blocked users as a separate state on the chart.
+- Showing campaign-specific outreach views beyond what already exists.
+
+### Failure modes
+
+| Mode | Test? | Handling | Visible? |
+|---|---|---|---|
+| Demotion produces negative band | Verify-metrics #1 | `Math.max(0, ...)` clamp | No |
+| Audience promotion ≠ engine Referred | Verify-metrics #3 | Hard fail (CI) | Yes |
+| External acq dominates at low budget (Advocate explodes) | Spike-test post-build | Calibrate `externalAcquisitionPerMonth` | Subtle visual |
+| Demotion rate too aggressive (segment empties) | Verify-metrics #1, spike-test | Calibrate `demotionMonthlyRate` | Visible |
+
+### Out-of-the-build calibration loop (after first build, before commit)
+
+After implementation, re-run the multi-budget spike test (zero / 50K / 150K / 300K / 500K) and check:
+- Advocate band trajectory across budgets — does higher budget visibly grow Advocates faster?
+- Total pool growth rate — does it feel like a believable 2026 neobank?
+- Demotion volume — are non-engaged users shrinking the segments at a plausible rate?
+
+Tune params (likely `externalAcquisitionPerMonth`, possibly `agentContactMix` and `demotionMonthlyRate`) until business story is honest. Document final values in METRIC_MODEL.md.
+
+### Estimated effort
+
+- Engine rewrite: ~90 min
+- Config + verify-metrics tests: ~30 min
+- Snapshot regen + docs: ~15 min
+- Calibration loop: ~30 min
+- Total: ~3 hours work, single session.
+
+## Item 2 close-out plan (2026-04-27)
+
+**Goal**: every dashboard number cohort-traceable and exactly tied. After this work, picking any day and following the cohort through the funnel uses real engine numbers, not aggregate-ratio estimates.
+
+### Step 1 — Per-cohort funnel tracking
+Engine today tracks per-cohort: `contacted`, `cumulativeResolved`, `totalResolved`, `convRate`. Extend so each cohort also tracks `totalReferralSent` and `totalSignedUp` (events attributable to it).
+
+**Attribution method (refinement from eng-review)**: proportional cohort allocation. Each day's aggregate funnel event (referralSent, signedUp) is distributed across cohorts proportional to `cohort.contacted` weight at the time the cohort was opened. Aggregate ties out exactly to engine cumulative totals. No timing-distribution approximation needed for the trust use case (which cares about per-cohort totals, not day-by-day timing within the cohort).
+
+**Horizon edge (documented)**: cohorts contacted in the late portion of the engine simulation (e.g., Day 80+) may have funnel events resolving past Day 90 (engine horizon). Their totals will under-count. Cohorts within the UI horizon (Days 1–60) are unaffected since the engine extends to Day 90.
+
+**File**: `src/engine/projectionEngine.js` (cohort state during simulation loop). New per-cohort accumulators: `cohort.totalReferralSent`, `cohort.totalSignedUp`.
+
+**Verification (refined)**: 4 verify-engine invariants:
+1. Σ `cohort.totalReferralSent` across all cohorts === engine cumulative `referralSent` at horizon
+2. Σ `cohort.totalSignedUp` across all cohorts === engine cumulative `signedUp` at horizon
+3. **Per-cohort sanity**: `cohort.totalReferralSent ≤ cohort.contacted` for every cohort
+4. **Per-cohort sanity**: `cohort.totalSignedUp ≤ cohort.totalReferralSent` for every cohort
+5. **Edge case**: zero-contacted cohort → all stages zero (no divide-by-zero or NaN)
+
+### Step 2 — Daily-outreach rounding fix (per-day allocation)
+Replace independent per-campaign rounding with per-day largest-remainder allocation: each day, sum of campaign contacts === engine's `dailyFunnel.contacted` exactly; campaigns split that total without independent rounding.
+
+**File**: `computeDailyOutreach` in `src/lib/metrics.js`.
+
+**Verification (refined)**: 2 verify-metrics invariants:
+1. Σ campaigns at every day === `engine.dailyFunnel.contacted` at that day (hard equality, all 60 days)
+2. **Edge case**: day with zero active campaigns → zero allocation (no division-by-zero in largest-remainder)
+
+The Σ-period === funnel.Contacted at every (day × range) tie-out follows from invariant #1.
+
+### Step 3 — Refresh validation walkthrough
+Update `.context/validate-numbers.html` with REAL per-cohort numbers for Day 20 (not aggregate-ratio estimates). All five funnel stages cohort-traceable end-to-end.
+
+### Step 4 — Tie-out invariants
+verify-metrics.mjs additions:
+- Σ daily outreach === funnel.Contacted at every (day × range) (Step 2)
+- Σ across cohorts of cohort.totalReferralSent at Day N === engine cumulative referralSent at Day N (Step 1)
+- Σ across cohorts of cohort.totalSignedUp at Day N === engine cumulative signedUp at Day N (Step 1)
+
+KPI activeUsers === funnel.Active already verified (existing test).
+
+### Step 5 — Commit Item 2 v3 + close-out
+
+### Files touched
+- `src/engine/projectionEngine.js` (Step 1)
+- `src/lib/metrics.js` (Step 2)
+- `scripts/verify-engine.mjs` (Step 1 invariants)
+- `scripts/verify-metrics.mjs` (Step 2 + Step 4 invariants)
+- `scripts/snapshots/post-s6-item2.json` (regenerate after Step 2)
+- `docs/METRIC_MODEL.md` (note per-cohort tracking)
+- `.context/validate-numbers.html` (refresh with real cohort numbers)
+
+### Out of scope
+- S7 (engine main-path refactor — segments cause outcomes; daily outreach pulled from audience pool capacity). Separate stage; starter prompt at `.context/s7-starter-prompt.md`.
+- Channel modeling.
+- Per-segment funnel intermediate stages (Engaged/Reached differentiation by segment).
+
+### Risk
+Step 1 touches engine cohort state. New invariants protect against regressions; verify-engine should still pass (additive change, no math modification). Step 2 is local to metrics.js, low risk.
+
+### Effort
+~75–90 min.
+
+## Eng review additions (2026-04-27)
+
+Second-pass eng review of the S6 scope flagged the following gaps. Each is folded
+into the relevant item below.
+
+**Per-item additions:**
+- **Item 2** — fixture must be length 90 (engine horizon), not 60 (UI horizon), to
+  survive a future engine extension. Add bands-sum invariant to verify-metrics.mjs:
+  at every day, advocates+persuadable+passive ≈ totalEligible ± 1 (rounding).
+  Confirm window-length invariant still holds post-fixture (Day 60×30d, Day 60×7d,
+  Day 5×30d clipped).
+- **Item 3** — the "Day 30 empty" framing was wrong. With default budget ($150K)
+  and `minSignalVolume = 100`, the strip is empty Days 1–~18, not just Day 30.
+  Fix needs an explicit UX decision: (a) show a "still learning" placeholder for
+  pre-significance days, or (b) leave the strip absent and treat that as honest.
+  Pick one before walking. New invariant: SuggestedChangeStrip renders something
+  for every day in 1..60, OR is intentionally hidden by a documented rule.
+- **Items 4+7 (bundled)** — engine has no calendar input today. Decision before
+  walking: (i) add a `currentDate` param to engine, OR (ii) compute Pacing in
+  metrics.js using a calendar helper + `dayData.cumulativeRewardCost`. Add a
+  REGRESSION test: pacing must not equal budget mechanically (today's bug). Add
+  coherence invariant: at well-paced steady-state, period-Spent normalized to
+  monthly ≈ Budget ≈ Pacing.
+- **Item 5** — extend snapshot grid and verify-metrics day sweep to include Day
+  40 and Day 50 under all dateRanges. No new logic, but the coverage extension
+  is part of the item.
+- **Item 9** — collapse to a single verify-metrics check ("Block 2 Right renders
+  at every day×range combo") and dismiss. Fold into Item 12.
+- **Item 10** — verify convRate overlay is monotonic non-decreasing at Day 60
+  (no truncation kink). Spot-check from snapshot suggests this passes already
+  post-S5; confirm and document.
+- **Item 12** — add a *totality sweep* to verify-metrics.mjs: every metric
+  section (kpiCards, funnel, audienceOverview, campaignList, dailyOutreach,
+  suggestedChange, campaignHealth) is non-null at every (day, range) combo
+  in 1..60 × {7, 30}. This catches future P13/P19-class regressions.
+
+**Cross-cutting**: items 3, 4+7, 5 all touch DashboardPage.jsx. They serialize
+naturally — no parallel worktrees needed for the rest of S6.
 
 ## Workflow (locked)
 

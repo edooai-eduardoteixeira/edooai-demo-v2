@@ -189,41 +189,43 @@ The funnel has 6 stages but the engine produces 4. S1 captures current invented 
 
 ### M3.1 Contacted
 
-- **Time base**: cumulative resolution-time
-- **Derivation**: `dayData.funnelCumulative.contacted`
-- **Status**: S1 — preserve. Engine value, no change in any stage.
+- **Time base**: period-windowed (S6 Item 2 close-out — was previously cumulative resolution-time)
+- **Derivation**: `funnelCumulative.contacted @ selectedDay − funnelCumulative.contacted @ (startDay − 1)` where `startDay = max(1, selectedDay − dateRange + 1)`. Period sum of contacts over the visible window.
+- **Why period-windowed**: aligns with KPI cards and audience chart (which are also period-aware). At Day 60 + 30d, "Contacted" reflects Days 31–60, not Days 1–60. Tied out with KPI activeUsers === funnel.Active at every (day × range) combo.
+- **Status**: S1 cumulative → ✅ **S6 Item 2 close-out — period-windowed.**
 
 ### M3.2 Engaged
 
-- **Time base**: cumulative resolution-time
-- **Derivation (S3 onward)**: `Math.round((contacted + referred) / 2)` — structural midpoint between adjacent engine cumulative stages.
+- **Time base**: period-windowed (derived from period-windowed Contacted and Referred)
+- **Derivation (S3 onward)**: `Math.round((contacted + referred) / 2)` — structural midpoint between adjacent stages.
 - At engine `baseShareRate = 0.55` this lands ~77% of contacted (close to the prior hardcoded 0.77 multiplier) but properly responds to engine state changes (efficiency lifts effective share rate → referred rises → midpoint shifts).
 - Monotonic by construction: Contacted ≥ Engaged ≥ Referred always holds.
 - **Status**: S1 — preserve hardcoded 0.77. ✅ **S3 — done.** Engine-derived midpoint, no magic constant.
 
 ### M3.3 Referred
 
-- **Time base**: cumulative resolution-time
-- **Derivation**: `dayData.funnelCumulative.referralSent`
-- **Status**: S1 — preserve. Engine value, no change.
+- **Time base**: period-windowed (Item 2 close-out)
+- **Derivation**: period delta of `funnelCumulative.referralSent` over the windowed range.
+- **Status**: ✅ S6 Item 2 close-out — period-windowed.
 
 ### M3.4 Reached
 
-- **Time base**: cumulative resolution-time
-- **Derivation (S3 onward)**: `Math.round((referred + signedUp) / 2)` — structural midpoint between adjacent engine cumulative stages.
+- **Time base**: period-windowed (derived from period-windowed Referred and SignedUp)
+- **Derivation (S3 onward)**: `Math.round((referred + signedUp) / 2)` — structural midpoint between adjacent stages.
 - Reached now means "referrals that landed in front of the recipient" — strictly bounded by Referred above and SignedUp below.
 - Monotonic by construction: Referred ≥ Reached ≥ SignedUp always holds. The impossible Reached > Referred state is structurally unreachable.
 - **Status**: S1 — preserve buggy 1.4×. ✅ **S3 — done.** Midpoint replaces × 1.4. Funnel monotonicity invariant enforced and verified across all 30 days.
 
 ### M3.5 Signed Up
 
-- **Derivation**: `dayData.funnelCumulative.signedUp`
-- **Status**: S1 — preserve.
+- **Time base**: period-windowed (Item 2 close-out)
+- **Derivation**: period delta of `funnelCumulative.signedUp` over the windowed range.
 
 ### M3.6 Active User
 
-- **Derivation**: `dayData.funnelCumulative.activeUser`
-- **Status**: S1 — preserve. **S3** — invariant: equals `KPI card.activeUsers` source for the same period.
+- **Time base**: period-windowed (Item 2 close-out)
+- **Derivation**: period delta of `funnelCumulative.activeUser` over the windowed range.
+- **Invariant**: `KPI card.activeUsers === funnel.Active` at *every* (day × range) combo (verified in `verify-metrics.mjs §9.6`).
 
 ### Funnel monotonicity invariant (post-S3)
 
@@ -238,12 +240,34 @@ Today, `Reached > Referred` violates this on every day. Asserted in `verify-metr
 ### M4.1–M4.3 Eligible bands (Advocates / Persuadable / Passive)
 
 - **Surfaces**: stacked area
-- **Time base**: point-in-time per day, series length = currentDay
-- **Derivation**: `propensityHealth.highEligible / medEligible / lowEligible` (each an array per day).
-- **Engine source**: `computePropensityHealth` in projectionEngine.js:1033, which uses hardcoded depletion coefficients (×2.2, ×0.85, ×0.35) and a replenish factor over the cumulative `funnelCumulative.contacted`.
-- **Note**: codex finding F. The whole *time series* is fabricated by the depletion math, not just the 30/45/25 starting split. Calling pools "decoration" is a partial fix; the time-series shape is also fake.
-- **P17 (boundary cohorts)**: at the right edge of the engine's 30-day horizon, lifecycle bands carry boundary cohorts misleadingly (e.g., Day 1 cohort with 30-day offer expiration sits in "Engaged" right up to Day 30 with no transition into "Cooling Off"). Documented; structural fix arrives in S5 when engine extends to 90 days and offer expirations land within the visible UI horizon.
-- **Status**: S1 — preserve. **S5** — engine extension fixes the boundary cohort artifact. **S6** — locked decoration: move whole series to `src/fixtures/audiencePools.js` (fixed-shape time series), or document that it's engine-generated decoration only.
+- **Time base**: point-in-time per day, series length = currentDay (windowed per dateRange selector)
+- **Derivation (S6 Item 2 v3)**: `propensityHealth.highEligible / medEligible / lowEligible` from `computeAudienceModel`. Integrated observer of the engine funnel — every per-segment movement ties to engine cohort outputs.
+- **Model**: bands shown = total per segment minus users currently blocked by `rest_period` guardrail. Per-day update:
+  1. **Acquisition** → Advocate: external (`externalAcquisitionPerMonth / 30` per day, other-channel new active users) + internal (engine's `dailyFunnel.activeUser` — referees who transacted today).
+  2. **Contacts** distributed across segments by `agentContactMix`. Contacts do NOT remove users from segment; just block them from re-contact for `rest_period` days.
+  3. **Promotions** at engine "Referred" event: `dailyFunnel.referralSent` distributed across origin segments by `(agentContactMix × segmentEngageMultiplier)` weights. Promoted users move from origin → Advocate.
+  4. **Demotions**: contacted-not-engaged subset (engaged ≈ midpoint(contacted, referred); per-segment non-engagement rate = 1 − engagement_rate × engageMultiplier_seg) added to demotion pool. Pool drains at `demotionMonthlyRate` (default 33%/mo). Adv→Per, Per→Pas, Pas→exits eligible.
+- **Tied to engine via** (verified in `verify-metrics.mjs` §10):
+  - Audience promotions over any period === engine cumulative `referralSent` over same period (hard equality, not approximate)
+  - Audience internal acquisition over any period === engine cumulative `activeUser` over same period
+  - At zero budget: zero promotions, zero internal acq (no contacts → no refers → no actives)
+  - Higher budget grows Advocate band more than zero budget
+- **Why this is integrated, not parallel**: every dashboard number derives from a single source — engine's funnel events. If the funnel says X people referred, the audience chart shows X new advocates. Same event, two views. No parallel math.
+- **Config params** (`engineParams` in `config/neobank.js`):
+  - `externalAcquisitionPerMonth`: 20000 (other-channel new active users → Advocate)
+  - `segmentShares`: { high: 0.30, med: 0.45, low: 0.25 } (initial pool composition)
+  - `agentContactMix`: { high: 0.65, med: 0.25, low: 0.10 } (contact priority)
+  - `segmentEngageMultiplier`: { high: 1.30, med: 0.55, low: 0.20 } (engagement rate by segment; weighted avg ≈ 1.0 under contactMix)
+  - `demotionMonthlyRate`: 0.33 (33%/mo of non-engaged subset → next-lower segment)
+  - `min_tenure` guardrail default → 0 (rule remains configurable; no default waiting period for new active users)
+- **Codex finding F (resolved)**: time series driven by real engine state + named tunable params. Out: hardcoded propensity multipliers (×2.2, ×0.85, ×0.35) and replenish factor. In: integrated bookkeeping with hard tie-outs to funnel events.
+- **P17 (boundary cohorts) — resolved**: S5 extended engine to 90 days (60-day UI horizon + 30-day buffer). All cohorts fully resolve within the engine.
+- **Status**: ✅ **S6 Item 2 v3 — done.** Integrated audience flow model. P5 + codex finding F resolved.
+- **NOT in scope (deferred to S7+)**:
+  - Engine main-path refactor (Michaelis-Menten supply curve untouched)
+  - Engine respecting audience pool capacity (today: contact volume independent of pool depletion; OK in our budget range — 12–31% pool utilization at default to high budget)
+  - Per-channel fatigue guardrails (push / email / SMS / in-app modeled separately)
+  - Per-segment funnel intermediate stage rates (Engaged / Reached differentiation by segment)
 
 ### M4.4 Conversion rate overlay
 
